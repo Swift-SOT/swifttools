@@ -25,7 +25,7 @@ so we will create it with `silent=False`.
 The RA/Dec must be in decimal degrees, J2000.0. So:
 
 ```python
-In [1]: from xrt_prods import XRTProductRequest
+In [1]: from swifttools.xrt_prods import XRTProductRequest
 In [2]: myReq = XRTProductRequest('YOUR_EMAIL_ADDRESS', silent=False)
 In [3]: myReq.setGlobalPars(getTargs=True, centroid=True, name='GRB 200416A', RA=335.6985, Dec=-7.5179, centMeth='simple', useSXPS=False, T0=608713541.952, posErr=1)
 ```
@@ -188,7 +188,7 @@ Of course, the whole point of the API interface is for where you don't want to b
 
 ```python
 # !/usr/bin/env python3
-from xrt_prods import XRTProductRequest
+from swifttools.xrt_prods import XRTProductRequest
 import sys
 import time
 
@@ -221,4 +221,3 @@ print ("All done")
 
 Note that in the above script I did not specify `silent=False` when creating `myReq`, so running this won't 
 put a load of "Successfully created XXXX" type ouput on my screen.
-

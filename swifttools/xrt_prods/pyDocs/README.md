@@ -29,11 +29,26 @@ To register, please visit [the registration page](https://www.swift.ac.uk/user_o
 
 ## Summary and quick start
 
-This Python module is built around a single class: the `XRTProductRequest`. To use this module you will need to create
-an object of this class, set parameters in it, and submit it. The very simple example below is not directly runable as
-I've left out the actual parameter values, but it gives a simple feel for the interface. The specific parameters
-and options are detailed on the [relevant pages in this documentation](#documentation-contents). **In particular,
-the full set of all possible parameters that you can set for the request are given on the [How to request products](RequestJob.md) page**.
+The `xrt_prods` module is part of the `swifttools` package, which must
+obviously be imported before use. Within the module there is a single
+class which you will need to use: `XRTProductRequest`.
+
+In the examples throughout this documentation, it is assumed that you have imported this thus:
+
+```python
+from swifttools.xrt_prods import XRTProductRequest
+```
+
+and this `import` line is generally ommited from the examples.
+
+To use this module you will need to create an object of this class, set parameters
+in it, and submit it. The very simple example below is not directly
+runable as I've left out the actual parameter values, but it gives a
+simple feel for the interface. The specific parameters and options are
+detailed on the [relevant pages in this
+documentation](#documentation-contents). **In particular, the full set
+of all possible parameters that you can set for the request are given on
+the [How to request products](RequestJob.md) page**.
 
 **Please note** Our servers have finite capacity, and we ask you to be considerate in your submissions: do not
 request large numbers of jobs in quick succession. There is a hard limit on the server of how many jobs a user
@@ -44,6 +59,8 @@ jobs you have on the server and throttle your submission rate accordingly.
 ### Very simple example:
 
 ```python
+from swifttools.xrt_prods import XRTProductRequest
+
 # Create an XRTProductRequest object
 myReq = XRTProductRequest('YOUR_EMAIL_ADDRESS', silent=False)
 
@@ -75,3 +92,8 @@ And that's it. Except that you need to know what parameters you can set, how to 
 specified, is `True`. This variable, which can also be set directly (i.e. `myReq.silent=True`) controls whether any feedback is
 written to the standard output. In interactive mode, this feedback may be helpful and informative; in a script, it is more
 likely an annoyance. Since all of the examples in this documentation are for an interactive shell, I have always set `silent=False`.
+
+**Another note** As most Python users will be aware, the `import` convention used in this documentation is not the only
+possibly convention. For example, you could do `import swifttools.xrt_prods` and then access the main class via
+`xrt_prods.XRTProductRequest` if you prefer not to pollute your global namespace. Or you could save your fingers a little
+with `from swifttools.xrt_prods import XRTProductRequest as xpr` (at the cost of making your code a little less readable). It is not the purpose of this guide to suggest how you style your code; I have used the `from swifttools.xrt_prods import XRTProductRequest` convention from personal choice, and as I think it makes the guide easier to read.

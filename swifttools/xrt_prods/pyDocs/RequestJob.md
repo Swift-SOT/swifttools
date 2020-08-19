@@ -32,7 +32,7 @@ The first step for creating a product request is to create an `XRTProductRequest
 [registered](https://www.swift.ac.uk/user_objects/register.php) with:
 
 ```python
-In [1]: from xrt_prods import XRTProductRequest
+In [1]: from swifttools.xrt_prods import XRTProductRequest
 In [2]: myReq = XRTProductRequest('YOUR_EMAIL_HERE', silent=False)
 ```
 

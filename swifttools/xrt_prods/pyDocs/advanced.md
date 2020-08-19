@@ -36,10 +36,10 @@ is the same as the call above.
 So you can easily throttle job submission in your scripts, for example with a structure as in this snippet:
 
 ```python
-import xrt_prods
+from swifttools.xrt_prods import XRTProductRequest
 import time
 import sys
-myReq = xrt_prods.XRTProductRequest('YOUR_EMAIL_ADDRESS')
+myReq = XRTProductRequest('YOUR_EMAIL_ADDRESS')
 ...
 my waited = 0
 while (myReq.countActiveJobs()>5):
@@ -72,7 +72,7 @@ names you can identify what they have to do. This is not intended as some code t
 demonstration of how one may use this API.
 
 ```python
-import xrt_prods
+from swifttools.xrt_prods import XRTProductRequest
 import time
 # Other imports
 
@@ -97,7 +97,7 @@ while ix < len(productsIwant):
     # Submit as many as I can:
     while xrt_prods.countActiveJobs(my_email) < max_jobs:
         # Create the new XRTProductRequest
-        myReqs.append(xrt_prods.XRTProductRequest(my_email))
+        myReqs.append(XRTProductRequest(my_email))
         # Set its details
         g = productsIWant[ix].globalPars 
         myReqs[ix].setGlobalPars(**g)
