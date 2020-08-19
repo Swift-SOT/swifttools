@@ -1,0 +1,3 @@
+sphinx-build -M markdown ./ build
+
+./fixAPI.pl build/markdown/index.md ../pyDocs/fullAPI.md

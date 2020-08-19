@@ -1,0 +1,4 @@
+dist/
+build/
+swifttools.egg-info/
+*/__pycache__/

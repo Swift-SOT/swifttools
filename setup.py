@@ -1,0 +1,28 @@
+from setuptools import find_packages
+
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
+PKGNAME = "swifttools"
+
+setuptools.setup(
+    name=PKGNAME,
+    version="1.0.5",
+    author="Phil Evans",
+    author_email="pae9@leicester.ac.uk",
+    description="Tools for users of the Swift satellite",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url="https://gitlab.com/DrPhilEvans/swifttools",
+    packages=[PKGNAME] + [f'{PKGNAME}.{p}' for p in find_packages(where=PKGNAME)],
+    install_requires=['numpy', 'requests', 'python-jose'],
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+    ],
+    python_requires='>=3.6',
+)
+
+
+
