@@ -34,4 +34,4 @@ The recommended method is to use [the Python module](pyDocs/README.md), since th
   * [How to retrieve the completed products](APIDocs/RetrieveProducts.md).
   * [A simple end-to-end tutorial](APIDocs/tutorial.md).
   * [Exploring old jobs](APIDocs/History.md)
-
+ * [Change history](ChangeLog.md)
