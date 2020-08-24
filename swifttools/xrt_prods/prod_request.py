@@ -134,12 +134,12 @@ def checkAPI(returnedData):
             f"The server return does not confirm to the expected JSON structure; do you need do update this module?"
         )
 
-    if float(returnedData["APIVersion"]) < float(XRTProductRequest._apiVer):
+    if float(returnedData["APIVersion"]) > float(XRTProductRequest._apiVer):
         warnings.warn(
             f"WARNING: you are using version {XRTProductRequest._apiVer} of the API; "
             f"the latest version is {returnedData['APIVersion']}, it would be avisable to update your version."
         )
-
+   
     if "OK" not in returnedData:  # Invalid JSON
         raise RuntimeError(
             f"The server return does not confirm to the expected JSON structure; do you need do update this module?"
@@ -249,7 +249,7 @@ class XRTProductRequest:
     # Also set the API name and version, this will not be processed (by
     # default) but may be useful for future debugging
     _apiName = "xrt_prods"
-    _apiVer = "1.0"
+    _apiVer = 1.0
 
     # Now begin the instantiated stuff.  First what to output when this
     # instance is entered in an ipython shell.
