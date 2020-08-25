@@ -1,11 +1,10 @@
 # The `xrt_prods` Python module
 
-The `xrt_prods` Python module provides an interface to the tools to build Swift-XRT data products for point sources.
+The `swifttools.xrt_prods` Python module provides an interface to the tools to build Swift-XRT data products for point sources.
 This is based on the [XRT Products API](../APIDocs/README.md), but is intended to present a rather easier interface
 than having to create and manage JSON objects and HTTP POST requests yourself.
 
 **Important note** We still have a finite capacity, so please do not submit large numbers of jobs en masse; instead you can use the API to submit all of your jobs, but a few at a time, waiting until the requested jobs have completed before submitting the next tranche. 
-
 
 ## Documentation contents
 
@@ -29,9 +28,18 @@ To register, please visit [the registration page](https://www.swift.ac.uk/user_o
 
 ## Summary and quick start
 
-The `xrt_prods` module is part of the `swifttools` package, which must
-obviously be imported before use. Within the module there is a single
-class which you will need to use: `XRTProductRequest`.
+The `xrt_prods` module is part of the `swifttools` package. The easiest way to install this is via `pip`:
+
+```bash
+> pip3 install swifttools
+```
+
+Alternatively, you can [download the sourcecode from Gitlab](https://gitlab.com/DrPhilEvans/swifttools) and install it manually if you prefer.
+
+This requires Python 3.6 or higher.
+
+The module obviously needs to be imported before use; there is a single
+class which you will need to use: `XRTProductRequest`. 
 
 In the examples throughout this documentation, it is assumed that you have imported this thus:
 
@@ -39,7 +47,8 @@ In the examples throughout this documentation, it is assumed that you have impor
 from swifttools.xrt_prods import XRTProductRequest
 ```
 
-and this `import` line is generally ommited from the examples.
+and this `import` line is generally ommited from the examples. There are a small number
+of exceptions to this, covered on the [Miscellaneous methods and advanced usage](advanced.md) page.
 
 To use this module you will need to create an object of this class, set parameters
 in it, and submit it. The very simple example below is not directly

@@ -3,3 +3,4 @@ build/
 swifttools.egg-info/
 *__pycache__/
 swifttools/xrt_prods/docs/
+*.cmd

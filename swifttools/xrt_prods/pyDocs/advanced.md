@@ -18,14 +18,14 @@ The main purpose of this API is to make it easy for you to submit jobs, and to a
 your analysis pipelines. **But we ask you to be considerate as you do so.** Submitting vast numbers of
 jobs will monopolise or overload our servers, and we'd really rather you don't. A simple way of managing this
 is to check how many jobs you currently have queued or running, and to throttle your submission rates accordingly.
-For this we have the `countActiveJobs()`` method. This is actually a method of the ``xrt_prods`` module, so is called thus:
+For this we have the `countActiveJobs()` method. This is actually a method of the `xrt_prods` module, so to use this directly, you need to import that module to use this function. Here, I have assumed you have done `from swifttools import xrt_prods`, and then we can check the number of active jobs thus:
 
 ```python
 In [1]: howMany = xrt_prods.countActiveJobs('YOUR_EMAIL_ADDRESS')
 ```
 
-However, for the sake of ease the ``XRTProductRequest`` class has a wrapper to this using the ``UserID`` value of
-your class, i.e.
+However, for the sake of ease the `XRTProductRequest` class has a wrapper to this using the `UserID` value of
+your class, i.e. if you have created a request, `myReq` then:
 
 ```python
 In [2]: howMany = myReq.countActiveJobs()
@@ -72,6 +72,7 @@ names you can identify what they have to do. This is not intended as some code t
 demonstration of how one may use this API.
 
 ```python
+from swifttools import xrt_prods
 from swifttools.xrt_prods import XRTProductRequest
 import time
 # Other imports
@@ -128,7 +129,6 @@ to note any failures and only download things that completed OK.
 You may also want some `try:` and `except:` blocks in there so that any errors
 are handled gracefully. However, it gives a reasonable example of how one could go about
 requesting a large number of jobs in a controlled way.
-
 
 ---
 
@@ -267,6 +267,8 @@ then you need the ``listOldJobs()`` method. This is actually a method of the ``x
 In [1]: myOldJobs = xrt_prods.listOldJobs('YOUR_EMAIL_ADDRESS')
 ```
 
+(as above, this assumes you have first done `from swifttools import xrt_prods`).
+
 However, for the sake of ease the ``XRTProductRequest`` class has a wrapper to this using the ``UserID`` value of
 your class, i.e.
 
@@ -307,8 +309,7 @@ In [5]: len(gkperJobs)
 Out[5]: 12
 ```
 
-In this case I've still got 12 jobs (look, I did a lot of testing of this API, OK?). So I could have filtered more strictly,
-say if I knew the job I was after had requested a light curve:
+In this case I've still got 12 jobs (look, I did a lot of testing of this API, OK?). So I could have filtered more strictly, say if I knew the job I was after had requested a light curve:
 
 ```
 In [6]: gkperJobs = [x for x in oldJobs if x['Name']=='GK Per' and x['LightCurve]]
@@ -316,8 +317,7 @@ In [7]: len(gkperJobs)
 Out[7]: 7
 ```
 
-and so on. It is not the purpose of this guide to teach list comprehensions or other methods of filtering Python objects,
-but to demonstrate that the ``listOldJobs()`` function output can be readily filtered or searched to find what you 
+and so on. It is not the purpose of this guide to teach list comprehensions or other methods of filtering Python objects, but to demonstrate that the ``listOldJobs()`` function output can be readily filtered or searched to find what you 
 are looking for.
 
 ---
