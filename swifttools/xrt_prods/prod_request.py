@@ -56,10 +56,21 @@ def listOldJobs(userID):
 
     # OK, submitted alright, now, was it successful?
     # Do I want to try/catch just in case?
+    
     returnedData = json.loads(submitted.text)
 
     # Request was submitted fine, return is OK, but the return reports an error
     checkAPI(returnedData)
+
+    if returnedData["OK"] == 0:
+        if "ERROR" not in returnedData:  # Invalid JSON
+            return self._submitFail(
+                f"The server return does not confirm to the expected JSON structure; do you need do update this module?"
+            )
+
+        errString = returnedData["ERROR"] + "\n"
+        print(f"ERROR: {errString}")
+        return None
     
     if "jobs" not in returnedData:  # Invalid JSON
         raise RuntimeError(
@@ -113,6 +124,16 @@ def countActiveJobs(userID):
 
     # Request was submitted fine, return is OK, but the return reports an error
     checkAPI(returnedData)
+
+    if returnedData["OK"] == 0:
+        if "ERROR" not in returnedData:  # Invalid JSON
+            return self._submitFail(
+                f"The server return does not confirm to the expected JSON structure; do you need do update this module?"
+            )
+
+        errString = returnedData["ERROR"] + "\n"
+        print(f"ERROR: {errString}")
+        return -1
     
     if "numJobs" not in returnedData:  # Invalid JSON
         raise RuntimeError(
