@@ -2433,7 +2433,6 @@ class XRTProductRequest:
         # Go through all of the parameters in the list
         for par in parList:
             val = parList[par]
-
             # Is it a par I renamed for Python? If so, we get the name of it as a Python global
             if par in self._JSONParsToGlobalPars:
                 par = self._JSONParsToGlobalPars[par]
@@ -2442,7 +2441,7 @@ class XRTProductRequest:
             if par in XRTProductRequest._globalTypes:
                 # If the parameter was a bool then it has come back as an int
                 if (bool in XRTProductRequest._globalTypes[par]) and (type(val) != bool):
-                    val = (val == 1 or val == 'yes')
+                    val = (val == 1 or val == 'yes' or val == '1')
 
                 # Otherwise, check the type and try to cast it:
                 if not isinstance(val, XRTProductRequest._globalTypes[par]):

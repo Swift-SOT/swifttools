@@ -252,7 +252,7 @@ class ProductRequest:
             if par in self._parTypes:
                 # If the parameter was a bool then it has come back as an int
                 if (bool in self._parTypes[par]) and (type(val) != bool):
-                    val = val == 1
+                    val = (val == 1 or val == 'yes' or val == '1')
 
                 # Otherwise, check the type and try to cast it:
                 if not isinstance(val, self._parTypes[par]):
