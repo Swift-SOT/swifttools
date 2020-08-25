@@ -270,7 +270,7 @@ class XRTProductRequest:
     # Also set the API name and version, this will not be processed (by
     # default) but may be useful for future debugging
     _apiName = "xrt_prods"
-    _apiVer = 1.2
+    _apiVer = 1.3
 
     # Now begin the instantiated stuff.  First what to output when this
     # instance is entered in an ipython shell.
