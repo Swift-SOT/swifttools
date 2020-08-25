@@ -270,7 +270,7 @@ class XRTProductRequest:
     # Also set the API name and version, this will not be processed (by
     # default) but may be useful for future debugging
     _apiName = "xrt_prods"
-    _apiVer = 1.1
+    _apiVer = 1.2
 
     # Now begin the instantiated stuff.  First what to output when this
     # instance is entered in an ipython shell.
@@ -2442,7 +2442,7 @@ class XRTProductRequest:
             if par in XRTProductRequest._globalTypes:
                 # If the parameter was a bool then it has come back as an int
                 if (bool in XRTProductRequest._globalTypes[par]) and (type(val) != bool):
-                    val = val == 1
+                    val = (val == 1 or val == 'yes')
 
                 # Otherwise, check the type and try to cast it:
                 if not isinstance(val, XRTProductRequest._globalTypes[par]):

@@ -7,7 +7,7 @@ PKGNAME = "swifttools"
 
 setuptools.setup(
     name=PKGNAME,
-    version="1.1",
+    version="1.2",
     author="Phil Evans",
     author_email="pae9@leicester.ac.uk",
     description="Tools for users of the Swift satellite",
