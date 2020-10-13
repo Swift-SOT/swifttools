@@ -37,13 +37,16 @@ There are several optional parameters you can also pass, to control the download
 So, here are some examples:
 
 ```python
-In [2]: myReq.downloadProducts('/my/safe/place/' what=('LightCurve'), format='zip') 
+In [2]: myReq.downloadProducts('/my/safe/place/' what=('LightCurve',), format='zip') 
 ...
 
 In [3]: myReq.downloadProducts('/my/safe/place/', clobber=True, stem='my_test_run_')
 
 ...
 ```
+
+**Important note**: If you are requesting only a single product (e.g. a light curve in the first example above), you must ensure that you give a trailing comma inside the parentheses (or use square brackets), or Python will interpret the 
+argument as a single string, not a tuple. (My thanks to Greg Sivakoff for identifying this error in my original documentation).
 
 ---
 

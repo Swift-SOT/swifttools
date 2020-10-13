@@ -4,7 +4,7 @@ The `swifttools.xrt_prods` Python module provides an interface to the tools to b
 This is based on the [XRT Products API](../APIDocs/README.md), but is intended to present a rather easier interface
 than having to create and manage JSON objects and HTTP POST requests yourself.
 
-**Important note** We still have a finite capacity, so please do not submit large numbers of jobs en masse; instead you can use the API to submit all of your jobs, but a few at a time, waiting until the requested jobs have completed before submitting the next tranche. 
+**Important note** We still have a finite capacity, so please do not submit large numbers of jobs en masse; instead you can use the API to submit all of your jobs, but a few at a time, waiting until the requested jobs have completed before submitting the next tranche. We have provided [an example of how to do this](advanced.md#scripting-large-numbers-of-jobs).
 
 ## Documentation contents
 
