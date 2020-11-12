@@ -2,6 +2,7 @@ import requests
 import json
 from .prod_common import *
 from .prod_base import ProductRequest
+from .productVars import skipGlobals
 import os
 import re
 import warnings
@@ -270,7 +271,7 @@ class XRTProductRequest:
     # Also set the API name and version, this will not be processed (by
     # default) but may be useful for future debugging
     _apiName = "xrt_prods"
-    _apiVer = 1.4
+    _apiVer = 1.5
 
     # Now begin the instantiated stuff.  First what to output when this
     # instance is entered in an ipython shell.
@@ -644,11 +645,22 @@ class XRTProductRequest:
                 raise ValueError(f"what should be 'all' or a list/tuple, not `{what}`")
 
             # Check globals and all prods:
-            what = self._productList.keys()
+            what = [*self._productList.keys()]
             if len(what) == 0:
                 status = False
                 report = report = "* No products have been requested.\n"
+
+            # Sometimes a global is not needed. e.g. if sourceDet is
+            # the only product, we don't need coords.
+            skipPars = []
+            
+            if len(what) == 1 and what[0] in skipGlobals:
+                skipPars = skipGlobals[what[0]]
+
             for gpar in XRTProductRequest._neededGlobals:
+                if gpar in skipPars:
+                    continue
+
                 tmp = self._checkGlobalIsSet(gpar)
                 status = status and tmp[0]
                 report = report + tmp[1]
@@ -783,7 +795,7 @@ class XRTProductRequest:
             if clobber:
                 if not self.silent:
                     print(f"Deleting old {longProdName[what]} request")
-                self.removeLightCurve()
+                self._removeProcuct(what)
             else:
                 raise RuntimeError(
                     f"Can't add a {longProdName[what]} as you already have one."
@@ -1060,6 +1072,11 @@ class XRTProductRequest:
     # These will be:
     # * A decorated property to allow access, e.g. this.lc (or this.lc=)
     # * Wrappers for add/remove/setPars/getPar
+
+    ###################################################################
+    ###### START PRODUCT SPECIFICATIONS ##############################
+    ###################################################################
+    
 
     ##### LIGHT CURVE #####
 
@@ -1422,6 +1439,70 @@ class XRTProductRequest:
         """
         self.removeProductPar("image", parName)
 
+    ##### SOURCE DETECTION #####
+
+    # First property getter and setter so that the sourceDet can be accessed as this.SourceDet
+    # Getter
+    @property
+    def SourceDet(self):
+        """SourceDet request."""
+        return self.getProduct("sourceDet")
+
+    # Remove setter but replace with copyFrom
+    # Setter
+    @SourceDet.setter
+    def SourceDet(self, oldSourceDet):
+        self.copyProd("sourceDet", oldSourceDet)
+
+    @property
+    def hasSourceDet(self):
+        """Whether the current request has a source detect."""
+        return self.hasProd("sourceDet")
+
+    def addSourceDet(self, clobber=False, **sourceDetArgs):
+        """Add a source detect to the current request.
+
+        A wrapper to `addProduct("sourceDet", clobber, **sourceDetArgs)`.
+
+        """
+        self.addProduct("sourceDet", clobber, **sourceDetArgs)
+
+    def removeSourceDet(self):
+        """Remove a source detect from te current request.
+
+        A wrapper to `removeProduct("sourceDet")`.
+
+        """
+        self.removeProduct("sourceDet")
+
+    def setSourceDetPars(self, **sourceDetPars):
+        """Set the source detect parameters.
+
+        A wrapper to `setProductPars("sourceDet", **sourceDetPars)`.
+
+        """
+        self.setProductPars("sourceDet", **sourceDetPars)
+
+    def getSourceDetPars(self, parName="all", showUnset=False):
+        """Get a source detect parameter.
+
+        A wrapper to `getProductPar('sourceDet', parName, showUnset)`.
+
+        """
+        return self.getProductPars("sourceDet", parName, showUnset)
+
+    def removeSourceDetPar(self, parName):
+        """Remove a source detect parameter.
+
+        A wrapper to `removeProductPar("sourceDet", parName)`.
+
+        """
+        self.removeProductPar("sourceDet", parName)
+    
+    ###################################################################
+    ###### END OF PRODUCT SPECIFICATIONS ##############################
+    ###################################################################
+    
     # Check how many active jobs this user has
     def countActiveJobs(self):
         """Count how many jobs the user has actively in the queue.
@@ -1654,7 +1735,7 @@ class XRTProductRequest:
         return False
 
     # This will go through every word in a string and change the JSON
-    # names to Pytho names
+    # names to Python names
 
     def _fixErrString(self, fixMe):
         """Convert JSON parameter names to python parameter names.
@@ -2373,6 +2454,88 @@ class XRTProductRequest:
             returnedData["FromSXPS"] = bool (returnedData["FromSXPS"])
         else:
             returnedData["Reason"] = "No position could be determined."
+        
+        return returnedData
+
+    def retrieveSourceList(self):
+        """Get the sources found by source detection
+
+        This functions queries the source detection run for this job,
+        and returns a dict. The dict will have entries:
+
+        * total
+        * soft
+        * medium
+        * hard
+
+        (the latter three only present if all energy bands were made).
+        Each entry is a list, one entry per source detected in that 
+        band. The list is itself made up of dicts, giving the source
+        detection details.
+
+        If an error occured the return dict will just have entries:
+        * ERROR = true
+        * Reason = description of the error.
+
+        Parameters
+        ----------
+        None
+
+        Return
+        ------
+        dict
+            A dictionary with the source information.
+        
+        Raises
+        ------
+        RuntimeError
+            If the job has not been submitted, or didn't contain a 
+            standard position.
+        
+        """
+        if not self.submitted:
+            raise RuntimeError("Can't query this request as it hasn't been submitted!")
+        if not self.hasProd('sourceDet'):
+            raise RuntimeError("Can't retrieve the standard position as none was requested.")
+        
+        status = self.checkProductStatus( ('sourceDet',) )
+        
+        jsonDict = {
+            "api_name": XRTProductRequest._apiName,
+            "api_version": XRTProductRequest._apiVer,
+            "UserID": self.UserID,
+            "JobID": self.JobID,
+        }
+
+        submitted = requests.post("https://www.swift.ac.uk/user_objects/tprods/getSourceDetResults.php", json=jsonDict)
+        if submitted.status_code != 200:
+            return {"ERROR": True, "Reason": f"An HTTP error occured - HTTP return code {submitted.status_code}: {submitted.reason}"}
+
+        returnedData = json.loads(submitted.text)
+
+        checkAPI(returnedData)
+
+        if returnedData["OK"] == 0:
+            if "ERROR" not in returnedData:
+                return {
+                    "ERROR": "The server return does not confirm to the expected JSON structure; do you need do update this module?"
+                }
+            return {"ERROR": True, "Reason": returnedData["ERROR"]}
+        
+        # Remove the keys we don't need
+        returnedData.pop('APIVersion', None)
+        returnedData.pop('OK', None)
+
+        # Now convert everything I can into numbers:
+        for band in returnedData:
+            for src in range (len(returnedData[band])):
+                for par in returnedData[band][src]:
+                    v=returnedData[band][src][par]
+                    if re.search("\d", v):
+                        if re.search ("\.", v):
+                            returnedData[band][src][par]=float(returnedData[band][src][par])
+                        else:
+                            returnedData[band][src][par]=int(returnedData[band][src][par])
         
         return returnedData
 

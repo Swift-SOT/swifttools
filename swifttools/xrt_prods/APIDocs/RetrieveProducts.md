@@ -224,3 +224,63 @@ returned is simply taken from the catalogue, rather than repeating an identical 
 the catalogue. The most recent SXPS catalogue will also be that used: at the time of writing this is
 [2SXPS](https://www.swift.ac.uk/2SXPS); the `WhichSXPS` key is provided to support future releases of the catalogue.
 
+
+## Retrieve the source list
+
+For source detection we provide an interface to download the source list.
+
+For this we need to supply a UserID and JobID, so we can create a file: `getslist.json`:
+
+```JSON
+{
+  "UserID": "YOUR_EMAIL_ADDRESS",
+  "JobID": 3510
+}
+```
+
+We send this to `https://www.swift.ac.uk/user_objects/tprods/getSourceDetResults.php`
+
+As always, the returned object will contain the keys `APIVersion` and `OK`. If `OK`==0 then it will also contain the key `ERROR` explaining the problem.
+If `OK==1` then the there we be one key for each energy band requested, i.e. `Total` if `detbands` in the request was
+"total" (the default) and `Total`, `Soft`, `Medium`, `Hard` if `detbands` was "all".
+
+Each of these entries in the JSON is then a list, one entry per source, and each of those entries has a set of
+key:value pairs giving the source details, as described in [the source list file documentation](https://www.swift.ac.uk/user_objects/sourceDet_docs.php#positionFiles).
+
+A truncated example is below:
+
+```JSON
+{
+  "Total": [{
+    "sno": "1",
+    "x": "504.0032304685",
+    "y": "470.4008912999",
+    "ra": "32.1512078019",
+    "ra_pos": "0.000128926995607521",
+    "ra_neg": "-0.000128907561523676",
+    "dec": "56.9457088209",
+    "dec_pos": "0.0000683090",
+    "dec_neg": "-0.0000688257",
+    "err90": "3.51785655609393",
+    "l": "133.343722697934",
+    "b": "-4.35794075074313",
+    "C": "1236",
+    ...
+    }, {
+    "sno": "2",
+    "x": "505.8163867861",
+    "y": "385.0154742963",
+    "ra": "32.1491304755",
+    "ra_pos": "0.000417017531127109",
+    "ra_neg": "-0.000422543926959555",
+    "dec": "56.8897966012",
+    "dec_pos": "0.0002141267",
+    "dec_neg": "-0.0002128258",
+    "err90": "3.67746465069338",
+    "l": "133.35917186564",
+    "b": "-4.41170114887941",
+    "C": "99",
+    ...
+ }]
+}
+

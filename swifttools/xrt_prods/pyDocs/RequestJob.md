@@ -21,6 +21,7 @@ On this page we will:
   * [Spectrum parameters](#spectrum-parameters)
   * [Position parameters](#position-parameters)
   * [Image parameters](#image-parameters)
+  * [Source detection parameters](#source-detection-parameters)
 
 **Note** if you have used the raw API, or read the [raw API documentation](../APIDocs/README.md) you may notice that some of the parameter names listed below differ from those in the raw API. This is because, for technical reasons, editing the actual raw names in the API is not very easy. However, for the Python interface we have provided some more friendly labels which are converted into the API names internally before submission. The raw API names are still supported though, so if you prefer these, or use them accidentally, everything should still work.
 
@@ -94,6 +95,7 @@ The products available are:
 * EnhancedPos
 * AstromPos
 * Image
+* SourceDet
 
 And the functions to manipulate them are:
 
@@ -483,3 +485,23 @@ The following parameters can be set for creating an image.
 | whichData | No | str | Which datasets to use in the image. Must be one of {'all', 'user'} | 'all' |
 | useObs   | If `whichData='user'` | str | The specific observations to use to create the image [[Details](https://www.swift.ac.uk/user_objects/docs.php#useobs)] | -- |
 
+
+---
+
+### Source detection parameters
+
+When requesting source detection **and no other products** you do not need to set the global parameters
+RA, Dec, centroid or useSXPS, since these have no meaning for source detection.
+
+The parameters below can be set for source detection. **Note that `whichData` is mandatory** unlike for other products.
+This is because the setting this parameter to `all` should only be done consciously, and cautiously: requesting source
+detection over a large number of datasets can take longer than the 12 hour runtime limit this facility supports.
+Instead, we encourage you to identify which datasets you want to use for source detection, and set the `useObs` parameter
+accordingly (which `whichData='user'`).
+
+| Parameter | Mandatory? | Type  | Description | Default |
+| :----     |  :----:    | :---: | :-----      | :----:  |
+| whichData | Yes | str | Which datasets to use. Must be one of {'all', 'user'} | 'all' |
+| useObs   | If `whichData='user'` | str | The specific observations to use for source searching [[Details](https://www.swift.ac.uk/user_objects/docs.php#useobs)] | -- |
+| whichBands | No | str | Whether to use search the total energy band (`total`) or all SXPS energy bands (`all`) | 'Total' |
+| fitStrayLight | No | Bool | Whether the code should try to identify and model stray light, if necessary. | True |

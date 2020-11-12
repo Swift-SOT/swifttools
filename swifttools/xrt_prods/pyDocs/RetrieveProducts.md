@@ -1,9 +1,10 @@
 # How to retrieve the products
 
-Once your [products are complete](JobStatus.md) you will, one assumes, wish to access them. There are two things you can retrieve:
+Once your [products are complete](JobStatus.md) you will, one assumes, wish to access them. There are three things you can retrieve:
 
 * [The data files.](#download-the-data)
 * [The positions](#retrieve-the-position)
+* [The source list](#retrieve-the-source-list)
 
 ## Download the data
 
@@ -100,3 +101,47 @@ Out[7]:
  'Err90': '14.3',
  'FromSXPS': False}
  ```
+
+
+---
+
+## Retrieve the source list
+
+If you requested source detection, then you can download the source lists directly, using the `retrieveSourceList()` function.
+Assuming the source detection has completed with success, this will return a Python dict, with one entry per energy band for which
+source detection was requested, i.e. either `Total`, or `Total`, `Soft`, `Medium`, and `Hard`.
+
+Each of these entries is itself a list, with one entry per source. That entry is another dict, giving the properties of the source.
+The details of this dict are described in [the source list file documentation](https://www.swift.ac.uk/user_objects/sourceDet_docs.php#positionFiles)
+
+To demonstrate this (for an example where all energy bands were requested)
+
+```python
+In [8]: src = myReq.retrieveSourceList()
+In [9]: src.keys()
+Out[9]: dict_keys(['Total', 'Soft', 'Medium', 'Hard'])
+In [10]: for i in src:
+    ...:     print(f"{i}: {len(src[i]):d} sources")
+    ...:
+Total: 25 sources
+Soft: 8 sources
+Medium: 13 sources
+Hard: 10 sources
+In [11]: src['Total'][0]
+Out[1]:
+{'sno': 1,
+ 'x': 503.9997227258,
+ 'y': 470.3955699394,
+ 'ra': 32.1512120191,
+ 'ra_pos': 2.28992155234127e-07,
+ 'ra_neg': -2.28992155234127e-07,
+ 'dec': 56.9457053386,
+ 'dec_pos': 1.249e-07,
+ 'dec_neg': -1.249e-07,
+ 'err90': 3.50000005791013,
+ 'l': 133.343725932081,
+ 'b': -4.35794339989909,
+ 'C': 1236,
+```
+
+

@@ -243,7 +243,24 @@ If timeslice=="user" then you must define the spectra you wish to create, giving
   <dt style='font-weight: bold;'>imen</dt>
   <dd>A comma-separated list of energy bands for which to build images (default: "0.3-10,0.3-1.5,1.51-10").</dd>
   <dt style='font-weight: bold;'>imobs</dt>
-  <dd>Which datasets to use to get the position. Must be one of {"all", "user"} (default: "all")</dd>
+  <dd>Which datasets to use for the image. Must be one of {"all", "user"} (default: "all")</dd>
   <dt style='font-weight: bold;'>useimobs</dt>
   <dd>Time specification for user-specified observations for the image, <strong>mandatory if imobs="user"</strong>.</dd>
 </dl>
+
+---
+
+### Source detection parameters
+
+<dl title='Parameters related to  source detection'>
+  <dt style='font-weight: bold;'>detobs</dt>
+  <dd>Which datasets to use for source detection. Must be one of {"all", "user"} (default: "user")</dd>
+  <dt style='font-weight: bold;'>usedetobs</dt>
+  <dd>Time specification for user-specified observations for the source detection, <strong>mandatory if detobs="user"</strong>.</dd>
+  <dt style='font-weight: bold;'>detbands</dt>
+  <dd>Which energy bands to carry out source detection on. Must be one of {"total", "all"} (default: "total").</dd>
+  <dt style='font-weight: bold;'>fitStrayLight</dt>
+  <dd>Whether to attempt to fit stray light when searching for sources. Must be 0/1. (default: "1).</dd>
+  
+</dl>
+

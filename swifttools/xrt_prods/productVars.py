@@ -61,7 +61,16 @@ prodPythonParsToJSONPars = {
         "detOrCent": "detornot",
         "centMeth": "detMeth",
     },
-    "image": {"energies": "imen", "useObs": "useimobs", "whichData": "imobs",},
+    "image": {
+        "energies": "imen",
+        "useObs": "useimobs",
+        "whichData": "imobs"
+    },
+    "sourceDet": {
+        "whichData": "detobs",
+        "useObs": "usedetobs",
+        "whichBands": "detbands"
+    }
 }
 
 
@@ -74,6 +83,7 @@ prodNeedGlobals = {
     "enh": (),
     "xastrom": (),
     "image": (),
+    "sourceDet": ()
 }
 # prodUseGlobals shows any parameters that are shared between products,
 # so will be handled as globals by this API, even though the user sets
@@ -92,6 +102,7 @@ prodUseGlobals = {
         "centMeth",
     ),
     "image": (),
+    "sourceDet": ()
 }
 
 # prodNeedPars lists any parameters which are mandatory for the specific
@@ -103,6 +114,7 @@ prodNeedPars = {
     "enh": (),
     "xastrom": (),
     "image": (),
+    "sourceDet": ("whichData",)
 }
 
 # prodParTypes lists all possible parameters for each product, along
@@ -159,12 +171,24 @@ prodParTypes = {
         "gti3": (str,),
         "rname4": (str,),
         "gti4": (str,),
-        "specStem" : (str,),
+        "specStem": (str,),
     },
     "psf": {},
     "enh": {},
-    "xastrom": {"useAllObs": (bool,)},
-    "image": {"energies": (str,), "whichData": (str,), "useObs": (str,)},
+    "xastrom": {
+        "useAllObs": (bool,)
+        },
+    "image": {
+        "energies": (str,),
+        "whichData": (str,),
+        "useObs": (str,)
+        },
+    "sourceDet": {
+        "useObs": (str,),
+        "whichData": (str,),
+        "whichBands": (str,),
+        "fitStrayLight": (bool,)
+    }
 }
 
 
@@ -187,7 +211,13 @@ prodSpecificParValues = {
     "psf": {},
     "enh": {},
     "xastrom": {},
-    "image": {"whichData": ("all", "user")},
+    "image": {
+        "whichData": ("all", "user")
+        },
+    "sourceDet": {
+        "whichData": ("all", "user"),
+        "whichBands": ("total", "all")
+        },
 }
 
 # prodParDeps lists any parameter dependencies, i.e. where parameter b
@@ -208,12 +238,17 @@ prodParDeps = {
     },
     "spec": {
         "whichData": {"user": ("useObs",), "hours": ("incHours",)},
-        "hasRedshift": {"True": ("redshift",),},
+        "hasRedshift": {"True": ("redshift",), },
     },
     "psf": {},
     "enh": {},
     "xastrom": {},
-    "image": {"whichData": {"user": ("useObs",)}},
+    "image": {
+        "whichData": {"user": ("useObs",)}
+        },
+    "sourceDet": {
+        "whichData": {"user": ("useObs",)}
+        },
 }
 
 # prodParTriggers lists cases where setting parameter a to some value
@@ -229,6 +264,7 @@ prodParTriggers = {
     "enh": {},
     "xastrom": {},
     "image": {},
+    "sourceDet": {},
 }
 
 prodDownloadStem = {
@@ -238,5 +274,9 @@ prodDownloadStem = {
     "enh": "enh",
     "xastrom": "xastrom",
     "image": "image",
+    "sourceDet": "sourceDet"
 }
 
+skipGlobals = {
+    "sourceDet": ("RA", "Dec", "centroid", "useSXPS"),
+}
