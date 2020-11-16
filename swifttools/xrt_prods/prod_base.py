@@ -152,13 +152,14 @@ class ProductRequest:
                 tmpPar = ppar
                 if tmpPar in self._pythonParsToJSONPars:
                     tmpPar = self._pythonParsToJSONPars[tmpPar]
-                #print(f"Adding {tmpPar} to change globals")
+                print(f"Adding {tmpPar} to change globals")
                 retGlob[tmpPar] = val
                 continue
             elif ppar in self._JSONParsToPythonPars:
                 tmp = self._JSONParsToPythonPars[ppar]
                 if tmp in self._useGlobals:
                     retGlob[ppar] = val
+                    print(f"Adding {tmpPar} to change globals (2)")
                     continue
 
             if ppar not in self._parTypes:
@@ -182,19 +183,31 @@ class ProductRequest:
                     f"'{val}' is not a valid value for {ppar}. Options are: {','.join(self._specificParValues[ppar])}."
                 )
             # OK if we got here then we can set it:
+            print (f"OK, setting {ppar} = {val}")
             self._pars[ppar] = val
             # Are there any dependencies to set?
             if ppar in self._parTriggers:
                 if val in self._parTriggers[ppar]:
                     for depPar, depVal in self._parTriggers[ppar][val].items():
-                        self._pars[depPar] = depVal
+                        if (depVal is None or depVal=="None") and depPar in self._pars:
+                            del self._pars[depPar]
+                        elif depVal is not None and depVal!="None":
+                            self._pars[depPar] = depVal
                         if not self.silent:
                             print(f"Also setting {self._prodType} {depPar} = {depVal}, because {ppar} = {val}")
                 if "ANY" in self._parTriggers[ppar]:
                     for depPar, depVal in self._parTriggers[ppar]["ANY"].items():
-                        self._pars[depPar] = depVal
+                        if (depVal is None or depVal=="None") and depPar in self._pars:
+                            del self._pars[depPar]
+                        elif depVal is not None and depVal!="None":
+                            self._pars[depPar] = depVal
                         if not self.silent:
                             print(f"Also setting {self._prodType} {depPar} = {depVal}, because {ppar} = {val} (ANY)")
+                if "NONE" in self._parTriggers[ppar] and (val is None or val == "None"):
+                    for depar, depVal in self._parTriggers[ppar]["NONE"].items():
+                        self._pars[depar] = depVal
+                        if not self.silent:
+                            print(f"Also setting {depar} = {depVal}, because {ppar} = {val}")
 
         return retGlob
 
@@ -273,12 +286,18 @@ class ProductRequest:
                 if par in self._parTriggers:
                     if val in self._parTriggers[par]:
                         for depPar, depVal in self._parTriggers[par][val].items():
-                            self._pars[depPar] = depVal
+                            if (depVal is None or depVal=="None") and depPar in self._pars:
+                                del self._pars[depPar]
+                            elif depVal is not None and depVal!="None":
+                                self._pars[depPar] = depVal
                             if not self.silent:
                                 print(f"Also setting {self._prodType} {depPar} = {depVal}, because {par} = {val}")
                     if "ANY" in self._parTriggers[par] and val is not None and val != "None":
                         for depPar, depVal in self._parTriggers[par]["ANY"].items():
-                            self._pars[depPar] = depVal
+                            if (depVal is None or depVal=="None") and depPar in self._pars:
+                                del self._pars[depPar]
+                            elif depVal is not None and depVal!="None":
+                                self._pars[depPar] = depVal
                             if not self.silent:
                                 print(f"Also setting {self._prodType} {depPar} = {depVal}, because {par} = {val} (ANY)")
                     if "NONE" in self._parTriggers[par] and (val is None or val == "None"):

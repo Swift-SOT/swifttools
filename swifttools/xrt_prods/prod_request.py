@@ -136,7 +136,7 @@ def countActiveJobs(userID):
         errString = returnedData["ERROR"] + "\n"
         print(f"ERROR: {errString}")
         return -1
-    
+
     if "numJobs" not in returnedData:  # Invalid JSON
         raise RuntimeError(
             f"The server return does not confirm to the expected JSON structure; do you need do update this module?"
@@ -539,12 +539,18 @@ class XRTProductRequest:
             if gvar in globalParTriggers:
                 if val in globalParTriggers[gvar]:
                     for depPar, depVal in globalParTriggers[gvar][val].items():
-                        self._globalPars[depPar] = depVal
+                        if depVal is None and depPar in self._globalPars:
+                            del self._globalPars[depPar]
+                        elif depVal is not None:
+                            self._globalPars[depPar] = depVal
                         if not self.silent:
                             print(f"Also setting {depPar} = {depVal}")
                 if "ANY" in globalParTriggers[gvar] and val is not None and val != "None":
                     for depPar, depVal in globalParTriggers[gvar]["ANY"].items():
-                        self._globalPars[depPar] = depVal
+                        if depVal is None and depPar in self._globalPars:
+                            del self._globalPars[depPar]
+                        elif depVal is not None:
+                            self._globalPars[depPar] = depVal
                         if not self.silent:
                             print(f"Also setting global {depPar} = {depVal}")
                 if "NONE" in globalParTriggers[gvar] and (val is None or val == "None"):
@@ -903,16 +909,16 @@ class XRTProductRequest:
                 The product to set the parameters for (lc, spec, psf etc)
             **prodArgs
                 The arguments to set
-        
+
         Raises
         ------
         ValueError
             If invalid values are specified.
-        
+
         RuntimeError
             If the request has already been submitted, so cannot be
             edited.
-        
+
         """
         if self.submitted:
             raise RuntimeError(
@@ -936,6 +942,10 @@ class XRTProductRequest:
                     print(f"      {par} => {val}")
             self.setGlobalPars(**globChange)
 
+        # Run getProductPar now as well (don't print anything), this syncs
+        # the shared parameters for the positions
+        self.getProductPars(what)
+
     # get a specific parameter
 
     def getProductPars(self, what, parName="all", showUnset=False):
@@ -944,7 +954,7 @@ class XRTProductRequest:
         Return is a dictionary of par:value pairs, for the requested
         parameters, or all parameters if parName is unspecified or set
         to the string "all"
-        
+
         It will raise a ValueError 'parName' or 'what' are invalid
 
         Parameters
@@ -966,7 +976,7 @@ class XRTProductRequest:
         Multiple
             The value of the requested parameter, or a dict of
             parameter:value pairs if 'all' was requested.
-        
+
         Raises
         ------
         RuntimeError
@@ -995,13 +1005,14 @@ class XRTProductRequest:
                     tpar = self._productList[what].pythonParsToJSONPars[tpar]
                 if (tpar in self.globalPars) or showUnset:
                     tmp[gpar] = self.getGlobalPars(tpar)
+                elif (tpar not in self.globalPars) and (gpar in tmp):
+                    del tmp[gpar]
         return tmp
 
     def removeProductPar(self, what, parName):
         """Remove (unset) a product parameter.
 
         Removes the parameter 'parName' from the product 'what'.
-        
 
         Parameters
         ----------
