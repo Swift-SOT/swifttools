@@ -189,12 +189,12 @@ class ProductRequest:
                     for depPar, depVal in self._parTriggers[ppar][val].items():
                         self._pars[depPar] = depVal
                         if not self.silent:
-                            print(f"Also setting {depPar} = {depVal}")
+                            print(f"Also setting {self._prodType} {depPar} = {depVal}, because {ppar} = {val}")
                 if "ANY" in self._parTriggers[ppar]:
                     for depPar, depVal in self._parTriggers[ppar]["ANY"].items():
                         self._pars[depPar] = depVal
                         if not self.silent:
-                            print(f"Also setting {depPar} = {depVal}")
+                            print(f"Also setting {self._prodType} {depPar} = {depVal}, because {ppar} = {val} (ANY)")
 
         return retGlob
 
@@ -275,12 +275,17 @@ class ProductRequest:
                         for depPar, depVal in self._parTriggers[par][val].items():
                             self._pars[depPar] = depVal
                             if not self.silent:
-                                print(f"Also setting {depPar} = {depVal}")
-                    if "ANY" in self._parTriggers[par]:
+                                print(f"Also setting {self._prodType} {depPar} = {depVal}, because {par} = {val}")
+                    if "ANY" in self._parTriggers[par] and val is not None and val != "None":
                         for depPar, depVal in self._parTriggers[par]["ANY"].items():
                             self._pars[depPar] = depVal
                             if not self.silent:
-                                print(f"Also setting {depPar} = {depVal}")
+                                print(f"Also setting {self._prodType} {depPar} = {depVal}, because {par} = {val} (ANY)")
+                    if "NONE" in self._parTriggers[par] and (val is None or val == "None"):
+                        for depar, depVal in self._parTriggers[par]["NONE"].items():
+                            self._pars[depar] = depVal
+                            if not self.silent:
+                                print(f"Also setting {depar} = {depVal}, because {par} = {val}")
         return retGlob
 
     def removePar(self, par):

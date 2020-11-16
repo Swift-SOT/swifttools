@@ -2,10 +2,11 @@ import requests
 import json
 from .prod_common import *
 from .prod_base import ProductRequest
-from .productVars import skipGlobals
+from .productVars import skipGlobals,globalParTriggers
 import os
 import re
 import warnings
+from distutils.version import StrictVersion
 
 def listOldJobs(userID):
     """List all of the jobs you have submitted.
@@ -156,12 +157,13 @@ def checkAPI(returnedData):
             f"The server return does not confirm to the expected JSON structure; do you need do update this module?"
         )
 
-    if float(returnedData["APIVersion"]) > float(XRTProductRequest._apiVer):
+    # if float(returnedData["APIVersion"]) > float(XRTProductRequest._apiVer):
+    if StrictVersion(str(returnedData["APIVersion"])) > StrictVersion(XRTProductRequest._apiVer):
         warnings.warn(
             f"WARNING: you are using version {XRTProductRequest._apiVer} of the API; "
             f"the latest version is {returnedData['APIVersion']}, it would be avisable to update your version."
         )
-   
+
     if "OK" not in returnedData:  # Invalid JSON
         raise RuntimeError(
             f"The server return does not confirm to the expected JSON structure; do you need do update this module?"
@@ -271,7 +273,7 @@ class XRTProductRequest:
     # Also set the API name and version, this will not be processed (by
     # default) but may be useful for future debugging
     _apiName = "xrt_prods"
-    _apiVer = 1.5
+    _apiVer = "1.6"
 
     # Now begin the instantiated stuff.  First what to output when this
     # instance is entered in an ipython shell.
@@ -533,6 +535,23 @@ class XRTProductRequest:
                 )
             # OK if we got here then we can set it:
             self._globalPars[gvar] = val
+            # Are there any dependencies to set?
+            if gvar in globalParTriggers:
+                if val in globalParTriggers[gvar]:
+                    for depPar, depVal in globalParTriggers[gvar][val].items():
+                        self._globalPars[depPar] = depVal
+                        if not self.silent:
+                            print(f"Also setting {depPar} = {depVal}")
+                if "ANY" in globalParTriggers[gvar] and val is not None and val != "None":
+                    for depPar, depVal in globalParTriggers[gvar]["ANY"].items():
+                        self._globalPars[depPar] = depVal
+                        if not self.silent:
+                            print(f"Also setting global {depPar} = {depVal}")
+                if "NONE" in globalParTriggers[gvar] and (val is None or val == "None"):
+                    for depar, depVal in globalParTriggers[gvar]["NONE"].items():
+                        self._globalPars[depPar] = depVal
+                        if not self.silent:
+                            print(f"Also setting global {depar} = {depVal}")
 
     # Get a global parameter
     def getGlobalPars(self, globPar="all", omitShared=True, showUnset=False):
@@ -2614,7 +2633,11 @@ class XRTProductRequest:
                     # Get the preferred type
                     myType = XRTProductRequest._globalTypes[par][0]
                     # Cast; will raise an error if it can't
-                    val = myType(val)
+                    try:
+                        val = myType(val)
+                    except Exception as e:
+                        val = None
+                        print (f"Cannot convert parameter {par}={val} to a {myType}, set it to None")
 
                 # If it's a parameter with a specific list of possible values, check the value is OK
                 if (par in XRTProductRequest._globalSpecificParValues) and (
@@ -2764,11 +2787,16 @@ class XRTProductRequest:
 
         if "jobPars" not in returnedData:
             raise RuntimeError("No data returned by the server!")
+        
+        if "URL" not in returnedData:
+            raise RuntimeError("Invalid data returned by the server!")
 
         self.setFromJSON(returnedData["jobPars"], True)
 
+
         if becomeThis:
             self._jobID = oldJobID
+            self._retData["URL"] = returnedData["URL"]
             self._submitted = True
             self._status=1
             self.checkProductStatus()

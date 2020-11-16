@@ -136,7 +136,6 @@ prodParTypes = {
         "bayesCounts": (float, int),
         "bayesSNR": (float, int),
         "timeType": (str,),
-        "whichObs": (str,),
         "useObs": (str,),
         "pcCounts": (int,),
         "wtCounts": (int,),
@@ -177,12 +176,12 @@ prodParTypes = {
     "enh": {},
     "xastrom": {
         "useAllObs": (bool,)
-        },
+    },
     "image": {
         "energies": (str,),
         "whichData": (str,),
         "useObs": (str,)
-        },
+    },
     "sourceDet": {
         "useObs": (str,),
         "whichData": (str,),
@@ -213,11 +212,11 @@ prodSpecificParValues = {
     "xastrom": {},
     "image": {
         "whichData": ("all", "user")
-        },
+    },
     "sourceDet": {
         "whichData": ("all", "user"),
         "whichBands": ("total", "all")
-        },
+    },
 }
 
 # prodParDeps lists any parameter dependencies, i.e. where parameter b
@@ -245,10 +244,10 @@ prodParDeps = {
     "xastrom": {},
     "image": {
         "whichData": {"user": ("useObs",)}
-        },
+    },
     "sourceDet": {
         "whichData": {"user": ("useObs",)}
-        },
+    },
 }
 
 # prodParTriggers lists cases where setting parameter a to some value
@@ -256,15 +255,42 @@ prodParDeps = {
 # the 'redshift' parmeter is given any value then hasRedshift gets set
 # to true
 prodParTriggers = {
-    "lc": {},
-    "spec": {
-        "redshift": {"ANY": {"hasRedshift": True}, "NONE": {"hasRedshift": False}}
+    "lc": {
+        "useObs": {"ANY": {"whichData": "user"}},
+        "whichData": {"all": {"useObs": None}}
     },
-    "psf": {},
-    "enh": {},
-    "xastrom": {},
-    "image": {},
-    "sourceDet": {},
+    "spec": {
+        "redshift": {"ANY": {"hasRedshift": True}, "NONE": {"hasRedshift": False}},
+        "useObs": {"ANY": {"whichData": "user"}},
+        "whichData": {"all": {"useObs": None}}
+    },
+    "psf": {
+        "useObs": {"ANY": {"whichData": "user"}},
+        "whichData": {"all": {"useObs": None}}
+    },
+    "enh": {
+        "useObs": {"ANY": {"whichData": "user"}},
+        "whichData": {"all": {"useObs": None}}
+    },
+    "xastrom": {
+        "useObs": {"ANY": {"whichData": "user"}},
+        "whichData": {"all": {"useObs": None}}
+    },
+    "image": {
+        "useObs": {"ANY": {"whichData": "user"}},
+        "whichData": {"all": {"useObs": None}}
+    },
+    "sourceDet": {
+        "useObs": {"ANY": {"whichData": "user"}},
+        "whichData": {"all": {"useObs": None}}
+    },
+}
+
+# globalParTriggers lists cases where setting a global parameter to some
+# value causes another global to also be changed.
+globalParTriggers = {
+    "useposobs": {"ANY": {"posobs": "user"}},
+    "posobs": {"all": {"useposobs": None}}
 }
 
 prodDownloadStem = {
