@@ -3,6 +3,7 @@
 Changes made to this module after its original release will be documented here.
 
 * 2020 November 16, Python module v1.7 released **users are encouraged to update ASAP**
+   * This version requires you to have python distutils/setuptools installed.
    * Edited the version check to support micro-releases (e.g. 1.6.1); future updates to the API
      may cause errors when using versions <1.7.
    * Added distutils as a dependency.
