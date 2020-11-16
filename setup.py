@@ -7,7 +7,7 @@ PKGNAME = "swifttools"
 
 setuptools.setup(
     name=PKGNAME,
-    version="1.6",
+    version="1.7",
     author="Phil Evans",
     author_email="pae9@leicester.ac.uk",
     description="Tools for users of the Swift satellite",
@@ -15,7 +15,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://gitlab.com/DrPhilEvans/swifttools",
     packages=[PKGNAME] + [f'{PKGNAME}.{p}' for p in setuptools.find_packages(where=PKGNAME)],
-    install_requires=['numpy', 'requests', 'python-jose', 'distutils'],
+    install_requires=['numpy', 'requests', 'python-jose'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
