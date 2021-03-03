@@ -2,11 +2,12 @@ import requests
 import json
 from .prod_common import *
 from .prod_base import ProductRequest
-from .productVars import skipGlobals,globalParTriggers
+from .productVars import skipGlobals, globalParTriggers
 import os
 import re
 import warnings
 from distutils.version import StrictVersion
+
 
 def listOldJobs(userID):
     """List all of the jobs you have submitted.
@@ -38,7 +39,7 @@ def listOldJobs(userID):
     list
         The list of your previous jobs, described above, most recent 
         first.
-    
+
     Raises
     ------
     RuntimeError
@@ -46,10 +47,10 @@ def listOldJobs(userID):
 
     """
     jsonDict = {
-            "api_name": XRTProductRequest._apiName,
-            "api_version": XRTProductRequest._apiVer,
-            "UserID": userID,
-        }
+        "api_name": XRTProductRequest._apiName,
+        "api_version": XRTProductRequest._apiVer,
+        "UserID": userID,
+    }
     submitted = requests.post("https://www.swift.ac.uk/user_objects/listOldJobs.php", json=jsonDict)
     if submitted.status_code != 200:  # Check that this is int!
         raise RuntimeError(
@@ -58,7 +59,7 @@ def listOldJobs(userID):
 
     # OK, submitted alright, now, was it successful?
     # Do I want to try/catch just in case?
-    
+
     returnedData = json.loads(submitted.text)
 
     # Request was submitted fine, return is OK, but the return reports an error
@@ -73,7 +74,7 @@ def listOldJobs(userID):
         errString = returnedData["ERROR"] + "\n"
         print(f"ERROR: {errString}")
         return None
-    
+
     if "jobs" not in returnedData:  # Invalid JSON
         raise RuntimeError(
             f"The server return does not confirm to the expected JSON structure; do you need do update this module?"
@@ -84,8 +85,9 @@ def listOldJobs(userID):
     #     id = str(j.pop("JobID"))
     #     oldJobs[id]=j
     # return oldJobs
-   
+
     return returnedData["jobs"]
+
 
 def countActiveJobs(userID):
     """Count how many active jobs you have in the queue.
@@ -102,7 +104,7 @@ def countActiveJobs(userID):
     ------
     int
         The number of jobs.
-    
+
     Raises
     ------
     RuntimeError
@@ -143,6 +145,7 @@ def countActiveJobs(userID):
         )
     return returnedData["numJobs"]
 
+
 def checkAPI(returnedData):
     """Carry out some checks on data returned from the server.
 
@@ -161,7 +164,7 @@ def checkAPI(returnedData):
     if StrictVersion(str(returnedData["APIVersion"])) > StrictVersion(XRTProductRequest._apiVer):
         warnings.warn(
             f"WARNING: you are using version {XRTProductRequest._apiVer} of the API; "
-            f"the latest version is {returnedData['APIVersion']}, it would be avisable to update your version."
+            f"the latest version is {returnedData['APIVersion']}, it would be advisable to update your version."
         )
 
     if "OK" not in returnedData:  # Invalid JSON
@@ -184,7 +187,7 @@ class XRTProductRequest:
 
     Please send feedback, bug reports etc to swifthelp@leicester.ac.uk
     """
-    
+
     # Some 'static' variables, i.e. only need defining once, not per
     # instance.  These are tuples so that they can't be changed, and
     # they're only designed for use internally, begin with _.
@@ -282,7 +285,7 @@ class XRTProductRequest:
         for key in self._productList:
             str = str + f"* {longProdName[key]}\n"
         return str
-    
+
     def __repr__(self):
         str = f"XRTProductRequest object"
         return str
@@ -339,7 +342,7 @@ class XRTProductRequest:
         self._retData = dict()
         self._complete = False
 
-        self._silent=silent
+        self._silent = silent
 
         # Also create a look up from the par names returned in the JSON
         # to the Python globals shown to the user.  Do this on the flu
@@ -380,10 +383,10 @@ class XRTProductRequest:
             raise ValueError("Silent must be a bool")
         self._silent = silent
         for what in self._productList.keys():
-            self._productList[what].silent=silent
-
+            self._productList[what].silent = silent
 
     # submitted
+
     @property
     def submitted(self):
         """Whether the request has been successfully submitted."""
@@ -401,7 +404,7 @@ class XRTProductRequest:
     @property
     def complete(self):
         """Whether all of the build jobs are complete.
-        
+
         To query an individual product use checkProductStatus.
         """
         if not self.submitted:
@@ -454,7 +457,7 @@ class XRTProductRequest:
     @property
     def status(self):
         """Current status of the job.
-        
+
         This is a list with two elements describing the status: 
         the code, then the textual description.
         """
@@ -504,7 +507,7 @@ class XRTProductRequest:
         ------
         ValueError
             If invalid parameter or value is specified.
-        
+
         TypeError
             If a value passed is the wrong type for the parameter.
 
@@ -562,7 +565,7 @@ class XRTProductRequest:
     # Get a global parameter
     def getGlobalPars(self, globPar="all", omitShared=True, showUnset=False):
         """Return the current value of the requested global parameter.
-        
+
         Raises a ValueError if an invalid parameter is requested.
 
         Parameters
@@ -590,7 +593,7 @@ class XRTProductRequest:
             value (or None). 
             If all parameters were specified, returns a dict of all
             parameters.
-        
+
         Raises
         ------
         ValueError
@@ -640,7 +643,7 @@ class XRTProductRequest:
         * status : bool - Whether or not the request is valid.
         * expln : str - A string explaning why the request is invalid 
           (if it is)
-        
+
 
         Parameters
         ----------
@@ -653,7 +656,7 @@ class XRTProductRequest:
         -------
         tuple
             A 2-element tuple described above.
-        
+
         Raises
         ------
         ValueError
@@ -678,7 +681,7 @@ class XRTProductRequest:
             # Sometimes a global is not needed. e.g. if sourceDet is
             # the only product, we don't need coords.
             skipPars = []
-            
+
             if len(what) == 1 and what[0] in skipGlobals:
                 skipPars = skipGlobals[what[0]]
 
@@ -744,7 +747,7 @@ class XRTProductRequest:
 
         * status : bool - Whether the parameter is found or not
         * report : string - Text to report the absence
-        
+
 
         Parameters
         ----------
@@ -755,7 +758,7 @@ class XRTProductRequest:
         -------
         tuple
             A 2-element tuple described above.
-        
+
         """
         status = True
         report = ""
@@ -882,7 +885,7 @@ class XRTProductRequest:
         -------
         ProductRequest
             The instance of the product requested.
-        
+
         Raises
         ------
         RuntimeError
@@ -1106,12 +1109,12 @@ class XRTProductRequest:
     ###################################################################
     ###### START PRODUCT SPECIFICATIONS ##############################
     ###################################################################
-    
 
     ##### LIGHT CURVE #####
 
     # First property getter and setter so that the LC can be accessed as this.LightCurve
     # Getter
+
     @property
     def LightCurve(self):
         """LightCurve request."""
@@ -1130,7 +1133,7 @@ class XRTProductRequest:
 
     def addLightCurve(self, clobber=False, **lcArgs):
         """Add a light curve to the current request.
-        
+
         A wrapper to `addProduct("lc", clobber, **lcArgs)`.
 
         """
@@ -1138,15 +1141,15 @@ class XRTProductRequest:
 
     def removeLightCurve(self):
         """Remove a light curve from te current request.
-        
+
         A wrapper to `removeProduct("lc")`.
-        
+
         """
         self.removeProduct("lc")
 
     def setLightCurvePars(self, **lcPars):
         """Set the light curve parameters.
-        
+
         A wrapper to `setProductPars("lc", **lcPars)`.
 
         """
@@ -1156,13 +1159,13 @@ class XRTProductRequest:
         """Get a light curve parameter.
 
         A wrapper to `getProductPar('lc', parName, showUnset)`.
-        
+
         """
         return self.getProductPars("lc", parName, showUnset)
 
     def removeLightCurvePar(self, parName):
         """Remove a light curve parameter.
-        
+
         A wrapper to `removeProductPar("lc", parName)`.
 
         """
@@ -1170,7 +1173,7 @@ class XRTProductRequest:
 
     ##### SPECTRUM #####
 
-    # First property getter and setter so that the spectrum can be 
+    # First property getter and setter so that the spectrum can be
     # accessed as this.Spectrum
     # Getter
     @property
@@ -1191,7 +1194,7 @@ class XRTProductRequest:
 
     def addSpectrum(self, clobber=False, **specArgs):
         """Add a spectrum to the current request.
-        
+
         A wrapper to `addProduct("spec", clobber, **specArgs)`.
 
         """
@@ -1199,7 +1202,7 @@ class XRTProductRequest:
 
     def removeSpectrum(self):
         """Remove the spectrum from the current request.
-        
+
         A wrapper to `removeProduct("spec")`.
 
         """
@@ -1207,7 +1210,7 @@ class XRTProductRequest:
 
     def setSpectrumPars(self, **specPars):
         """Set the spectrum parameters.
-        
+
         A wrapper to `setProductPars("spec", **specPars)`.
 
         """
@@ -1215,15 +1218,15 @@ class XRTProductRequest:
 
     def getSpectrumPars(self, parName="all", showUnset=False):
         """Get a spectrum parameter.
-        
+
         A wrapper to `getProductPar('spec', parName, showUnset)`.
-        
+
         """
         return self.getProductPars("spec", parName, showUnset)
 
     def removeSpectrumPar(self, parName):
         """Remove a spectrum parameter.
-        
+
         A wrapper to `removeProductPar("spec", parName)`.
 
         """
@@ -1251,7 +1254,7 @@ class XRTProductRequest:
 
     def addStandardPos(self, clobber=False, **psfArgs):
         """Add a standard position to the current request.
-        
+
         A wrapper to `addProduct("psf", clobber, **psfArgs)`.
 
         """
@@ -1259,7 +1262,7 @@ class XRTProductRequest:
 
     def removeStandardPos(self):
         """Remove the standard position from the current request.
-        
+
         A wrapper to `removeProduct("psf")`.
 
         """
@@ -1267,7 +1270,7 @@ class XRTProductRequest:
 
     def setStandardPosPars(self, **psfPars):
         """Set the standard position parameters.
-        
+
         A wrapper to `setProductPars("psf", **psfPars)`.
 
         """
@@ -1283,7 +1286,7 @@ class XRTProductRequest:
 
     def removeStandardPosPar(self, parName):
         """Remove a standard position parameter.
-        
+
         A wrapper to `removeProductPar("psf", parName)`.
 
         """
@@ -1311,7 +1314,7 @@ class XRTProductRequest:
 
     def addEnhancedPos(self, clobber=False, **enhArgs):
         """Add a enhanced position to the current request.
-        
+
         A wrapper to `addProduct("enh", clobber, **enhArgs)`.
 
         """
@@ -1319,7 +1322,7 @@ class XRTProductRequest:
 
     def removeEnhancedPos(self):
         """Remove the enhanced position from the current request.
-        
+
         A wrapper to `removeProduct("enh")`.
 
         """
@@ -1327,7 +1330,7 @@ class XRTProductRequest:
 
     def setEnhancedPosPars(self, **enhPars):
         """Set the enhanced position parameters.
-        
+
         A wrapper to `setProductPars("enh", **enhPars)`.
 
         """
@@ -1337,13 +1340,13 @@ class XRTProductRequest:
         """Get an enhanced position parameter.
 
         A wWrapper to `getProductPar('enh', parName, showUnset)`.
-        
+
         """
         return self.getProductPars("enh", parName, showUnset)
 
     def removeEnhancedPosPar(self, parName):
         """Remove an enhanced position parameter.
-        
+
         A wrapper to `removeProductPar("enh", parName)`.
 
         """
@@ -1371,7 +1374,7 @@ class XRTProductRequest:
 
     def addAstromPos(self, clobber=False, **xastromArgs):
         """Add an astrometric position to the current request.
-        
+
         A wrapper to `addProduct("xastrom", clobber, **xastromArgs)`.
 
         """
@@ -1379,7 +1382,7 @@ class XRTProductRequest:
 
     def removeAstromPos(self):
         """Remove the astrometric position from the current request.
-        
+
         A wrapper to `removeProduct("xastrom")`.
 
         """
@@ -1387,7 +1390,7 @@ class XRTProductRequest:
 
     def setAstromPosPars(self, **xastromPars):
         """Set the astrometric position parameters.
-        
+
         A wrapper to `setProductPars("xastrom", **xastromPars)`.
 
         """
@@ -1397,13 +1400,13 @@ class XRTProductRequest:
         """Get an astrometric position parameter.
 
         A wrapper to `getProductPar('xastrom', parName, showUnset)`.
-        
+
         """
         return self.getProductPars("xastrom", parName, showUnset)
 
     def removeAstromPosPar(self, parName):
         """Remove an astrometric position parameter.
-        
+
         A wrapper to `removeProductPar("xastrom", parName)`.
 
         """
@@ -1431,7 +1434,7 @@ class XRTProductRequest:
 
     def addImage(self, clobber=False, **imageArgs):
         """Add an image to the current request.
-        
+
         A wrapper to `addProduct("image", clobber, **imageArgs)`.
 
         """
@@ -1439,7 +1442,7 @@ class XRTProductRequest:
 
     def removeImage(self):
         """Remove the image from the current request.
-        
+
         A wrapper to `removeProduct("image")`.
 
         """
@@ -1447,7 +1450,7 @@ class XRTProductRequest:
 
     def setImagePars(self, **imagePars):
         """Set the image parameters.
-        
+
         A wrapper to `setProductPars("image", **imagePars)`.
 
         """
@@ -1457,13 +1460,13 @@ class XRTProductRequest:
         """Get an image parameter.
 
         A wrapper to `getProductPar('image', parName, showUnset)`.
-        
+
         """
         return self.getProductPars("image", parName, showUnset)
 
     def removeImagePar(self, parName):
         """Remove an image parameter.
-        
+
         A wrapper to `removeProductPar("image", parName)`.
 
         """
@@ -1528,11 +1531,11 @@ class XRTProductRequest:
 
         """
         self.removeProductPar("sourceDet", parName)
-    
+
     ###################################################################
     ###### END OF PRODUCT SPECIFICATIONS ##############################
     ###################################################################
-    
+
     # Check how many active jobs this user has
     def countActiveJobs(self):
         """Count how many jobs the user has actively in the queue.
@@ -1583,10 +1586,10 @@ class XRTProductRequest:
 
     def getJSONDict(self):
         """Get the data to upload.
-        
+
         This returns the dictionary of values to upload to the server,
         built from the current request configuration.
-        
+
         This does *not* submit the request.
 
         Parameters
@@ -1684,7 +1687,6 @@ class XRTProductRequest:
         """
         if self._submitted:
             raise RuntimeError("Cannot submit a request that has already been submitted.")
-        
 
         # Clear retData, in case we had a previous submit attempt
         self._retData = dict()
@@ -1744,7 +1746,7 @@ class XRTProductRequest:
         self._retData["URL"] = returnedData["URL"]
         self._retData["jobPars"] = returnedData["jobPars"]
         if not self.silent:
-            print (f"Job submitted OK, with ID: {self._jobID}")
+            print(f"Job submitted OK, with ID: {self._jobID}")
 
         if updateProds:
             try:
@@ -1850,7 +1852,7 @@ class XRTProductRequest:
         This function can only be called one the request has been 
         submitted successfully. It asks the UKSSDC servers to cancel
         one more more of the requested products.
-        
+
         The return value is a tuple of (status,cancelStatus), defined
         thus:
 
@@ -1860,7 +1862,7 @@ class XRTProductRequest:
         :  1 = success
         :  2 = partial success, not all jobs were cancelled.
         cancelStatus: dict.
-        
+
         The nature of the cancelStatus dictionary depends on the success
         status. If the job was unsuccessful (code <=0) then this contains a
         single entry: ERROR, describing the problem.
@@ -1916,7 +1918,7 @@ class XRTProductRequest:
             )
 
         returnedData = json.loads(submitted.text)
-        
+
         checkAPI(returnedData)
 
         if returnedData["OK"] == 0:
@@ -1956,7 +1958,7 @@ class XRTProductRequest:
         # with the long keys, not the short ones.
 
     # For getting the status I'm going to have a few functions.
-    # The main one is updateJobStatus() - deliberately "job" because this 
+    # The main one is updateJobStatus() - deliberately "job" because this
     # has now been submitted so it's a job, not a request
 
     def checkProductStatus(self, what="all"):
@@ -1997,7 +1999,7 @@ class XRTProductRequest:
         dict
             Described above - or with the entry "ERROR" if an error
             occurred.
-        
+
         Raises
         ------
         RuntimeError
@@ -2237,7 +2239,7 @@ class XRTProductRequest:
         : Whether a position was retrieved.
 
         If GotPos is True then the following keys are present:
-        
+
         RA : float
         : The RA (J2000) in decimal degrees.
 
@@ -2269,21 +2271,21 @@ class XRTProductRequest:
         dict
             A dictionary with the position and information as described
             above.
-        
+
         Raises
         ------
         RuntimeError
             If the job has not been submitted, or didn't contain a 
             standard position.
-        
+
         """
         if not self.submitted:
             raise RuntimeError("Can't query this request as it hasn't been submitted!")
         if not self.hasProd('psf'):
             raise RuntimeError("Can't retrieve the standard position as none was requested.")
-        
-        status = self.checkProductStatus( ('psf',) )
-        
+
+        status = self.checkProductStatus(('psf',))
+
         jsonDict = {
             "api_name": XRTProductRequest._apiName,
             "api_version": XRTProductRequest._apiVer,
@@ -2305,19 +2307,18 @@ class XRTProductRequest:
                     "ERROR": "The server return does not confirm to the expected JSON structure; do you need do update this module?"
                 }
             return {"GotPos": False, "Reason": returnedData["ERROR"]}
-        
+
         # Remove the keys we don't need
         returnedData.pop('APIVersion', None)
         returnedData.pop('OK', None)
-        returnedData["GotPos"] = bool (returnedData["GotPos"])
-        if returnedData["GotPos"]: # Position found
-            returnedData["FromSXPS"] = bool (returnedData["FromSXPS"])
+        returnedData["GotPos"] = bool(returnedData["GotPos"])
+        if returnedData["GotPos"]:  # Position found
+            returnedData["FromSXPS"] = bool(returnedData["FromSXPS"])
         else:
             returnedData["Reason"] = "No position could be determined."
-        
-        
+
         return returnedData
-    
+
     def retrieveEnhancedPos(self):
         """Get the enhanced position.
 
@@ -2329,7 +2330,7 @@ class XRTProductRequest:
         : Whether a position was retrieved.
 
         If GotPos is True then the following keys are present:
-        
+
         RA : float
         : The RA (J2000) in decimal degrees.
 
@@ -2361,19 +2362,19 @@ class XRTProductRequest:
         dict
             A dictionary with the position and information as described
             above.
-        
+
         Raises
         ------
         RuntimeError
             If the job has not been submitted, or didn't contain a 
             enhanced position.
-        
+
         """
         if not self.submitted:
             raise RuntimeError("Can't query this request as it hasn't been submitted!")
         if not self.hasProd('enh'):
             raise RuntimeError("Can't retrieve the enhanced position as none was requested.")
-                
+
         jsonDict = {
             "api_name": XRTProductRequest._apiName,
             "api_version": XRTProductRequest._apiVer,
@@ -2395,14 +2396,14 @@ class XRTProductRequest:
                     "ERROR": "The server return does not confirm to the expected JSON structure; do you need do update this module?"
                 }
             return {"GotPos": False, "Reason": returnedData["ERROR"]}
-        
+
         # Remove the keys we don't need
         returnedData.pop('APIVersion', None)
         returnedData.pop('OK', None)
-        returnedData["GotPos"] = bool (returnedData["GotPos"])
-        if not returnedData["GotPos"]: # No position found
+        returnedData["GotPos"] = bool(returnedData["GotPos"])
+        if not returnedData["GotPos"]:  # No position found
             returnedData["Reason"] = "No position could be determined."
-        
+
         return returnedData
 
     def retrieveAstromPos(self):
@@ -2416,7 +2417,7 @@ class XRTProductRequest:
         : Whether a position was retrieved.
 
         If GotPos is True then the following keys are present:
-        
+
         RA : float
         : The RA (J2000) in decimal degrees.
 
@@ -2440,20 +2441,19 @@ class XRTProductRequest:
         dict
             A dictionary with the position and information as described
             above.
-        
+
         Raises
         ------
         RuntimeError
             If the job has not been submitted, or didn't contain a 
             enhanced position.
-        
+
         """
         if not self.submitted:
             raise RuntimeError("Can't query this request as it hasn't been submitted!")
         if not self.hasProd('xastrom'):
             raise RuntimeError("Can't retrieve the enhanced position as none was requested.")
-        
-        
+
         jsonDict = {
             "api_name": XRTProductRequest._apiName,
             "api_version": XRTProductRequest._apiVer,
@@ -2475,16 +2475,16 @@ class XRTProductRequest:
                     "ERROR": "The server return does not confirm to the expected JSON structure; do you need do update this module?"
                 }
             return {"GotPos": False, "Reason": returnedData["ERROR"]}
-        
+
         # Remove the keys we don't need
         returnedData.pop('APIVersion', None)
         returnedData.pop('OK', None)
-        returnedData["GotPos"] = bool (returnedData["GotPos"])
-        if returnedData["GotPos"]: # Position found
-            returnedData["FromSXPS"] = bool (returnedData["FromSXPS"])
+        returnedData["GotPos"] = bool(returnedData["GotPos"])
+        if returnedData["GotPos"]:  # Position found
+            returnedData["FromSXPS"] = bool(returnedData["FromSXPS"])
         else:
             returnedData["Reason"] = "No position could be determined."
-        
+
         return returnedData
 
     def retrieveSourceList(self):
@@ -2515,21 +2515,21 @@ class XRTProductRequest:
         ------
         dict
             A dictionary with the source information.
-        
+
         Raises
         ------
         RuntimeError
             If the job has not been submitted, or didn't contain a 
             standard position.
-        
+
         """
         if not self.submitted:
             raise RuntimeError("Can't query this request as it hasn't been submitted!")
         if not self.hasProd('sourceDet'):
             raise RuntimeError("Can't retrieve the standard position as none was requested.")
-        
-        status = self.checkProductStatus( ('sourceDet',) )
-        
+
+        status = self.checkProductStatus(('sourceDet',))
+
         jsonDict = {
             "api_name": XRTProductRequest._apiName,
             "api_version": XRTProductRequest._apiVer,
@@ -2551,24 +2551,23 @@ class XRTProductRequest:
                     "ERROR": "The server return does not confirm to the expected JSON structure; do you need do update this module?"
                 }
             return {"ERROR": True, "Reason": returnedData["ERROR"]}
-        
+
         # Remove the keys we don't need
         returnedData.pop('APIVersion', None)
         returnedData.pop('OK', None)
 
         # Now convert everything I can into numbers:
         for band in returnedData:
-            for src in range (len(returnedData[band])):
+            for src in range(len(returnedData[band])):
                 for par in returnedData[band][src]:
-                    v=returnedData[band][src][par]
+                    v = returnedData[band][src][par]
                     if re.search("\d", v):
-                        if re.search ("\.", v):
-                            returnedData[band][src][par]=float(returnedData[band][src][par])
+                        if re.search("\.", v):
+                            returnedData[band][src][par] = float(returnedData[band][src][par])
                         else:
-                            returnedData[band][src][par]=int(returnedData[band][src][par])
-        
-        return returnedData
+                            returnedData[band][src][par] = int(returnedData[band][src][par])
 
+        return returnedData
 
     ########### END OF  FOR GETTING THE PRODUCTS ################
 
@@ -2578,18 +2577,18 @@ class XRTProductRequest:
 
     def hasProd(self, what):
         """Return whether the request contains given product.
-        
+
         Parameters
         ----------
         what : str
             The product to check.
-        
+
         Returns
         -------
         bool
             Whether or not the product in question has been added to the
             request.
-        
+
         Raises
         ------
         ValueError
@@ -2648,7 +2647,7 @@ class XRTProductRequest:
                         val = myType(val)
                     except Exception as e:
                         val = None
-                        print (f"Cannot convert parameter {par}={val} to a {myType}, set it to None")
+                        print(f"Cannot convert parameter {par}={val} to a {myType}, set it to None")
 
                 # If it's a parameter with a specific list of possible values, check the value is OK
                 if (par in XRTProductRequest._globalSpecificParValues) and (
@@ -2761,7 +2760,7 @@ class XRTProductRequest:
 
         oldJob : int
             The ID of the job you want to duplocate.
-        
+
         becomeThis : bool (optional)
             Whether this XRTProductRequest should 'become' the old
             request. This will mean that you cannot submit the job, but
@@ -2798,17 +2797,15 @@ class XRTProductRequest:
 
         if "jobPars" not in returnedData:
             raise RuntimeError("No data returned by the server!")
-        
+
         if "URL" not in returnedData:
             raise RuntimeError("Invalid data returned by the server!")
 
         self.setFromJSON(returnedData["jobPars"], True)
 
-
         if becomeThis:
             self._jobID = oldJobID
             self._retData["URL"] = returnedData["URL"]
             self._submitted = True
-            self._status=1
+            self._status = 1
             self.checkProductStatus()
-
