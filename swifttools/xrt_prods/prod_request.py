@@ -344,6 +344,7 @@ class XRTProductRequest:
         self._retData = dict()
         self._complete = False
         self._lcData = None
+        self._specData = None
         self._silent = silent
 
         # Also create a look up from the par names returned in the JSON
@@ -483,8 +484,16 @@ class XRTProductRequest:
     # lcData
     @property
     def lcData(self):
-        """Dict containing the LC, if retreieved."""
+        """Dict containing the light curve, if retreieved."""
         return self._lcData
+    
+    # specData
+    @property
+    def specData(self):
+        """Dict containing the spectra, if retreieved."""
+        return self._specData
+    
+    
     #####
     # Pre-submission functions
 
@@ -2581,10 +2590,7 @@ class XRTProductRequest:
 
         This function queries the server for the light curve, and 
         returns a dictionary of Pandas DataFrames.
-        If successful, the dict will have the key: GotLC. If there were
-        data, this is True, else False.
-
-        If true, then there will be any or all of the keys:
+        If successful, then there will be any or all of the keys:
         WT, WTUL, PC, PCUL - corresponding to WT/PC detected light curve
         bins, or upper limits. A missing key means there were no data
         of that type, e.g. if there is no "PCUL" key then the light
@@ -2619,7 +2625,7 @@ class XRTProductRequest:
         if not self.submitted:
             raise RuntimeError("Can't query this request as it hasn't been submitted!")
         if not self.hasProd('lc'):
-            raise RuntimeError("Can't retrieve the enhanced position as none was requested.")
+            raise RuntimeError("Can't retrieve the light curve as none was requested.")
 
         jsonDict = {
             "api_name": XRTProductRequest._apiName,
@@ -2630,7 +2636,7 @@ class XRTProductRequest:
 
         submitted = requests.post("https://www.swift.ac.uk/user_objects/tprods/getLCData.php", json=jsonDict)
         if submitted.status_code != 200:
-            return {"GotLC": False, "Reason": f"An HTTP error occured - HTTP return code {submitted.status_code}: {submitted.reason}"}
+            return {"ERROR": True, "Reason": f"An HTTP error occured - HTTP return code {submitted.status_code}: {submitted.reason}"}
 
         returnedData = json.loads(submitted.text)
 
@@ -2639,7 +2645,7 @@ class XRTProductRequest:
         if returnedData["OK"] == 0:
             if "ERROR" not in returnedData:
                 return {
-                    "ERROR": "The server return does not confirm to the expected JSON structure; do you need do update this module?"
+                    "ERROR": True, "Reason": "The server return does not confirm to the expected JSON structure; do you need do update this module?"
                 }
             return {"ERROR": True, "Reason": returnedData["ERROR"]}
 
@@ -2664,6 +2670,107 @@ class XRTProductRequest:
 
         self._lcData = ret
         return self._lcData
+
+    def retrieveSpectrum(self):
+        """Get the spectral fit results.
+
+        This function queries the server for the spectrum and if there
+        is one and it's complete, then it will return the automated
+        power-law fit values for each spectrum requested. These will
+        be stored in a dictionary, with one entry per spectrum (given 
+        the interval names requested). Each such entry has keys:
+
+        * T0: The reference T0 time for the spectra
+        * GalNH: The Galactic NH (from Willingale et al., 2013) along the
+            line of sight. This is NOT included in the fit
+        
+        Then there is an entry for each spectrum you created. The key is
+        the spectrum name, and the entry is a dict with the following
+        keys:
+
+        * start: Time in sec after T0 of the first data in this spectrum
+        * stop: Time in sec after T0 of the last data in this spectrum
+        * HaveWT: Whether there is a valid WT-mode fit
+        * WT: a dict of the WT mode fit (if HaveWT=True)
+        * HavePC: Whether there is a valid PC-mode fit
+        * PC: a dict of the WT mode fit (if HavePC=True)
+
+        The WT/PC dicts contain:
+
+        * meantime: Mean photon arrival time (in sec since T0) in this 
+                    spectrum
+        * nh: Best-fitting column density in cm^-2
+        * nhpos: 90% CL positive error on NH
+        * nhneg: 90% CL negative error on NH
+        * gamma: Best-fitting photon index
+        * gammapos: 90% CL positive error on gamma
+        * gammaneg: 90% CL negative error on gamma
+        * obsFlux: Best-fitting observed flux in erg cm^-2 s^-1
+        * obsFluxpos: 90% CL positive error on the observed flux
+        * obsFluxneg: 90% CL negative error on the observed flux
+        * unabsFlux: Best-fitting unabsorbed flux in erg cm^-2 s^-1
+        * unabsFluxpos: 90% CL positive error on the unabsorbed flux
+        * unabsFluxneg: 90% CL negative error on the unabsorbed flux
+        * cstat: The C-stat of the best fit (technically Wstat, see the
+                 xspec manual for details)
+        * dof: The degrees of freedom in the fit
+        * fitChi: The Churazov-weighed chi^2 test statistic. This is not
+                  used in the minimisation, just to asses fir quality.
+        * exposure: The exposure time in the spectrum
+
+        On failure, the dict will have a key ERROR, and a key Reason
+        giving the description of the error.
+
+        Parameters
+        ----------
+        None
+
+        Return
+        ------
+        dict
+            A dictionary with the spectral fit information as described
+            above.
+
+        Raises
+        ------
+        RuntimeError
+            If the job has not been submitted, or didn't contain a 
+            spectrum.
+
+        """
+        if not self.submitted:
+            raise RuntimeError("Can't query this request as it hasn't been submitted!")
+        if not self.hasProd('spec'):
+            raise RuntimeError("Can't retrieve the spectrum as none was requested.")
+
+        jsonDict = {
+            "api_name": XRTProductRequest._apiName,
+            "api_version": XRTProductRequest._apiVer,
+            "UserID": self.UserID,
+            "JobID": self.JobID,
+        }
+
+        submitted = requests.post("https://www.swift.ac.uk/user_objects/tprods/getSpecData.php", json=jsonDict)
+        if submitted.status_code != 200:
+            return {"ERROR": True, "Reason": f"An HTTP error occured - HTTP return code {submitted.status_code}: {submitted.reason}"}
+
+        returnedData = json.loads(submitted.text)
+
+        checkAPI(returnedData)
+
+        if returnedData["OK"] == 0:
+            if "ERROR" not in returnedData:
+                return {
+                    "ERROR": "The server return does not confirm to the expected JSON structure; do you need do update this module?"
+                }
+            return {"ERROR": True, "Reason": returnedData["ERROR"]}
+
+        # Remove the keys we don't need
+        returnedData.pop('APIVersion', None)
+        returnedData.pop('OK', None)
+
+        self._specData = returnedData
+        return self._specData
         
     ########### END OF  FOR GETTING THE PRODUCTS ################
 
