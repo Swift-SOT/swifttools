@@ -6,6 +6,7 @@ from .productVars import skipGlobals, globalParTriggers
 import os
 import re
 import warnings
+import pandas as pd
 from distutils.version import StrictVersion
 
 
@@ -2569,6 +2570,93 @@ class XRTProductRequest:
 
         return returnedData
 
+    def retrieveLightCurve(self, nosys=False, incbad=False):
+        """Get the light curve data
+
+        This function queries the server for the light curve, and 
+        returns a dictionary of Pandas DataFrames.
+        If successful, the dict will have the key: GotLC. If there were
+        data, this is True, else False.
+
+        If true, then there will be any or all of the keys:
+        WT, WTUL, PC, PCUL - corresponding to WT/PC detected light curve
+        bins, or upper limits. A missing key means there were no data
+        of that type, e.g. if there is no "PCUL" key then the light
+        curve contains no PC mode upper limits. Where the key exists,
+        the contents is a DataFrame.
+
+        On failure, the dict will contain: ERROR and Reason.
+
+        Parameters
+        ----------
+        nosys : bool
+            Whether to remove the WT systematic error from the bins.
+            Default: False
+
+        incbad : bool
+            Whether to include WT data points marked as bad.
+            Default: False
+
+        Return
+        ------
+        dict
+            A dictionary with the light curve information as described
+            above.
+
+        Raises
+        ------
+        RuntimeError
+            If the job has not been submitted, or didn't contain a 
+            light curve.
+
+        """
+        if not self.submitted:
+            raise RuntimeError("Can't query this request as it hasn't been submitted!")
+        if not self.hasProd('lc'):
+            raise RuntimeError("Can't retrieve the enhanced position as none was requested.")
+
+        jsonDict = {
+            "api_name": XRTProductRequest._apiName,
+            "api_version": XRTProductRequest._apiVer,
+            "UserID": self.UserID,
+            "JobID": self.JobID,
+        }
+
+        submitted = requests.post("https://www.swift.ac.uk/user_objects/tprods/getLCData.php", json=jsonDict)
+        if submitted.status_code != 200:
+            return {"GotLC": False, "Reason": f"An HTTP error occured - HTTP return code {submitted.status_code}: {submitted.reason}"}
+
+        returnedData = json.loads(submitted.text)
+
+        checkAPI(returnedData)
+
+        if returnedData["OK"] == 0:
+            if "ERROR" not in returnedData:
+                return {
+                    "ERROR": "The server return does not confirm to the expected JSON structure; do you need do update this module?"
+                }
+            return {"ERROR": True, "Reason": returnedData["ERROR"]}
+
+        # Remove the keys we don't need
+        returnedData.pop('APIVersion', None)
+        returnedData.pop('OK', None)
+        possKeys = ('WT', 'WTUL', 'PC', 'PCUL')
+        ret = dict()
+
+        for key in possKeys:
+            tmpKey = f"has{key}"
+            if (tmpKey in returnedData) and (returnedData[tmpKey]==1):
+                tmpKey = f"{key}Data"
+                if tmpKey not in returnedData:
+                    return {"ERROR": True, "Reason": f"Can't find {tmpKey} in data, is your module up to date?"}
+                if 'columns' not in returnedData[tmpKey]:
+                    return {"ERROR": True, "Reason": f"Can't find {tmpKey}.columns in data, is your module up to date?"}
+                if 'columns' not in returnedData[tmpKey]:
+                    return {"ERROR": True, "Reason": f"Can't find {tmpKey}.data in data, is your module up to date?"}
+                cols = returnedData[tmpKey]['columns']
+                ret[key] = pd.DataFrame(returnedData[tmpKey]['data'], columns=cols, dtype=float)
+
+        return ret
     ########### END OF  FOR GETTING THE PRODUCTS ################
 
     ########### MISC FUNCTIONS ################
