@@ -7,6 +7,7 @@ import os
 import re
 import warnings
 import pandas as pd
+import numpy as np
 from distutils.version import StrictVersion
 
 
@@ -277,7 +278,7 @@ class XRTProductRequest:
     # Also set the API name and version, this will not be processed (by
     # default) but may be useful for future debugging
     _apiName = "xrt_prods"
-    _apiVer = "1.7"
+    _apiVer = "1.8"
 
     # Now begin the instantiated stuff.  First what to output when this
     # instance is entered in an ipython shell.
@@ -342,7 +343,7 @@ class XRTProductRequest:
         # will be read only
         self._retData = dict()
         self._complete = False
-
+        self._lcData = None
         self._silent = silent
 
         # Also create a look up from the par names returned in the JSON
@@ -479,6 +480,11 @@ class XRTProductRequest:
         else:
             return XRTProductRequest._statuses[self.statusCode]
 
+    # lcData
+    @property
+    def lcData(self):
+        """Dict containing the LC, if retreieved."""
+        return self._lcData
     #####
     # Pre-submission functions
 
@@ -2656,7 +2662,9 @@ class XRTProductRequest:
                 cols = returnedData[tmpKey]['columns']
                 ret[key] = pd.DataFrame(returnedData[tmpKey]['data'], columns=cols, dtype=float)
 
-        return ret
+        self._lcData = ret
+        return self._lcData
+        
     ########### END OF  FOR GETTING THE PRODUCTS ################
 
     ########### MISC FUNCTIONS ################
@@ -2897,3 +2905,91 @@ class XRTProductRequest:
             self._submitted = True
             self._status = 1
             self.checkProductStatus()
+
+    def plotLC(self, xlog=False, ylog=False):
+        """Create a quick-look plot of the light curve, if retreived.
+
+        This will create a very simple plot of the light curve, if one
+        has been created and retrieved. It requires matplotlib.pyplot
+        to be installed.
+
+        Parameters
+        ----------
+
+        xlog : bool (optional)
+            Whether to plot with the x axis logarithmic (default: False)
+        ylog : bool (optional)
+            Whether to plot with the y axis logarithmic (default: False)
+
+        Raises
+        ------
+        RuntimeError
+            If no light curve exists
+        ModuleNotFoundError
+            If matplotlib.pyplot is not installed.
+        
+        """
+        if self._lcData is None:
+            raise RuntimeError("No light curve has been retrieved")
+        import matplotlib.pyplot as plt
+
+        fig, ax = plt.subplots()
+
+        if 'WT' in self._lcData:
+            ax.errorbar(self._lcData['WT']['Time'],
+                        self._lcData['WT']['Rate'],
+                        xerr=[-self._lcData['WT']['T_-ve'], self._lcData['WT']['T_+ve']],
+                        yerr=[-self._lcData['WT']['Rateneg'],self._lcData['WT']['Ratepos']],
+                        fmt=".",elinewidth=1.0,color="blue",label="WT",zorder=5)
+
+        if 'WTUL' in self._lcData:
+            empty = np.zeros(len(self._lcData['WTUL']['Time']))
+            ulSize = np.zeros(len(self._lcData['WTUL']['Time']))+0.002
+            ax.errorbar(self._lcData['WTUL']['Time'],
+                        self._lcData['WTUL']['Rate'],
+                        xerr=[-self._lcData['WTUL']['T_-ve'], self._lcData['WTUL']['T_+ve']],
+                        yerr=[ulSize,empty],
+                        uplims=True,elinewidth=1.0,color="blue",label="WT",zorder=5)
+
+        if 'PC' in self._lcData:
+            ax.errorbar(self._lcData['PC']['Time'],
+                        self._lcData['PC']['Rate'],
+                        xerr=[-self._lcData['PC']['T_-ve'], self._lcData['PC']['T_+ve']],
+                        yerr=[-self._lcData['PC']['Rateneg'],self._lcData['PC']['Ratepos']],
+                        fmt=".",elinewidth=1.0,color="red",label="PC",zorder=5)
+
+        if 'PCUL' in self._lcData:
+            empty = np.zeros(len(self._lcData['PCUL']['Time']))
+            ulSize = np.zeros(len(self._lcData['PCUL']['Time']))+0.002
+            ax.errorbar(self._lcData['PCUL']['Time'],
+                        self._lcData['PCUL']['Rate'],
+                        xerr=[-self._lcData['PCUL']['T_-ve'], self._lcData['PCUL']['T_+ve']],
+                        yerr=[ulSize,empty],
+                        uplims=True,elinewidth=1.0,color="red",label="PC",zorder=5)
+
+        if xlog:
+            ax.set_xscale("log")
+        if ylog:
+            ax.set_yscale("log")
+
+        # See if we can make some nice axis labels
+        tmp = self.getLightCurvePars()
+        tmpG = self.getGlobalPars()
+        xlabel = "Time"
+        if tmp['timeType'] == "m":
+            xlabel = "MJD"
+        elif ('T0' in tmpG) and (tmpG['T0'] is not None):
+            xlabel = f"Time since MET={tmpG['T0']} (s)"
+        else:
+            xlabel = "Time (s)"
+
+        ylabel = "Count rate"
+        if ('minEnergy' in tmp) and ('maxEnergy' in tmp):
+            ylabel = f"Count rate ({tmp['minEnergy']} - {tmp['maxEnergy']})"
+
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+
+
+        plt.show()
+
