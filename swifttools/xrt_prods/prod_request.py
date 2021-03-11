@@ -2671,7 +2671,7 @@ class XRTProductRequest:
         self._lcData = ret
         return self._lcData
 
-    def retrieveSpectrum(self):
+    def retrieveSpectralFits(self):
         """Get the spectral fit results.
 
         This function queries the server for the spectrum and if there
@@ -3013,7 +3013,7 @@ class XRTProductRequest:
             self._status = 1
             self.checkProductStatus()
 
-    def plotLC(self, xlog=False, ylog=False):
+    def plotLC(self, xlog=False, ylog=False, fileName=None):
         """Create a quick-look plot of the light curve, if retreived.
 
         This will create a very simple plot of the light curve, if one
@@ -3027,6 +3027,9 @@ class XRTProductRequest:
             Whether to plot with the x axis logarithmic (default: False)
         ylog : bool (optional)
             Whether to plot with the y axis logarithmic (default: False)
+        fileName : str (optional)
+            If supplied, the light curve will be saved to the specified
+            file
 
         Raises
         ------
@@ -3097,6 +3100,8 @@ class XRTProductRequest:
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
 
-
-        plt.show()
+        if fileName is None:
+            plt.show()
+        else:
+            plt.savefig(fileName)
 

@@ -15,7 +15,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://gitlab.com/DrPhilEvans/swifttools",
     packages=[PKGNAME] + [f'{PKGNAME}.{p}' for p in setuptools.find_packages(where=PKGNAME)],
-    install_requires=['numpy', 'requests', 'python-jose'],
+    install_requires=['numpy', 'requests', 'python-jose', 'pandas'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

@@ -256,6 +256,10 @@ In [2]: myNewReq.copyOldJob(868)
 
 Here, job 868 was retrieved from the server.
 
+There is an optional argument to `copyOldJob`: `becomeThis`. If this is `True` then `myNewReq` will act as if
+it actually is job 868, rather than a duplicate of it. This means that it cannot be submitted, but you can
+download the products for that job (if they still exist). `becomesThis` is `False` by default.
+
 Of course, you may not remember what the jobID of the job you ran 6 months ago was, in which case read on...
 
 ### List old requests
