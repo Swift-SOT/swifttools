@@ -175,7 +175,7 @@ class TOOAPI_Baseclass:
     def complete(self,post=False):
         '''Check if a queued job is completed'''
         if self.submit_jwt(post=post):
-            if self.status == "Queued" or self.status != "Processing":
+            if self.status != "Queued" and self.status != "Processing":
                 return True
         return False
 
