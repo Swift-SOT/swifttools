@@ -175,7 +175,7 @@ class TOOAPI_Baseclass:
     def complete(self,post=False):
         '''Check if a queued job is completed'''
         if self.submit_jwt(post=post):
-            if self.status != "Queued":
+            if self.status == "Queued" or self.status != "Processing":
                 return True
         return False
 
@@ -234,10 +234,8 @@ class TOOAPI_Baseclass:
         
         utime = datetime.now().timestamp()
 
-        # Swift_ObsQuery should have an end date set, because otherwise results are cached and 
-        # can be out of date. If end is set, then we assume it's OK for caching. If end is set as
-        # the future, just set it to now as this can cause confusion with caching.
-        if self.api_name == 'Swift_AFST' and (self.end == None or self.end > datetime.utcnow()):
+        # For Swift_ObsQuery If end is set as the future, just set it to now as this can cause confusion with caching.
+        if self.api_name == 'Swift_AFST' and self.end != None and self.end > datetime.utcnow():
             self.end = datetime.utcnow()
 
         # Keep requesting the submission until it either responds that it's accepted or rejected, some error occurs, or the timeout time is reached.
