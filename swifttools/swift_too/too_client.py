@@ -95,6 +95,9 @@ class Swift_TOO(TOOAPI_Baseclass):
         # Status of request
         self.status = Swift_TOO_Status()
 
+    def __str__(self):
+        return f"Swift TOO Request (RA,Dec) = ({self.ra},{self.dec})"
+
     @property
     def uvot_mode(self):
         '''Return UVOT as a hex string. Stored as a number internally'''
