@@ -41,7 +41,16 @@ includes Earth occultation and periods inside the South Atlantic Anomaly.
 As these are computationally expensive to calculate, we limit high 
 resolution visibliity requests to 20 days in length.
 
-4. QueryJob
+4. Swift_PlanQuery
+
+Similar to Swift_ObsQuery but in this case queries the Swift observing plan,
+otherwise known as the pre-planned science timeline (PPST). This allows the
+user to query what was planned to be observed by Swift, and what will be 
+observed in the future. Please note that due to Swift's quick planning turn 
+around, the amount of information on future plans will be limited to the next
+1-3 days typically.
+
+5. QueryJob
 
 In  addition results of jobs can be fetched using the QueryJob module. 
 This can be used to fetch results of already processed jobs, or query
@@ -73,3 +82,4 @@ from .too_client import Swift_TOO
 from .swift_obsquery import Swift_ObsQuery
 from .swift_visquery import Swift_VisQuery
 from .query_job import QueryJob
+from .swift_planquery import Swift_PlanQuery

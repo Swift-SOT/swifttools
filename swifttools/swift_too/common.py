@@ -1,10 +1,10 @@
 import json
-from datetime import datetime,timedelta
+from datetime import datetime,timedelta,date
 import re
 from jose import jwt
 import requests
 from time import sleep
-from .version import api_version,compatible_api_versions
+from .version import api_version
 
 
 # Convert degrees to radians
@@ -12,6 +12,9 @@ dtor = 0.017453292519943295
 # Lookup table for XRT modes
 xrtmodes = {0: "Auto", 1: "Null", 2: "ShortIM", 3: "LongIM", 4: "PUPD", 5: "LRPD", 6: "WT", 7: "PC", 8: "Raw", 9: "Bias"}
 modesxrt = {"Auto": 0, "Null": 1, "ShortIM": 2, "LongIM": 3, "PUPD":4, "LRPD": 5 , "WT": 6, "PC": 7, "Raw": 8, "Bias": 9}
+
+# Submission URL
+API_URL = "https://www.swift.psu.edu/toop/submit_json.php"
 
 class TOOAPI_Baseclass:
     '''Mixin for TOO API Classes. Most of these are to do with reading and writing classes out as JSON/dicts.'''
@@ -25,7 +28,7 @@ class TOOAPI_Baseclass:
         self.subclasses = list()
         # Ignore any keys you don't understand
         self.ignorekeys = False
-        self.compatible_api_versions = compatible_api_versions
+
 
         # Regex for matching date, time and datetime strings
         self.date_regex = r"^[0-2]\d{3}-(0?[1-9]|1[012])-([0][1-9]|[1-2][0-9]|3[0-1])+(\.\d+)?$"
@@ -58,7 +61,7 @@ class TOOAPI_Baseclass:
                 elif type(value) == list:
                     conv = lambda x: x if type(x) == str else x.json_dict
                     data[param] = [conv(entry) for entry in value]   
-                elif type(value) == datetime:
+                elif type(value) == datetime or type(value) == date:
                     data[param] = f"{value}"
                 else:
                     data[param] = value
@@ -162,8 +165,6 @@ class TOOAPI_Baseclass:
     @property
     def submit_url(self):
         '''Generate a URL that submits the TOO API request'''
-        API_URL = "https://www.swift.psu.edu/toop/submit_json.php"
-        
         url = f"{API_URL}?jwt={self.jwt}"
         return url
 
@@ -268,5 +269,4 @@ class TOOAPI_Baseclass:
 
     def submit_post(self):
         '''Submit the request through the web based API, as a JWT through POST'''
-        API_URL = "https://www.swift.psu.edu/toop/submit_json.php"
         return requests.post(url = API_URL, verify=True, data = {'jwt': self.jwt})

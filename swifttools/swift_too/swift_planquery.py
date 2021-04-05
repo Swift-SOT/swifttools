@@ -1,20 +1,21 @@
 from .common import TOOAPI_Baseclass,xrtmodes
 from .too_status import Swift_TOO_Status
+from .swift_obsquery import Swift_Observation
 from datetime import timedelta
 
 xrtmodes = {0: "Auto", 1: "Null", 2: "ShortIM", 3: "LongIM", 4: "PUPD", 5: "LRPD", 6: "WT", 7: "PC", 8: "Raw", 9: "Bias"}
 modesxrt = {"Auto": 0, "Null": 1, "ShortIM": 2, "LongIM": 3, "PUPD":4, "LRPD": 5 , "WT": 6, "PC": 7, "Raw": 8, "Bias": 9}
 
 
-class Swift_AFST_Entry(TOOAPI_Baseclass):
-    '''Class that defines an individual entry in the Swift As-Flown Timeline'''
+class Swift_PPST_Entry(TOOAPI_Baseclass):
+    '''Class that defines an individual entry in the Swift Pre-Planned Science Timeline'''
     def __init__(self):
         TOOAPI_Baseclass.__init__(self)
-        self.api_name = "Swift_AFST_Entry"
+        self.api_name = "Swift_PPST_Entry"
         # Entries
-        self.rows = ['begin','settle','end','ra','dec','roll','targname','targetid','seg','ra_point','dec_point','xrt','uvot','bat','fom','obstype']
+        self.rows = ['begin', 'end', 'targname', 'ra', 'dec', 'roll', 'targetid', 'seg', 'bat', 'xrt', 'uvot', 'fom']
         self.begin = None
-        self.settle = None
+        #self.settle = None
         self.end = None
         self.ra = None
         self.dec = None
@@ -24,15 +25,13 @@ class Swift_AFST_Entry(TOOAPI_Baseclass):
         self.targname = None
         self.targetid = None
         self.seg = None
+        self.slewtime = timedelta(0) # Slewtime isn't reported in plans
         self.status = Swift_TOO_Status()
         self.subclasses = [Swift_TOO_Status]
         # Instrument config
         self._xrt = None
         self._uvot = None
-        self.bat = None
-        self.fom = None
-        self.obstype = None
-        # Swift_AFST returns a bunch of stuff we don't care about, so just take the things we do
+        # Swift_PPST returns a bunch of stuff we don't care about, so just take the things we do
         self.ignorekeys = True
 
     # Instrument modes
@@ -76,6 +75,7 @@ class Swift_AFST_Entry(TOOAPI_Baseclass):
             self.seg = obsnum >> 24
         # Is it SDC format?
         elif type(obsnum) == str:
+            print("obsnum:",obsnum)
             self.targetid = int(obsnum[0:8])
             self.seg = int(obsnum[8:11])
         else:
@@ -83,97 +83,20 @@ class Swift_AFST_Entry(TOOAPI_Baseclass):
 
     @property
     def exposure(self):
-        return self.end - self.settle
-
-    @property
-    def slewtime(self):
-        return self.settle - self.begin
-    
-    def __str__(self):
-        return f"{self.begin} - {self.end} Target: {self.targname:15s} ({self.obsnum}) Exp: {self.exposure.seconds:>5}s Slewtime: {self.slewtime.seconds:>5}s"
-
-
-class Swift_Observation(TOOAPI_Baseclass):
-    '''Class to package up and summarize all observations for a given observation ID (obsnum)'''
-    def __init__(self):
-        TOOAPI_Baseclass.__init__(self)
-        self.api_name = "Swift_Observation"
-        # All the Swift_AFST_Entries for this observation
-        self.entries = list()
-        self.rows = ['begin','end','targname','targetid','seg','ra_point','dec_point','xrt','uvot','entries']
-
-    def __getitem__(self,index):
-        return self.entries[index]
-
-    def __len__(self):
-        return len(self.entries)        
-
-    def append(self,value):
-        self.entries.append(value)
-
-    def extend(self,value):
-        self.entries.extend(value)
-
-    @property
-    def targetid(self):
-        return self.entries[0].targetid
-
-    @property
-    def seg(self):
-        return self.entries[0].seg 
-
-    @property
-    def obsnum(self):
-        return self.entries[0].obsnum
-    
-    @property
-    def targname(self):
-        return self.entries[0].targname
-
-    @property 
-    def ra_point(self):
-        return self.entries[0].ra_point
-
-    @property 
-    def dec_point(self):
-        return self.entries[0].dec_point
-
-    @property
-    def exposure(self):
-        return timedelta(seconds=sum([e.exposure.seconds for e in self.entries]))
-
-    @property
-    def slewtime(self):
-        return timedelta(seconds=sum([e.slewtime.seconds for e in self.entries]))
-
-    @property
-    def begin(self):
-        return min([q.begin for q in self.entries])
-
-    @property
-    def end(self):
-        return max([q.end for q in self.entries]) 
-
-    @property
-    def xrt(self):
-        return self.entries[0].xrt
-
-    @property
-    def uvot(self):
-        return self.entries[0].uvot
+        return self.end - self.begin
 
     def __str__(self):
-        return f"{self.begin} - {self.end} Target: {self.targname:15s} ({self.obsnum}) Exp: {self.exposure.seconds:>5}s Slewtime: {self.slewtime.seconds:>5}s"
+        return f"{self.begin} - {self.end} Target: {self.targname:15s} ({self.obsnum}) Exp: {self.exposure.seconds:>5}s"
 
 
-class Swift_AFST(TOOAPI_Baseclass):
-    '''Class to fetch Swift As-Flown Science Timeline (AFST) for given constraints. Essentially this will
-    return what Swift observed and when, for given constraints. Constraints can be for give coordinate
+class Swift_PPST(TOOAPI_Baseclass):
+    '''Class to fetch Swift Pre-Planned Science Timeline (PPST) for given constraints. Essentially this will
+    return what Swift was planned to observe and when, for given constraints. Constraints can be for give coordinate
     (SkyCoord or J2000 RA/Dec) and radius (in degrees), a given date range, or a given target ID (targetid) 
     or Observation ID (obsnum).'''
     def __init__(self,username=None,shared_secret=None,ra=None,dec=None,begin=None,end=None,targetid=None,obsnum=None,radius=0.1967):
         TOOAPI_Baseclass.__init__(self)
-        self.api_name = "Swift_AFST"
+        self.api_name = "Swift_PPST"
         # Coordinate search
         self._skycoord = None
         self.ra = ra
@@ -188,18 +111,18 @@ class Swift_AFST(TOOAPI_Baseclass):
         # Login
         self.username = username
         self.shared_secret = shared_secret
-        # AFST entries go here
+        # PPST entries go here
         self.entries = list()
         # Status of request
         self.status = Swift_TOO_Status()
-        # AFST maximum date
-        self.afstmax = None
         # Contents of the rows
-        self.rows = ['username','begin','end','ra','dec','radius','targetid','obsnum','afstmax','entries']
+        self.rows = ['username','begin','end','ra','dec','radius','targetid','obsnum','ppstmax','entries']
         self.extrarows = ['status']
         self.trans_name = dict()
         # Acceptable classes that be part of this class
-        self.subclasses = [Swift_AFST_Entry,Swift_TOO_Status]
+        self.subclasses = [Swift_PPST_Entry,Swift_TOO_Status]
+        # Latest PPST
+        self.ppstmax = None
         # Observations
         self._observations = dict()
         if self.username != None:
@@ -276,6 +199,4 @@ class Swift_AFST(TOOAPI_Baseclass):
 
         return True
 
-
-# Alias name for class
-Swift_ObsQuery = Swift_AFST
+Swift_PlanQuery = Swift_PPST

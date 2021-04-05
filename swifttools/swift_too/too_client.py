@@ -81,7 +81,7 @@ class Swift_TOO(TOOAPI_Baseclass):
         self.debug = None
 
         # Paramaters that get submitted as part of the JSON
-        self.parameters = ['username', 'source_name', 'source_type', 'ra', 'dec', 'poserr', 'instrument', 'urgency', 'opt_mag', 'opt_filt', 'xrt_countrate', 'bat_countrate', 'other_brightness', 'grb_detector', 'trigger_date', 'trigger_time', 'immediate_objective', 'science_just', 'exposure', 'exp_time_just', 'exp_time_per_visit', 'num_of_visits', 'monitoring_freq', 'mon_strat', 'proposal', 'proposal_id', 'proposal_trigger_just', 'proposal_pi', 'xrt_mode', 'uvot_mode', 'uvot_just', 'slew_in_place', 'tiling', 'number_of_tiles', 'exposure_time_per_tile', 'tiling_justification', 'obs_n', 'obs_type', 'debug']
+        self.parameters = ['username', 'source_name', 'source_type', 'ra', 'dec', 'poserr', 'instrument', 'urgency', 'opt_mag', 'opt_filt', 'xrt_countrate', 'bat_countrate', 'other_brightness', 'grb_detector', 'trigger_date', 'trigger_time', 'immediate_objective', 'science_just', 'exposure', 'exp_time_just', 'exp_time_per_visit', 'num_of_visits', 'monitoring_freq', 'mon_strat', 'proposal', 'proposal_id', 'proposal_trigger_just', 'proposal_pi', 'xrt_mode', 'uvot_mode', 'uvot_just', 'slew_in_place', 'tiling', 'number_of_tiles', 'exposure_time_per_tile', 'tiling_justification', 'obs_n', 'obs_type','debug','validate_only']
         
         # Internal values to check
         # The three instruments on Swift
@@ -94,6 +94,9 @@ class Swift_TOO(TOOAPI_Baseclass):
 
         # Status of request
         self.status = Swift_TOO_Status()
+
+        # Do a server side validation instead of submit?
+        self.validate_only = False
 
     def __str__(self):
         return f"Swift TOO Request (RA,Dec) = ({self.ra},{self.dec})"
@@ -243,5 +246,20 @@ class Swift_TOO(TOOAPI_Baseclass):
                 if getattr(self,req) == None:
                     print(f"ERROR: Missing key: {req}")
                     return False
-        
+
         return True
+
+    def server_validate(self):
+        # Do a server side validation
+        if len(self.status.errors) == 0:
+            # Preserve existing warnings
+            warnings = self.status.warnings
+            self.validate_only = True
+            self.submit()
+            self.validate_only = False
+            for error in self.status.errors:
+                print(f"ERROR: {error}")
+            for warning in self.status.warnings:
+                print(f"Warning: {warning}")
+            self.status.warnings += warnings
+        
