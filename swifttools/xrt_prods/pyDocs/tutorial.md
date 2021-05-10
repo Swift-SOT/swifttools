@@ -177,7 +177,66 @@ Out[24]:
  'AstromPos': '/some/where/tutorial_files_xastrom.zip'}
 ```
 
-That's it! Job done.
+Since the initial release of this module, a number of people have made comments along the lines of,
+&ldquo;This is really great&hellip;but do I really have to plough through all the contents of the zip files,
+to access the products I want?&rdquo; Which is a fair point, so there are now some extra routines to make this easier (if `XRTProductRequest._apiVer` is less than 1.8, you need to do `pip install --update swifttools` first).
+
+These functions all return Python dictionaries containing the key information related to that product.
+In the case of the light curve, the dictionaries contain `Pandas DataFrame` objects of the light curve data.
+For more information, see [full product-retrieval documentation](RetrieveProducts.md)
+
+For the purposes of this tutorial, let's just grab these products and take a look.
+
+```python
+In [24]: myReq.retrieveStandardPos()
+Out[24]: 
+{'GotPos': True,
+ 'RA': '335.69849',
+ 'Dec': '-7.51788',
+ 'Err90': '3.5',
+ 'FromSXPS': False}
+In [25]: myReq.retrieveEnhancedPos()
+Out[25]:
+{'GotPos': True, 
+ 'RA': '335.70008', 
+ 'Dec': '-7.51816', 
+ 'Err90': '1.7'}
+In [26]: myReq.retrieveSpectralFits()
+Out[26]:
+{'T0': 608713541.952,
+ 'GalNH': 6.537801e+20,
+ 'interval0': {'start': '103.678424119949',
+  'stop': '775.816271662712',
+  'HaveWT': 1,
+  'WT': {'meantime': 122.62272167206,
+   'nh': 3.92514e+20,
+   'nhpos': 8.44307783e+20,
+   'nhneg': -3.92514e+20,
+   ... etc
+```  
+
+I've truncated the spectrum output here because it goes on for a while, but you can see the basic premise. Of course, you will want to capture this in a variable and study it. What about a light curve?
+
+```python
+In [27]: lcData=myReq.retrieveLightCurve()
+In [28]: lcData.keys()
+Out[28]: dict_keys(['WT', 'PC', 'PCUL'])
+In [29]: type(lcData['WT'])
+Out[29]: pandas.core.frame.DataFrame
+In [30]: lcData['WT']
+Out[30]:
+```
+
+OK, I've removed the output as I can't make it look as nice as in my Jupyter notebook. You can explore it yourself. Or you can just:
+
+```python
+In [30]: myReq.plotLC(xlog=True, ylog=True)
+```
+
+![png](lcplot.png)
+
+And that's it. Do [drop me a line](mailto:swifthelp@leicester.ac.uk) if you have problems, or indeed
+with feature requests: although I make no promises about whether and when they will be fulfilled.
 
 ---
 
@@ -192,7 +251,7 @@ from swifttools.xrt_prods import XRTProductRequest
 import sys
 import time
 
-myReq = XRTProductRequest('pae9@leicester.ac.uk')
+myReq = XRTProductRequest('YOUR_EMAIL_ADDRESS')
 myReq.setGlobalPars(getTargs=True, centroid=True, name='GRB 200116A', RA=335.6985, Dec=-7.5179, centMeth='simple', useSXPS=False, T0=608713541.952, posErr=1)
 myReq.addLightCurve(binMeth='counts', pcCounts=20, wtCounts=30, dynamic=True)
 myReq.addSpectrum()

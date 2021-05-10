@@ -144,20 +144,20 @@ At first glance you may think that it's easy to copy a request: `myNewReq = myOl
 Instead there are two ways you can copy the data from one request to another.
 
 * The `XRTProductRequest` constructor can receive a set of parameters, either as a JSON object or a dictionary.
-* Using the `SetFromJSON()` method. **This will completely overwrite any settings the request you call it on.**
+* Using the `setFromJSON()` method. **This will completely overwrite any settings the request you call it on.**
 
 i.e.
 
 ```python
 In [1]: myNewReq = XRTProductRequest('YOUR_EMAIL_ADDRESS', JSONVals=something) # constructor method
-In [2]: myNewReq.SetFromJSON(something) # other method. myNewReq already exists, and 'something' is the JSON object/dict
+In [2]: myNewReq.setFromJSON(something) # other method. myNewReq already exists, and 'something' is the JSON object/dict
 ```
 
 This alone doesn't help, because we need to create the data, represented above as `something`. Fortunately we thought of that too, and we provide method `getJSON()` or `getJSONDict()` which dump out the status of the existing request. So we can recast the above calls:
 
 ```python
 In [3]: myNewReq = XRTProductRequest('YOUR_EMAIL_ADDRESS', JSONVals = myOldReq.getJSONDict() ) # constructor method
-In [4]: myNewReq.SetFromJSON( myOldReq.getJSONDict()) # other method. myNewReq already exists
+In [4]: myNewReq.setFromJSON( myOldReq.getJSONDict()) # other method. myNewReq already exists
 ```
 
 Or, in the case that you want to build your products periodically, after new observations, you may do something like this:
@@ -178,7 +178,7 @@ This is why `updateProds` is `True` by default. But don't despair: if for some r
 
 ```python
 In [7]: myNewReq = XRTProductRequest('YOUR_EMAIL_ADDRESS', JSONVals = myOldReq.subRetData['jobPars'], fromServer=True ) # constructor method
-In [8]: myNewReq.SetFromJSON( myOldReq.subRetData['jobPars'], fromServer=True) # other method. myNewReq already exists
+In [8]: myNewReq.setFromJSON( myOldReq.subRetData['jobPars'], fromServer=True) # other method. myNewReq already exists
 ```
 
 If you want to save the data from your original request to come back to it later, it may be easier to do this as a JSON object:
