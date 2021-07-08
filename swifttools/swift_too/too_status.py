@@ -41,10 +41,6 @@ class Swift_TOO_Status(TOOAPI_Baseclass):
         else:
             return False
 
-    def __str__(self):
-        values = [f"{row}={getattr(self,row)}" for row in self.rows]
-        return f"{[val for val in values if 'None' not in val and '[]' not in val]}"
-
     def error(self,error):
         '''Add an error to the list of errors'''
         if error not in self.errors:

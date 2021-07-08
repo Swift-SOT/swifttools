@@ -75,6 +75,11 @@ submitted to a queue system in which they are processed in a first come,
 first served basis. Typically processing requests takes a 10-20 seconds. 
 Status of requests can be queried, and errors are reported back. 
 
+6. UVOT_mode
+
+UVOT modes are typically hex modes. This class allows the user to look up
+the meaning of a given hex mode, which is typically a table of UVOT filters
+associated with that mode.
 
 '''
 from .version import __version__
@@ -83,3 +88,4 @@ from .swift_obsquery import Swift_ObsQuery
 from .swift_visquery import Swift_VisQuery
 from .query_job import QueryJob
 from .swift_planquery import Swift_PlanQuery
+from .swift_uvot import UVOT_mode

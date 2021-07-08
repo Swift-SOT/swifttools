@@ -1,6 +1,8 @@
 from .common import TOOAPI_Baseclass,xrtmodes
 from .too_status import Swift_TOO_Status
 from datetime import timedelta
+from tabulate import tabulate
+import re
 
 xrtmodes = {0: "Auto", 1: "Null", 2: "ShortIM", 3: "LongIM", 4: "PUPD", 5: "LRPD", 6: "WT", 7: "PC", 8: "Raw", 9: "Bias"}
 modesxrt = {"Auto": 0, "Null": 1, "ShortIM": 2, "LongIM": 3, "PUPD":4, "LRPD": 5 , "WT": 6, "PC": 7, "Raw": 8, "Bias": 9}
@@ -29,9 +31,6 @@ class Swift_AFST_Entry(TOOAPI_Baseclass):
         # Instrument config
         self._xrt = None
         self._uvot = None
-        self.bat = None
-        self.fom = None
-        self.obstype = None
         # Swift_AFST returns a bunch of stuff we don't care about, so just take the things we do
         self.ignorekeys = True
 
@@ -89,9 +88,24 @@ class Swift_AFST_Entry(TOOAPI_Baseclass):
     def slewtime(self):
         return self.settle - self.begin
     
-    def __str__(self):
-        return f"{self.begin} - {self.end} Target: {self.targname:15s} ({self.obsnum}) Exp: {self.exposure.seconds:>5}s Slewtime: {self.slewtime.seconds:>5}s"
+    @property
+    def table(self):
+        return [self.begin,self.end, self.targname, self.obsnum, self.exposure.seconds, self.slewtime.seconds]
 
+    def _repr_html_(self):
+        if self.table == []:
+            return "No data"
+        else:
+            return tabulate([self.table],['Begin','End','Name','Obs Number','Exposure (s)','Slewtime (s)'],tablefmt='html',stralign='right').replace('right','left')
+    
+    def __str__(self):
+        if self.table == []:
+            return "No data"
+        else:
+            return tabulate([self.table],['Begin','End','Name','Obs Number','Exposure (s)','Slewtime (s)'],tablefmt='pretty',stralign='right')
+
+
+    
 
 class Swift_Observation(TOOAPI_Baseclass):
     '''Class to package up and summarize all observations for a given observation ID (obsnum)'''
@@ -99,8 +113,9 @@ class Swift_Observation(TOOAPI_Baseclass):
         TOOAPI_Baseclass.__init__(self)
         self.api_name = "Swift_Observation"
         # All the Swift_AFST_Entries for this observation
-        self.entries = list()
+        self.entries = Swift_AFST()
         self.rows = ['begin','end','targname','targetid','seg','ra_point','dec_point','xrt','uvot','entries']
+        self.extrarows = []
 
     def __getitem__(self,index):
         return self.entries[index]
@@ -162,8 +177,57 @@ class Swift_Observation(TOOAPI_Baseclass):
     def uvot(self):
         return self.entries[0].uvot
 
+    @property
+    def snapshots(self):
+        return self.entries
+
     def __str__(self):
         return f"{self.begin} - {self.end} Target: {self.targname:15s} ({self.obsnum}) Exp: {self.exposure.seconds:>5}s Slewtime: {self.slewtime.seconds:>5}s"
+
+    @property
+    def table(self):
+        return [self.begin,self.end, self.targname, self.obsnum, self.exposure.seconds, self.slewtime.seconds]
+
+    def _repr_html_(self):
+        if self.table == []:
+            return "No data"
+        else:
+            return tabulate([self.table],['Begin','End','Name','Obs Number','Exposure (s)','Slewtime (s)'],tablefmt='html',stralign='right').replace('right','left')
+    
+    def __str__(self):
+        if self.table == []:
+            return "No data"
+        else:
+            return tabulate([self.table],['Begin','End','Name','Obs Number','Exposure (s)','Slewtime (s)'],tablefmt='pretty',stralign='right')
+
+class Swift_Observations:
+    def __init__(self):
+        self.entries = dict()
+
+    def __getitem__(self,index):
+        return self.entries[index]
+
+    def __setitem__(self,key,value):
+        self.entries[key] = value
+
+    def keys(self):
+        return self.entries.keys()
+
+    @property
+    def table(self):
+        return [self.entries[obsid].table for obsid in self.entries.keys()]
+
+    def _repr_html_(self):
+        if self.table == []:
+            return "No data"
+        else:
+            return tabulate(self.table,['Begin','End','Name','Obs Number','Exposure (s)','Slewtime (s)'],tablefmt='html',stralign='right').replace('right','left')
+    
+    def __str__(self):
+        if self.table == []:
+            return "No data"
+        else:
+            return tabulate(self.table,['Begin','End','Name','Obs Number','Exposure (s)','Slewtime (s)'],tablefmt='pretty',stralign='right')
 
 
 class Swift_AFST(TOOAPI_Baseclass):
@@ -184,7 +248,8 @@ class Swift_AFST(TOOAPI_Baseclass):
         self.end = end
         # Search on targetid/obsnum
         self.targetid = targetid
-        self.obsnum = obsnum
+        self._obsnum = None
+        self.obsnum = obsnum        
         # Login
         self.username = username
         self.shared_secret = shared_secret
@@ -201,16 +266,46 @@ class Swift_AFST(TOOAPI_Baseclass):
         # Acceptable classes that be part of this class
         self.subclasses = [Swift_AFST_Entry,Swift_TOO_Status]
         # Observations
-        self._observations = dict()
+        self._observations = Swift_Observations()
         if self.username != None:
             self.submit()
 
-    def __str__(self):
-        values = [f"{row}={getattr(self,row)}" for row in self.rows if row != "entries"]
-        return f"{[val for val in values if 'None' not in val]}"
+    @property
+    def obsnum(self):
+        return self._obsnum
+
+    @obsnum.setter
+    def obsnum(self,obsnum):
+        '''Allow obsnum to be specified in Spacecraft (int) or SDC format (string)'''
+        if type(obsnum) == str:
+            if re.match("^[0-9]{11}?$",obsnum) == None:
+                print("ERROR: Obsnum string format incorrect")
+            else:
+                targetid = int(obsnum[0:8])
+                segment = int(obsnum[8:12])
+                self._obsnum = targetid + (segment<<24)
+        elif type(obsnum) == int:
+            self._obsnum = obsnum
+        elif obsnum == None:
+            self._obsnum = None
+        else:
+            print(f"ERROR: Obsnum format wrong")
     
-    def __repr__(self):
-        return f"<{self.__str__()}>"
+    @property
+    def table(self):
+        return [ppt.table for ppt in self]
+
+    def _repr_html_(self):
+        if self.table == []:
+            return "No data"
+        else:
+            return tabulate(self.table,['Begin','End','Name','Obs Number','Exposure (s)','Slewtime (s)'],tablefmt='html',stralign='right').replace('right','left')
+    
+    def __str__(self):
+        if self.table == []:
+            return "No data"
+        else:
+            return tabulate(self.table,['Begin','End','Name','Obs Number','Exposure (s)','Slewtime (s)'],tablefmt='pretty',stralign='right')
 
 
     @property
@@ -244,10 +339,13 @@ class Swift_AFST(TOOAPI_Baseclass):
     def __len__(self):
         return len(self.entries)
 
+    def append(self,value):
+        self.entries.append(value)
+
     def validate(self):
         # Check username and shared_secret are set
         if not self.username or not self.shared_secret:
-            print("ERROR: username and shared_secret parameters need to be supplied.")
+            print(f"{self.__class__.__name__} ERROR: username and shared_secret parameters need to be supplied.")
             return None
         
         # How many search keys? Require at least one

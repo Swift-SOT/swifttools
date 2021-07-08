@@ -1,7 +1,8 @@
 from .too_status import Swift_TOO_Status
 from .common import TOOAPI_Baseclass
 from datetime import datetime,timedelta
-
+from tabulate import tabulate
+import textwrap
 class Swift_VisWindow(TOOAPI_Baseclass):
     '''Simple class to define a Visibility window. Begin and End of window can either be accessed as self.begin 
     or self.end, or as self[0] or self[1].'''
@@ -14,7 +15,7 @@ class Swift_VisWindow(TOOAPI_Baseclass):
         self.rows = ['begin','end']
         
     def __str__(self):
-        return f"{self.begin} - {self.end}"
+        return f"{self.begin} - {self.end} ({self.end - self.begin})"
 
     def __getitem__(self,index):
         if index == 0:
@@ -55,8 +56,17 @@ class Swift_VisQuery(TOOAPI_Baseclass):
         self.extrarows = ['status']
         # Subclasses
         self.subclasses = [Swift_TOO_Status,Swift_VisWindow]
-        if username != None:
+        if username != None and self.status == "Unknown":
             self.submit()
+
+    # Alias start as begin
+    @property
+    def begin(self):
+        return self.start
+
+    @begin.setter
+    def begin(self,begin):
+        self.start = begin
 
     @property 
     def end(self):
@@ -66,10 +76,15 @@ class Swift_VisQuery(TOOAPI_Baseclass):
     def end(self,enddt):
         self.length = (enddt - self.begin).days
 
+    @property
+    def table(self):
+        return [[win.begin,win.end,win.end-win.begin] for win in self.windows]
 
     def __str__(self):
-        values = [f"{row}={getattr(self,row)}" for row in self.rows if row != "windows"]
-        return f"{[val for val in values if 'None' not in val]}"
+        return tabulate(self.table,['Begin','End','Length'],tablefmt='pretty')
+
+    def _repr_html_(self):
+        return tabulate(self.table,['Begin','End','Length'],tablefmt='html',stralign='right').replace('right','left')
 
     @property 
     def skycoord(self): 
@@ -98,7 +113,7 @@ class Swift_VisQuery(TOOAPI_Baseclass):
     def validate(self):
         # Check username and shared_secret are set
         if not self.username or not self.shared_secret:
-            print("ERROR: username and shared_secret parameters need to be supplied.")
+            print(f"{self.__class__.__name__} ERROR: username and shared_secret parameters need to be supplied.")
             return False
 
         # How many search keys? Require at least one

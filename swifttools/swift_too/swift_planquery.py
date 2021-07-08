@@ -1,7 +1,9 @@
 from .common import TOOAPI_Baseclass,xrtmodes
 from .too_status import Swift_TOO_Status
-from .swift_obsquery import Swift_Observation
+from .swift_obsquery import Swift_Observation,Swift_Observations
 from datetime import timedelta
+from tabulate import tabulate
+import re
 
 xrtmodes = {0: "Auto", 1: "Null", 2: "ShortIM", 3: "LongIM", 4: "PUPD", 5: "LRPD", 6: "WT", 7: "PC", 8: "Raw", 9: "Bias"}
 modesxrt = {"Auto": 0, "Null": 1, "ShortIM": 2, "LongIM": 3, "PUPD":4, "LRPD": 5 , "WT": 6, "PC": 7, "Raw": 8, "Bias": 9}
@@ -14,6 +16,7 @@ class Swift_PPST_Entry(TOOAPI_Baseclass):
         self.api_name = "Swift_PPST_Entry"
         # Entries
         self.rows = ['begin', 'end', 'targname', 'ra', 'dec', 'roll', 'targetid', 'seg', 'bat', 'xrt', 'uvot', 'fom']
+        self.extrarows = []
         self.begin = None
         #self.settle = None
         self.end = None
@@ -85,8 +88,21 @@ class Swift_PPST_Entry(TOOAPI_Baseclass):
     def exposure(self):
         return self.end - self.begin
 
+    @property
+    def table(self):
+        return [self.begin,self.end, self.targname, self.obsnum, self.exposure.seconds]
+
+    def _repr_html_(self):
+        if self.table == []:
+            return "No data"
+        else:
+            return tabulate([self.table],['Begin','End','Name','Obs Number','Exposure (s)'],tablefmt='html',stralign='right').replace('right','left')
+    
     def __str__(self):
-        return f"{self.begin} - {self.end} Target: {self.targname:15s} ({self.obsnum}) Exp: {self.exposure.seconds:>5}s"
+        if self.table == []:
+            return "No data"
+        else:
+            return tabulate([self.table],['Begin','End','Name','Obs Number','Exposure (s)'],tablefmt='pretty',stralign='right')
 
 
 class Swift_PPST(TOOAPI_Baseclass):
@@ -107,6 +123,7 @@ class Swift_PPST(TOOAPI_Baseclass):
         self.end = end
         # Search on targetid/obsnum
         self.targetid = targetid
+        self._obsnum = None
         self.obsnum = obsnum
         # Login
         self.username = username
@@ -124,7 +141,7 @@ class Swift_PPST(TOOAPI_Baseclass):
         # Latest PPST
         self.ppstmax = None
         # Observations
-        self._observations = dict()
+        self._observations = Swift_Observations()
         if self.username != None:
             self.submit()
 
@@ -134,6 +151,43 @@ class Swift_PPST(TOOAPI_Baseclass):
     
     def __repr__(self):
         return f"<{self.__str__()}>"
+
+    @property
+    def obsnum(self):
+        return self._obsnum
+
+    @obsnum.setter
+    def obsnum(self,obsnum):
+        '''Allow obsnum to be specified in Spacecraft (int) or SDC format (string)'''
+        if type(obsnum) == str:
+            if re.match("^[0-9]{11}?$",obsnum) == None:
+                print("ERROR: Obsnum string format incorrect")
+            else:
+                targetid = int(obsnum[0:8])
+                segment = int(obsnum[8:12])
+                self._obsnum = targetid + (segment<<24)
+        elif type(obsnum) == int:
+            self._obsnum = obsnum
+        elif obsnum == None:
+            self._obsnum = None
+        else:
+            print(f"ERROR: Obsnum format wrong")
+    
+    @property
+    def table(self):
+        return [ppt.table for ppt in self]
+
+    def _repr_html_(self):
+        if self.table == []:
+            return "No data"
+        else:
+            return tabulate(self.table,['Begin','End','Name','Obs Number','Exposure (s)'],tablefmt='html',stralign='right').replace('right','left')
+    
+    def __str__(self):
+        if self.table == []:
+            return "No data"
+        else:
+            return tabulate(self.table,['Begin','End','Name','Obs Number','Exposure (s)'],tablefmt='pretty',stralign='right')
 
 
     @property
@@ -170,7 +224,7 @@ class Swift_PPST(TOOAPI_Baseclass):
     def validate(self):
         # Check username and shared_secret are set
         if not self.username or not self.shared_secret:
-            print("ERROR: username and shared_secret parameters need to be supplied.")
+            print(f"{self.__class__.__name__} ERROR: username and shared_secret parameters need to be supplied.")
             return None
         
         # How many search keys? Require at least one

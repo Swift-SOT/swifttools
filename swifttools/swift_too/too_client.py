@@ -1,6 +1,6 @@
 from .common import TOOAPI_Baseclass,xrtmodes,modesxrt
 from .too_status import Swift_TOO_Status
-import requests
+
 class Swift_TOO(TOOAPI_Baseclass):
     '''Class to construct a TOO for submission to Swift MOC. Class provides internal validation of TOO, 
     based on simple criteria. Submission is handled by creating an signed JSON file, using "shared secret" 
@@ -14,7 +14,10 @@ class Swift_TOO(TOOAPI_Baseclass):
         # User chooseable values
         self.username = None # Swift TOO username (string)
         self.shared_secret = None # Swift TOO shared secret. Log in to Swift TOO page to find out / change your shared secret
-        
+
+        # These next two are assigned by the server, so don't set them
+        self.too_id = None
+        self.timestamp = None
         # Source name, type, location, position_error
         self.source_name = None # Name of the object we're requesting a TOO for (string)
         self.source_type = None # Type of object (e.g. "Supernova", "LMXB", "BL Lac")  (string)
@@ -55,7 +58,6 @@ class Swift_TOO(TOOAPI_Baseclass):
         self.exp_time_per_visit = None # Exposure per visit (integer seconds)
         self.num_of_visits = 1         # Number of visits (integer)
         self.monitoring_freq = None # Formatted text to describe monitoring cadence. E.g. "2 days", "3 orbits", "1 week". See self.monitoring_units for valid units (string)
-        self.mon_strat = None # Hmm - this seems to be user input                FIXME
         # GI stuff
         self.proposal = None # Is this a GI proposal? True / False
         self.proposal_id = None # What is the GI proposal ID (string or integer)
@@ -77,12 +79,26 @@ class Swift_TOO(TOOAPI_Baseclass):
         self.exposure_time_per_tile = None # Set this if you want to have a fixed tile exposure, otherwise it'll just be exposure / number_of_tiles
         self.tiling_justification = None # Text description of why tiling is justified
 
+        # # New stuff - Parameters that we should have as part of a TOO request, but can't be handled by our current system
+        # # Parameters about coordination
+        # self.coordinated = None # Is this a coordinated observation
+        # self.coordinated_with = "" # Observatory for which coordination is occuring
+        # self.coordinated_strictness = 0 # How strictly coordinated should we be? 0 = not at all, 1 = within window, 2 = same day as window
+        # self.coordinated_prioirty = 0 # How high priority is the coordination 0 = not at all (Fermi), 1 = Ground Based, 2 = HST
+        # # Stuff about the source
+        # self.transient_age = None # Estimated age of the transient, e.g. if a Supernova, how long since it exploded?
+        # self.source_trigger = None # Name the trigger that is associated with this source. E.g. if this is a ZTF counterpart of a LVC trigger, give the LVC trigger name
+        # Calendar
+        self.calendar = None
+
         # Debug parameter - if this is set, sending a TOO won't actually submit it. Good for testing.
         self.debug = None
 
         # Paramaters that get submitted as part of the JSON
-        self.parameters = ['username', 'source_name', 'source_type', 'ra', 'dec', 'poserr', 'instrument', 'urgency', 'opt_mag', 'opt_filt', 'xrt_countrate', 'bat_countrate', 'other_brightness', 'grb_detector', 'trigger_date', 'trigger_time', 'immediate_objective', 'science_just', 'exposure', 'exp_time_just', 'exp_time_per_visit', 'num_of_visits', 'monitoring_freq', 'mon_strat', 'proposal', 'proposal_id', 'proposal_trigger_just', 'proposal_pi', 'xrt_mode', 'uvot_mode', 'uvot_just', 'slew_in_place', 'tiling', 'number_of_tiles', 'exposure_time_per_tile', 'tiling_justification', 'obs_n', 'obs_type','debug','validate_only']
-        
+        self.rows = ['username', 'source_name', 'source_type', 'ra', 'dec', 'poserr', 'instrument', 'urgency', 'opt_mag', 'opt_filt', 'xrt_countrate', 'bat_countrate', 'other_brightness', 'grb_detector', 'immediate_objective', 'science_just', 'exposure', 'exp_time_just', 'exp_time_per_visit', 'num_of_visits', 'monitoring_freq', 'proposal', 'proposal_id', 'proposal_trigger_just', 'proposal_pi', 'xrt_mode', 'uvot_mode', 'uvot_just', 'slew_in_place', 'tiling', 'number_of_tiles', 'exposure_time_per_tile', 'tiling_justification', 'obs_n', 'obs_type', 'calendar','debug','validate_only','grb_triggertime']
+
+        # Optional parameters that may get returned
+        self.extrarows = ['too_id','timestamp']
         # Internal values to check
         # The three instruments on Swift
         self.instruments = ['XRT','BAT','UVOT']
@@ -98,13 +114,17 @@ class Swift_TOO(TOOAPI_Baseclass):
         # Do a server side validation instead of submit?
         self.validate_only = False
 
-    def __str__(self):
-        return f"Swift TOO Request (RA,Dec) = ({self.ra},{self.dec})"
+        # Things that can be a subclass of this class
+        self.subclasses = []
+        self.ignorekeys = True
 
     @property
     def uvot_mode(self):
         '''Return UVOT as a hex string. Stored as a number internally'''
-        return f"0x{self._uvot_mode:04x}"
+        if type(self._uvot_mode) == int:
+            return f"0x{self._uvot_mode:04x}"
+        else:
+            return self._uvot_mode
     
     @uvot_mode.setter
     def uvot_mode(self,mode):
@@ -151,32 +171,21 @@ class Swift_TOO(TOOAPI_Baseclass):
     @property
     def obs_n(self):
         '''Is this a request for a single observation or multiple?'''
-        if self.num_of_visits > 1:
+        if self.num_of_visits != "" and self.num_of_visits > 1:
             return "multiple"
         else:
             return "single"
 
-    @property
-    def trigger_date(self):
-        '''Return GRB trigger date in YYYY-MM-DD format, and 0000-00-00 if not set'''
-        if self.grb_triggertime == None:
-            return "0000-00-00"
-        else:
-            return self.grb_triggertime.strftime("%Y-%m-%d")
-    
-    @property
-    def trigger_time(self):
-        '''Return GRB trigger time in HH:MM:SS format, and 00:00:00 if not set'''
-        if self.grb_triggertime == None:
-            return "00:00:00"
-        else:
-            return self.grb_triggertime.strftime("%H:%M:%S")
+    @obs_n.setter
+    def obs_n(self,value):
+        '''Just ignore attempts to set this property'''
+        pass
 
     @property
     def api_data(self):
         '''Return all parameters of TOO request as a dictionary'''
         data = dict()
-        for param in self.parameters:
+        for param in self.rows:
             value = getattr(self,param)
             if value != None:
                 if 'api_data' in dir(value):
@@ -250,6 +259,8 @@ class Swift_TOO(TOOAPI_Baseclass):
         return True
 
     def server_validate(self):
+        # Perform a local validation first
+        self.validate()
         # Do a server side validation
         if len(self.status.errors) == 0:
             # Preserve existing warnings
@@ -262,4 +273,10 @@ class Swift_TOO(TOOAPI_Baseclass):
             for warning in self.status.warnings:
                 print(f"Warning: {warning}")
             self.status.warnings += warnings
+            if len(self.status.errors) == 0:
+                return True
+            else:
+                return False
+        else:
+            return False
         

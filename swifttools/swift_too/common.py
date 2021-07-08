@@ -1,11 +1,13 @@
 import json
 from datetime import datetime,timedelta,date
+from os import isatty
 import re
 from jose import jwt
 import requests
 from time import sleep
 from .version import api_version
-
+from tabulate import tabulate
+import textwrap
 
 # Convert degrees to radians
 dtor = 0.017453292519943295
@@ -37,8 +39,21 @@ class TOOAPI_Baseclass:
         # Submission timeout
         self.timeout = 120 # 2 mins
 
-    def __repr__(self):
-        return f"<{self.__class__.__name__}: {self.__str__()}>"
+    @property
+    def table(self):
+        '''Table of TOO details'''
+        rows = self.extrarows + self.rows
+        table = [[row,"\n".join(textwrap.wrap(f"{getattr(self,row)}"))] for row in rows if getattr(self,row) != None and getattr(self,row) != ""]
+        return table
+
+    def __str__(self):
+        return tabulate(self.table,['Parameter','Value'],tablefmt='pretty',stralign='left')
+
+    def _repr_html_(self):
+        html = tabulate(self.table,['Parameter','Value'],tablefmt='html',stralign='right')
+        # Workaround because `tabulate` assumes that left alignment is default but in Jupyter it is not
+        html = html.replace('right','left') 
+        return html
 
     @property
     def json_dict(self):
@@ -61,8 +76,10 @@ class TOOAPI_Baseclass:
                 elif type(value) == list:
                     conv = lambda x: x if type(x) == str else x.json_dict
                     data[param] = [conv(entry) for entry in value]   
-                elif type(value) == datetime or type(value) == date:
+                elif type(value) == datetime or type(value) == date or type(value) == timedelta:
                     data[param] = f"{value}"
+                elif type(value).__module__ == 'astropy.time.core': # Detect and convert astropy Time
+                    data[param] = f"{value.datetime}"
                 else:
                     data[param] = value
         return data
@@ -82,7 +99,7 @@ class TOOAPI_Baseclass:
         Danger! Danger Will Robinson! Recursion! Recursion!'''
         # Parse a JSON entry
         if type(entry) == dict and 'api_name' in entry.keys():
-            index = [s.__name__ for s in self.subclasses].index(entry['api_name'])
+            index = [s().api_name for s in self.subclasses].index(entry['api_name'])
             val = self.subclasses[index]()
             val.read_dict(entry['api_data'])
         # Parse a list of items
@@ -138,16 +155,22 @@ class TOOAPI_Baseclass:
             self.set_status(newstatus)
 
     def set_error(self,newerror):
-        if type(self.status) == str:
-            self.error(newerror)
+        if hasattr(self,'status'):
+            if type(self.status) == str:
+                self.error(newerror)
+            else:
+                self.status.error(newerror)
         else:
-            self.status.error(newerror)
+            print(f"ERROR: {newerror}")
 
     def set_warning(self,warning):
-        if type(self.status) == str:
-            self.warning(warning)
+        if hasattr(self,'status'):
+            if type(self.status) == str:
+                self.warning(warning)
+            else:
+                self.status.warning(warning)
         else:
-            self.status.warning(warning)
+            print(f"Warning: {warning}")
 
     def read_dict(self,data_dict):
         '''Read from a dictionary values for the class'''
@@ -168,19 +191,19 @@ class TOOAPI_Baseclass:
         url = f"{API_URL}?jwt={self.jwt}"
         return url
 
-    def queue(self,post=False):
+    def queue(self,post=True):
         '''Queue a job up, don't wait for it to be processed'''
         return self.submit(post=post,timeout=0)
 
     @property
-    def complete(self,post=False):
+    def complete(self,post=True):
         '''Check if a queued job is completed'''
         if self.submit_jwt(post=post):
             if self.status != "Queued" and self.status != "Processing":
                 return True
         return False
 
-    def submit_jwt(self,post=False):
+    def submit_jwt(self,post=True):
         '''Submit JWT request to server. Note that submitting the request multiple times will return the status of the request.'''
         # Don't submit an accepted or rejected request more than once
         if self.status == "Accepted":
@@ -199,6 +222,7 @@ class TOOAPI_Baseclass:
             # True to decode the returned JSON. Return an error if it doesn't work.
             try:
                 json_dict = json.loads(r.text)
+                self.jsd = json_dict
             except:
                 self.set_error(f"Failed to decode JSON. Please check that your shared secret is correct.")
                 return False
@@ -219,7 +243,7 @@ class TOOAPI_Baseclass:
             return False
         return True
 
-    def submit(self,timeout=None,post=False):
+    def submit(self,timeout=None,post=True):
         '''Submit request using URL encoded JWT data. First validates submission, and then checks if the the request 
         has already been processed. Note submission of new job and checking the status are essentially the same 
         process. Default behaviour is to keep checking if the submission has been processed by the TOO_API server 

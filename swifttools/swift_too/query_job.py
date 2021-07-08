@@ -2,13 +2,14 @@ from .too_status import Swift_TOO_Status
 from .swift_visquery import Swift_VisQuery
 from .swift_obsquery import Swift_AFST
 from .swift_planquery import Swift_PPST
+from .swift_uvot import UVOT_mode
+import textwrap
 
 class QueryJob(Swift_TOO_Status):
     def __init__(self,username=None,shared_secret=None,jobnumber=None):
         '''Class that enables fetching the results of already submitted jobs. Essentially the same as
         Swift_TOO_Status other than if the process has been completed the resultant data will be used
-        to create a `Swift_VisQuery`, `Swift_AFST` AKA `Swift_ObsQuery` or `Swift_PPST` AKA 
-        `Swift_PlanQuery` class.'''
+        to create a `Swift_VisQuery`, `Swift_AFST` AKA `Swift_ObsQuery` or `UVOT_mode` class.'''
         # Inherit the Swift_TOO_Status class init
         Swift_TOO_Status.__init__(self)
         self.api_name = 'Swift_TOO_Status' # This is really just a Swift_TOO_Status request with a twist
@@ -22,13 +23,18 @@ class QueryJob(Swift_TOO_Status):
         self.fetchresult = True
         self.result = None 
         # These are the kinds of results that can be returned
-        self.subclasses =[Swift_TOO_Status,Swift_VisQuery,Swift_AFST,Swift_PPST]
+        self.subclasses =[Swift_TOO_Status,Swift_VisQuery,Swift_AFST,UVOT_mode,Swift_PPST]
         # Add fetchresult and result to the required parameters list
-        self.rows += ['fetchresult','result']
+        self.rows += ['fetchresult']
+        self.extrarows += ['result']
         # Submit if all parameters given
         if self.validate():
             self.submit()
     
-    def __str__(self):
-        values = [f"{row}={getattr(self,row)}" for row in self.rows if row != "fetchresult"]
-        return f"job type={type(self.result)} {[val for val in values if 'None' not in val]}"
+    @property
+    def table(self):
+        '''Table of TOO details'''
+        rows = self.rows
+        table = [[row,"\n".join(textwrap.wrap(f"{getattr(self,row)}"))] for row in rows if getattr(self,row) != None and getattr(self,row) != ""]
+        table.append(['result',self.result.__class__.__name__+ " object"])
+        return table
