@@ -180,20 +180,6 @@ class Swift_TOO(TOOAPI_Baseclass):
     def obs_n(self,value):
         '''Just ignore attempts to set this property'''
         pass
-
-    @property
-    def api_data(self):
-        '''Return all parameters of TOO request as a dictionary'''
-        data = dict()
-        for param in self.rows:
-            value = getattr(self,param)
-            if value != None:
-                if 'api_data' in dir(value):
-                    data[param] = value.api_data
-                else:
-                    data[param] = value
-        return data
-
     
     def validate(self):
         '''Check that the TOO fits the minimum requirements for submission'''

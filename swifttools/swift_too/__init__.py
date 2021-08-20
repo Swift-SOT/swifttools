@@ -62,24 +62,26 @@ working on the results, but has not yet completed. `Rejected` means that
 the server rejected the job for any number of reasons, that are reported
 by in `Swift_TOO_Status` class.
 
+6. UVOT_mode
+
+UVOT modes are typically given as hex modes. This class allows the user to look up
+the meaning of a given hex code, which is typically a table of UVOT filters
+associated with that mode, along with any configuration parameters, such as the size
+of the field of view, whether the data will be taken in event mode, etc.
+
 The Swift TOO API is built around a client/server model, in which API 
 information is exchanged between the client's machine with the Swift API 
 server in JSON format. Requests are submitted using a signed JWT 
 (e.g. https://jwt.io) format, and API users are required to register with Swift 
 to use the API (https://www.swift.psu.edu/toop). JWT are not encrypted, 
 but they are signed with a "shared secret" to ensure that the requests are 
-coming from the user they say they are. username and
+coming from the user they say they are. 
 
 Queries are constructed using Python classes provided by this module, and 
 submitted to a queue system in which they are processed in a first come, 
 first served basis. Typically processing requests takes a 10-20 seconds. 
 Status of requests can be queried, and errors are reported back. 
 
-6. UVOT_mode
-
-UVOT modes are typically hex modes. This class allows the user to look up
-the meaning of a given hex mode, which is typically a table of UVOT filters
-associated with that mode.
 
 '''
 from .version import __version__

@@ -200,22 +200,13 @@ class Swift_Observation(TOOAPI_Baseclass):
         else:
             return tabulate([self.table],['Begin','End','Name','Obs Number','Exposure (s)','Slewtime (s)'],tablefmt='pretty',stralign='right')
 
-class Swift_Observations:
-    def __init__(self):
-        self.entries = dict()
-
-    def __getitem__(self,index):
-        return self.entries[index]
-
-    def __setitem__(self,key,value):
-        self.entries[key] = value
-
-    def keys(self):
-        return self.entries.keys()
+class Swift_Observations(dict):
+    '''Adapted dictionary class for containing observations that mostly is just to ensure that data can be displayed in a consistent format.
+    Key is typically the Swift Observation ID in SDC format (e.g. '00012345012').'''
 
     @property
     def table(self):
-        return [self.entries[obsid].table for obsid in self.entries.keys()]
+        return [self[obsid].table for obsid in self.keys()]
 
     def _repr_html_(self):
         if self.table == []:
