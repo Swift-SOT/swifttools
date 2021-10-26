@@ -1,9 +1,8 @@
-from .common import TOOAPI_Baseclass,xrtmodes
+from .common import TOOAPI_Baseclass,xrtmodes,convert_obsnum
 from .too_status import Swift_TOO_Status
 from .swift_obsquery import Swift_Observation,Swift_Observations
 from datetime import timedelta
 from tabulate import tabulate
-import re
 
 xrtmodes = {0: "Auto", 1: "Null", 2: "ShortIM", 3: "LongIM", 4: "PUPD", 5: "LRPD", 6: "WT", 7: "PC", 8: "Raw", 9: "Bias"}
 modesxrt = {"Auto": 0, "Null": 1, "ShortIM": 2, "LongIM": 3, "PUPD":4, "LRPD": 5 , "WT": 6, "PC": 7, "Raw": 8, "Bias": 9}
@@ -72,17 +71,7 @@ class Swift_PPST_Entry(TOOAPI_Baseclass):
     @obsnum.setter
     def obsnum(self,obsnum):
         '''Set the obsnum value, by figuring out what the two formats are.'''
-        # Is this Spacecraft format?
-        if type(obsnum) == int:
-            self.targetid = obsnum & 0xffffff
-            self.seg = obsnum >> 24
-        # Is it SDC format?
-        elif type(obsnum) == str:
-            print("obsnum:",obsnum)
-            self.targetid = int(obsnum[0:8])
-            self.seg = int(obsnum[8:11])
-        else:
-            raise Exception("Observation number not in recognised format")
+        self._obsnum = convert_obsnum(obsnum)
 
     @property
     def exposure(self):
@@ -158,20 +147,11 @@ class Swift_PPST(TOOAPI_Baseclass):
 
     @obsnum.setter
     def obsnum(self,obsnum):
-        '''Allow obsnum to be specified in Spacecraft (int) or SDC format (string)'''
-        if type(obsnum) == str:
-            if re.match("^[0-9]{11}?$",obsnum) == None:
-                print("ERROR: Obsnum string format incorrect")
-            else:
-                targetid = int(obsnum[0:8])
-                segment = int(obsnum[8:12])
-                self._obsnum = targetid + (segment<<24)
-        elif type(obsnum) == int:
-            self._obsnum = obsnum
-        elif obsnum == None:
-            self._obsnum = None
-        else:
-            print(f"ERROR: Obsnum format wrong")
+        '''Allow obsnum to be specified in Spacecraft (int) or SDC format (string), or an array of either'''
+        if type(obsnum) == list or type(obsnum) == tuple:
+            self._obsnum = [convert_obsnum(obs) for obs in obsnum]
+        else: 
+            self._obsnum = convert_obsnum(obsnum)
     
     @property
     def table(self):

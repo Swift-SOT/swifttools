@@ -1,6 +1,5 @@
 import json
 from datetime import datetime,timedelta,date
-from os import isatty
 import re
 from jose import jwt
 import requests
@@ -17,6 +16,22 @@ modesxrt = {"Auto": 0, "Null": 1, "ShortIM": 2, "LongIM": 3, "PUPD":4, "LRPD": 5
 
 # Submission URL
 API_URL = "https://www.swift.psu.edu/toop/submit_json.php"
+
+def convert_obsnum(obsnum):
+    '''Convert various formats for obsnum (SDC and Spacecraft) into one format (Spacecraft)'''
+    if type(obsnum) == str:
+        if re.match("^[0-9]{11}?$",obsnum) == None:
+            raise ValueError("ERROR: Obsnum string format incorrect")
+        else:
+            targetid = int(obsnum[0:8])
+            segment = int(obsnum[8:12])
+            return targetid + (segment<<24)
+    elif type(obsnum) == int:
+        return obsnum
+    elif obsnum == None:
+        return None
+    else:
+        raise ValueError('`obsnum` in wrong format.')
 
 class TOOAPI_Baseclass:
     '''Mixin for TOO API Classes. Most of these are to do with reading and writing classes out as JSON/dicts.'''
@@ -73,8 +88,8 @@ class TOOAPI_Baseclass:
             if value != None:
                 if 'api_data' in dir(value):
                     data[param] = value.json_dict
-                elif type(value) == list:
-                    conv = lambda x: x if type(x) == str else x.json_dict
+                elif type(value) == list or type(value) == tuple:
+                    conv = lambda x: x if not hasattr(x,'json_dict') else x.json_dict
                     data[param] = [conv(entry) for entry in value]   
                 elif type(value) == datetime or type(value) == date or type(value) == timedelta:
                     data[param] = f"{value}"
