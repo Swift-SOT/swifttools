@@ -254,8 +254,8 @@ import time
 myReq = XRTProductRequest('YOUR_EMAIL_ADDRESS')
 myReq.setGlobalPars(getTargs=True, centroid=True, name='GRB 200116A', RA=335.6985, Dec=-7.5179, centMeth='simple', useSXPS=False, T0=608713541.952, posErr=1)
 myReq.addLightCurve(binMeth='counts', pcCounts=20, wtCounts=30, dynamic=True)
-myReq.addSpectrum()
-myReq.addStandardPos(hasRedshift=False)
+myReq.addSpectrum(hasRedshift=False)
+myReq.addStandardPos()
 myReq.addEnhancedPos()
 myReq.addAstromPos(useAllObs=True)
 
