@@ -14,12 +14,16 @@ class UVOT_mode_entry(TOOAPI_Baseclass):
     def __str__(self):
         return self.filter_name
 class UVOT_mode(TOOAPI_Baseclass):
-    def __init__(self,username=None,shared_secret=None,uvotmode=None):
+    '''Class to fetch information about a given UVOT mode. Specifically this is
+    useful for understanding for a given UVOT hex mode (e.g. 0x30ed), which
+    filters and configuration are used by UVOT.'''
+    def __init__(self,username='anonymous',shared_secret=None,uvotmode=None):
         TOOAPI_Baseclass.__init__(self)
-        self.rows = ['username','uvotmode','entries']
-        self.extrarows = ['status']
+        self.rows = ['username','uvotmode']
+        self.extrarows = ['status','entries']
         self.username = username
-        self.shared_secret = shared_secret
+        if shared_secret != None:
+            self.shared_secret = shared_secret
         self.uvotmode = uvotmode
         self.entries = None
         self.status = Swift_TOO_Status()

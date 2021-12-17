@@ -1,14 +1,18 @@
-from .common import TOOAPI_Baseclass,xrtmodes,modesxrt
+from .swift_calendar import Swift_Calendar
+from .common import TOOAPI_Baseclass, TOOAPI_SkyCoord,xrtmodes,modesxrt
 from .too_status import Swift_TOO_Status
 
-class Swift_TOO(TOOAPI_Baseclass):
-    '''Class to construct a TOO for submission to Swift MOC. Class provides internal validation of TOO, 
-    based on simple criteria. Submission is handled by creating an signed JSON file, using "shared secret" 
-    to ensure that the TOO is from the registered party, and uploading via a HTTP POST to the Swift website. 
-    Verification of the success or failure of submission is reported into the Swift_TOO_Status class, which 
-    is populated using parameters reported by the  Swift TOO website upon submission.'''
+class Swift_TOO_Request(TOOAPI_Baseclass,TOOAPI_SkyCoord):
+    '''Class to construct a TOO for submission to Swift MOC. Class provides
+    internal validation of TOO, based on simple criteria. Submission is handled
+    by creating an signed JSON file, using "shared secret" to ensure that the
+    TOO is from the registered party, and uploading via a HTTP POST to the Swift
+    website. Verification of the success or failure of submission is reported
+    into the Swift_TOO_Status class, which is populated using parameters
+    reported by the  Swift TOO website upon submission.'''
     def __init__(self):
         TOOAPI_Baseclass.__init__(self)
+        TOOAPI_SkyCoord.__init__(self)
         # Name the class
         self.api_name = "Swift_TOO_Request"
         # User chooseable values
@@ -23,7 +27,6 @@ class Swift_TOO(TOOAPI_Baseclass):
         self.source_type = None # Type of object (e.g. "Supernova", "LMXB", "BL Lac")  (string)
         self.ra = None  # RA(J2000) Degrees decimal (float)
         self.dec = None # declination (J2000) Degrees decimal (float)
-        self._skycoord = None # In case the user wants to use a Astropy SkyCoord to give us the coordinates (SkyCoord)
         self.poserr = 0.0    # Position error in arc-minutes (float)
                 
         # Request details
@@ -79,26 +82,30 @@ class Swift_TOO(TOOAPI_Baseclass):
         self.exposure_time_per_tile = None # Set this if you want to have a fixed tile exposure, otherwise it'll just be exposure / number_of_tiles
         self.tiling_justification = None # Text description of why tiling is justified
 
-        # # New stuff - Parameters that we should have as part of a TOO request, but can't be handled by our current system
-        # # Parameters about coordination
-        # self.coordinated = None # Is this a coordinated observation
-        # self.coordinated_with = "" # Observatory for which coordination is occuring
-        # self.coordinated_strictness = 0 # How strictly coordinated should we be? 0 = not at all, 1 = within window, 2 = same day as window
-        # self.coordinated_prioirty = 0 # How high priority is the coordination 0 = not at all (Fermi), 1 = Ground Based, 2 = HST
-        # # Stuff about the source
-        # self.transient_age = None # Estimated age of the transient, e.g. if a Supernova, how long since it exploded?
-        # self.source_trigger = None # Name the trigger that is associated with this source. E.g. if this is a ZTF counterpart of a LVC trigger, give the LVC trigger name
         # Calendar
-        self.calendar = None
+        self._calendar = None
+
+        # More parameters that are assigned server side
+        self.l_name = None
+        self.date_begin = None
+        self.date_end = None
+        self.decision = None
+        self._xrt_mode_approved = None
+        self._uvot_mode_approved = None
+        self.exp_time_per_visit_approved = None
+        self.num_of_visits_approved = None
+        self.total_exp_time_approved = None
+        self.target_id = None
+        self.done = None
 
         # Debug parameter - if this is set, sending a TOO won't actually submit it. Good for testing.
         self.debug = None
 
         # Paramaters that get submitted as part of the JSON
-        self.rows = ['username', 'source_name', 'source_type', 'ra', 'dec', 'poserr', 'instrument', 'urgency', 'opt_mag', 'opt_filt', 'xrt_countrate', 'bat_countrate', 'other_brightness', 'grb_detector', 'immediate_objective', 'science_just', 'exposure', 'exp_time_just', 'exp_time_per_visit', 'num_of_visits', 'monitoring_freq', 'proposal', 'proposal_id', 'proposal_trigger_just', 'proposal_pi', 'xrt_mode', 'uvot_mode', 'uvot_just', 'slew_in_place', 'tiling', 'number_of_tiles', 'exposure_time_per_tile', 'tiling_justification', 'obs_n', 'obs_type', 'calendar','debug','validate_only','grb_triggertime']
+        self.rows = ['username', 'source_name', 'source_type', 'ra', 'dec', 'poserr', 'instrument', 'urgency', 'opt_mag', 'opt_filt', 'xrt_countrate', 'bat_countrate', 'other_brightness', 'grb_detector', 'immediate_objective', 'science_just', 'exposure', 'exp_time_just', 'exp_time_per_visit', 'num_of_visits', 'monitoring_freq', 'proposal', 'proposal_id', 'proposal_trigger_just', 'proposal_pi', 'xrt_mode', 'uvot_mode', 'uvot_just', 'slew_in_place', 'tiling', 'number_of_tiles', 'exposure_time_per_tile', 'tiling_justification', 'obs_n', 'obs_type', 'grb_triggertime','debug','validate_only']
 
         # Optional parameters that may get returned
-        self.extrarows = ['too_id','timestamp']
+        self.extrarows = ['too_id','timestamp','decision','done','target_id','date_begin','date_end','l_name','xrt_mode_approved','uvot_mode_approved','calendar','total_exp_time_approved','num_of_visits_approved','exp_time_per_visit_approved'];
         # Internal values to check
         # The three instruments on Swift
         self.instruments = ['XRT','BAT','UVOT']
@@ -112,11 +119,92 @@ class Swift_TOO(TOOAPI_Baseclass):
         self.status = Swift_TOO_Status()
 
         # Do a server side validation instead of submit?
-        self.validate_only = False
+        self.validate_only = None
 
         # Things that can be a subclass of this class
-        self.subclasses = []
+        self.subclasses = [Swift_Calendar]
         self.ignorekeys = True
+
+        # English Descriptions of all the variables
+        self.varnames = {
+            'decision': 'Decision',
+            'done': 'Done',
+            'date_begin': 'Begin date',
+            'date_end': 'End date',
+            'calendar': 'Calendar',
+            'slew_in_place': 'Slew in Place',
+            'grb_triggertime': 'GRB Trigger Time (UT)',
+            'exp_time_per_visit_approved': 'Exposure Time per Visit (s)',
+            'total_exp_time_approved': 'Total Exposure (s)',
+            'num_of_visits_approved': 'Number of Visits',
+            'l_name': 'Requester',
+            'username': 'Requester',
+            'too_id': 'ToO ID',
+            'timestamp': 'Time Submitted',
+            'target_id': 'Primary Target ID',
+            'sourceinfo': 'Object Information', 'ra': 'Right Ascenscion (J2000)',
+            'dec': 'Declination (J2000)', 'source_name': 'Object Name',
+            'resolve': 'Resolve coordinates',
+            'position_err': 'Position Error',
+            'poserr': 'Position Error (90% confidence - arcminutes)',
+            'obs_type': 'What is Driving the Exposure Time?',
+            'source_type': 'Type or Classification',
+            'tiling': 'Tiling',
+            'immediate_objective': 'Immediate Objective',
+            'proposal': 'GI Program',
+            'proposal_details': 'GI Proposal Details',
+            'instrument': 'Instrument',
+            'tiling_type': 'Tiling Type',
+            'number_of_tiles': 'Number of Tiles',
+            'exposure_time_per_tile': 'Exposure Time per Tile',
+            'tiling_justification': 'Tiling Justification',
+            'instruments': 'Instrument Most Critical to your Science Goals',
+            'urgency': 'Urgency',
+            'proposal_id': "GI Proposal ID",
+            'proposal_pi': "GI Proposal PI",
+            'proposal_trigger_just': "GI Trigger Justification",
+            'proposal_details': 'GI Program Details',
+            'source_brightness': 'Object Brightness',
+            'opt_mag': "Optical Magnitude",
+            'opt_filt': "Optical Filter",
+            'xrt_countrate': "XRT Estimated Rate (c/s)",
+            'bat_countrate': "BAT Countrate (c/s)",
+            'other_brightness': "Other Brightness",
+            'science_just': 'Science Justification',
+            'monitoring': 'Observation Campaign',
+            'obs_n': 'Observation Strategy',
+            'num_of_visits': 'Number of Visits',
+            'exp_time_per_visit': 'Exposure Time per Visit (seconds)',
+            'monitoring_freq': 'Monitoring Cadence',
+            'monitoring_freq_approved': 'Monitoring Cadence',
+            'monitoring_details': 'Monitoring Details',
+            'exposure': 'Exposure Time (seconds)',
+            'exp_time_just': 'Exposure Time Justification',
+            'xrt_mode': 'XRT Mode',
+            'xrt_mode_approved': 'XRT Mode (Approved)',
+            'uvot_mode': 'UVOT Mode',
+            'uvot_mode_approved': 'UVOT Mode (Approved)',
+            'uvot_just': 'UVOT Mode Justification',
+            'trigger_date': 'GRB Trigger Date (YYYY/MM/DD)',
+            'trigger_time': 'GRB Trigger Time (HH:MM:SS)',
+            'grb_detector': 'GRB Discovery Instrument',
+            'grbinfo': 'GRB Details',
+            'debug': 'Debug mode',
+            'validate_only': 'Validate only'
+        }
+
+    @property
+    def calendar(self):
+        '''If no calendar data exists for this TOO, fetch it.'''
+        if self.too_id != None:
+            if self._calendar.too_id == None:
+                self._calendar.too_id = self.too_id
+                self._calendar.submit()
+        return self._calendar
+
+    @calendar.setter
+    def calendar(self,cal):
+        self._calendar = cal
 
     @property
     def uvot_mode(self):
@@ -131,6 +219,18 @@ class Swift_TOO(TOOAPI_Baseclass):
         self._uvot_mode = mode
 
     @property
+    def uvot_mode_approved(self):
+        '''Return UVOT as a hex string. Stored as a number internally'''
+        if type(self._uvot_mode_approved) == int:
+            return f"0x{self._uvot_mode_approved:04x}"
+        else:
+            return self._uvot_mode_approved
+    
+    @uvot_mode_approved.setter
+    def uvot_mode_approved(self,mode):
+        self._uvot_mode_approved = mode
+
+    @property
     def xrt_mode(self):
         '''Return XRT mode as abbreviation string. Internally stored as a number.'''
         return xrtmodes[self._xrt_mode]
@@ -138,35 +238,34 @@ class Swift_TOO(TOOAPI_Baseclass):
     @xrt_mode.setter
     def xrt_mode(self,mode):
         '''Allow XRT mode to be set either as a string (e.g. "WT") or as a number (0, 6 or 7).'''
+        self.xrt_mode_setter('xrt_mode',mode)
+
+    @property
+    def xrt_mode_approved(self):
+        '''Return XRT mode as abbreviation string. Internally stored as a number.'''
+        if self._xrt_mode_approved == None:
+            return 'Unset'
+        else:
+            return xrtmodes[self._xrt_mode_approved]
+
+    @xrt_mode_approved.setter
+    def xrt_mode_approved(self,mode):
+        '''Allow XRT mode to be set either as a string (e.g. "WT") or as a number (0, 6 or 7).'''
+        self.xrt_mode_setter('xrt_mode_approved',mode)
+
+    def xrt_mode_setter(self,attr,mode):
         if type(mode) == str:
             if mode in modesxrt.keys():
-                self._xrt_mode = modesxrt[mode]
+                setattr(self,f"_{attr}",modesxrt[mode])
             else:
-                raise NameError("Unknown mode, should be PC, WT or Auto")
+                raise NameError(f"Unknown mode ({mode}), should be PC, WT or Auto")
+        elif type(mode) == type(None):
+            setattr(self,f"_{attr}",mode)
         else:
             if mode in xrtmodes.keys():
-                self._xrt_mode = mode
+                setattr(self,f"_{attr}",mode)
             else:
-                raise ValueError("Unknown mode, should be PC (7), WT (6) or Auto (0)")
-
-    @property 
-    def skycoord(self):
-        '''Allow TOO requesters to give an astropy SkyCoord object instead of RA/Dec. Handy if you want to do things like submit 1950 coordinates or Galactic Coordinates.'''
-        # Check if the RA/Dec match the SkyCoord, and if they don't modify the skycoord
-        if type(self._skycoord).__module__ == 'astropy.coordinates.sky_coordinate':
-            if self.ra != self._skycoord.fk5.ra.deg or self.dec != self._skycoord.fk5.dec.deg:
-                self._skycoord = self._skycoord.__class__(self.ra,self.dec,unit="deg",frame="fk5")
-        return self._skycoord
-
-    @skycoord.setter
-    def skycoord(self,sc):
-        '''Convert the SkyCoord into RA/Dec (J2000) when set.'''
-        if type(sc).__module__ == 'astropy.coordinates.sky_coordinate':
-            self._skycoord = sc
-            self.ra = sc.fk5.ra.deg
-            self.dec = sc.fk5.dec.deg
-        else:
-            raise Exception("Needs to be assigned an Astropy SkyCoord")
+                raise ValueError(f"Unknown mode ({mode}), should be PC (7), WT (6) or Auto (0)")
 
     @property
     def obs_n(self):
@@ -265,4 +364,22 @@ class Swift_TOO(TOOAPI_Baseclass):
                 return False
         else:
             return False
-        
+
+    @property
+    def table(self):
+        tab = list()
+        if self.decision != None:
+            rows = ['too_id','l_name','timestamp','urgency','source_name','source_type','grb_triggertime','grb_detector','ra','dec','proposal_pi','proposal_id','proposal_trigger_just','poserr','science_just','opt_mag','opt_filt','xrt_countrate','other_brightness','bat_countrate','exp_time_per_visit_approved','num_of_visits_approved','total_exp_time_approved','monitoring_freq','immediate_objective','exp_time_just','instrument','obs_type','xrt_mode_approved','uvot_mode_approved','uvot_just','target_id']
+        else:
+            rows = self.rows
+        for row in rows:
+            val = getattr(self,row)
+            if val != None and val != "":
+                tab.append([self.varnames[row],val])
+        if len(tab) > 0:
+            header = ['Parameter','Value']
+        else:
+            header = []
+        return header,tab
+
+Swift_TOO = Swift_TOO_Request

@@ -1,21 +1,31 @@
 from .too_status import Swift_TOO_Status
-from .common import TOOAPI_Baseclass
-from datetime import datetime,timedelta
-from tabulate import tabulate
-import textwrap
+from .common import TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord
+
 class Swift_VisWindow(TOOAPI_Baseclass):
-    '''Simple class to define a Visibility window. Begin and End of window can either be accessed as self.begin 
-    or self.end, or as self[0] or self[1].'''
+    '''Simple class to define a Visibility window. Begin and End of window can
+    either be accessed as self.begin or self.end, or as self[0] or self[1].'''
     def __init__(self):
         TOOAPI_Baseclass.__init__(self)
         self.api_name = "Swift_VisWindow"
         self.begin = None
         self.end = None
         self.status = Swift_TOO_Status()
-        self.rows = ['begin','end']
+        self.rows = ['begin','end','length']
+        self.varnames = {'begin':'Begin Time','end':'End Time','length':'Window length'}
         
+    @property
+    def length(self):
+        if self.end == None or self.begin == None:
+            return None
+        return self.end - self.begin
+
+    @property
+    def table(self):
+        header = [self.varnames[row] for row in self.rows]
+        return header,[[self.begin,self.end, self.length]]
+
     def __str__(self):
-        return f"{self.begin} - {self.end} ({self.end - self.begin})"
+        return f"{self.begin} - {self.end} ({self.length})"
 
     def __getitem__(self,index):
         if index == 0:
@@ -25,84 +35,48 @@ class Swift_VisWindow(TOOAPI_Baseclass):
         else:
             raise IndexError('list index out of range')
 
-class Swift_VisQuery(TOOAPI_Baseclass):
-    '''Request Swift Target visibility windows. These results are low-fidelity, so do not give orbit-to-orbit 
-    visibility, but instead long term windows indicates when a target is observable by Swift and not in a 
-    Sun/Moon/Pole constraint.'''
-    def __init__(self,username=None,shared_secret=None,ra=None,dec=None,begin=None,length=1,end=None,hires=False):
+class Swift_VisQuery(TOOAPI_Baseclass,TOOAPI_Daterange,TOOAPI_SkyCoord):
+    '''Request Swift Target visibility windows. These results are low-fidelity,
+    so do not give orbit-to-orbit visibility, but instead long term windows
+    indicates when a target is observable by Swift and not in a Sun/Moon/Pole
+    constraint.'''
+    def __init__(self,username='anonymous',shared_secret=None,ra=None,dec=None,begin=None,length=1,end=None,hires=False):
         TOOAPI_Baseclass.__init__(self)
+        TOOAPI_Daterange.__init__(self)
+        TOOAPI_SkyCoord.__init__(self)
         self.api_name = "Swift_VisQuery"
         # User arguments
         self.ra = ra
         self.dec = dec
+        self._length = None
         self.length = length
         self.hires = hires
         # Start and end boundaries        
         self.begin = begin
-        if self.begin == None:
-            self.begin = datetime.utcnow()
-        if end != None:
-            self.end = end
+        self.end = end
+        # Username/Secret stuff
         self.username = username
-        self.shared_secret = shared_secret
-        # Internal variable
-        self._skycoord = None
+        if shared_secret != None:
+            self.shared_secret = shared_secret
         # Visibility windows go here
         self.windows = list()
         # Status of request
         self.status = Swift_TOO_Status()
         # Contents of the rows
-        self.rows = ['username','ra','dec','begin','length','hires','windows']
-        self.extrarows = ['status']
+        self.rows = ['username','ra','dec','begin','length','hires']
+        self.extrarows = ['status','windows']
         # Subclasses
         self.subclasses = [Swift_TOO_Status,Swift_VisWindow]
-        if username != None and self.status == "Unknown":
+        if ra != None and self.status == "Unknown":
             self.submit()
-
-    # Alias start as begin
-    @property
-    def begin(self):
-        return self.start
-
-    @begin.setter
-    def begin(self,begin):
-        self.start = begin
-
-    @property 
-    def end(self):
-        return self.begin + timedelta(days=self.length)
-
-    @end.setter
-    def end(self,enddt):
-        self.length = (enddt - self.begin).days
 
     @property
     def table(self):
-        return [[win.begin,win.end,win.end-win.begin] for win in self.windows]
-
-    def __str__(self):
-        return tabulate(self.table,['Begin','End','Length'],tablefmt='pretty')
-
-    def _repr_html_(self):
-        return tabulate(self.table,['Begin','End','Length'],tablefmt='html',stralign='right').replace('right','left')
-
-    @property 
-    def skycoord(self): 
-        # Check if the RA/Dec match the SkyCoord, and if they don't modify the skycoord
-        if type(self._skycoord).__module__ == 'astropy.coordinates.sky_coordinate':
-            if self.ra != self._skycoord.fk5.ra.deg or self.dec != self._skycoord.fk5.dec.deg:
-                self._skycoord = self._skycoord.__class__(self.ra,self.dec,unit="deg",frame="fk5")
-        return self._skycoord
-
-    @skycoord.setter
-    def skycoord(self,sc):
-        if type(sc).__module__ == 'astropy.coordinates.sky_coordinate':
-            self._skycoord = sc
-            self.ra = sc.fk5.ra.deg
-            self.dec = sc.fk5.dec.deg
+        if len(self.windows) != 0:
+            header = self.windows[0].table[0]
         else:
-            raise Exception("Needs to be assigned an Astropy SkyCoord")
-
+            header = []
+        return header,[win.table[1][0] for win in self.windows]
 
     def __getitem__(self,index):
         return self.windows[index]

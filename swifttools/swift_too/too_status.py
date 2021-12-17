@@ -1,6 +1,5 @@
 from .common import TOOAPI_Baseclass
 
-
 class Swift_TOO_Status(TOOAPI_Baseclass):
     '''Simple class to describe the status of a submitted TOO API request'''
     def __init__(self,username=None,shared_secret=None,jobnumber=None):
@@ -20,7 +19,8 @@ class Swift_TOO_Status(TOOAPI_Baseclass):
         # Internal parameters
         self.timeout = 0 # Don't wait for a job to be completed to report it's status
         # These are the parameters that are reported by the class
-        self.rows = ['username','status','too_id','jobnumber','errors','warnings','timestamp','began','completed']
+        self.rows = ['username','too_id','jobnumber','errors','warnings','timestamp','began','completed']
+        self.extrarows = ['status']
         # If all arguments are passed, then submit
         if self.validate():
             self.submit()

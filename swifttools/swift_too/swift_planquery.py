@@ -1,28 +1,31 @@
-from .common import TOOAPI_Baseclass,xrtmodes,convert_obsnum
+from .common import TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI_ObsID, xrtmodes
 from .too_status import Swift_TOO_Status
 from .swift_obsquery import Swift_Observation,Swift_Observations
 from datetime import timedelta
-from tabulate import tabulate
 
-xrtmodes = {0: "Auto", 1: "Null", 2: "ShortIM", 3: "LongIM", 4: "PUPD", 5: "LRPD", 6: "WT", 7: "PC", 8: "Raw", 9: "Bias"}
-modesxrt = {"Auto": 0, "Null": 1, "ShortIM": 2, "LongIM": 3, "PUPD":4, "LRPD": 5 , "WT": 6, "PC": 7, "Raw": 8, "Bias": 9}
-
-
-class Swift_PPST_Entry(TOOAPI_Baseclass):
-    '''Class that defines an individual entry in the Swift Pre-Planned Science Timeline'''
+class Swift_PPST_Entry(TOOAPI_Baseclass,TOOAPI_SkyCoord,TOOAPI_ObsID):
+    '''Class that defines an individual entry in the Swift Pre-Planned Science
+    Timeline'''
     def __init__(self):
         TOOAPI_Baseclass.__init__(self)
+        TOOAPI_SkyCoord.__init__(self)
+        TOOAPI_ObsID.__init__(self)
         self.api_name = "Swift_PPST_Entry"
         # Entries
-        self.rows = ['begin', 'end', 'targname', 'ra', 'dec', 'roll', 'targetid', 'seg', 'bat', 'xrt', 'uvot', 'fom']
+        self.rows = ['begin', 'end', 'targname', 'ra', 'dec', 'roll', 'targetid', 'seg', 'xrt', 'uvot', 'bat', 'fom']
+        self.names =['Begin Time','End Time','Target Name','RA(J2000)','Dec(J200)','Roll (deg)','Target ID','Segment','XRT Mode','UVOT Mode','BAT Mode','Figure of Merit']
+        self.varnames = dict()
+        for i in range(len(self.rows)):
+            self.varnames[self.rows[i]] = self.names[i]
+        self.varnames['obsnum'] = 'Observation Number'
+        self.varnames['exposure'] = 'Exposure (s)'
+        self.varnames['slewtime'] = 'Slewtime (s)'
         self.extrarows = []
         self.begin = None
         #self.settle = None
         self.end = None
         self.ra = None
         self.dec = None
-        self.ra_point = None
-        self.dec_point = None
         self.roll = None
         self.targname = None
         self.targetid = None
@@ -39,8 +42,8 @@ class Swift_PPST_Entry(TOOAPI_Baseclass):
     # Instrument modes
     @property
     def xrt(self):
-        """Given a XRT mode number returns a string containing the name of the
-        mode"""
+        '''Given a XRT mode number returns a string containing the name of the
+        mode'''
         return xrtmodes[self._xrt]
 
     @xrt.setter
@@ -49,29 +52,13 @@ class Swift_PPST_Entry(TOOAPI_Baseclass):
 
     @property
     def uvot(self):
-        """Given a XRT mode number returns a string containing the name of the
-        mode"""
+        '''Given a XRT mode number returns a string containing the name of the
+        mode'''
         return f"0x{self._uvot:04x}"
 
     @uvot.setter
     def uvot(self,mode):
         self._uvot = mode
-
-    # Handle the two different ways of reporting Observation number. Default to the SDC style of a string with leading zeros
-    @property
-    def obsnum(self):
-        '''Return the obsnum in SDC format'''
-        return f"{self.targetid:08d}{self.seg:03d}"
-    
-    @property 
-    def obsnumsc(self):
-        '''Return the obsnum in spacecraft format'''
-        return self.targetid + (self.seg<<24)
-    
-    @obsnum.setter
-    def obsnum(self,obsnum):
-        '''Set the obsnum value, by figuring out what the two formats are.'''
-        self._obsnum = convert_obsnum(obsnum)
 
     @property
     def exposure(self):
@@ -79,51 +66,46 @@ class Swift_PPST_Entry(TOOAPI_Baseclass):
 
     @property
     def table(self):
-        return [self.begin,self.end, self.targname, self.obsnum, self.exposure.seconds]
-
-    def _repr_html_(self):
-        if self.table == []:
-            return "No data"
-        else:
-            return tabulate([self.table],['Begin','End','Name','Obs Number','Exposure (s)'],tablefmt='html',stralign='right').replace('right','left')
-    
-    def __str__(self):
-        if self.table == []:
-            return "No data"
-        else:
-            return tabulate([self.table],['Begin','End','Name','Obs Number','Exposure (s)'],tablefmt='pretty',stralign='right')
+        rows = ['begin','end','targname','obsnum','exposure']
+        header = [self.varnames[row] for row in rows]
+        return header,[[self.begin,self.end, self.targname, self.obsnum, self.exposure.seconds]]
 
 
-class Swift_PPST(TOOAPI_Baseclass):
-    '''Class to fetch Swift Pre-Planned Science Timeline (PPST) for given constraints. Essentially this will
-    return what Swift was planned to observe and when, for given constraints. Constraints can be for give coordinate
-    (SkyCoord or J2000 RA/Dec) and radius (in degrees), a given date range, or a given target ID (targetid) 
-    or Observation ID (obsnum).'''
-    def __init__(self,username=None,shared_secret=None,ra=None,dec=None,begin=None,end=None,targetid=None,obsnum=None,radius=0.1967):
+
+class Swift_PPST(TOOAPI_Baseclass,TOOAPI_Daterange,TOOAPI_SkyCoord,TOOAPI_ObsID):
+    '''Class to fetch Swift Pre-Planned Science Timeline (PPST) for given
+    constraints. Essentially this will return what Swift was planned to observe
+    and when, for given constraints. Constraints can be for give coordinate
+    (SkyCoord or J2000 RA/Dec) and radius (in degrees), a given date range, or a
+    given target ID (targetid) or Observation ID (obsnum).'''
+    def __init__(self,username='anonymous',shared_secret=None,ra=None,dec=None,begin=None,end=None,targetid=None,obsnum=None,radius=0.1967,length=None):
         TOOAPI_Baseclass.__init__(self)
+        TOOAPI_Daterange.__init__(self)
+        TOOAPI_SkyCoord.__init__(self)
+        # Define API name
         self.api_name = "Swift_PPST"
         # Coordinate search
-        self._skycoord = None
         self.ra = ra
         self.dec = dec
         self.radius = radius # Default 11.8 arcmin - XRT FOV
         # begin and end boundaries        
         self.begin = begin
         self.end = end
+        self.length = length
         # Search on targetid/obsnum
         self.targetid = targetid
-        self._obsnum = None
         self.obsnum = obsnum
         # Login
         self.username = username
-        self.shared_secret = shared_secret
+        if shared_secret != None:
+            self.shared_secret = shared_secret
         # PPST entries go here
         self.entries = list()
         # Status of request
         self.status = Swift_TOO_Status()
         # Contents of the rows
-        self.rows = ['username','begin','end','ra','dec','radius','targetid','obsnum','ppstmax','entries']
-        self.extrarows = ['status']
+        self.rows = ['username','begin','end','ra','dec','radius','targetid','obsnum']
+        self.extrarows = ['status','ppstmax','entries']
         self.trans_name = dict()
         # Acceptable classes that be part of this class
         self.subclasses = [Swift_PPST_Entry,Swift_TOO_Status]
@@ -131,44 +113,13 @@ class Swift_PPST(TOOAPI_Baseclass):
         self.ppstmax = None
         # Observations
         self._observations = Swift_Observations()
-        if self.username != None:
+        if self.ra != None or self.begin != None or targetid != None or obsnum != None:
             self.submit()
 
-    def __str__(self):
-        values = [f"{row}={getattr(self,row)}" for row in self.rows if row != "entries"]
-        return f"{[val for val in values if 'None' not in val]}"
-    
-    def __repr__(self):
-        return f"<{self.__str__()}>"
-
-    @property
-    def obsnum(self):
-        return self._obsnum
-
-    @obsnum.setter
-    def obsnum(self,obsnum):
-        '''Allow obsnum to be specified in Spacecraft (int) or SDC format (string), or an array of either'''
-        if type(obsnum) == list or type(obsnum) == tuple:
-            self._obsnum = [convert_obsnum(obs) for obs in obsnum]
-        else: 
-            self._obsnum = convert_obsnum(obsnum)
-    
     @property
     def table(self):
-        return [ppt.table for ppt in self]
-
-    def _repr_html_(self):
-        if self.table == []:
-            return "No data"
-        else:
-            return tabulate(self.table,['Begin','End','Name','Obs Number','Exposure (s)'],tablefmt='html',stralign='right').replace('right','left')
-    
-    def __str__(self):
-        if self.table == []:
-            return "No data"
-        else:
-            return tabulate(self.table,['Begin','End','Name','Obs Number','Exposure (s)'],tablefmt='pretty',stralign='right')
-
+        header = self.entries[0].table[0]
+        return header,[ppt.table[1][0] for ppt in self]
 
     @property
     def observations(self):
@@ -177,23 +128,6 @@ class Swift_PPST(TOOAPI_Baseclass):
                 self._observations[q.obsnum] = Swift_Observation()
             _ = [self._observations[q.obsnum].append(q) for q in self.entries]
         return self._observations
-
-    @property 
-    def skycoord(self): 
-        # Check if the RA/Dec match the SkyCoord, and if they don't modify the skycoord
-        if type(self._skycoord).__module__ == 'astropy.coordinates.sky_coordinate':
-            if self.ra != self._skycoord.fk5.ra.deg or self.dec != self._skycoord.fk5.dec.deg:
-                self._skycoord = self._skycoord.__class__(self.ra,self.dec,unit="deg",frame="fk5")
-        return self._skycoord
-
-    @skycoord.setter
-    def skycoord(self,sc):
-        if type(sc).__module__ == 'astropy.coordinates.sky_coordinate':
-            self._skycoord = sc
-            self.ra = sc.fk5.ra.deg
-            self.dec = sc.fk5.dec.deg
-        else:
-            raise Exception("Needs to be assigned an astropy SkyCoord")
 
     def __getitem__(self,index):
         return self.entries[index]
