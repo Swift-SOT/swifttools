@@ -35,6 +35,9 @@ class ProductRequest:
         what : str The type of product this request is for (a ValueError
             will be raised if an invalid product is requested)
 
+        silent : bool Whether to suppress all console output 
+               (default: True).
+
         """
         # Was this a valid product?
         if what not in prodParTypes:
