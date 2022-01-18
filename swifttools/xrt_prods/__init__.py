@@ -48,4 +48,4 @@ Brief example
 
 from .prod_request import XRTProductRequest
 from .prod_request import listOldJobs,countActiveJobs
-
+from .version import __version__, _apiVersion
