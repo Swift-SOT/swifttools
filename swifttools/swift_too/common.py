@@ -518,7 +518,6 @@ class TOOAPI_ObsID:
                 self._seg.append(onsc >> 24)
             
         elif obsnum != None and obsnum != []:
-            print(f"{obsnum=}")
             obsnum = convert_obsnum(obsnum)
             self._target_id = obsnum & 0xffffff
             self._seg = obsnum >> 24
