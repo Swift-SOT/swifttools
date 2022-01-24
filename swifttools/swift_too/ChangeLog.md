@@ -1,5 +1,12 @@
 # Change history for `swift_too` module
 
+`swifttools` 2.2.2 / `swift_too` 1.2.4
+
+January 24th, 2022 Bug fix release.
+
+* Debug code was left in that was not compatible with earlier versions of python (e.g. 3.6). This has been removed.
+
+
 `swifttools` 2.2 / `swift_too` 1.2.3
 
 December 17th, 2021 `swift_too` module updated to version 1.2.3. Updates made in response to feedback from original release, and various quality of life improvements. Also new products can be fetched from the TOO API.
