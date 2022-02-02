@@ -1,33 +1,47 @@
 from .too_status import Swift_TOO_Status
 from .common import TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord
+from .swift_resolve import TOOAPI_AutoResolve
+
 
 class Swift_VisWindow(TOOAPI_Baseclass):
     '''Simple class to define a Visibility window. Begin and End of window can
-    either be accessed as self.begin or self.end, or as self[0] or self[1].'''
-    def __init__(self):
-        TOOAPI_Baseclass.__init__(self)
-        self.api_name = "Swift_VisWindow"
-        self.begin = None
-        self.end = None
-        self.status = Swift_TOO_Status()
-        self.rows = ['begin','end','length']
-        self.varnames = {'begin':'Begin Time','end':'End Time','length':'Window length'}
-        
+    either be accessed as self.begin or self.end, or as self[0] or self[1].
+
+    Attributes
+    ----------
+    begin : datetime
+        begin time of window
+    end : datetime
+        end time of window
+    length : timedelta
+        length of window
+    '''
+    # API parameter definition
+    rows = ['begin', 'end', 'length']
+    # Names for parameters
+    varnames = {'begin': 'Begin Time',
+                'end': 'End Time', 'length': 'Window length'}
+    # API name
+    api_name = "Swift_VisWindow"
+    # Attributes
+    begin = None
+    end = None
+
     @property
     def length(self):
-        if self.end == None or self.begin == None:
+        if self.end is None or self.begin is None:
             return None
         return self.end - self.begin
 
     @property
-    def table(self):
+    def _table(self):
         header = [self.varnames[row] for row in self.rows]
-        return header,[[self.begin,self.end, self.length]]
+        return header, [[self.begin, self.end, self.length]]
 
     def __str__(self):
         return f"{self.begin} - {self.end} ({self.length})"
 
-    def __getitem__(self,index):
+    def __getitem__(self, index):
         if index == 0:
             return self.begin
         elif index == 1:
@@ -35,80 +49,131 @@ class Swift_VisWindow(TOOAPI_Baseclass):
         else:
             raise IndexError('list index out of range')
 
-class Swift_VisQuery(TOOAPI_Baseclass,TOOAPI_Daterange,TOOAPI_SkyCoord):
+
+class Swift_VisQuery(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI_AutoResolve):
     '''Request Swift Target visibility windows. These results are low-fidelity,
     so do not give orbit-to-orbit visibility, but instead long term windows
     indicates when a target is observable by Swift and not in a Sun/Moon/Pole
-    constraint.'''
-    def __init__(self,username='anonymous',shared_secret=None,ra=None,dec=None,begin=None,length=1,end=None,hires=False):
-        TOOAPI_Baseclass.__init__(self)
-        TOOAPI_Daterange.__init__(self)
-        TOOAPI_SkyCoord.__init__(self)
-        self.api_name = "Swift_VisQuery"
+    constraint.
+
+    Attributes
+    ----------
+    begin : datetime
+        begin time of visibility window
+    end : datetime
+        end time of visibility window
+    length : timedelta
+        length of visibility window
+    ra : float
+        Right Ascension of target in J2000 (decimal degrees)
+    dec : float
+        Declination of target in J2000 (decimal degrees)
+    skycoord : SkyCoord
+        SkyCoord version of RA/Dec if astropy is installed
+    hires : boolean
+        Calculate visibility with high resolution, including Earth
+        constraints
+    username : str
+        username for TOO API (default 'anonymous')
+    shared_secret : str
+        shared secret for TOO API (default 'anonymous')
+    entries : list
+        List of visibility windows (`Swift_VisWindow`)
+    status : Swift_TOO_Status
+        Status of API request
+    '''
+
+    # Parameters that are passed to the API for this request
+    rows = ['username', 'ra', 'dec', 'length', 'begin', 'hires']
+    # Local and alias parameter names
+    local = ['name', 'skycoord', 'end']
+    # Attributes returned by API Server
+    extrarows = ['status', 'windows']
+    # Subclasses
+    subclasses = [Swift_TOO_Status, Swift_VisWindow]
+    # API Name
+    api_name = "Swift_VisQuery"
+    # Returned data
+    windows = list()
+
+    def __init__(self, *args, **kwargs):
+        '''
+        Parameters
+        ----------
+        begin : datetime
+            begin time of visibility window
+        end : datetime
+            end time of visibility window
+        length : timedelta
+            length of visibility window
+        ra : float
+            Right Ascension of target in J2000 (decimal degrees)
+        dec : float
+            Declination of target in J2000 (decimal degrees)
+        skycoord : SkyCoord
+            SkyCoord version of RA/Dec if astropy is installed
+        hires : boolean
+            Calculate visibility with high resolution, including Earth
+            constraints
+        username : str
+            username for TOO API (default 'anonymous')
+        shared_secret : str
+            shared secret for TOO API (default 'anonymous')
+        '''
         # User arguments
-        self.ra = ra
-        self.dec = dec
-        self._length = None
-        self.length = length
-        self.hires = hires
-        # Start and end boundaries        
-        self.begin = begin
-        self.end = end
-        # Username/Secret stuff
-        self.username = username
-        if shared_secret != None:
-            self.shared_secret = shared_secret
+        self.username = 'anonymous'
+        self.ra = None
+        self.dec = None
+        self.hires = None
+        self.length = None
         # Visibility windows go here
         self.windows = list()
         # Status of request
         self.status = Swift_TOO_Status()
-        # Contents of the rows
-        self.rows = ['username','ra','dec','begin','length','hires']
-        self.extrarows = ['status','windows']
-        # Subclasses
-        self.subclasses = [Swift_TOO_Status,Swift_VisWindow]
-        if ra != None and self.status == "Unknown":
+        # Parse argument keywords
+        self._parseargs(*args, **kwargs)
+
+        if self.validate():
             self.submit()
 
     @property
-    def table(self):
+    def _table(self):
         if len(self.windows) != 0:
-            header = self.windows[0].table[0]
+            header = self.windows[0]._table[0]
         else:
             header = []
-        return header,[win.table[1][0] for win in self.windows]
+        return header, [win._table[1][0] for win in self.windows]
 
-    def __getitem__(self,index):
+    # For compatibility / consistency with other classes.
+    @property
+    def entries(self):
+        return self.windows
+
+    def __getitem__(self, index):
         return self.windows[index]
-    
+
     def __len__(self):
         return len(self.windows)
-    
+
     def validate(self):
-        # Check username and shared_secret are set
-        if not self.username or not self.shared_secret:
-            print(f"{self.__class__.__name__} ERROR: username and shared_secret parameters need to be supplied.")
+        '''Validate all parameters are given before submission'''
+        # If length is not set, set to default of 7 days, or 1 day for hires
+        if self.length is None:
+            if self.hires:
+                self.length = 1
+            else:
+                self.length = 7
+        # Check RA/Dec are set correctly
+        if self.ra is not None and self.dec is not None:
+            if self.ra >= 0 and self.ra <= 360 and self.dec >= -90 and self.dec <= 90:
+                return True
+            else:
+                self.status.error("RA/Dec not in valid range.")
+                return False
+        else:
+            self.status.error("RA/Dec not set.")
             return False
 
-        # How many search keys? Require at least one
-        keys = self.api_data.keys()
 
-        # We need one of these keys to be submitted
-        req_keys = ['begin','length']
-
-        # Check how many of them are in the request
-        total_keys = 0
-        for key in keys:
-            if key in req_keys:
-                total_keys += 1
-
-        if 'ra' not in keys or 'dec' not in keys:
-            print("ERROR: Must supply RA and Dec of object.")
-            return False
-
-        if total_keys == 0:
-            print("ERROR: Please supply search parameters to narrow search.")
-            return False
-
-        
-        return True
+# Shorthand alias for class
+VisQuery = Swift_VisQuery

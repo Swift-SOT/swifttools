@@ -1,54 +1,126 @@
-from .common import TOOAPI_Baseclass
+from .common import TOOAPI_Baseclass, TOOAPI_Instruments
 from .too_status import Swift_TOO_Status
 from tabulate import tabulate
 
+
 class UVOT_mode_entry(TOOAPI_Baseclass):
+    '''Class describing a single entry in the UVOT Mode table
+
+    Attributes
+    ----------
+    uvotmode : int
+        UVOT mode
+    filter_num : int
+        filter number
+    min_exposure : int
+        minumum exposure for entry
+    filter_name : str
+        filter name
+    filter_pos : int
+        position of filter in filter wheel
+    filter_seqid : int
+        Sequence ID of filter
+    eventmode : boolean
+        Is filter entry taken in event mode
+    field_of_view : int
+        Filter of view in arcminutes
+    binning : int
+        Binning of entry
+    max_exposure : int
+        maximum exposure time for filter
+    weight: boolean
+        Is observation for this filter weighted for the total exposure time
+    special: str
+        comment on special modes
+    '''
+    # Core API definitions
+    rows = ['uvotmode', 'filter_num', 'min_exposure', 'filter_name', 'filter_pos', 'filter_seqid',
+            'eventmode', 'field_of_view', 'binning', 'max_exposure', 'weight', 'special', 'comment']
+    extrarows = []
+    api_name = 'UVOT_mode_entry'
+
     def __init__(self):
-        TOOAPI_Baseclass.__init__(self)
-        self.filter_name = None
-        self.rows = ['uvotmode','filter_num','min_exposure','filter_name','filter_pos','filter_seqid','eventmode','field_of_view','binning','max_exposure','weight','special','comment']
         # Lazy variable init
         for row in self.rows:
-            setattr(self,row,None)
+            setattr(self, row, None)
 
     def __str__(self):
         return self.filter_name
-class UVOT_mode(TOOAPI_Baseclass):
+
+
+class UVOT_mode(TOOAPI_Baseclass, TOOAPI_Instruments):
     '''Class to fetch information about a given UVOT mode. Specifically this is
     useful for understanding for a given UVOT hex mode (e.g. 0x30ed), which
-    filters and configuration are used by UVOT.'''
-    def __init__(self,username='anonymous',shared_secret=None,uvotmode=None):
-        TOOAPI_Baseclass.__init__(self)
-        self.rows = ['username','uvotmode']
-        self.extrarows = ['status','entries']
-        self.username = username
-        if shared_secret != None:
-            self.shared_secret = shared_secret
-        self.uvotmode = uvotmode
+    filters and configuration are used by UVOT.
+
+    Attributes
+    ----------
+    uvotmode : int / str
+        UVOT mode to fetch information about (can be hex string or integer)
+    username : str
+        username for TOO API (default 'anonymous')
+    shared_secret : str
+        shared secret for TOO API (default 'anonymous')
+    status : Swift_TOO_Status
+        TOO API submission status
+    entries : list
+        entries (`UVOT_mode_entry`) in UVOT mode table
+    '''
+
+    # Core API definitions
+    rows = ['username', 'uvotmode']
+    extrarows = ['status', 'entries']
+    subclasses = [UVOT_mode_entry, Swift_TOO_Status]
+    api_name = 'UVOT_mode'
+    # Alias for uvotmode
+    uvotmode = TOOAPI_Instruments.uvot
+
+    def __init__(self, *args, **kwargs):
+        '''
+        Parameters
+        ----------
+        uvotmode : int / str
+            UVOT mode to fetch information about (can be hex string or integer)
+        username : str
+            username for TOO API (default 'anonymous')
+        shared_secret : str
+            shared secret for TOO API (default 'anonymous')
+        '''
+        # Set up username
+        self.username = 'anonymous'
+        # Set up uvotmode
+        self.uvotmode = None
+        # Here is where the data go
         self.entries = None
+        # TOO API status
         self.status = Swift_TOO_Status()
-        self.subclasses = [UVOT_mode_entry,Swift_TOO_Status]
-        if uvotmode and self.validate():
+        # Parse argument keywords
+        self._parseargs(*args, **kwargs)
+
+        # If everything has been provided, submit the TOO API request
+        if self.validate():
             self.submit()
 
-    def __getitem__(self,index):
+    def __getitem__(self, index):
         return self.entries[index]
-    
+
     def __len__(self):
         return len(self.entries)
 
     def __str__(self):
         '''Display UVOT mode table'''
-        if self.entries != None:
-            table_cols = ['filter_name','eventmode','field_of_view','binning','max_exposure','weight','comment']
+        if self.entries is not None:
+            table_cols = ['filter_name', 'eventmode', 'field_of_view',
+                          'binning', 'max_exposure', 'weight', 'comment']
             table_rows = list()
-            table_rows.append(['Filter','Event FOV','Image FOV','Bin Size','Max. Exp. Time','Weighting','Comments'])
+            table_rows.append(['Filter', 'Event FOV', 'Image FOV',
+                              'Bin Size', 'Max. Exp. Time', 'Weighting', 'Comments'])
             for entry in self.entries:
-                table_rows.append([getattr(entry,col) for col in table_cols])
+                table_rows.append([getattr(entry, col) for col in table_cols])
 
-            table = f"UVOT Mode: 0x{self.uvotmode:04x}\n"
+            table = f"UVOT Mode: {self.uvotmode}\n"
             table += "The following table summarizes this mode, ordered by the filter sequence:\n"
-            table += tabulate(table_rows,tablefmt='pretty')
+            table += tabulate(table_rows, tablefmt='pretty')
             table += "\nFilter: The particular filter in the sequence.\n"
             table += "Event FOV: The size of the FOV (in arc-minutes) for UVOT event data.\n"
             table += "Image FOV: The size of the FOV (in arc-minutes) for UVOT image data.\n"
@@ -61,12 +133,12 @@ class UVOT_mode(TOOAPI_Baseclass):
 
     def _repr_html_(self):
         '''Jupyter Notebook friendly display of UVOT mode table'''
-        if self.entries != None:
-            html = f"<h2>UVOT Mode: 0x{self.uvotmode:04x}</h2>"
+        if self.entries is not None:
+            html = f"<h2>UVOT Mode: {self.uvotmode}</h2>"
             html += "<p>The following table summarizes this mode, ordered by the filter sequence:</p>"
 
             html += '<table id="modelist" cellpadding=4 cellspacing=0>'
-            html += '<tr>'# style="background-color:#08f; color:#fff;">'
+            html += '<tr>'  # style="background-color:#08f; color:#fff;">'
             html += '<th>Filter</th>'
             html += '<th>Event FOV</th>'
             html += '<th>Image FOV</th>'
@@ -76,10 +148,11 @@ class UVOT_mode(TOOAPI_Baseclass):
             html += '<th>Comments</th>'
             html += '</tr>'
 
-            table_cols = ['filter_name','eventmode','field_of_view','binning','max_exposure','weight','comment']
-            i=0
+            table_cols = ['filter_name', 'eventmode', 'field_of_view',
+                          'binning', 'max_exposure', 'weight', 'comment']
+            i = 0
             for entry in self.entries:
-                if i%2: 
+                if i % 2:
                     html += '<tr style="background-color:#eee;">'
                 else:
                     html += '<tr">'
@@ -100,20 +173,25 @@ class UVOT_mode(TOOAPI_Baseclass):
             html += '</p>'
             return html
         else:
-            return f"No data"
+            return "No data"
 
     def validate(self):
         # Check username and shared_secret are set
+        if self.uvotmode is None:
+            return False
         if not self.username or not self.shared_secret:
-            print(f"{self.__class__.__name__} ERROR: username and shared_secret parameters need to be supplied.")
-            self.status.error('username and shared_secret parameters need to be supplied.')
+            print(
+                f"{self.__class__.__name__} ERROR: username and shared_secret parameters need to be supplied.")
+            self.status.error(
+                'username and shared_secret parameters need to be supplied.')
             return None
-        if type(self.uvotmode) != int:
+        if type(self._uvot) != int:
             try:
                 # See if it's a hex string
-                self.uvotmode = int(self.uvotmode,16)
-            except:
-                print(f"{self.__class__.__name__} ERROR: Invalid UVOT mode: {self.uvotmode}.")
+                self.uvotmode = int(self.uvotmode, 16)
+            except ValueError:
+                print(
+                    f"{self.__class__.__name__} ERROR: Invalid UVOT mode: {self.uvotmode}.")
                 self.status.error(f'Invalid UVOT mode: {self.uvotmode}.')
                 return None
         return True

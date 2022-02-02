@@ -1,18 +1,63 @@
-from .common import TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI_ObsID, xrtmodes
+from .common import TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_Instruments
 from .too_status import Swift_TOO_Status
 from datetime import timedelta
+from .swift_resolve import TOOAPI_AutoResolve
 
 
-class Swift_AFST_Entry(TOOAPI_Baseclass,TOOAPI_SkyCoord,TOOAPI_ObsID):
-    '''Class that defines an individual entry in the Swift As-Flown Timeline'''
+class Swift_AFST_Entry(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_Instruments):
+    '''Class that defines an individual entry in the Swift As-Flown Timeline
+
+    Attributes
+    ----------
+    begin : datetime
+        begin time of observation
+    settle : datetime
+        settle time of the observation
+    end : datetime
+        end time of observation
+    slewtime : timedelta
+        slew time of the observation
+    targetid : int
+        target ID  of the observation
+    seg : int
+        segment number of the observation
+    xrt : str
+        XRT mode of the observation
+    uvot : str
+        Hex string UVOT mode of the observation
+    bat : int
+        BAT mode of the observation
+    exposure : timedelta
+        exposure time of the observation
+    ra : float
+        Right Ascension of pointing in J2000 (decimal degrees)
+    dec : float
+        Declination of pointing in J2000 (decimal degrees)
+    roll : float
+        roll angle of the observation (decimal degrees)
+    skycoord : SkyCoord
+        SkyCoord version of RA/Dec if astropy is installed
+    ra_object : float
+        RA of the object that is the target of the pointing
+    dec_object : float
+        dec of the object that is the target of the pointing
+    targname : str
+        Target name of the primary target of the observation
+    '''
+    # API core definition
+    rows = ['begin', 'settle', 'end', 'ra', 'dec', 'roll', 'targname', 'targetid',
+            'seg', 'ra_point', 'dec_point', 'xrt', 'uvot', 'bat', 'fom', 'obstype']
+    extrarows = []
+    # Variable names
+    names = ['Begin Time', 'Settle Time', 'End Time', 'RA(J2000)', 'Dec(J200)',
+             'Roll (deg)', 'Target Name', 'Target ID', 'Segment', 'Object RA(J2000)',
+             'Object Dec(J2000)', 'XRT Mode', 'UVOT Mode', 'BAT Mode', 'Figure of Merit',
+             'Observation Type']
+    # API name
+    api_name = "Swift_AFST_Entry"
+
     def __init__(self):
-        TOOAPI_Baseclass.__init__(self)
-        TOOAPI_SkyCoord.__init__(self)
-        TOOAPI_ObsID.__init__(self)
-        self.api_name = "Swift_AFST_Entry"
         # Attributes of the class and their descriptions
-        self.rows = ['begin','settle','end','ra','dec','roll','targname','targetid','seg','ra_point','dec_point','xrt','uvot','bat','fom','obstype']
-        self.names =['Begin Time','Settle Time','End Time','RA(J2000)','Dec(J200)','Roll (deg)','Target Name','Target ID','Segment','Object RA(J2000)','Object Dec(J2000)','XRT Mode','UVOT Mode','BAT Mode','Figure of Merit','Observation Type']
         self.varnames = dict()
         for i in range(len(self.rows)):
             self.varnames[self.rows[i]] = self.names[i]
@@ -42,27 +87,6 @@ class Swift_AFST_Entry(TOOAPI_Baseclass,TOOAPI_SkyCoord,TOOAPI_ObsID):
         # Swift_AFST returns a bunch of stuff we don't care about, so just take the things we do
         self.ignorekeys = True
 
-    # Instrument modes
-    @property
-    def xrt(self):
-        '''Given a XRT mode number returns a string containing the name of the
-        mode'''
-        return xrtmodes[self._xrt]
-
-    @xrt.setter
-    def xrt(self,mode):
-        self._xrt = mode
-
-    @property
-    def uvot(self):
-        '''Given a XRT mode number returns a string containing the name of the
-        mode'''
-        return f"0x{self._uvot:04x}"
-
-    @uvot.setter
-    def uvot(self,mode):
-        self._uvot = mode
-
     @property
     def exposure(self):
         return self.end - self.settle
@@ -71,13 +95,14 @@ class Swift_AFST_Entry(TOOAPI_Baseclass,TOOAPI_SkyCoord,TOOAPI_ObsID):
     def slewtime(self):
         return self.settle - self.begin
 
-    ## The following provides compatibility as we changed ra/dec_point to ra/dec_object. These will go away with a future API update.
+    # The following provides compatibility as we changed ra/dec_point to
+    # ra/dec_object. These will go away with a future API update.
     @property
     def ra_point(self):
         return self.ra_object
-    
+
     @ra_point.setter
-    def ra_point(self,ra):
+    def ra_point(self, ra):
         self.ra_object = ra
 
     @property
@@ -85,16 +110,15 @@ class Swift_AFST_Entry(TOOAPI_Baseclass,TOOAPI_SkyCoord,TOOAPI_ObsID):
         return self.dec_object
 
     @dec_point.setter
-    def dec_point(self,dec):
+    def dec_point(self, dec):
         self.dec_object = dec
-    ## Compat end 
+    # Compat end
 
     @property
-    def table(self):
-        rows = ['begin','end','targname','obsnum','exposure','slewtime']
+    def _table(self):
+        rows = ['begin', 'end', 'targname', 'obsnum', 'exposure', 'slewtime']
         header = [self.varnames[row] for row in rows]
-        return header,[[self.begin,self.end, self.targname, self.obsnum, self.exposure.seconds, self.slewtime.seconds]]
-
+        return header, [[self.begin, self.end, self.targname, self.obsnum, self.exposure.seconds, self.slewtime.seconds]]
 
 
 class Swift_Observation(TOOAPI_Baseclass):
@@ -102,25 +126,56 @@ class Swift_Observation(TOOAPI_Baseclass):
     Whereas observations are typically one or more individual snapshot, in TOO
     API speak a `Swift_AFST_Entry`, this class summarizes all snapshots into a
     single begin time, end time. Note that as ra/dec varies between each
-    snapshot, only `ra_object`, `dec_object` are given as coordinates. '''
+    snapshot, only `ra_object`, `dec_object` are given as coordinates.
+
+    Attributes
+    ----------
+    begin : datetime
+        begin time of observation
+    settle : datetime
+        settle time of the observation
+    end : datetime
+        end time of observation
+    slewtime : timedelta
+        slew time of the observation
+    targetid : int
+        target ID  of the observation
+    seg : int
+        segment number of the observation
+    xrt : str
+        XRT mode of the observation
+    uvot : str
+        Hex string UVOT mode of the observation
+    bat : int
+        BAT mode of the observation
+    exposure : timedelta
+        exposure time of the observation
+    ra_object : float
+        RA of the object that is the target of the pointing
+    dec_object : float
+        dec of the object that is the target of the pointing
+    targname : str
+        Target name of the primary target of the observation
+    '''
+    # Core API definitions
+    api_name = "Swift_Observation"
+    rows = ['begin', 'end', 'targname', 'targetid', 'seg',
+            'ra_object', 'dec_object', 'xrt', 'uvot', 'bat', 'entries']
+
     def __init__(self):
-        TOOAPI_Baseclass.__init__(self)
-        self.api_name = "Swift_Observation"
         # All the Swift_AFST_Entries for this observation
         self.entries = Swift_AFST()
-        self.rows = ['begin','end','targname','targetid','seg','ra_object','dec_object','xrt','uvot','entries']
-        self.extrarows = []
 
-    def __getitem__(self,index):
+    def __getitem__(self, index):
         return self.entries[index]
 
     def __len__(self):
-        return len(self.entries)        
+        return len(self.entries)
 
-    def append(self,value):
+    def append(self, value):
         self.entries.append(value)
 
-    def extend(self,value):
+    def extend(self, value):
         self.entries.extend(value)
 
     @property
@@ -129,22 +184,22 @@ class Swift_Observation(TOOAPI_Baseclass):
 
     @property
     def seg(self):
-        return self.entries[0].seg 
+        return self.entries[0].seg
 
     @property
     def obsnum(self):
         return self.entries[0].obsnum
-    
+
     @property
     def targname(self):
         return self.entries[0].targname
 
-    @property 
+    @property
     def ra_object(self):
         if hasattr(self.entries[0], 'ra_object'):
             return self.entries[0].ra_object
 
-    @property 
+    @property
     def dec_object(self):
         if hasattr(self.entries[0], 'dec_object'):
             return self.entries[0].dec_object
@@ -163,7 +218,7 @@ class Swift_Observation(TOOAPI_Baseclass):
 
     @property
     def end(self):
-        return max([q.end for q in self.entries]) 
+        return max([q.end for q in self.entries])
 
     @property
     def xrt(self):
@@ -174,16 +229,21 @@ class Swift_Observation(TOOAPI_Baseclass):
         return self.entries[0].uvot
 
     @property
+    def bat(self):
+        return self.entries[0].bat
+
+    @property
     def snapshots(self):
         return self.entries
 
-    ## The following provides compatibility as we changed ra/dec_point to ra/dec_object. These will go away in the next version of the API (1.3).
+    # The following provides compatibility as we changed ra/dec_point to
+    # ra/dec_object. These will go away in the next version of the API (1.3).
     @property
     def ra_point(self):
         return self.ra_object
-    
+
     @ra_point.setter
-    def ra_point(self,ra):
+    def ra_point(self, ra):
         self.ra_object = ra
 
     @property
@@ -191,83 +251,138 @@ class Swift_Observation(TOOAPI_Baseclass):
         return self.dec_object
 
     @dec_point.setter
-    def dec_point(self,dec):
+    def dec_point(self, dec):
         self.dec_object = dec
-    ## Compat end
+    # Compat end
 
     @property
-    def table(self):
+    def _table(self):
         if len(self.entries) > 0:
-            header = self.entries[0].table[0]
+            header = self.entries[0]._table[0]
         else:
             header = []
-        return header,[[self.begin, self.end, self.targname, self.obsnum, self.exposure.seconds, self.slewtime.seconds]]
+        return header, [[self.begin, self.end, self.targname, self.obsnum, self.exposure.seconds, self.slewtime.seconds]]
 
 
-class Swift_Observations(dict,TOOAPI_Baseclass):
+class Swift_Observations(dict, TOOAPI_Baseclass):
     '''Adapted dictionary class for containing observations that mostly is just
     to ensure that data can be displayed in a consistent format. Key is
     typically the Swift Observation ID in SDC format (e.g. '00012345012').'''
 
     @property
-    def table(self):
+    def _table(self):
         if len(self.values()) > 0:
-            header = list(self.values())[0].table[0]
+            header = list(self.values())[0]._table[0]
         else:
             header = []
-        return header,[self[obsid].table[1][0] for obsid in self.keys()]
+        return header, [self[obsid]._table[1][0] for obsid in self.keys()]
 
 
-class Swift_AFST(TOOAPI_Baseclass,TOOAPI_Daterange,TOOAPI_SkyCoord,TOOAPI_ObsID):
+class Swift_AFST(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_AutoResolve):
     '''Class to fetch Swift As-Flown Science Timeline (AFST) for given
     constraints. Essentially this will return what Swift observed and when, for
     given constraints. Constraints can be for give coordinate (SkyCoord or J2000
     RA/Dec) and radius (in degrees), a given date range, or a given target ID
-    (targetid) or Observation ID (obsnum).'''
-    def __init__(self,username='anonymous',shared_secret=None,ra=None,dec=None,begin=None,end=None,targetid=None,obsnum=None,radius=0.1967,length=None):
-        TOOAPI_Baseclass.__init__(self)
-        TOOAPI_Daterange.__init__(self)
-        TOOAPI_ObsID.__init__(self)
-        self.api_name = "Swift_AFST"
+    (targetid) or Observation ID (obsnum).
+
+    Attributes
+    ----------
+    begin : datetime
+        begin time of visibility window
+    end : datetime
+        end time of visibility window
+    length : timedelta
+        length of visibility window
+    ra : float
+        Right Ascension of target in J2000 (decimal degrees)
+    dec : float
+        Declination of target in J2000 (decimal degrees)
+    skycoord : SkyCoord
+        SkyCoord version of RA/Dec if astropy is installed
+    username: str
+        Swift TOO API username (default 'anonymous')
+    shared_secret: str
+        TOO API shared secret (default 'anonymous')
+    entries : list
+        List of observations (`Swift_AFST_Entry`)
+    status : Swift_TOO_Status
+        Status of API request
+    afstmax: datetime
+        When is the AFST valid up to
+    '''
+    # Define API name
+    api_name = "Swift_AFST"
+    # Contents of the rows
+    rows = ['username', 'begin', 'end', 'ra',
+            'dec', 'radius', 'targetid', 'obsnum']
+    local = ['obsid', 'name', 'skycoord', 'length', 'target_id']
+    extrarows = ['status', 'afstmax', 'entries']
+    # Acceptable classes that be part of this class
+    subclasses = [Swift_AFST_Entry, Swift_TOO_Status]
+
+    def __init__(self, *args, **kwargs):
+        '''
+        Parameters
+        ----------
+        begin : datetime
+            begin time of window
+        end : datetime
+            end time of window
+        length : timedelta
+            length of window
+        ra : float
+            Right Ascension of target in J2000 (decimal degrees)
+        dec : float
+            Declination of target in J2000 (decimal degrees)
+        skycoord : SkyCoord
+            SkyCoord version of RA/Dec if astropy is installed
+        radius : float
+            radius in degrees to search around (default 0.197)
+        targetid : int
+            target ID of target
+        obsnum : int / str
+            Observation ID of target, either in spacecraft (int) or SDC (str)
+            formats
+        username : str
+            username for TOO API (default 'anonymous')
+        shared_secret : str
+            shared secret for TOO API (default 'anonymous')
+        '''
+
         # Coordinate search
-        self.ra = ra
-        self.dec = dec
-        self.radius = radius # Default 11.8 arcmin - XRT FOV
-        # begin and end boundaries        
-        self.begin = begin
-        self.end = end    
-        self.length = length
+        self.ra = None
+        self.dec = None
+        self.radius = 11.8/60  # Default 11.8 arcmin - XRT FOV
+
         # Search on targetid/obsnum
-        self.targetid = targetid
-        self.obsnum = obsnum        
+        self.targetid = None
+        self.obsnum = None
+
         # Login
-        self.username = username
-        if shared_secret != None:
-            self.shared_secret = shared_secret
+        self.username = 'anonymous'
         # AFST entries go here
         self.entries = list()
         # Status of request
         self.status = Swift_TOO_Status()
+
+        # Parse argument keywords
+        self._parseargs(*args, **kwargs)
+
         # AFST maximum date
         self.afstmax = None
-        # Contents of the rows
-        self.rows = ['username','begin','end','ra','dec','radius','targetid','obsnum']
-        self.extrarows = ['status','afstmax','entries']
-        self.trans_name = dict()
-        # Acceptable classes that be part of this class
-        self.subclasses = [Swift_AFST_Entry,Swift_TOO_Status]
+
         # Observations
         self._observations = Swift_Observations()
-        if self.ra != None or self.begin != None or targetid != None or obsnum != None:
+        if self.ra is not None or self.begin is not None or self.targetid is not None or self.obsnum is not None:
             self.submit()
 
     @property
-    def table(self):
+    def _table(self):
         if len(self.entries) > 0:
-            header = self.entries[0].table[0]
+            header = self.entries[0]._table[0]
         else:
             header = []
-        return header,[ppt.table[1][0] for ppt in self]
+        return header, [ppt._table[1][0] for ppt in self]
 
     @property
     def observations(self):
@@ -277,27 +392,29 @@ class Swift_AFST(TOOAPI_Baseclass,TOOAPI_Daterange,TOOAPI_SkyCoord,TOOAPI_ObsID)
             _ = [self._observations[q.obsnum].append(q) for q in self.entries]
         return self._observations
 
-    def __getitem__(self,index):
+    def __getitem__(self, index):
         return self.entries[index]
 
     def __len__(self):
         return len(self.entries)
 
-    def append(self,value):
+    def append(self, value):
         self.entries.append(value)
 
     def validate(self):
         # Check username and shared_secret are set
         if not self.username or not self.shared_secret:
-            print(f"{self.__class__.__name__} ERROR: username and shared_secret parameters need to be supplied.")
+            print(
+                f"{self.__class__.__name__} ERROR: username and shared_secret parameters need to be supplied.")
             return None
-        
+
         # How many search keys? Require at least one
         keys = self.api_data.keys()
-        
+
         # We need one of these keys to be submitted
-        req_keys = ['begin','end','ra','dec','radius','targetid','obsnum']
-        
+        req_keys = ['begin', 'end', 'ra', 'dec',
+                    'radius', 'targetid', 'obsnum']
+
         # Check how many of them are in the request
         total_keys = 0
         for key in keys:
@@ -319,5 +436,7 @@ class Swift_AFST(TOOAPI_Baseclass,TOOAPI_Daterange,TOOAPI_SkyCoord,TOOAPI_ObsID)
         return True
 
 
-# Alias name for class
+# Alias names for class
 Swift_ObsQuery = Swift_AFST
+ObsQuery = Swift_AFST
+AFST = Swift_AFST

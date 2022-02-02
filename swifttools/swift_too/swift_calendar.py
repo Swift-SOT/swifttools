@@ -1,98 +1,138 @@
-from .common import TOOAPI_Baseclass, xrtmodes
+from .common import TOOAPI_Baseclass, TOOAPI_Instruments
 from .too_status import Swift_TOO_Status
 
-class Swift_Calendar_Entry(TOOAPI_Baseclass):
-    '''Class for a single entry in the Swift TOO calendar'''
+
+class Swift_Calendar_Entry(TOOAPI_Baseclass, TOOAPI_Instruments):
+    '''Class for a single entry in the Swift TOO calendar.
+
+    Attributes
+    ----------
+    start : datetime
+        start time of calendar entry
+    stop : datetime
+        stop time of calendar entry
+    xrt_mode : str
+        XRT mode of calendar entry
+    uvot_mode : str
+        UVOT mode of calendar entry
+    bat_mode : str
+        BAT mode of calendar entry
+    duration : int
+        exposure time of calendar entry in seconds
+    asflown: float
+        estimated exposure time in seconds
+    '''
+
+    # Set up Core API values
+    rows = ['start', 'stop', 'xrt_mode', 'bat_mode',
+            'uvot_mode', 'duration', 'asflown']
+    names = ['Start', 'Stop', 'XRT Mode', 'BAT Mode',
+             'UVOT Mode', 'Exposure (s)', 'AFST (s)']
+    api_name = "Swift_Calendar_Entry"
+
     def __init__(self):
-        TOOAPI_Baseclass.__init__(self)
-        self.api_name = "Swift_Calendar_Entry"
-        self.start = None     # Start and end times of the observing window. Use datetime for coordinated window
-        self.stop = None      # and timedelta for relative offsets, where the start time can be variable, but the monitoring cadence isn't even.
-        self._xrt_mode = None  # Only set instrument modes if they differ from the mode
-        self.bat_mode = None  # ditto
-        self._uvot_mode = None # ditto
+        # Parameters
+        # Start and end times of the observing window. Use datetime for coordinated window
+        self.start = None
+        # and timedelta for relative offsets, where the start time can be
+        # variable, but the monitoring cadence isn't even.
+        self.stop = None
         self.duration = None  # Exposure time in seconds
         self.asflown = None   # Amount of exposure taken
         self.ignorekeys = True
-        # Define the names of the database rows
-        self.rows = ['start', 'stop', 'xrt_mode', 'bat_mode', 'uvot_mode','duration','asflown']
-        self.names = ['Start','Stop','XRT Mode','BAT Mode','UVOT Mode','Exposure (s)','AFST (s)']
+        # Set up varnames
         self.varnames = dict()
         for i in range(len(self.rows)):
             self.varnames[self.rows[i]] = self.names[i]
 
-    def __getitem__(self,key):
+    def __getitem__(self, key):
         if key in self.rows:
-            return eval(f"self.{key}")
-    
-    @property
-    def xrt_mode(self):
-        '''Return XRT mode as acronym'''
-        return xrtmodes[self._xrt_mode]
+            return getattr(self, key)
 
-    @xrt_mode.setter
-    def xrt_mode(self,mode):
-        self._xrt_mode = mode
+    # Set up aliases
+    xrt_mode = TOOAPI_Instruments.xrt
+    uvot_mode = TOOAPI_Instruments.uvot
+    bat_mode = TOOAPI_Instruments.bat
 
     @property
-    def uvot_mode(self):
-        '''Return UVOT as a hex string. Stored as a number internally'''
-        if type(self._uvot_mode) == int:
-            return f"0x{self._uvot_mode:04x}"
-        else:
-            return self._uvot_mode
-
-    @uvot_mode.setter
-    def uvot_mode(self,mode):
-        self._uvot_mode = mode
-
-    @property
-    def table(self):
-        rows = ['start', 'stop', 'xrt_mode', 'uvot_mode','duration','asflown']
+    def _table(self):
+        rows = ['start', 'stop', 'xrt_mode',
+                'uvot_mode', 'duration', 'asflown']
         header = [self.varnames[row] for row in rows]
-        return header,[[getattr(self,row) for row in rows]]
-
+        return header, [[getattr(self, row) for row in rows]]
 
 
 class Swift_Calendar(TOOAPI_Baseclass):
-    '''Class that displayed observations scheduled as part of a TOO request.'''
-    def __init__(self,username='anonymous',too_id=None):
-        TOOAPI_Baseclass.__init__(self)
-        self.api_name = self.api_name = "Swift_Calendar"
+    '''Class that fetches entries in the Swift Planning Calendar, which
+    are scheduled as part of a TOO request.
+
+    Attributes
+    ----------
+    username : str
+        username for TOO API (default 'anonymous')
+    shared_secret : str
+        shared secret for TOO API (default 'anonymous')
+    too_id : int
+        Unique TOO identifying number
+    entries : list
+        list of calendar entries returned by query (`Swift_Calendar_Entries`)
+    status : Swift_TOO_Status
+        Status of API request
+    '''
+    # Core API definitions
+    api_name = "Swift_Calendar"
+    rows = ['username', 'too_id']
+    extrarows = ['status', 'entries']
+    subclasses = [Swift_Calendar_Entry, Swift_TOO_Status]
+
+    def __init__(self, *args, **kwargs):
+        '''
+        Parameters
+        ----------
+        username : str
+            username for TOO API (default 'anonymous')
+        shared_secret : str
+            shared secret for TOO API (default 'anonymous')
+        too_id : int
+            Unique TOO identifying number
+        '''
+        # Parameters
         self.entries = list()
-        self.username = username
-        self.too_id = too_id
-        self.rows = ['username','too_id']
-        self.extrarows = ['status','entries']
+        self.username = 'anonymous'
+        self.too_id = None
         self.status = Swift_TOO_Status()
 
-        # Stuff for scheduling
-        self.subclasses = [Swift_Calendar_Entry,Swift_TOO_Status]
+        # Read in arguements
+        self._parseargs(*args, **kwargs)
 
-        if self.too_id != None:
+        if self.validate():
             self.submit()
 
-    def __getitem__(self,number):
+    def __getitem__(self, number):
         return self.entries[number]
-    
+
     def __len__(self):
         return len(self.entries)
 
     def validate(self):
-        if self.too_id != None:
+        if self.too_id is not None:
             return True
         else:
             self.status.error("TOO ID is not set.")
             return False
 
     @property
-    def table(self):
+    def _table(self):
         '''Table of Calendar details'''
         table = list()
         for i in range(len(self.entries)):
-            table.append([i]+self.entries[i].table[-1][0])
+            table.append([i]+self.entries[i]._table[-1][0])
         if len(self.entries) > 0:
-            header = ["#"]+self.entries[0].table[0]
+            header = ["#"]+self.entries[0]._table[0]
         else:
             header = []
-        return header,table
+        return header, table
+
+
+# Shorthand alias
+Calendar = Swift_Calendar

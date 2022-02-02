@@ -1,13 +1,57 @@
 from .common import TOOAPI_Baseclass
 
+
 class Swift_TOO_Status(TOOAPI_Baseclass):
-    '''Simple class to describe the status of a submitted TOO API request'''
-    def __init__(self,username=None,shared_secret=None,jobnumber=None):
-        TOOAPI_Baseclass.__init__(self)
+    '''Simple class to describe the status of a submitted TOO API request
+
+    Attributes
+    ----------
+    jobnumber : int
+        TOO API job number
+    username : str
+        username for TOO API (default 'anonymous')
+    shared_secret : str
+        shared secret for TOO API (default 'anonymous')
+    status : str
+        status of API request
+    timestamp : datetime
+        time request was submitted
+    began : datetime
+        time request began processing
+    completed : datetime
+        time request finished processing
+    errors : list
+        list of error strings assoicated with the request
+    warnings : list
+        list of warning strings associated with the request
+    too_id : list
+        For a Swift_TOO request, the TOO ID assigned to a new request
+    '''
+
+    # Core API definitions
+    rows = ['username', 'jobnumber', 'too_id', 'fetchresult']
+    extrarows = ['status', 'errors', 'warnings',
+                 'timestamp', 'began', 'completed', 'result']
+    local = ['api_name']
+    api_name = 'Swift_TOO_Status'
+
+    def __init__(self, *args, **kwargs):
+        '''
+        Parameters
+        ----------
+        username : str
+            username for TOO API (default 'anonymous')
+        shared_secret : str
+            shared secret for TOO API (default 'anonymous')
+        jobnumber : int
+            TOO API job number
+        '''
         # Required arguments
-        self.jobnumber = jobnumber
-        self.username = username
-        self.shared_secret = shared_secret
+        self.jobnumber = None
+        self.username = 'anonymous'
+        # Optional arguments
+        self.fetchresult = None  # This is only to be used with QueryJob
+
         # Returned parameters
         self.status = "Unknown"
         self.timestamp = None
@@ -16,16 +60,17 @@ class Swift_TOO_Status(TOOAPI_Baseclass):
         self.errors = list()
         self.warnings = list()
         self.too_id = None
-        # Internal parameters
-        self.timeout = 0 # Don't wait for a job to be completed to report it's status
-        # These are the parameters that are reported by the class
-        self.rows = ['username','too_id','jobnumber','errors','warnings','timestamp','began','completed']
-        self.extrarows = ['status']
+        # Result of QueryJob
+        self.result = None
+
+        # Parse argument keywords
+        self._parseargs(*args, **kwargs)
+
         # If all arguments are passed, then submit
         if self.validate():
             self.submit()
 
-    def __eq__(self,value):
+    def __eq__(self, value):
         return value == self.status
 
     def __bool__(self):
@@ -41,15 +86,16 @@ class Swift_TOO_Status(TOOAPI_Baseclass):
         else:
             return False
 
-    def error(self,error):
+    def error(self, error):
         '''Add an error to the list of errors'''
         if error not in self.errors:
             self.errors.append(error)
-        
-    def warning(self,warning):
+
+    def warning(self, warning):
         '''Add a warning to the list of warnings'''
         if warning not in self.warnings:
             self.warnings.append(warning)
 
     def clear(self):
+        '''Reset status'''
         self.__init__()
