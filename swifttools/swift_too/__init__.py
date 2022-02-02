@@ -16,16 +16,17 @@ you can automate the process of TOO submission using this class. A debug
 mode is provided to allow you to test the process of submitting a TOO
 request to completion, without actually submitting a TOO.
 
-2. Swift_ObsQuery This class allows you to query what observations Swift
-   has already performed. It allows you to search for observations by
-   target ID (a unique identifier for a target) or Observation ID (a
-   unique identifier for a single observation). Also it allows for
-   searches around fixed celestial coordinates, the default inputs for
-   this are J2000 right ascension (RA), declination (dec) and radius in
-   decimal degrees, however we also support astropy's `SkyCoord` to allow
-   for other coordinate systems to be used for searches, e.g. Galactic
-   Coordinates. In addition you can narrow the search to specific date
-   ranges.
+2. Swift_ObsQuery
+
+This class allows you to query what observations Swift has already
+performed. It allows you to search for observations by target ID (a unique
+identifier for a target) or Observation ID (a unique identifier for a
+single observation). Also it allows for searches around fixed celestial
+coordinates, the default inputs for this are J2000 right ascension (RA),
+declination (dec) and radius in decimal degrees, however we also support
+astropy's `SkyCoord` to allow for other coordinate systems to be used for
+searches, e.g. Galactic Coordinates. In addition you can narrow the search
+to specific date ranges.
 
 3. Swift_VisQuery
 
