@@ -62,7 +62,7 @@ def convert_to_dt(value):
             # Do this because "fromisoformat" is restricted to 0, 3 or 6 decimal plaaces
             dtvalue = datetime.strptime(value, '%Y-%m-%d %H:%M:%S.%f')
         else:
-            dtvalue = datetime.fromisoformat(value)
+            dtvalue = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
     elif type(value) == datetime or type(value) == datetime:
         dtvalue = datetime.fromtimestamp(value.timestamp())
     elif value is None:
