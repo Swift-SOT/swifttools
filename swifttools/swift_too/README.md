@@ -4,7 +4,7 @@
 
 ### API Version 1.2
 
-This implements a client for the Swift TOO API in Python. This allows, amongst other things, for the construction and submission of Target of Opportunity (TOO) requests to NASA's Neil Gehrels *Swift* Observatory. TOO requests are created utilizing the `Swift_TOO` class. In addition to TOO requests, the `swift_too` module allows also allows the user to query past *Swift* observations using the `Swift_ObsQuery` class, and calculation of visibility of an fixed celestial object with `Swift_VisQuery`. 
+This implements a client for the Swift TOO API in Python. This allows, amongst other things, for the construction and submission of Target of Opportunity (TOO) requests to NASA's Neil Gehrels *Swift* Observatory. TOO requests are created utilizing the `Swift_TOO` class. In addition to TOO requests, the `swift_too` module allows also allows the user to query past *Swift* observations using the `Swift_ObsQuery` class, and calculation of visibility of an fixed celestial object with `Swift_VisQuery`.
 
 The `Swift_TOO` class mainly acts as a way to input parameters required for TOO requests, such as coordinates, exposure time requests and instrument nodes. These input are used to create a JSON structure which is used to submit the TOO request to the TOO API server. The JSON format is agnostic of how it was created, so this Python implementation should be considered a reference implementation. Compliant TOOs could be constructed using any method, even by hand, as long as the format and required parameters are in the JSON and the JSON is in the required format.
 
@@ -62,7 +62,7 @@ else:
     print("Uh-oh!")
 ```
 
-If everything looks good, go ahead and submit the TOO to Swift. Note: submit() will also run validate() before attempting to submit to the TOO server. 
+If everything looks good, go ahead and submit the TOO to Swift. Note: submit() will also run validate() before attempting to submit to the TOO server.
 
 ```python
 if too.submit():
@@ -71,16 +71,24 @@ else:
     print("Sorry there was a problem with the submission")
 ```
 
-To see the validity of the request, the TOO API returns a JSON based on the Swift_TOO_Status class, which is read in upon submission and can be accessed with the following code, which displays its contents as a JSON:
+To see the validity of the request, the TOO API returns a JSON based on the Swift_TOO_Status class, which is read in upon submission and can be accessed with the following code, which displays its contents as a Python dictionary:
 
 ```python
-print(too.status.json)
+print(too.status.too_api_dict)
 ```
 
 which displays the following:
 
-```json
-{"api_name": "Swift_TOO_Status", "api_version": "1.2", "api_data": {"status": "Accepted", "too_id": 13332, "errors": [], "warnings": []}}
 ```
+{'api_name': 'Swift_TOO_Status', 'api_version': '1.2', 'api_data': {'too_id': 12345, 'jobnumber': 12345, 'errors': [], 'warnings': [], 'status': 'Accepted'}}
+```
+
+Or if you're running in a Jupyter Notebook, you can just enter the following and it will display the above as a nicely formatted table:
+
+```python
+too.status
+```
+
+<table><thead><th style='text-align: left;'>Parameter</th><th style='text-align: left;'>Value</th></thead><tr><td style='text-align: left;'>too_id</td><td style='text-align: left;'>13820</td></tr><tr><td style='text-align: left;'>jobnumber</td><td style='text-align: left;'>96196</td></tr><tr><td style='text-align: left;'>status</td><td style='text-align: left;'>Accepted</td></tr></table>
 
 Notice for a sucessful TOO submission, `status` is set to `Accepted` and `too_id` is set to a number, which uniquely identifies your TOO request. Any errors or warnings are given in `errors` and `warnings`. For a rejected TOO, `status` is `Rejected` and `errors` will enumerate the reason why the request failed.
