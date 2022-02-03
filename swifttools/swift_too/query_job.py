@@ -42,8 +42,8 @@ class QueryJob(Swift_TOO_Status):
             The completed job object
         '''
     # These are the kinds of results that can be returned from a QueryJob
-    subclasses = [Swift_TOO_Status, Swift_VisQuery, Swift_AFST, UVOT_mode,
-                  Swift_PPST, Swift_TOO_Requests, Swift_Calendar, Swift_GUANO, Swift_Data]
+    _subclasses = [Swift_TOO_Status, Swift_VisQuery, Swift_AFST, UVOT_mode,
+                   Swift_PPST, Swift_TOO_Requests, Swift_Calendar, Swift_GUANO, Swift_Data]
     # API name
     # This is really just a Swift_TOO_Status request with a twist
     api_name = 'Swift_TOO_Status'
@@ -66,8 +66,8 @@ class QueryJob(Swift_TOO_Status):
     @property
     def _table(self):
         '''Table of request details'''
-        rows = self.rows + self.extrarows
-        table = [[row, getattr(self, row)] for row in rows if getattr(
+        _parameters = self._parameters + self._attributes
+        table = [[row, getattr(self, row)] for row in _parameters if getattr(
             self, row) is not None and getattr(self, row) != "" and row != 'result']
         table.append(['result', self.result.__class__.__name__ + " object"])
         return ['Parameter', 'Value'], table

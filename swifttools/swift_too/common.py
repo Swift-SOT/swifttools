@@ -35,35 +35,30 @@ xrtmodes = {0: "Auto", 1: "Null", 2: "ShortIM", 3: "LongIM", 4: "PUPD",
 modesxrt = {"Auto": 0, "Null": 1, "ShortIM": 2, "LongIM": 3,
             "PUPD": 4, "LRPD": 5, "WT": 6, "PC": 7, "Raw": 8, "Bias": 9}
 
+# Regex for matching date, time and datetime strings
+_date_regex = r"^[0-2]\d{3}-(0?[1-9]|1[012])-([0][1-9]|[1-2][0-9]|3[0-1])?$"
+_time_regex = r"^([0-9]:|[0-1][0-9]:|2[0-3]:)[0-5][0-9]:[0-5][0-9]+(\.\d+)?$"
+_datetime_regex = r"^[0-2]\d{3}-(0?[1-9]|1[012])-([0][1-9]|[1-2][0-9]|3[0-1]) ([0-9]:|[0-1][0-9]:|2[0-3]:)[0-5][0-9]:[0-5][0-9]+(\.\d+)?$"
+_float_regex = r"^[+-]?(?=\d*[.eE])(?=\.?\d)\d*\.?\d*(?:[eE][+-]?\d+)?$"
+
 # Submission URL
 API_URL = "https://www.swift.psu.edu/toop/submit_json.php"
 
 
-def convert_obsnum(obsnum):
-    '''Convert various formats for obsnum (SDC and Spacecraft) into one format (Spacecraft)'''
-    if type(obsnum) == str:
-        if re.match("^[0-9]{11}?$", obsnum) is None:
-            raise ValueError("ERROR: Obsnum string format incorrect")
-        else:
-            targetid = int(obsnum[0:8])
-            segment = int(obsnum[8:12])
-            return targetid + (segment << 24)
-    elif type(obsnum) == int:
-        return obsnum
-    elif obsnum is None:
-        return None
-    else:
-        raise ValueError('`obsnum` in wrong format.')
-
-
 def convert_to_dt(value):
+    '''Convert various date formats to datetime'''
     if type(value) == str:
-        if "." in value:
-            # Do this because "fromisoformat" is restricted to 0, 3 or 6 decimal plaaces
-            dtvalue = datetime.strptime(value, '%Y-%m-%d %H:%M:%S.%f')
-        else:
-            dtvalue = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
-    elif type(value) == datetime or type(value) == datetime:
+        if re.match(_datetime_regex, value):
+            if "." in value:
+                # Do this because "fromisoformat" is restricted to 0, 3 or 6 decimal plaaces
+                dtvalue = datetime.strptime(value, '%Y-%m-%d %H:%M:%S.%f')
+            else:
+                dtvalue = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+        elif re.match(_date_regex, value):
+            dtvalue = datetime.strptime(f"{value} 00:00:00", '%Y-%m-%d %H:%M:%S')
+    elif type(value) == date:
+        dtvalue = datetime.strptime(f"{value} 00:00:00", '%Y-%m-%d %H:%M:%S')
+    elif type(value) == datetime:
         dtvalue = datetime.fromtimestamp(value.timestamp())
     elif value is None:
         dtvalue = None
@@ -100,12 +95,6 @@ class TOOAPI_Baseclass:
     '''Mixin for TOO API Classes. Most of these are to do with reading and
     writing classes out as JSON/dicts.'''
 
-    # Regex for matching date, time and datetime strings
-    date_regex = r"^[0-2]\d{3}-(0?[1-9]|1[012])-([0][1-9]|[1-2][0-9]|3[0-1])+(\.\d+)?$"
-    time_regex = r"^([0-9]:|[0-1][0-9]:|2[0-3]:)[0-5][0-9]:[0-5][0-9]+(\.\d+)?$"
-    datetime_regex = r"^[0-2]\d{3}-(0?[1-9]|1[012])-([0][1-9]|[1-2][0-9]|3[0-1]) ([0-9]:|[0-1][0-9]:|2[0-3]:)[0-5][0-9]:[0-5][0-9]+(\.\d+)?$"
-    float_regex = r"^[+-]?(?=\d*[.eE])(?=\.?\d)\d*\.?\d*(?:[eE][+-]?\d+)?$"
-
     # Set api_version for all classes
     api_version = api_version
     # Ignore any keys you don't understand
@@ -115,12 +104,12 @@ class TOOAPI_Baseclass:
     # Submission timeout
     timeout = 120  # 2 mins
 
-    # Parameters that are local
-    local = []
+    # Parameters that are _local
+    _local = []
     # Parameters that get sent in API submission
-    rows = []
+    _parameters = []
     # Attributes that get send back by API
-    extrarows = []
+    _attributes = []
 
     @property
     def shared_secret(self):
@@ -149,10 +138,10 @@ class TOOAPI_Baseclass:
     @property
     def _table(self):
         '''Table of details of the class'''
-        rows = self.rows + self.extrarows
+        _parameters = self._parameters + self._attributes
         header = ['Parameter', 'Value']
         table = []
-        for row in rows:
+        for row in _parameters:
             value = getattr(self, row)
             if value is not None and value != [] and value != "":
                 if type(value) == list:
@@ -177,18 +166,18 @@ class TOOAPI_Baseclass:
 
     def __repr__(self):
         name = self.__class__.__name__
-        args = ",".join([f"{row}='{getattr(self,row)}'" for row in self.rows if getattr(
+        args = ",".join([f"{row}='{getattr(self,row)}'" for row in self._parameters if getattr(
             self, row) is not None and getattr(self, row) != []])
         return f"{name}({args})"
 
     def _parseargs(self, *args, **kwargs):
         '''Parse arguements given in __init__ to API classes'''
-        # Parse arguments. Assume they're the same order as `rows` except not `username`
+        # Parse arguments. Assume they're the same order as `_parameters` except not `username`
         for i in range(len(args)):
-            setattr(self, self.rows[i+1], args[i])
+            setattr(self, self._parameters[i+1], args[i])
         # Parse argument keywords
         for key in kwargs.keys():
-            if key in self.rows+self.local:
+            if key in self._parameters+self._local:
                 setattr(self, key, kwargs[key])
             else:
                 raise TypeError(
@@ -207,7 +196,7 @@ class TOOAPI_Baseclass:
     def api_data(self):
         '''Convert class parameters and data into a dictionary'''
         data = dict()
-        for param in self.rows:
+        for param in self._parameters:
             value = getattr(self, param)
             if value is not None:
                 if 'api_data' in dir(value):
@@ -236,9 +225,9 @@ class TOOAPI_Baseclass:
         Recursion!'''
         # Parse a JSON entry
         if type(entry) == dict and 'api_name' in entry.keys():
-            index = [s.__name__ for s in self.subclasses].index(
+            index = [s.__name__ for s in self._subclasses].index(
                 entry['api_name'])
-            val = self.subclasses[index]()
+            val = self._subclasses[index]()
             val.__read_dict(entry['api_data'])
         # Parse a list of items
         elif type(entry) == list:
@@ -252,7 +241,7 @@ class TOOAPI_Baseclass:
             val = False
             if entry:
                 # Check if these are dates, datetimes or times by regex matching
-                match = re.match(self.time_regex, str(entry))
+                match = re.match(_time_regex, str(entry))
                 if match is not None:
                     hours, mins, secs = match[0].split(":")
                     hours = int(hours)
@@ -263,18 +252,18 @@ class TOOAPI_Baseclass:
                                     seconds=secs, milliseconds=millisecs)
 
                 # Parse dates into a datetime.date
-                match = re.match(self.date_regex, str(entry))
+                match = re.match(_date_regex, str(entry))
                 if match is not None:
                     val = datetime.strptime(match[0], '%Y-%m-%d').date()
 
                 # Parse a date/time into a datetime.datetime
-                match = re.match(self.datetime_regex, str(entry))
+                match = re.match(_datetime_regex, str(entry))
                 if match is not None:
                     val = convert_to_dt(match[0])
 
                 # If it's a float, convert it
                 if type(entry) == str:
-                    match = re.match(self.float_regex, entry)
+                    match = re.match(_float_regex, entry)
                     if match is not None:
                         val = float(entry)
 
@@ -305,7 +294,7 @@ class TOOAPI_Baseclass:
     def __read_dict(self, data_dict):
         '''Read from a dictionary values for the class'''
         for key in data_dict.keys():
-            if key in self.rows or key in self.extrarows:
+            if key in self._parameters or key in self._attributes:
                 val = self.__convert_dict_entry(data_dict[key])
                 if val is not None:  # If value is set to None, then don't change the value
                     setattr(self, key, val)
@@ -323,6 +312,10 @@ class TOOAPI_Baseclass:
 
     def queue(self, post=True):
         '''Validate and submit a TOO API job to the queue for processing.'''
+        # Make sure a shared secret is set
+        if self.shared_secret is None:
+            self.__set_error("shared_secret not set, cannot submit job.")
+            return False
         # Make sure it passes validation checks
         if not self.validate():
             self.__set_error(
@@ -535,6 +528,22 @@ class TOOAPI_ObsID:
     _target_id = None
     _seg = None
 
+    def convert_obsnum(self, obsnum):
+        '''Convert various formats for obsnum (SDC and Spacecraft) into one format (Spacecraft)'''
+        if type(obsnum) == str:
+            if re.match("^[0-9]{11}?$", obsnum) is None:
+                raise ValueError("ERROR: Obsnum string format incorrect")
+            else:
+                targetid = int(obsnum[0:8])
+                segment = int(obsnum[8:12])
+                return targetid + (segment << 24)
+        elif type(obsnum) == int:
+            return obsnum
+        elif obsnum is None:
+            return None
+        else:
+            raise ValueError('`obsnum` in wrong format.')
+
     @property
     def target_id(self):
         return self._target_id
@@ -572,12 +581,12 @@ class TOOAPI_ObsID:
             self._target_id = list()
             self._seg = list()
             for on in obsnum:
-                onsc = convert_obsnum(on)
+                onsc = self.convert_obsnum(on)
                 self._target_id.append(onsc & 0xffffff)
                 self._seg.append(onsc >> 24)
 
         elif obsnum is not None and obsnum != []:
-            obsnum = convert_obsnum(obsnum)
+            obsnum = self.convert_obsnum(obsnum)
             self._target_id = obsnum & 0xffffff
             self._seg = obsnum >> 24
 

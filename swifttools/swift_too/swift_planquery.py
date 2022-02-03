@@ -39,21 +39,21 @@ class Swift_PPST_Entry(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_I
         Target name of the primary target of the observation
     '''
     # Core API defs
-    rows = ['begin', 'end', 'targname', 'ra', 'dec', 'roll',
-            'targetid', 'seg', 'xrt', 'uvot', 'bat', 'fom']
+    _parameters = ['begin', 'end', 'targname', 'ra', 'dec', 'roll',
+                   'targetid', 'seg', 'xrt', 'uvot', 'bat', 'fom']
     names = ['Begin Time', 'End Time', 'Target Name',
              'RA(J2000)', 'Dec(J200)', 'Roll (deg)', 'Target ID', 'Segment',
              'XRT Mode', 'UVOT Mode', 'BAT Mode', 'Figure of Merit']
-    extrarows = []
-    subclasses = [Swift_TOO_Status]
+    _attributes = []
+    _subclasses = [Swift_TOO_Status]
     # API name
     api_name = "Swift_PPST_Entry"
 
     def __init__(self):
         # Set up naming of variables
         self.varnames = dict()
-        for i in range(len(self.rows)):
-            self.varnames[self.rows[i]] = self.names[i]
+        for i in range(len(self._parameters)):
+            self.varnames[self._parameters[i]] = self.names[i]
         self.varnames['obsnum'] = 'Observation Number'
         self.varnames['exposure'] = 'Exposure (s)'
         self.varnames['slewtime'] = 'Slewtime (s)'
@@ -78,8 +78,8 @@ class Swift_PPST_Entry(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_I
 
     @property
     def _table(self):
-        rows = ['begin', 'end', 'targname', 'obsnum', 'exposure']
-        header = [self.varnames[row] for row in rows]
+        _parameters = ['begin', 'end', 'targname', 'obsnum', 'exposure']
+        header = [self.varnames[row] for row in _parameters]
         return header, [[self.begin, self.end, self.targname, self.obsnum, self.exposure.seconds]]
 
 
@@ -117,14 +117,41 @@ class Swift_PPST(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI_Obs
     '''
 
     # Core API definitions
-    rows = ['username', 'begin', 'end', 'ra',
-            'dec', 'radius', 'targetid', 'obsnum']
-    extrarows = ['status', 'ppstmax', 'entries']
-    local = ['obsid', 'name', 'skycoord', 'length', 'target_id']
-    subclasses = [Swift_PPST_Entry, Swift_TOO_Status]
+    _parameters = ['username', 'begin', 'end', 'ra',
+                   'dec', 'radius', 'targetid', 'obsnum']
+    _attributes = ['status', 'ppstmax', 'entries']
+    _local = ['obsid', 'name', 'skycoord', 'length', 'target_id']
+    _subclasses = [Swift_PPST_Entry, Swift_TOO_Status]
     api_name = "Swift_PPST"
 
     def __init__(self, *args, **kwargs):
+        '''
+        Parameters
+        ----------
+        begin : datetime
+            begin time of window
+        end : datetime
+            end time of window
+        ra : float
+            Right Ascension of target in J2000 (decimal degrees)
+        dec : float
+            Declination of target in J2000 (decimal degrees)
+        radius : float
+            radius in degrees to search around (default 0.197)
+        targetid : int
+            target ID of target
+        obsid : int / str
+            Observation ID of target, either in spacecraft (int) or SDC (str)
+            formats
+        skycoord : SkyCoord
+            SkyCoord version of RA/Dec if astropy is installed
+        username : str
+            username for TOO API (default 'anonymous')
+        length : timedelta
+            length of window
+        shared_secret : str
+            shared secret for TOO API (default 'anonymous')
+        '''
         # Coordinate search
         self.ra = None
         self.dec = None
@@ -150,12 +177,19 @@ class Swift_PPST(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI_Obs
         # Parse argument keywords
         self._parseargs(*args, **kwargs)
 
-        if self.ra is not None or self.begin is not None or self.targetid is not None or self.obsnum is not None:
+        # See if we pass validation from the constructor, but don't record
+        # errors if we don't
+        if self.validate():
             self.submit()
+        else:
+            self.status.clear()
 
     @property
     def _table(self):
-        header = self.entries[0]._table[0]
+        if len(self.entries) > 0:
+            header = self.entries[0]._table[0]
+        else:
+            header = []
         return header, [ppt._table[1][0] for ppt in self]
 
     @property
@@ -173,18 +207,17 @@ class Swift_PPST(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI_Obs
         return len(self.entries)
 
     def validate(self):
-        # Check username and shared_secret are set
-        if not self.username or not self.shared_secret:
-            print(
-                f"{self.__class__.__name__} ERROR: username and shared_secret parameters need to be supplied.")
-            return None
-
+        '''Make sure that all parameters required for a valid request are
+        passed'''
         # How many search keys? Require at least one
         keys = self.api_data.keys()
 
-        # We need one of these keys to be submitted
-        req_keys = ['begin', 'end', 'ra', 'dec',
-                    'radius', 'targetid', 'obsnum']
+        # We need at least one of these keys to be submitted
+        req_keys = ['begin',
+                    'ra',
+                    'dec',
+                    'targetid',
+                    'obsnum']
 
         # Check how many of them are in the request
         total_keys = 0
@@ -195,14 +228,14 @@ class Swift_PPST(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI_Obs
 
         # We need at least one key to be set
         if total_keys == 0:
-            print("ERROR: Please supply search parameters to narrow search.")
-            return None
+            self.status.error("ERROR: Please supply search parameters to narrow search.")
+            return False
 
         # Check if ra or dec are in keys, we have both.
         if 'ra' in keys or 'dec' in keys:
             if not ('ra' in keys and 'dec' in keys):
-                print("ERROR: Must supply both RA and Dec.")
-                return None
+                self.status.error("ERROR: Must supply both RA and Dec.")
+                return False
 
         return True
 

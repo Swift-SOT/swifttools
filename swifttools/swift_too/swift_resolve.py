@@ -29,10 +29,10 @@ class Swift_Resolve(TOOAPI_Baseclass, TOOAPI_SkyCoord):
         status of API request
     '''
     # API input and return values definition
-    rows = ['username', 'name']
-    extrarows = ['ra', 'dec', 'resolver', 'status']
+    _parameters = ['username', 'name']
+    _attributes = ['ra', 'dec', 'resolver', 'status']
     # Other API classes that may be used by this class
-    subclasses = [Swift_TOO_Status]
+    _subclasses = [Swift_TOO_Status]
     # API name
     api_name = 'Swift_Resolve'
 
@@ -59,9 +59,12 @@ class Swift_Resolve(TOOAPI_Baseclass, TOOAPI_SkyCoord):
         # Parse argument keywords
         self._parseargs(*args, **kwargs)
 
-        # If the required parameters are given as arguments, submit the job
+        # See if we pass validation from the constructor, but don't record
+        # errors if we don't
         if self.validate():
             self.submit()
+        else:
+            self.status.clear()
 
     def validate(self):
         '''Local validation that TOO_API object is ready for submission'''

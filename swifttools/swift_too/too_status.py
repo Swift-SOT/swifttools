@@ -29,10 +29,10 @@ class Swift_TOO_Status(TOOAPI_Baseclass):
     '''
 
     # Core API definitions
-    rows = ['username', 'jobnumber', 'too_id', 'fetchresult']
-    extrarows = ['status', 'errors', 'warnings',
-                 'timestamp', 'began', 'completed', 'result']
-    local = ['api_name']
+    _parameters = ['username', 'jobnumber', 'too_id', 'fetchresult']
+    _attributes = ['status', 'errors', 'warnings',
+                   'timestamp', 'began', 'completed', 'result']
+    _local = ['api_name']
     api_name = 'Swift_TOO_Status'
 
     def __init__(self, *args, **kwargs):

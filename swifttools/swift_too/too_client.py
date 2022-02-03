@@ -43,20 +43,20 @@ class Swift_TOO_Request(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_
     # Name the class
     api_name = "Swift_TOO_Request"
     # Paramaters that get submitted as part of the JSON
-    rows = ['username', 'source_name', 'source_type', 'ra', 'dec',
-            'poserr', 'instrument', 'urgency', 'opt_mag', 'opt_filt',
-            'xrt_countrate', 'bat_countrate', 'other_brightness', 'grb_detector',
-            'immediate_objective', 'science_just', 'exposure', 'exp_time_just',
-            'exp_time_per_visit', 'num_of_visits', 'monitoring_freq', 'proposal',
-            'proposal_id', 'proposal_trigger_just', 'proposal_pi', 'xrt_mode',
-            'uvot_mode', 'uvot_just', 'slew_in_place', 'tiling', 'number_of_tiles',
-            'exposure_time_per_tile', 'tiling_justification', 'obs_n', 'obs_type',
-            'grb_triggertime', 'debug', 'validate_only']
+    _parameters = ['username', 'source_name', 'source_type', 'ra', 'dec',
+                   'poserr', 'instrument', 'urgency', 'opt_mag', 'opt_filt',
+                   'xrt_countrate', 'bat_countrate', 'other_brightness', 'grb_detector',
+                   'immediate_objective', 'science_just', 'exposure', 'exp_time_just',
+                   'exp_time_per_visit', 'num_of_visits', 'monitoring_freq', 'proposal',
+                   'proposal_id', 'proposal_trigger_just', 'proposal_pi', 'xrt_mode',
+                   'uvot_mode', 'uvot_just', 'slew_in_place', 'tiling', 'number_of_tiles',
+                   'exposure_time_per_tile', 'tiling_justification', 'obs_n', 'obs_type',
+                   'grb_triggertime', 'debug', 'validate_only']
     # Alias parameter names
-    local = ['skycoord']
+    _local = ['skycoord']
     # Attributes that may get returned
-    extrarows = ['too_id', 'timestamp', 'decision', 'done', 'target_id', 'date_begin', 'date_end', 'l_name', 'xrt_mode_approved',
-                 'uvot_mode_approved', 'calendar', 'total_exp_time_approved', 'num_of_visits_approved', 'exp_time_per_visit_approved']
+    _attributes = ['too_id', 'timestamp', 'decision', 'done', 'target_id', 'date_begin', 'date_end', 'l_name', 'xrt_mode_approved',
+                   'uvot_mode_approved', 'calendar', 'total_exp_time_approved', 'num_of_visits_approved', 'exp_time_per_visit_approved']
     # The three instruments on Swift
     instruments = ['XRT', 'BAT', 'UVOT']
     # Common missions that that trigger detections
@@ -344,7 +344,7 @@ class Swift_TOO_Request(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_
         self.validate_only = None
 
         # Things that can be a subclass of this class
-        self.subclasses = [Swift_Calendar]
+        self._subclasses = [Swift_Calendar]
         self.ignorekeys = True
 
         # Parse argument keywords
@@ -473,7 +473,7 @@ class Swift_TOO_Request(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_
 
     def server_validate(self):
         '''Validate the TOO request with the TOO API server.'''
-        # Perform a local validation first
+        # Perform a _local validation first
         self.validate()
         # Do a server side validation
         if len(self.status.errors) == 0:
@@ -498,17 +498,17 @@ class Swift_TOO_Request(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_
     def _table(self):
         tab = list()
         if self.decision is not None:
-            rows = ['too_id', 'l_name', 'timestamp', 'urgency', 'source_name',
-                    'source_type', 'grb_triggertime', 'grb_detector', 'ra',
-                    'dec', 'proposal_pi', 'proposal_id', 'proposal_trigger_just',
-                    'poserr', 'science_just', 'opt_mag', 'opt_filt', 'xrt_countrate',
-                    'other_brightness', 'bat_countrate', 'exp_time_per_visit_approved',
-                    'num_of_visits_approved', 'total_exp_time_approved', 'monitoring_freq',
-                    'immediate_objective', 'exp_time_just', 'instrument', 'obs_type',
-                    'xrt_mode_approved', 'uvot_mode_approved', 'uvot_just', 'target_id']
+            _parameters = ['too_id', 'l_name', 'timestamp', 'urgency', 'source_name',
+                           'source_type', 'grb_triggertime', 'grb_detector', 'ra',
+                           'dec', 'proposal_pi', 'proposal_id', 'proposal_trigger_just',
+                           'poserr', 'science_just', 'opt_mag', 'opt_filt', 'xrt_countrate',
+                           'other_brightness', 'bat_countrate', 'exp_time_per_visit_approved',
+                           'num_of_visits_approved', 'total_exp_time_approved', 'monitoring_freq',
+                           'immediate_objective', 'exp_time_just', 'instrument', 'obs_type',
+                           'xrt_mode_approved', 'uvot_mode_approved', 'uvot_just', 'target_id']
         else:
-            rows = self.rows
-        for row in rows:
+            _parameters = self._parameters
+        for row in _parameters:
             val = getattr(self, row)
             if val is not None and val != "":
                 tab.append([self.varnames[row], val])

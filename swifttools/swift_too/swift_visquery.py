@@ -17,7 +17,7 @@ class Swift_VisWindow(TOOAPI_Baseclass):
         length of window
     '''
     # API parameter definition
-    rows = ['begin', 'end', 'length']
+    _parameters = ['begin', 'end', 'length']
     # Names for parameters
     varnames = {'begin': 'Begin Time',
                 'end': 'End Time', 'length': 'Window length'}
@@ -35,7 +35,7 @@ class Swift_VisWindow(TOOAPI_Baseclass):
 
     @property
     def _table(self):
-        header = [self.varnames[row] for row in self.rows]
+        header = [self.varnames[row] for row in self._parameters]
         return header, [[self.begin, self.end, self.length]]
 
     def __str__(self):
@@ -84,13 +84,13 @@ class Swift_VisQuery(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI
     '''
 
     # Parameters that are passed to the API for this request
-    rows = ['username', 'ra', 'dec', 'length', 'begin', 'hires']
+    _parameters = ['username', 'ra', 'dec', 'length', 'begin', 'hires']
     # Local and alias parameter names
-    local = ['name', 'skycoord', 'end']
+    _local = ['name', 'skycoord', 'end']
     # Attributes returned by API Server
-    extrarows = ['status', 'windows']
+    _attributes = ['status', 'windows']
     # Subclasses
-    subclasses = [Swift_TOO_Status, Swift_VisWindow]
+    _subclasses = [Swift_TOO_Status, Swift_VisWindow]
     # API Name
     api_name = "Swift_VisQuery"
     # Returned data
@@ -135,6 +135,8 @@ class Swift_VisQuery(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI
 
         if self.validate():
             self.submit()
+        else:
+            self.status.clear()
 
     @property
     def _table(self):

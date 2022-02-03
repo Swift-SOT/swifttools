@@ -45,9 +45,9 @@ class Swift_AFST_Entry(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_I
         Target name of the primary target of the observation
     '''
     # API core definition
-    rows = ['begin', 'settle', 'end', 'ra', 'dec', 'roll', 'targname', 'targetid',
-            'seg', 'ra_point', 'dec_point', 'xrt', 'uvot', 'bat', 'fom', 'obstype']
-    extrarows = []
+    _parameters = ['begin', 'settle', 'end', 'ra', 'dec', 'roll', 'targname', 'targetid',
+                   'seg', 'ra_point', 'dec_point', 'xrt', 'uvot', 'bat', 'fom', 'obstype']
+    _attributes = []
     # Variable names
     names = ['Begin Time', 'Settle Time', 'End Time', 'RA(J2000)', 'Dec(J200)',
              'Roll (deg)', 'Target Name', 'Target ID', 'Segment', 'Object RA(J2000)',
@@ -59,8 +59,8 @@ class Swift_AFST_Entry(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_I
     def __init__(self):
         # Attributes of the class and their descriptions
         self.varnames = dict()
-        for i in range(len(self.rows)):
-            self.varnames[self.rows[i]] = self.names[i]
+        for i in range(len(self._parameters)):
+            self.varnames[self._parameters[i]] = self.names[i]
         self.varnames['obsnum'] = 'Observation Number'
         self.varnames['exposure'] = 'Exposure (s)'
         self.varnames['slewtime'] = 'Slewtime (s)'
@@ -80,7 +80,7 @@ class Swift_AFST_Entry(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_I
         self.targetid = None
         self.seg = None
         self.status = Swift_TOO_Status()
-        self.subclasses = [Swift_TOO_Status]
+        self._subclasses = [Swift_TOO_Status]
         # Instrument config
         self._xrt = None
         self._uvot = None
@@ -116,8 +116,8 @@ class Swift_AFST_Entry(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_I
 
     @property
     def _table(self):
-        rows = ['begin', 'end', 'targname', 'obsnum', 'exposure', 'slewtime']
-        header = [self.varnames[row] for row in rows]
+        _parameters = ['begin', 'end', 'targname', 'obsnum', 'exposure', 'slewtime']
+        header = [self.varnames[row] for row in _parameters]
         return header, [[self.begin, self.end, self.targname, self.obsnum, self.exposure.seconds, self.slewtime.seconds]]
 
 
@@ -159,8 +159,8 @@ class Swift_Observation(TOOAPI_Baseclass):
     '''
     # Core API definitions
     api_name = "Swift_Observation"
-    rows = ['begin', 'end', 'targname', 'targetid', 'seg',
-            'ra_object', 'dec_object', 'xrt', 'uvot', 'bat', 'entries']
+    _parameters = ['begin', 'end', 'targname', 'targetid', 'seg',
+                   'ra_object', 'dec_object', 'xrt', 'uvot', 'bat', 'entries']
 
     def __init__(self):
         # All the Swift_AFST_Entries for this observation
@@ -312,13 +312,13 @@ class Swift_AFST(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI_Obs
     '''
     # Define API name
     api_name = "Swift_AFST"
-    # Contents of the rows
-    rows = ['username', 'begin', 'end', 'ra',
-            'dec', 'radius', 'targetid', 'obsnum']
-    local = ['obsid', 'name', 'skycoord', 'length', 'target_id']
-    extrarows = ['status', 'afstmax', 'entries']
+    # Contents of the _parameters
+    _parameters = ['username', 'begin', 'end', 'ra',
+                   'dec', 'radius', 'targetid', 'obsnum']
+    _local = ['obsid', 'name', 'skycoord', 'length', 'target_id']
+    _attributes = ['status', 'afstmax', 'entries']
     # Acceptable classes that be part of this class
-    subclasses = [Swift_AFST_Entry, Swift_TOO_Status]
+    _subclasses = [Swift_AFST_Entry, Swift_TOO_Status]
 
     def __init__(self, *args, **kwargs):
         '''
@@ -340,7 +340,7 @@ class Swift_AFST(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI_Obs
             radius in degrees to search around (default 0.197)
         targetid : int
             target ID of target
-        obsnum : int / str
+        obsid : int / str
             Observation ID of target, either in spacecraft (int) or SDC (str)
             formats
         username : str
@@ -373,8 +373,13 @@ class Swift_AFST(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI_Obs
 
         # Observations
         self._observations = Swift_Observations()
-        if self.ra is not None or self.begin is not None or self.targetid is not None or self.obsnum is not None:
+
+        # See if we pass validation from the constructor, but don't record
+        # errors if we don't
+        if self.validate():
             self.submit()
+        else:
+            self.status.clear()
 
     @property
     def _table(self):
@@ -402,18 +407,17 @@ class Swift_AFST(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI_Obs
         self.entries.append(value)
 
     def validate(self):
-        # Check username and shared_secret are set
-        if not self.username or not self.shared_secret:
-            print(
-                f"{self.__class__.__name__} ERROR: username and shared_secret parameters need to be supplied.")
-            return None
-
+        '''Make sure that all parameters required for a valid request are
+        passed'''
         # How many search keys? Require at least one
         keys = self.api_data.keys()
 
-        # We need one of these keys to be submitted
-        req_keys = ['begin', 'end', 'ra', 'dec',
-                    'radius', 'targetid', 'obsnum']
+        # We need at least one of these keys to be submitted
+        req_keys = ['begin',
+                    'ra',
+                    'dec',
+                    'targetid',
+                    'obsnum']
 
         # Check how many of them are in the request
         total_keys = 0
@@ -424,14 +428,14 @@ class Swift_AFST(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI_Obs
 
         # We need at least one key to be set
         if total_keys == 0:
-            print("ERROR: Please supply search parameters to narrow search.")
-            return None
+            self.status.error("ERROR: Please supply search parameters to narrow search.")
+            return False
 
         # Check if ra or dec are in keys, we have both.
         if 'ra' in keys or 'dec' in keys:
             if not ('ra' in keys and 'dec' in keys):
-                print("ERROR: Must supply both RA and Dec.")
-                return None
+                self.status.error("ERROR: Must supply both RA and Dec.")
+                return False
 
         return True
 

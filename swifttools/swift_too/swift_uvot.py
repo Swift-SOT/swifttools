@@ -34,14 +34,14 @@ class UVOT_mode_entry(TOOAPI_Baseclass):
         comment on special modes
     '''
     # Core API definitions
-    rows = ['uvotmode', 'filter_num', 'min_exposure', 'filter_name', 'filter_pos', 'filter_seqid',
-            'eventmode', 'field_of_view', 'binning', 'max_exposure', 'weight', 'special', 'comment']
-    extrarows = []
+    _parameters = ['uvotmode', 'filter_num', 'min_exposure', 'filter_name', 'filter_pos', 'filter_seqid',
+                   'eventmode', 'field_of_view', 'binning', 'max_exposure', 'weight', 'special', 'comment']
+    _attributes = []
     api_name = 'UVOT_mode_entry'
 
     def __init__(self):
         # Lazy variable init
-        for row in self.rows:
+        for row in self._parameters:
             setattr(self, row, None)
 
     def __str__(self):
@@ -68,9 +68,9 @@ class UVOT_mode(TOOAPI_Baseclass, TOOAPI_Instruments):
     '''
 
     # Core API definitions
-    rows = ['username', 'uvotmode']
-    extrarows = ['status', 'entries']
-    subclasses = [UVOT_mode_entry, Swift_TOO_Status]
+    _parameters = ['username', 'uvotmode']
+    _attributes = ['status', 'entries']
+    _subclasses = [UVOT_mode_entry, Swift_TOO_Status]
     api_name = 'UVOT_mode'
     # Alias for uvotmode
     uvotmode = TOOAPI_Instruments.uvot
@@ -97,9 +97,12 @@ class UVOT_mode(TOOAPI_Baseclass, TOOAPI_Instruments):
         # Parse argument keywords
         self._parseargs(*args, **kwargs)
 
-        # If everything has been provided, submit the TOO API request
+        # See if we pass validation from the constructor, but don't record
+        # errors if we don't
         if self.validate():
             self.submit()
+        else:
+            self.status.clear()
 
     def __getitem__(self, index):
         return self.entries[index]
@@ -112,15 +115,15 @@ class UVOT_mode(TOOAPI_Baseclass, TOOAPI_Instruments):
         if self.entries is not None:
             table_cols = ['filter_name', 'eventmode', 'field_of_view',
                           'binning', 'max_exposure', 'weight', 'comment']
-            table_rows = list()
-            table_rows.append(['Filter', 'Event FOV', 'Image FOV',
-                              'Bin Size', 'Max. Exp. Time', 'Weighting', 'Comments'])
+            table_columns = list()
+            table_columns.append(['Filter', 'Event FOV', 'Image FOV',
+                                  'Bin Size', 'Max. Exp. Time', 'Weighting', 'Comments'])
             for entry in self.entries:
-                table_rows.append([getattr(entry, col) for col in table_cols])
+                table_columns.append([getattr(entry, col) for col in table_cols])
 
             table = f"UVOT Mode: {self.uvotmode}\n"
             table += "The following table summarizes this mode, ordered by the filter sequence:\n"
-            table += tabulate(table_rows, tablefmt='pretty')
+            table += tabulate(table_columns, tablefmt='pretty')
             table += "\nFilter: The particular filter in the sequence.\n"
             table += "Event FOV: The size of the FOV (in arc-minutes) for UVOT event data.\n"
             table += "Image FOV: The size of the FOV (in arc-minutes) for UVOT image data.\n"

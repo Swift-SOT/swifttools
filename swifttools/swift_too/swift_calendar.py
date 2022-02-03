@@ -24,10 +24,10 @@ class Swift_Calendar_Entry(TOOAPI_Baseclass, TOOAPI_Instruments):
     '''
 
     # Set up Core API values
-    rows = ['start', 'stop', 'xrt_mode', 'bat_mode',
-            'uvot_mode', 'duration', 'asflown']
-    names = ['Start', 'Stop', 'XRT Mode', 'BAT Mode',
-             'UVOT Mode', 'Exposure (s)', 'AFST (s)']
+    _parameters = ['start', 'stop', 'xrt_mode', 'bat_mode',
+                   'uvot_mode', 'duration', 'asflown']
+    _names = ['Start', 'Stop', 'XRT Mode', 'BAT Mode',
+              'UVOT Mode', 'Exposure (s)', 'AFST (s)']
     api_name = "Swift_Calendar_Entry"
 
     def __init__(self):
@@ -38,15 +38,15 @@ class Swift_Calendar_Entry(TOOAPI_Baseclass, TOOAPI_Instruments):
         # variable, but the monitoring cadence isn't even.
         self.stop = None
         self.duration = None  # Exposure time in seconds
-        self.asflown = None   # Amount of exposure taken
+        self.asflown = None  # Amount of exposure taken
         self.ignorekeys = True
         # Set up varnames
         self.varnames = dict()
-        for i in range(len(self.rows)):
-            self.varnames[self.rows[i]] = self.names[i]
+        for i in range(len(self._parameters)):
+            self.varnames[self._parameters[i]] = self._names[i]
 
     def __getitem__(self, key):
-        if key in self.rows:
+        if key in self._parameters:
             return getattr(self, key)
 
     # Set up aliases
@@ -56,10 +56,9 @@ class Swift_Calendar_Entry(TOOAPI_Baseclass, TOOAPI_Instruments):
 
     @property
     def _table(self):
-        rows = ['start', 'stop', 'xrt_mode',
-                'uvot_mode', 'duration', 'asflown']
-        header = [self.varnames[row] for row in rows]
-        return header, [[getattr(self, row) for row in rows]]
+        _parameters = ["start", "stop", "xrt_mode", "uvot_mode", "duration", "asflown"]
+        header = [self.varnames[row] for row in _parameters]
+        return header, [[getattr(self, row) for row in _parameters]]
 
 
 class Swift_Calendar(TOOAPI_Baseclass):
@@ -81,9 +80,9 @@ class Swift_Calendar(TOOAPI_Baseclass):
     '''
     # Core API definitions
     api_name = "Swift_Calendar"
-    rows = ['username', 'too_id']
-    extrarows = ['status', 'entries']
-    subclasses = [Swift_Calendar_Entry, Swift_TOO_Status]
+    _parameters = ["username", "too_id"]
+    _attributes = ["status", "entries"]
+    _subclasses = [Swift_Calendar_Entry, Swift_TOO_Status]
 
     def __init__(self, *args, **kwargs):
         '''
@@ -105,8 +104,12 @@ class Swift_Calendar(TOOAPI_Baseclass):
         # Read in arguements
         self._parseargs(*args, **kwargs)
 
+        # See if we pass validation from the constructor, but don't record
+        # errors if we don't
         if self.validate():
             self.submit()
+        else:
+            self.status.clear()
 
     def __getitem__(self, number):
         return self.entries[number]
@@ -126,9 +129,9 @@ class Swift_Calendar(TOOAPI_Baseclass):
         '''Table of Calendar details'''
         table = list()
         for i in range(len(self.entries)):
-            table.append([i]+self.entries[i]._table[-1][0])
+            table.append([i] + self.entries[i]._table[-1][0])
         if len(self.entries) > 0:
-            header = ["#"]+self.entries[0]._table[0]
+            header = ["#"] + self.entries[0]._table[0]
         else:
             header = []
         return header, table

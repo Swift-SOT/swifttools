@@ -28,7 +28,7 @@ class Swift_GUANO_GTI(TOOAPI_Baseclass, TOOAPI_Daterange):
     acs = None
     utcf = None
     exposure = None
-    extrarows = ['begin', 'end', 'exposure', 'utcf', 'acs', 'filename']
+    _attributes = ['begin', 'end', 'exposure', 'utcf', 'acs', 'filename']
 
     def __str__(self):
         return f"{self.begin} - {self.end} ({self.exposure})"
@@ -78,17 +78,17 @@ class Swift_GUANO_Data(TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_Daterange):
     filenames = None
 
     # Core API definitions
-    rows = ['obsid', 'triggertime']
-    extrarows = ['begin', 'end', 'exposure',
-                 'filenames', 'gti', 'all_gtis', 'acs', 'utcf']
-    subclasses = [Swift_GUANO_GTI]
+    _parameters = ['obsid', 'triggertime']
+    _attributes = ['begin', 'end', 'exposure',
+                   'filenames', 'gti', 'all_gtis', 'acs', 'utcf']
+    _subclasses = [Swift_GUANO_GTI]
 
     @property
     def _table(self):
         table = []
         if self.exposure is None:
             return [], []
-        for row in self.rows + self.extrarows:
+        for row in self._parameters + self._attributes:
             value = getattr(self, row)
             if type(value) == list and value != []:
                 table += [[row, "\n".join([gti.__str__() for gti in value])]]
@@ -131,15 +131,15 @@ class Swift_GUANO_Entry(TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_Daterange):
     data = None
     utcf = None
     # Core API definitions
-    subclasses = [Swift_GUANO_Data]
-    rows = ['triggertime']
-    extrarows = ['triggertype', 'offset', 'duration',
-                 'quadsaway', 'obsnum', 'ra', 'dec', 'data', 'utcf']
+    _subclasses = [Swift_GUANO_Data]
+    _parameters = ['triggertime']
+    _attributes = ['triggertype', 'offset', 'duration',
+                   'quadsaway', 'obsnum', 'ra', 'dec', 'data', 'utcf']
 
     @property
     def _table(self):
         table = []
-        for row in self.rows + self.extrarows:
+        for row in self._parameters + self._attributes:
             value = getattr(self, row)
             if row == 'data' and self.data.exposure is not None:
                 table += [[row, f"{value.exposure:.1f}s of BAT event data"]]
@@ -187,18 +187,18 @@ class Swift_GUANO(TOOAPI_Baseclass, TOOAPI_Daterange):
         status of API request
     guanostatus : boolean
         current status of guano system
-    lastcommand : timestamp
+    lastcommand : datetime
         when was the last GUANO command executed
     '''
 
     # API Name
     api_name = 'Swift_GUANO'
     # Core API definitions
-    rows = ['username', 'triggertime', 'begin',
-            'end', 'limit', 'subthreshold', 'successful']
-    local = ['length']
-    extrarows = ['guanostatus', 'lastcommand', 'entries', 'status']
-    subclasses = [Swift_GUANO_Entry, Swift_TOO_Status]
+    _parameters = ['username', 'triggertime', 'begin',
+                   'end', 'limit', 'subthreshold', 'successful']
+    _local = ['length']
+    _attributes = ['guanostatus', 'lastcommand', 'entries', 'status']
+    _subclasses = [Swift_GUANO_Entry, Swift_TOO_Status]
     # Attributes
     guanostatus = None
     lastcommand = None
@@ -242,9 +242,12 @@ class Swift_GUANO(TOOAPI_Baseclass, TOOAPI_Daterange):
         # Parse argument keywords
         self._parseargs(*args, **kwargs)
 
-        # If arguments given, do a submit
+        # See if we pass validation from the constructor, but don't record
+        # errors if we don't
         if self.validate():
             self.submit()
+        else:
+            self.status.clear()
 
     def __getitem__(self, index):
         return self.entries[index]

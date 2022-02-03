@@ -42,15 +42,15 @@ class Swift_TOO_Requests(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TO
         radius in degrees to search for TOOs
     '''
     # Parameters for requested
-    rows = ['username', 'limit', 'too_id', 'year',
-            'detail', 'ra', 'dec', 'radius', 'begin', 'length']
+    _parameters = ['username', 'limit', 'too_id', 'year',
+                   'detail', 'ra', 'dec', 'radius', 'begin', 'length']
     # Local and alias parameters
-    local = ['name', 'skycoord', 'end']
+    _local = ['name', 'skycoord', 'end']
     # Returned values
-    extrarows = ['entries', 'status']
+    _attributes = ['entries', 'status']
     # Returned classes
-    subclasses = [Swift_TOO_Request, Swift_TOO_Status,
-                  Swift_Calendar, Swift_Calendar_Entry]
+    _subclasses = [Swift_TOO_Request, Swift_TOO_Status,
+                   Swift_Calendar, Swift_Calendar_Entry]
     # API name
     api_name = 'Swift_TOO_Requests'
 
@@ -109,9 +109,12 @@ class Swift_TOO_Requests(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TO
         # Parse argument keywords
         self._parseargs(*args, **kwargs)
 
-        # Run if any argument given
+        # See if we pass validation from the constructor, but don't record
+        # errors if we don't
         if self.validate():
             self.submit()
+        else:
+            self.status.clear()
 
     def __getitem__(self, index):
         return self.entries[index]

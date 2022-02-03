@@ -21,7 +21,7 @@ class Swift_Data_File(TOOAPI_Baseclass):
     filename : str
         filename
     path : str
-        local path on disk
+        path to file
     url : str
         URL where file exists
     type : str
@@ -45,8 +45,8 @@ class Swift_Data_File(TOOAPI_Baseclass):
     localpath = None
     outdir = "."
     # Core API definitions
-    rows = ['filename', 'path', 'url', 'quicklook', 'type']
-    extrarows = ['size', 'localpath']
+    _parameters = ['filename', 'path', 'url', 'quicklook', 'type']
+    _attributes = ['size', 'localpath']
 
     @property
     def size(self):
@@ -123,14 +123,15 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
     '''
     # Core API definitions
     api_name = 'Swift_Data'
-    subclasses = [Swift_Data_File, Swift_TOO_Status]
+    # Classes used by this class
+    _subclasses = [Swift_Data_File, Swift_TOO_Status]
     # Values to send and return through the API
-    rows = ['username', 'obsid', 'quicklook', 'auxil',
-            'bat', 'xrt', 'uvot', 'log', 'tdrss', 'uksdc']
+    _parameters = ['username', 'obsid', 'quicklook', 'auxil',
+                   'bat', 'xrt', 'uvot', 'log', 'tdrss', 'uksdc']
     # Local and alias parameters
-    local = ['outdir', 'clobber', 'obsnum',
-             'targetid', 'target_id', 'seg', 'segment']
-    extrarows = ['entries', 'status']
+    _local = ['outdir', 'clobber', 'obsnum',
+              'targetid', 'target_id', 'seg', 'segment']
+    _attributes = ['entries', 'status']
 
     def __init__(self, *args, **kwargs):
         '''
@@ -201,12 +202,15 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
         self.entries = list()
         self.status = Swift_TOO_Status()
 
-        # If we have given the minimum requried parameters, submit request
-        if self.obsid is not None:
+        # See if we pass validation from the constructor, but don't record
+        # errors if we don't
+        if self.validate():
             self.submit()
             # ...and if requested, download the data
             if self.fetch:
                 self.download()
+        else:
+            self.status.clear()
 
     def __getitem__(self, i):
         return self.entries[i]
