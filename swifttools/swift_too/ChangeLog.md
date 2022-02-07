@@ -6,6 +6,12 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
+
+## `swifttols` 2.3.1 / `swift_too` 1.2.7
+
+**February 7th, 2022**: `swift_too` module updated to 1.2.7 with the following updates / fixes:
+* Add option to `Swift_Data` to download from the Space Science Data Center in Italy. Set `itsdc = True` to download from Italian site, `uksdc = True` from the UK site. Default is to download from the HEASARC (US site).
+* Bug fix in `Swift_GUANO` that could crash.
 ## `swifttools` 2.3 / `swift_too` 1.2.6
 
 **February 3rd , 2022**: `swift_too` module updated to 1.2.5. Add new classes designed to make access to Swift SDC data easier, provide an API for accessing GUANO and universal name resolution. Here are the details of the upgrade

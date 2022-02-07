@@ -127,7 +127,7 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
     _subclasses = [Swift_Data_File, Swift_TOO_Status]
     # Values to send and return through the API
     _parameters = ['username', 'obsid', 'quicklook', 'auxil',
-                   'bat', 'xrt', 'uvot', 'log', 'tdrss', 'uksdc']
+                   'bat', 'xrt', 'uvot', 'log', 'tdrss', 'uksdc', 'itsdc']
     # Local and alias parameters
     _local = ['outdir', 'clobber', 'obsnum',
               'targetid', 'target_id', 'seg', 'segment']
@@ -156,6 +156,10 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
             Set to True to download SDC processing logs.
         all : boolean
             Set to True to download all data products.
+        uksdc : boolean
+            Set to True to download from the UK Swift SDC
+        itsdc : boolean
+            Set to True to download from the Italian Swift SDC
         quicklook : boolean
             Set to True to only search Quicklook data. Default searches archive,
             then quicklook if the data are not there. If data are known to be
@@ -180,6 +184,8 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
         self.quicklook = False
         # Download from UK SDC
         self.uksdc = None
+        # Download from the Italian SDC
+        self.itsdc = None
         # Data types to download. Always download auxil as default
         self.auxil = True
         self.bat = None
@@ -241,6 +247,8 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
             self.xrt = self.bat = self.uvot = self.log = self.auxil = self.tdrss = bool
 
     def validate(self):
+        if self.uksdc is True and self.itsdc is True:
+            self.status.error("Cannot download from UK and Italian SDC")
         if self.obsid is None:
             self.status.error("Must supply Observation ID")
         if self.auxil is not True and self.xrt is not True and self.log is not True and self.bat is not True and self.uvot is not True:

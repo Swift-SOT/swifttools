@@ -153,7 +153,6 @@ class Swift_GUANO_Entry(TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_Daterange):
     def begin(self):
         dt = self.triggertime + \
             timedelta(seconds=self.offset - self.duration / 2)
-        dt.utcf = self.utcf
         return dt
 
     @property
