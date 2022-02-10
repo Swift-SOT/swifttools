@@ -40,7 +40,7 @@ def listOldJobs(userID):
     Returns
     -------
     list
-        The list of your previous jobs, described above, most recent 
+        The list of your previous jobs, described above, most recent
         first.
 
     Raises
@@ -56,9 +56,7 @@ def listOldJobs(userID):
     }
     submitted = requests.post("https://www.swift.ac.uk/user_objects/listOldJobs.php", json=jsonDict)
     if submitted.status_code != 200:  # Check that this is int!
-        raise RuntimeError(
-            f"An HTTP error occured - HTTP return code {submitted.status_code}: {submitted.reason}"
-        )
+        raise RuntimeError(f"An HTTP error occured - HTTP return code {submitted.status_code}: {submitted.reason}")
 
     # OK, submitted alright, now, was it successful?
     # Do I want to try/catch just in case?
@@ -121,9 +119,7 @@ def countActiveJobs(userID):
     }
     submitted = requests.post("https://www.swift.ac.uk/user_objects/getNumJobs.php", json=jsonDict)
     if submitted.status_code != 200:  # Check that this is int!
-        raise RuntimeError(
-            f"An HTTP error occured - HTTP return code {submitted.status_code}: {submitted.reason}"
-        )
+        raise RuntimeError(f"An HTTP error occured - HTTP return code {submitted.status_code}: {submitted.reason}")
 
     # OK, submitted alright, now, was it successful?
     # Do I want to try/catch just in case?
@@ -152,9 +148,9 @@ def countActiveJobs(userID):
 def checkAPI(returnedData):
     """Carry out some checks on data returned from the server.
 
-    This checks that the API version returned by the server is 
-    cosistent with the version in this API, and warns if not. It 
-    also checks that the OK value exists. It does NOT handle the 
+    This checks that the API version returned by the server is
+    cosistent with the version in this API, and warns if not. It
+    also checks that the OK value exists. It does NOT handle the
     case that OK=0 or ERROR is set - that is function-specific.
 
     """
@@ -279,7 +275,7 @@ class XRTProductRequest:
     # Also set the API name and version, this will not be processed (by
     # default) but may be useful for future debugging
     _apiName = "xrt_prods"
-    _apiVer = _apiVersion # "1.8"
+    _apiVer = _apiVersion  # "1.8"
 
     # Now begin the instantiated stuff.  First what to output when this
     # instance is entered in an ipython shell.
@@ -462,7 +458,7 @@ class XRTProductRequest:
     def status(self):
         """Current status of the job.
 
-        This is a list with two elements describing the status: 
+        This is a list with two elements describing the status:
         the code, then the textual description.
         """
         return (self.statusCode, self.statusText)
@@ -487,14 +483,13 @@ class XRTProductRequest:
     def lcData(self):
         """Dict containing the light curve, if retreieved."""
         return self._lcData
-    
+
     # specData
     @property
     def specData(self):
         """Dict containing the spectra, if retreieved."""
         return self._specData
-    
-    
+
     #####
     # Pre-submission functions
 
@@ -511,13 +506,13 @@ class XRTProductRequest:
         """
         Set one more more of the XRTProduct global parameters.
 
-        Raises a ValueError if an invalid parameter is set, or a 
+        Raises a ValueError if an invalid parameter is set, or a
         parameter is set to an invalid value
 
         Parameters
         ----------
         **globPars : dict
-            Sets of parameter = value keywords. Parameter must be a 
+            Sets of parameter = value keywords. Parameter must be a
             valid global parameter.
 
         Raises
@@ -607,7 +602,7 @@ class XRTProductRequest:
         -------
         Multiple
             If a single parameter was specified returns the parameter
-            value (or None). 
+            value (or None).
             If all parameters were specified, returns a dict of all
             parameters.
 
@@ -652,13 +647,13 @@ class XRTProductRequest:
 
         This checks whether all of the required parameters are set. It
         does NOT check that the parameter values are valid, so does not
-        guarantee that the submission will succeed; those checks are 
+        guarantee that the submission will succeed; those checks are
         carried out by the server upon submission.
 
         The return is a tuple with two entries:
 
         * status : bool - Whether or not the request is valid.
-        * expln : str - A string explaning why the request is invalid 
+        * expln : str - A string explaning why the request is invalid
           (if it is)
 
 
@@ -759,7 +754,7 @@ class XRTProductRequest:
         (Internal / hidden function).
 
         This checks if the supplied parameter is set, or if its
-        alternative (if there is one) is set. 
+        alternative (if there is one) is set.
         Return is a tuple with 2 elements:
 
         * status : bool - Whether the parameter is found or not
@@ -889,7 +884,7 @@ class XRTProductRequest:
     def getProduct(self, what):
         """Return the requested product object.
 
-        This is mainly of use for copying the product to another request. 
+        This is mainly of use for copying the product to another request.
         It will raise a RuntimeError if you haven't added the product
         in question.
 
@@ -1065,7 +1060,7 @@ class XRTProductRequest:
                 The product type
             copyFrom
                 The product you wish to copy. Must be of the correct type.
-                i.e. if 'what' is 'lc' then 'copyFrom' must be a 
+                i.e. if 'what' is 'lc' then 'copyFrom' must be a
                 light curve.
 
         Raises
@@ -1866,14 +1861,14 @@ class XRTProductRequest:
     def cancelProducts(self, what="all"):
         """Cancel some requested products.
 
-        This function can only be called one the request has been 
+        This function can only be called one the request has been
         submitted successfully. It asks the UKSSDC servers to cancel
         one more more of the requested products.
 
         The return value is a tuple of (status,cancelStatus), defined
         thus:
 
-        status : int - a status code: 
+        status : int - a status code:
         : -1 = HTTP/other error
         :  0 = error in cancellation
         :  1 = success
@@ -1951,7 +1946,9 @@ class XRTProductRequest:
         if ("status" not in returnedData) or ("statusCodes" not in returnedData):
             return (
                 -1,
-                {"ERROR": "The server return does not confirm to the expected JSON structure; do you need do update this module?"},
+                {
+                    "ERROR": "The server return does not confirm to the expected JSON structure; do you need do update this module?"
+                },
             )
 
         # OK got here;
@@ -1982,7 +1979,7 @@ class XRTProductRequest:
         """Check the status of your submitted job.
 
         This can only be called once your request has been successfully
-        submitted. It checks the status of the products specified in 
+        submitted. It checks the status of the products specified in
         what (default: 'all'), and returns a dictionary with one entry
         per product, giving the progress.
 
@@ -1998,7 +1995,7 @@ class XRTProductRequest:
         statusText : str
             :A textual description of the job status.
         progress : dict
-            :A dictionary describing the details of the progress - 
+            :A dictionary describing the details of the progress -
             see the API documentation for a description.
         progressText : str
             :A human-readable string describing the details of the
@@ -2021,7 +2018,7 @@ class XRTProductRequest:
         ------
         RuntimeError
             If the request has not been submitted, or the job is no
-            longer running.       
+            longer running.
 
         """
         if not self.submitted:
@@ -2047,7 +2044,7 @@ class XRTProductRequest:
 
         submitted = requests.post("https://www.swift.ac.uk/user_objects/checkProductStatus.php", json=jsonDict)
         if submitted.status_code != 200:  # Check that this is int!
-            #print(f"\n\n404: {submitted.text}\n\n")
+            # print(f"\n\n404: {submitted.text}\n\n")
             return {"ERROR": f"An HTTP error occured - HTTP return code {submitted.status_code}: {submitted.reason}"}
 
         returnedData = json.loads(submitted.text)
@@ -2209,7 +2206,7 @@ class XRTProductRequest:
         dict
             A dictionary with an entry for each requested product,
             either set to None (if the product was incomplete), a string
-            giving the path to the downloaded file, or the string 
+            giving the path to the downloaded file, or the string
             "ERROR: $msg" where $msg is the reason that the product was
             not downloaded.
 
@@ -2292,16 +2289,16 @@ class XRTProductRequest:
         Raises
         ------
         RuntimeError
-            If the job has not been submitted, or didn't contain a 
+            If the job has not been submitted, or didn't contain a
             standard position.
 
         """
         if not self.submitted:
             raise RuntimeError("Can't query this request as it hasn't been submitted!")
-        if not self.hasProd('psf'):
+        if not self.hasProd("psf"):
             raise RuntimeError("Can't retrieve the standard position as none was requested.")
 
-        status = self.checkProductStatus(('psf',))
+        status = self.checkProductStatus(("psf",))
 
         jsonDict = {
             "api_name": XRTProductRequest._apiName,
@@ -2312,7 +2309,10 @@ class XRTProductRequest:
 
         submitted = requests.post("https://www.swift.ac.uk/user_objects/tprods/getPSFPos.php", json=jsonDict)
         if submitted.status_code != 200:
-            return {"GotPos": False, "Reason": f"An HTTP error occured - HTTP return code {submitted.status_code}: {submitted.reason}"}
+            return {
+                "GotPos": False,
+                "Reason": f"An HTTP error occured - HTTP return code {submitted.status_code}: {submitted.reason}",
+            }
 
         returnedData = json.loads(submitted.text)
 
@@ -2326,8 +2326,8 @@ class XRTProductRequest:
             return {"GotPos": False, "Reason": returnedData["ERROR"]}
 
         # Remove the keys we don't need
-        returnedData.pop('APIVersion', None)
-        returnedData.pop('OK', None)
+        returnedData.pop("APIVersion", None)
+        returnedData.pop("OK", None)
         returnedData["GotPos"] = bool(returnedData["GotPos"])
         if returnedData["GotPos"]:  # Position found
             returnedData["FromSXPS"] = bool(returnedData["FromSXPS"])
@@ -2383,13 +2383,13 @@ class XRTProductRequest:
         Raises
         ------
         RuntimeError
-            If the job has not been submitted, or didn't contain a 
+            If the job has not been submitted, or didn't contain a
             enhanced position.
 
         """
         if not self.submitted:
             raise RuntimeError("Can't query this request as it hasn't been submitted!")
-        if not self.hasProd('enh'):
+        if not self.hasProd("enh"):
             raise RuntimeError("Can't retrieve the enhanced position as none was requested.")
 
         jsonDict = {
@@ -2401,7 +2401,10 @@ class XRTProductRequest:
 
         submitted = requests.post("https://www.swift.ac.uk/user_objects/tprods/getEnhPos.php", json=jsonDict)
         if submitted.status_code != 200:
-            return {"GotPos": False, "Reason": f"An HTTP error occured - HTTP return code {submitted.status_code}: {submitted.reason}"}
+            return {
+                "GotPos": False,
+                "Reason": f"An HTTP error occured - HTTP return code {submitted.status_code}: {submitted.reason}",
+            }
 
         returnedData = json.loads(submitted.text)
 
@@ -2415,8 +2418,8 @@ class XRTProductRequest:
             return {"GotPos": False, "Reason": returnedData["ERROR"]}
 
         # Remove the keys we don't need
-        returnedData.pop('APIVersion', None)
-        returnedData.pop('OK', None)
+        returnedData.pop("APIVersion", None)
+        returnedData.pop("OK", None)
         returnedData["GotPos"] = bool(returnedData["GotPos"])
         if not returnedData["GotPos"]:  # No position found
             returnedData["Reason"] = "No position could be determined."
@@ -2462,13 +2465,13 @@ class XRTProductRequest:
         Raises
         ------
         RuntimeError
-            If the job has not been submitted, or didn't contain a 
+            If the job has not been submitted, or didn't contain a
             enhanced position.
 
         """
         if not self.submitted:
             raise RuntimeError("Can't query this request as it hasn't been submitted!")
-        if not self.hasProd('xastrom'):
+        if not self.hasProd("xastrom"):
             raise RuntimeError("Can't retrieve the enhanced position as none was requested.")
 
         jsonDict = {
@@ -2480,7 +2483,10 @@ class XRTProductRequest:
 
         submitted = requests.post("https://www.swift.ac.uk/user_objects/tprods/getXastromPos.php", json=jsonDict)
         if submitted.status_code != 200:
-            return {"GotPos": False, "Reason": f"An HTTP error occured - HTTP return code {submitted.status_code}: {submitted.reason}"}
+            return {
+                "GotPos": False,
+                "Reason": f"An HTTP error occured - HTTP return code {submitted.status_code}: {submitted.reason}",
+            }
 
         returnedData = json.loads(submitted.text)
 
@@ -2494,8 +2500,8 @@ class XRTProductRequest:
             return {"GotPos": False, "Reason": returnedData["ERROR"]}
 
         # Remove the keys we don't need
-        returnedData.pop('APIVersion', None)
-        returnedData.pop('OK', None)
+        returnedData.pop("APIVersion", None)
+        returnedData.pop("OK", None)
         returnedData["GotPos"] = bool(returnedData["GotPos"])
         if returnedData["GotPos"]:  # Position found
             returnedData["FromSXPS"] = bool(returnedData["FromSXPS"])
@@ -2516,7 +2522,7 @@ class XRTProductRequest:
         * hard
 
         (the latter three only present if all energy bands were made).
-        Each entry is a list, one entry per source detected in that 
+        Each entry is a list, one entry per source detected in that
         band. The list is itself made up of dicts, giving the source
         detection details.
 
@@ -2536,16 +2542,16 @@ class XRTProductRequest:
         Raises
         ------
         RuntimeError
-            If the job has not been submitted, or didn't contain a 
+            If the job has not been submitted, or didn't contain a
             standard position.
 
         """
         if not self.submitted:
             raise RuntimeError("Can't query this request as it hasn't been submitted!")
-        if not self.hasProd('sourceDet'):
+        if not self.hasProd("sourceDet"):
             raise RuntimeError("Can't retrieve the standard position as none was requested.")
 
-        status = self.checkProductStatus(('sourceDet',))
+        status = self.checkProductStatus(("sourceDet",))
 
         jsonDict = {
             "api_name": XRTProductRequest._apiName,
@@ -2556,7 +2562,10 @@ class XRTProductRequest:
 
         submitted = requests.post("https://www.swift.ac.uk/user_objects/tprods/getSourceDetResults.php", json=jsonDict)
         if submitted.status_code != 200:
-            return {"ERROR": True, "Reason": f"An HTTP error occured - HTTP return code {submitted.status_code}: {submitted.reason}"}
+            return {
+                "ERROR": True,
+                "Reason": f"An HTTP error occured - HTTP return code {submitted.status_code}: {submitted.reason}",
+            }
 
         returnedData = json.loads(submitted.text)
 
@@ -2570,8 +2579,8 @@ class XRTProductRequest:
             return {"ERROR": True, "Reason": returnedData["ERROR"]}
 
         # Remove the keys we don't need
-        returnedData.pop('APIVersion', None)
-        returnedData.pop('OK', None)
+        returnedData.pop("APIVersion", None)
+        returnedData.pop("OK", None)
 
         # Now convert everything I can into numbers:
         for band in returnedData:
@@ -2589,7 +2598,7 @@ class XRTProductRequest:
     def retrieveLightCurve(self, nosys=False, incbad=False):
         """Get the light curve data
 
-        This function queries the server for the light curve, and 
+        This function queries the server for the light curve, and
         returns a dictionary of Pandas DataFrames.
         If successful, then there will be any or all of the keys:
         WT, WTUL, PC, PCUL - corresponding to WT/PC detected light curve
@@ -2619,13 +2628,13 @@ class XRTProductRequest:
         Raises
         ------
         RuntimeError
-            If the job has not been submitted, or didn't contain a 
+            If the job has not been submitted, or didn't contain a
             light curve.
 
         """
         if not self.submitted:
             raise RuntimeError("Can't query this request as it hasn't been submitted!")
-        if not self.hasProd('lc'):
+        if not self.hasProd("lc"):
             raise RuntimeError("Can't retrieve the light curve as none was requested.")
 
         jsonDict = {
@@ -2637,7 +2646,10 @@ class XRTProductRequest:
 
         submitted = requests.post("https://www.swift.ac.uk/user_objects/tprods/getLCData.php", json=jsonDict)
         if submitted.status_code != 200:
-            return {"ERROR": True, "Reason": f"An HTTP error occured - HTTP return code {submitted.status_code}: {submitted.reason}"}
+            return {
+                "ERROR": True,
+                "Reason": f"An HTTP error occured - HTTP return code {submitted.status_code}: {submitted.reason}",
+            }
 
         returnedData = json.loads(submitted.text)
 
@@ -2646,28 +2658,26 @@ class XRTProductRequest:
         if returnedData["OK"] == 0:
             if "ERROR" not in returnedData:
                 return {
-                    "ERROR": True, "Reason": "The server return does not confirm to the expected JSON structure; do you need do update this module?"
+                    "ERROR": True,
+                    "Reason": "The server return does not confirm to the expected JSON structure; do you need do update this module?",
                 }
             return {"ERROR": True, "Reason": returnedData["ERROR"]}
 
         # Remove the keys we don't need
-        returnedData.pop('APIVersion', None)
-        returnedData.pop('OK', None)
-        possKeys = ('WT', 'WTUL', 'PC', 'PCUL')
+        returnedData.pop("APIVersion", None)
+        returnedData.pop("OK", None)
         ret = dict()
 
-        for key in possKeys:
-            tmpKey = f"has{key}"
-            if (tmpKey in returnedData) and (returnedData[tmpKey]==1):
-                tmpKey = f"{key}Data"
-                if tmpKey not in returnedData:
-                    return {"ERROR": True, "Reason": f"Can't find {tmpKey} in data, is your module up to date?"}
-                if 'columns' not in returnedData[tmpKey]:
-                    return {"ERROR": True, "Reason": f"Can't find {tmpKey}.columns in data, is your module up to date?"}
-                if 'columns' not in returnedData[tmpKey]:
-                    return {"ERROR": True, "Reason": f"Can't find {tmpKey}.data in data, is your module up to date?"}
-                cols = returnedData[tmpKey]['columns']
-                ret[key] = pd.DataFrame(returnedData[tmpKey]['data'], columns=cols, dtype=float)
+        for key in returnedData["datasets"]:
+            tmpKey = f"{key}Data"
+            if tmpKey not in returnedData:
+                return {"ERROR": True, "Reason": f"Can't find {tmpKey} in data, is your module up to date?"}
+            if "columns" not in returnedData[tmpKey]:
+                return {"ERROR": True, "Reason": f"Can't find {tmpKey}.columns in data, is your module up to date?"}
+            if "columns" not in returnedData[tmpKey]:
+                return {"ERROR": True, "Reason": f"Can't find {tmpKey}.data in data, is your module up to date?"}
+            cols = returnedData[tmpKey]["columns"]
+            ret[key] = pd.DataFrame(returnedData[tmpKey]["data"], columns=cols, dtype=float)
 
         self._lcData = ret
         return self._lcData
@@ -2678,13 +2688,13 @@ class XRTProductRequest:
         This function queries the server for the spectrum and if there
         is one and it's complete, then it will return the automated
         power-law fit values for each spectrum requested. These will
-        be stored in a dictionary, with one entry per spectrum (given 
+        be stored in a dictionary, with one entry per spectrum (given
         the interval names requested). Each such entry has keys:
 
         * T0: The reference T0 time for the spectra
         * GalNH: The Galactic NH (from Willingale et al., 2013) along the
             line of sight. This is NOT included in the fit
-        
+
         Then there is an entry for each spectrum you created. The key is
         the spectrum name, and the entry is a dict with the following
         keys:
@@ -2698,7 +2708,7 @@ class XRTProductRequest:
 
         The WT/PC dicts contain:
 
-        * meantime: Mean photon arrival time (in sec since T0) in this 
+        * meantime: Mean photon arrival time (in sec since T0) in this
                     spectrum
         * nh: Best-fitting column density in cm^-2
         * nhpos: 90% CL positive error on NH
@@ -2735,13 +2745,13 @@ class XRTProductRequest:
         Raises
         ------
         RuntimeError
-            If the job has not been submitted, or didn't contain a 
+            If the job has not been submitted, or didn't contain a
             spectrum.
 
         """
         if not self.submitted:
             raise RuntimeError("Can't query this request as it hasn't been submitted!")
-        if not self.hasProd('spec'):
+        if not self.hasProd("spec"):
             raise RuntimeError("Can't retrieve the spectrum as none was requested.")
 
         jsonDict = {
@@ -2753,7 +2763,10 @@ class XRTProductRequest:
 
         submitted = requests.post("https://www.swift.ac.uk/user_objects/tprods/getSpecData.php", json=jsonDict)
         if submitted.status_code != 200:
-            return {"ERROR": True, "Reason": f"An HTTP error occured - HTTP return code {submitted.status_code}: {submitted.reason}"}
+            return {
+                "ERROR": True,
+                "Reason": f"An HTTP error occured - HTTP return code {submitted.status_code}: {submitted.reason}",
+            }
 
         returnedData = json.loads(submitted.text)
 
@@ -2767,12 +2780,12 @@ class XRTProductRequest:
             return {"ERROR": True, "Reason": returnedData["ERROR"]}
 
         # Remove the keys we don't need
-        returnedData.pop('APIVersion', None)
-        returnedData.pop('OK', None)
+        returnedData.pop("APIVersion", None)
+        returnedData.pop("OK", None)
 
         self._specData = returnedData
         return self._specData
-        
+
     ########### END OF  FOR GETTING THE PRODUCTS ################
 
     ########### MISC FUNCTIONS ################
@@ -2840,7 +2853,7 @@ class XRTProductRequest:
             if par in XRTProductRequest._globalTypes:
                 # If the parameter was a bool then it has come back as an int
                 if (bool in XRTProductRequest._globalTypes[par]) and (type(val) != bool):
-                    val = (val == 1 or val == 'yes' or val == '1')
+                    val = val == 1 or val == "yes" or val == "1"
 
                 # Otherwise, check the type and try to cast it:
                 if not isinstance(val, XRTProductRequest._globalTypes[par]):
@@ -3038,7 +3051,7 @@ class XRTProductRequest:
             If no light curve exists
         ModuleNotFoundError
             If matplotlib.pyplot is not installed.
-        
+
         """
         if self._lcData is None:
             raise RuntimeError("No light curve has been retrieved")
@@ -3046,37 +3059,61 @@ class XRTProductRequest:
 
         fig, ax = plt.subplots()
 
-        if 'WT' in self._lcData:
-            ax.errorbar(self._lcData['WT']['Time'],
-                        self._lcData['WT']['Rate'],
-                        xerr=[-self._lcData['WT']['T_-ve'], self._lcData['WT']['T_+ve']],
-                        yerr=[-self._lcData['WT']['Rateneg'],self._lcData['WT']['Ratepos']],
-                        fmt=".",elinewidth=1.0,color="blue",label="WT",zorder=5)
+        if "WT" in self._lcData:
+            ax.errorbar(
+                self._lcData["WT"]["Time"],
+                self._lcData["WT"]["Rate"],
+                xerr=[-self._lcData["WT"]["T_-ve"], self._lcData["WT"]["T_+ve"]],
+                yerr=[-self._lcData["WT"]["Rateneg"], self._lcData["WT"]["Ratepos"]],
+                fmt=".",
+                elinewidth=1.0,
+                color="blue",
+                label="WT",
+                zorder=5,
+            )
 
-        if 'WTUL' in self._lcData:
-            empty = np.zeros(len(self._lcData['WTUL']['Time']))
-            ulSize = np.zeros(len(self._lcData['WTUL']['Time']))+0.002
-            ax.errorbar(self._lcData['WTUL']['Time'],
-                        self._lcData['WTUL']['Rate'],
-                        xerr=[-self._lcData['WTUL']['T_-ve'], self._lcData['WTUL']['T_+ve']],
-                        yerr=[ulSize,empty],
-                        uplims=True,elinewidth=1.0,color="blue",label="WT",zorder=5)
+        if "WTUL" in self._lcData:
+            empty = np.zeros(len(self._lcData["WTUL"]["Time"]))
+            ulSize = np.zeros(len(self._lcData["WTUL"]["Time"])) + 0.002
+            ax.errorbar(
+                self._lcData["WTUL"]["Time"],
+                self._lcData["WTUL"]["Rate"],
+                xerr=[-self._lcData["WTUL"]["T_-ve"], self._lcData["WTUL"]["T_+ve"]],
+                yerr=[ulSize, empty],
+                uplims=True,
+                elinewidth=1.0,
+                color="blue",
+                label="WT",
+                zorder=5,
+            )
 
-        if 'PC' in self._lcData:
-            ax.errorbar(self._lcData['PC']['Time'],
-                        self._lcData['PC']['Rate'],
-                        xerr=[-self._lcData['PC']['T_-ve'], self._lcData['PC']['T_+ve']],
-                        yerr=[-self._lcData['PC']['Rateneg'],self._lcData['PC']['Ratepos']],
-                        fmt=".",elinewidth=1.0,color="red",label="PC",zorder=5)
+        if "PC" in self._lcData:
+            ax.errorbar(
+                self._lcData["PC"]["Time"],
+                self._lcData["PC"]["Rate"],
+                xerr=[-self._lcData["PC"]["T_-ve"], self._lcData["PC"]["T_+ve"]],
+                yerr=[-self._lcData["PC"]["Rateneg"], self._lcData["PC"]["Ratepos"]],
+                fmt=".",
+                elinewidth=1.0,
+                color="red",
+                label="PC",
+                zorder=5,
+            )
 
-        if 'PCUL' in self._lcData:
-            empty = np.zeros(len(self._lcData['PCUL']['Time']))
-            ulSize = np.zeros(len(self._lcData['PCUL']['Time']))+0.002
-            ax.errorbar(self._lcData['PCUL']['Time'],
-                        self._lcData['PCUL']['Rate'],
-                        xerr=[-self._lcData['PCUL']['T_-ve'], self._lcData['PCUL']['T_+ve']],
-                        yerr=[ulSize,empty],
-                        uplims=True,elinewidth=1.0,color="red",label="PC",zorder=5)
+        if "PCUL" in self._lcData:
+            empty = np.zeros(len(self._lcData["PCUL"]["Time"]))
+            ulSize = np.zeros(len(self._lcData["PCUL"]["Time"])) + 0.002
+            ax.errorbar(
+                self._lcData["PCUL"]["Time"],
+                self._lcData["PCUL"]["Rate"],
+                xerr=[-self._lcData["PCUL"]["T_-ve"], self._lcData["PCUL"]["T_+ve"]],
+                yerr=[ulSize, empty],
+                uplims=True,
+                elinewidth=1.0,
+                color="red",
+                label="PC",
+                zorder=5,
+            )
 
         if xlog:
             ax.set_xscale("log")
@@ -3087,15 +3124,15 @@ class XRTProductRequest:
         tmp = self.getLightCurvePars()
         tmpG = self.getGlobalPars()
         xlabel = "Time"
-        if tmp['timeType'] == "m":
+        if tmp["timeType"] == "m":
             xlabel = "MJD"
-        elif ('T0' in tmpG) and (tmpG['T0'] is not None):
+        elif ("T0" in tmpG) and (tmpG["T0"] is not None):
             xlabel = f"Time since MET={tmpG['T0']} (s)"
         else:
             xlabel = "Time (s)"
 
         ylabel = "Count rate"
-        if ('minEnergy' in tmp) and ('maxEnergy' in tmp):
+        if ("minEnergy" in tmp) and ("maxEnergy" in tmp):
             ylabel = f"Count rate ({tmp['minEnergy']} - {tmp['maxEnergy']})"
 
         ax.set_xlabel(xlabel)
@@ -3105,4 +3142,3 @@ class XRTProductRequest:
             plt.show()
         else:
             plt.savefig(fileName)
-
