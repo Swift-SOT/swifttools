@@ -5,6 +5,10 @@ Changes made to this module after its original release will be documented here.
 * 2022 February 10, xrt_prods v 1.9 released, as part of swifttools 2.3.2 **users are encouraged to update ASAP**
    * This version adds the hardness ratios to the data downloaded by the retrieveLC() function.
    * It also changes the way that function works to support a back-end change. The old back end will be withdrawn at some point, breaking xrt_prods v1.8 and earlier.
+* 2021 March 10, xrt_prods v1.8 released - adds better product download support.
+   * New function `retrieveLightCurve()` to return the actual light curve data
+   * New function `plotLC()` will generate a plot of the downloaded light curve.
+   * New function `retrieveSpectalFits()` to download the automated spectal fit results.
 * 2020 November 16, Python module v1.7 released **users are encouraged to update ASAP**
    * This version requires you to have python distutils/setuptools installed.
    * Edited the version check to support micro-releases (e.g. 1.6.1); future updates to the API
