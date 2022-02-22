@@ -1,0 +1,1 @@
+allowedConeRadiusUnits = ("arcsec", "arcmin", "degree", "deg")
