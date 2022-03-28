@@ -2,18 +2,20 @@ from .common import TOOAPI_Baseclass, TOOAPI_ObsID
 from .too_status import Swift_TOO_Status
 import requests
 import os
+
 try:
     from tqdm.auto import tqdm
 except ImportError:
+
     def tqdm(*args, **kwargs):
-        '''A real simple replacement for tqdm if it's not locally installed'''
-        if 'display' in kwargs.keys() and kwargs['display'] is not False:
+        """A real simple replacement for tqdm if it's not locally installed"""
+        if "display" in kwargs.keys() and kwargs["display"] is not False:
             print(f"Downloading {len(args[0])} files...")
-        return(args[0])
+        return args[0]
 
 
 class Swift_Data_File(TOOAPI_Baseclass):
-    '''Class containing information about a swift data file that can be
+    """Class containing information about a swift data file that can be
     downloaded from the Swift Science Data Center
 
     Attributes:
@@ -32,10 +34,10 @@ class Swift_Data_File(TOOAPI_Baseclass):
         size of file in bytes
     outdir : str
         local directory in which to download file (default '.')
-        '''
+    """
 
     # API name
-    api_name = 'Swift_Data_File'
+    api_name = "Swift_Data_File"
     # Attributes
     filename = None
     path = None
@@ -45,8 +47,8 @@ class Swift_Data_File(TOOAPI_Baseclass):
     localpath = None
     outdir = "."
     # Core API definitions
-    _parameters = ['filename', 'path', 'url', 'quicklook', 'type']
-    _attributes = ['size', 'localpath']
+    _parameters = ["filename", "path", "url", "quicklook", "type"]
+    _attributes = ["size", "localpath"]
 
     @property
     def size(self):
@@ -56,7 +58,7 @@ class Swift_Data_File(TOOAPI_Baseclass):
             return None
 
     def download(self, outdir=None):
-        '''Download the file into a given `outdir`'''
+        """Download the file into a given `outdir`"""
         if outdir is not None:
             self.outdir = outdir
         # Make the directories for the full path if they don't exist
@@ -79,7 +81,7 @@ class Swift_Data_File(TOOAPI_Baseclass):
 
 
 class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
-    '''
+    """
     Class to download Swift data from the UK or US SDC for a given observation
     ID.
 
@@ -120,21 +122,32 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
         shared secret for TOO API (default 'anonymous')
     status : Swift_TOO_Status
         Status of API request
-    '''
+    """
+
     # Core API definitions
-    api_name = 'Swift_Data'
+    api_name = "Swift_Data"
     # Classes used by this class
     _subclasses = [Swift_Data_File, Swift_TOO_Status]
     # Values to send and return through the API
-    _parameters = ['username', 'obsid', 'quicklook', 'auxil',
-                   'bat', 'xrt', 'uvot', 'log', 'tdrss', 'uksdc', 'itsdc']
+    _parameters = [
+        "username",
+        "obsid",
+        "quicklook",
+        "auxil",
+        "bat",
+        "xrt",
+        "uvot",
+        "log",
+        "tdrss",
+        "uksdc",
+        "itsdc",
+    ]
     # Local and alias parameters
-    _local = ['outdir', 'clobber', 'obsnum',
-              'targetid', 'target_id', 'seg', 'segment']
-    _attributes = ['entries', 'status']
+    _local = ["outdir", "clobber", "obsnum", "targetid", "target_id", "seg", "segment", "shared_secret"]
+    _attributes = ["entries", "status"]
 
     def __init__(self, *args, **kwargs):
-        '''
+        """
         Construct the Swift_Data class, and download data if required parameters
         are supplied.
 
@@ -176,9 +189,9 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
             username for TOO API (default 'anonymous')
         shared_secret : str
             shared secret for TOO API (default 'anonymous')
-        '''
+        """
         # Parameters
-        self.username = 'anonymous'
+        self.username = "anonymous"
         self.obsid = None
         # Only look in quicklook
         self.quicklook = False
@@ -223,9 +236,9 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
 
     @property
     def _table(self):
-        header = ['Path', 'Filename', 'Description']
+        header = ["Path", "Filename", "Description"]
         tabdata = []
-        lastpath = ''
+        lastpath = ""
         for file in self.entries:
             if file.path != lastpath:
                 path = file.path
@@ -237,7 +250,14 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
 
     @property
     def all(self):
-        if self.xrt and self.uvot and self.bat and self.log and self.auxil and self.tdrss:
+        if (
+            self.xrt
+            and self.uvot
+            and self.bat
+            and self.log
+            and self.auxil
+            and self.tdrss
+        ):
             return True
         return False
 
@@ -251,7 +271,13 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
             self.status.error("Cannot download from UK and Italian SDC")
         if self.obsid is None:
             self.status.error("Must supply Observation ID")
-        if self.auxil is not True and self.xrt is not True and self.log is not True and self.bat is not True and self.uvot is not True:
+        if (
+            self.auxil is not True
+            and self.xrt is not True
+            and self.log is not True
+            and self.bat is not True
+            and self.uvot is not True
+        ):
             self.status.error("No data products selected")
         if len(self.status.errors) > 0:
             return False
@@ -259,7 +285,7 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
             return True
 
     def download(self, outdir=None):
-        '''Download Swift data for selected instruments to `outdir`'''
+        """Download Swift data for selected instruments to `outdir`"""
         # If outdir is passed as an argument, update the value
         if outdir is not None:
             self.outdir = outdir
@@ -279,7 +305,8 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
         # Index any existing files
         for i in range(len(self.entries)):
             fullfilepath = os.path.join(
-                self.outdir, self.entries[i].path, self.entries[i].filename)
+                self.outdir, self.entries[i].path, self.entries[i].filename
+            )
             if os.path.exists(fullfilepath):
                 self.entries[i].localpath = fullfilepath
 
@@ -287,7 +314,8 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
         topdir = os.path.join(self.outdir, self.obsid)
         if not self.clobber and os.path.exists(topdir):
             print(
-                f"ERROR: Directory {topdir} exists (set clobber=True to override this).")
+                f"ERROR: Directory {topdir} exists (set clobber=True to override this)."
+            )
             return False
 
         # Download files to outdir
@@ -295,13 +323,16 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
             display = False
         else:
             display = True
-        for dfile in tqdm(self.entries, desc="Downloading files", unit='files', display=display):
+        for dfile in tqdm(
+            self.entries, desc="Downloading files", unit="files", display=display
+        ):
             if not dfile.download(outdir=self.outdir):
-                self.status.error(f'Error downloading {dfile.filename}')
+                self.status.error(f"Error downloading {dfile.filename}")
                 return False
 
         # Everything worked we assume so return True
         return True
+
 
 # Shorthand Aliases
 

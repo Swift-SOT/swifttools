@@ -1,10 +1,11 @@
+from .swift_clock import TOOAPI_ClockCorrect
 from .too_status import Swift_TOO_Status
-from .common import TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord
+from .common import TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, swiftdatetime
 from .swift_resolve import TOOAPI_AutoResolve
 
 
 class Swift_VisWindow(TOOAPI_Baseclass):
-    '''Simple class to define a Visibility window. Begin and End of window can
+    """Simple class to define a Visibility window. Begin and End of window can
     either be accessed as self.begin or self.end, or as self[0] or self[1].
 
     Attributes
@@ -15,17 +16,21 @@ class Swift_VisWindow(TOOAPI_Baseclass):
         end time of window
     length : timedelta
         length of window
-    '''
+    """
+
     # API parameter definition
-    _parameters = ['begin', 'end', 'length']
+    _attributes = ["begin", "end", "length"]
     # Names for parameters
-    varnames = {'begin': 'Begin Time',
-                'end': 'End Time', 'length': 'Window length'}
+    varnames = {"begin": "Begin Time", "end": "End Time", "length": "Window length"}
     # API name
     api_name = "Swift_VisWindow"
-    # Attributes
-    begin = None
-    end = None
+
+    def __init__(self):
+        # Set all times in this class to UTC
+        self._isutc = True
+        # Attributes
+        self.begin = None
+        self.end = None
 
     @property
     def length(self):
@@ -33,9 +38,19 @@ class Swift_VisWindow(TOOAPI_Baseclass):
             return None
         return self.end - self.begin
 
+    def __header_title(self, parameter):
+        title = self.varnames[parameter]
+        value = getattr(self, parameter)
+        if type(value) == swiftdatetime:
+            if value.isutc:
+                title += " (UTC)"
+            else:
+                title += " (Swift)"
+        return title
+
     @property
     def _table(self):
-        header = [self.varnames[row] for row in self._parameters]
+        header = [self.__header_title(row) for row in self._parameters + self._attributes]
         return header, [[self.begin, self.end, self.length]]
 
     def __str__(self):
@@ -47,11 +62,17 @@ class Swift_VisWindow(TOOAPI_Baseclass):
         elif index == 1:
             return self.end
         else:
-            raise IndexError('list index out of range')
+            raise IndexError("list index out of range")
 
 
-class Swift_VisQuery(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI_AutoResolve):
-    '''Request Swift Target visibility windows. These results are low-fidelity,
+class Swift_VisQuery(
+    TOOAPI_Baseclass,
+    TOOAPI_Daterange,
+    TOOAPI_SkyCoord,
+    TOOAPI_AutoResolve,
+    TOOAPI_ClockCorrect,
+):
+    """Request Swift Target visibility windows. These results are low-fidelity,
     so do not give orbit-to-orbit visibility, but instead long term windows
     indicates when a target is observable by Swift and not in a Sun/Moon/Pole
     constraint.
@@ -81,14 +102,14 @@ class Swift_VisQuery(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI
         List of visibility windows (`Swift_VisWindow`)
     status : Swift_TOO_Status
         Status of API request
-    '''
+    """
 
     # Parameters that are passed to the API for this request
-    _parameters = ['username', 'ra', 'dec', 'length', 'begin', 'hires']
+    _parameters = ["username", "ra", "dec", "length", "begin", "hires"]
     # Local and alias parameter names
-    _local = ['name', 'skycoord', 'end']
+    _local = ["name", "skycoord", "end", "shared_secret"]
     # Attributes returned by API Server
-    _attributes = ['status', 'windows']
+    _attributes = ["status", "windows"]
     # Subclasses
     _subclasses = [Swift_TOO_Status, Swift_VisWindow]
     # API Name
@@ -97,7 +118,7 @@ class Swift_VisQuery(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI
     windows = list()
 
     def __init__(self, *args, **kwargs):
-        '''
+        """
         Parameters
         ----------
         begin : datetime
@@ -119,9 +140,11 @@ class Swift_VisQuery(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI
             username for TOO API (default 'anonymous')
         shared_secret : str
             shared secret for TOO API (default 'anonymous')
-        '''
+        """
+        # Set all times in this class to UTC
+        self._isutc = True
         # User arguments
-        self.username = 'anonymous'
+        self.username = "anonymous"
         self.ra = None
         self.dec = None
         self.hires = None
@@ -158,7 +181,7 @@ class Swift_VisQuery(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI
         return len(self.windows)
 
     def validate(self):
-        '''Validate all parameters are given before submission'''
+        """Validate all parameters are given before submission"""
         # If length is not set, set to default of 7 days, or 1 day for hires
         if self.length is None:
             if self.hires:

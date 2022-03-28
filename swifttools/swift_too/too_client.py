@@ -1,10 +1,18 @@
 from .swift_calendar import Swift_Calendar
-from .common import TOOAPI_Baseclass, TOOAPI_Instruments, TOOAPI_ObsID, TOOAPI_SkyCoord, xrtmodes
+from .common import (
+    TOOAPI_Baseclass,
+    TOOAPI_Instruments,
+    TOOAPI_ObsID,
+    TOOAPI_SkyCoord,
+    xrtmodes,
+)
 from .too_status import Swift_TOO_Status
 
 
-class Swift_TOO_Request(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_Instruments):
-    '''Class to construct a TOO for submission to Swift MOC. Class provides
+class Swift_TOO_Request(
+    TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_Instruments
+):
+    """Class to construct a TOO for submission to Swift MOC. Class provides
     internal validation of TOO, based on simple criteria. Submission is handled
     by creating an signed JSON file, using "shared secret" to ensure that the
     TOO is from the registered party, and uploading via a HTTP POST to the Swift
@@ -38,103 +46,169 @@ class Swift_TOO_Request(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_
         Is the TOO considered to be complete (default None)
     status : Swift_TOO_Status
         status of request
-    '''
+    """
 
     # Name the class
     api_name = "Swift_TOO_Request"
     # Paramaters that get submitted as part of the JSON
-    _parameters = ['username', 'source_name', 'source_type', 'ra', 'dec',
-                   'poserr', 'instrument', 'urgency', 'opt_mag', 'opt_filt',
-                   'xrt_countrate', 'bat_countrate', 'other_brightness', 'grb_detector',
-                   'immediate_objective', 'science_just', 'exposure', 'exp_time_just',
-                   'exp_time_per_visit', 'num_of_visits', 'monitoring_freq', 'proposal',
-                   'proposal_id', 'proposal_trigger_just', 'proposal_pi', 'xrt_mode',
-                   'uvot_mode', 'uvot_just', 'slew_in_place', 'tiling', 'number_of_tiles',
-                   'exposure_time_per_tile', 'tiling_justification', 'obs_n', 'obs_type',
-                   'grb_triggertime', 'debug', 'validate_only']
+    _parameters = [
+        "username",
+        "source_name",
+        "source_type",
+        "ra",
+        "dec",
+        "poserr",
+        "instrument",
+        "urgency",
+        "opt_mag",
+        "opt_filt",
+        "xrt_countrate",
+        "bat_countrate",
+        "other_brightness",
+        "grb_detector",
+        "immediate_objective",
+        "science_just",
+        "exposure",
+        "exp_time_just",
+        "exp_time_per_visit",
+        "num_of_visits",
+        "monitoring_freq",
+        "proposal",
+        "proposal_id",
+        "proposal_trigger_just",
+        "proposal_pi",
+        "xrt_mode",
+        "uvot_mode",
+        "uvot_just",
+        "slew_in_place",
+        "tiling",
+        "number_of_tiles",
+        "exposure_time_per_tile",
+        "tiling_justification",
+        "obs_n",
+        "obs_type",
+        "grb_triggertime",
+        "debug",
+        "validate_only",
+    ]
     # Alias parameter names
-    _local = ['skycoord']
+    _local = ["skycoord", "shared_secret"]
     # Attributes that may get returned
-    _attributes = ['too_id', 'timestamp', 'decision', 'done', 'target_id', 'date_begin', 'date_end', 'l_name', 'xrt_mode_approved',
-                   'uvot_mode_approved', 'calendar', 'total_exp_time_approved', 'num_of_visits_approved', 'exp_time_per_visit_approved']
+    _attributes = [
+        "too_id",
+        "timestamp",
+        "decision",
+        "done",
+        "target_id",
+        "date_begin",
+        "date_end",
+        "l_name",
+        "xrt_mode_approved",
+        "uvot_mode_approved",
+        "calendar",
+        "total_exp_time_approved",
+        "num_of_visits_approved",
+        "exp_time_per_visit_approved",
+    ]
     # The three instruments on Swift
-    instruments = ['XRT', 'BAT', 'UVOT']
+    instruments = ["XRT", "BAT", "UVOT"]
     # Common missions that that trigger detections
-    mission_names = ['Fermi/LAT', 'Swift/BAT', 'INTEGRAL', 'MAXI',
-                     'IPN', 'Fermi/GBM', 'IceCube', 'LVC', 'ANTARES', 'ZTF', 'ASAS-SN']
+    mission_names = [
+        "Fermi/LAT",
+        "Swift/BAT",
+        "INTEGRAL",
+        "MAXI",
+        "IPN",
+        "Fermi/GBM",
+        "IceCube",
+        "LVC",
+        "ANTARES",
+        "ZTF",
+        "ASAS-SN",
+    ]
     # Valid units for monitoring frequency. Can add a "s" to each one if you like, so "3 orbits" is good.
-    monitoring_units = ['second', 'minute', 'hour',
-                        'day', 'week', 'month', 'year', 'orbit']
+    monitoring_units = [
+        "second",
+        "minute",
+        "hour",
+        "day",
+        "week",
+        "month",
+        "year",
+        "orbit",
+    ]
 
     # English Descriptions of all the variables
     varnames = {
-        'decision': 'Decision',
-        'done': 'Done',
-        'date_begin': 'Begin date',
-        'date_end': 'End date',
-        'calendar': 'Calendar',
-        'slew_in_place': 'Slew in Place',
-        'grb_triggertime': 'GRB Trigger Time (UT)',
-        'exp_time_per_visit_approved': 'Exposure Time per Visit (s)',
-        'total_exp_time_approved': 'Total Exposure (s)',
-        'num_of_visits_approved': 'Number of Visits',
-        'l_name': 'Requester',
-        'username': 'Requester',
-        'too_id': 'ToO ID',
-        'timestamp': 'Time Submitted',
-        'target_id': 'Primary Target ID',
-        'sourceinfo': 'Object Information', 'ra': 'Right Ascenscion (J2000)',
-        'dec': 'Declination (J2000)', 'source_name': 'Object Name',
-        'resolve': 'Resolve coordinates',
-        'position_err': 'Position Error',
-        'poserr': 'Position Error (90% confidence - arcminutes)',
-        'obs_type': 'What is Driving the Exposure Time?',
-        'source_type': 'Type or Classification',
-        'tiling': 'Tiling',
-        'immediate_objective': 'Immediate Objective',
-        'proposal': 'GI Program',
-        'proposal_details': 'GI Proposal Details',
-        'instrument': 'Instrument',
-        'tiling_type': 'Tiling Type',
-        'number_of_tiles': 'Number of Tiles',
-        'exposure_time_per_tile': 'Exposure Time per Tile',
-        'tiling_justification': 'Tiling Justification',
-        'instruments': 'Instrument Most Critical to your Science Goals',
-        'urgency': 'Urgency',
-        'proposal_id': "GI Proposal ID",
-        'proposal_pi': "GI Proposal PI",
-        'proposal_trigger_just': "GI Trigger Justification",
-        'source_brightness': 'Object Brightness',
-        'opt_mag': "Optical Magnitude",
-        'opt_filt': "Optical Filter",
-        'xrt_countrate': "XRT Estimated Rate (c/s)",
-        'bat_countrate': "BAT Countrate (c/s)",
-        'other_brightness': "Other Brightness",
-        'science_just': 'Science Justification',
-        'monitoring': 'Observation Campaign',
-        'obs_n': 'Observation Strategy',
-        'num_of_visits': 'Number of Visits',
-        'exp_time_per_visit': 'Exposure Time per Visit (seconds)',
-        'monitoring_freq': 'Monitoring Cadence',
-        'monitoring_freq_approved': 'Monitoring Cadence',
-        'monitoring_details': 'Monitoring Details',
-        'exposure': 'Exposure Time (seconds)',
-        'exp_time_just': 'Exposure Time Justification',
-        'xrt_mode': 'XRT Mode',
-        'xrt_mode_approved': 'XRT Mode (Approved)',
-        'uvot_mode': 'UVOT Mode',
-        'uvot_mode_approved': 'UVOT Mode (Approved)',
-        'uvot_just': 'UVOT Mode Justification',
-        'trigger_date': 'GRB Trigger Date (YYYY/MM/DD)',
-        'trigger_time': 'GRB Trigger Time (HH:MM:SS)',
-        'grb_detector': 'GRB Discovery Instrument',
-        'grbinfo': 'GRB Details',
-        'debug': 'Debug mode',
-        'validate_only': 'Validate only'
+        "decision": "Decision",
+        "done": "Done",
+        "date_begin": "Begin date",
+        "date_end": "End date",
+        "calendar": "Calendar",
+        "slew_in_place": "Slew in Place",
+        "grb_triggertime": "GRB Trigger Time (UT)",
+        "exp_time_per_visit_approved": "Exposure Time per Visit (s)",
+        "total_exp_time_approved": "Total Exposure (s)",
+        "num_of_visits_approved": "Number of Visits",
+        "l_name": "Requester",
+        "username": "Requester",
+        "too_id": "ToO ID",
+        "timestamp": "Time Submitted",
+        "target_id": "Primary Target ID",
+        "sourceinfo": "Object Information",
+        "ra": "Right Ascenscion (J2000)",
+        "dec": "Declination (J2000)",
+        "source_name": "Object Name",
+        "resolve": "Resolve coordinates",
+        "position_err": "Position Error",
+        "poserr": "Position Error (90% confidence - arcminutes)",
+        "obs_type": "What is Driving the Exposure Time?",
+        "source_type": "Type or Classification",
+        "tiling": "Tiling",
+        "immediate_objective": "Immediate Objective",
+        "proposal": "GI Program",
+        "proposal_details": "GI Proposal Details",
+        "instrument": "Instrument",
+        "tiling_type": "Tiling Type",
+        "number_of_tiles": "Number of Tiles",
+        "exposure_time_per_tile": "Exposure Time per Tile",
+        "tiling_justification": "Tiling Justification",
+        "instruments": "Instrument Most Critical to your Science Goals",
+        "urgency": "Urgency",
+        "proposal_id": "GI Proposal ID",
+        "proposal_pi": "GI Proposal PI",
+        "proposal_trigger_just": "GI Trigger Justification",
+        "source_brightness": "Object Brightness",
+        "opt_mag": "Optical Magnitude",
+        "opt_filt": "Optical Filter",
+        "xrt_countrate": "XRT Estimated Rate (c/s)",
+        "bat_countrate": "BAT Countrate (c/s)",
+        "other_brightness": "Other Brightness",
+        "science_just": "Science Justification",
+        "monitoring": "Observation Campaign",
+        "obs_n": "Observation Strategy",
+        "num_of_visits": "Number of Visits",
+        "exp_time_per_visit": "Exposure Time per Visit (seconds)",
+        "monitoring_freq": "Monitoring Cadence",
+        "monitoring_freq_approved": "Monitoring Cadence",
+        "monitoring_details": "Monitoring Details",
+        "exposure": "Exposure Time (seconds)",
+        "exp_time_just": "Exposure Time Justification",
+        "xrt_mode": "XRT Mode",
+        "xrt_mode_approved": "XRT Mode (Approved)",
+        "uvot_mode": "UVOT Mode",
+        "uvot_mode_approved": "UVOT Mode (Approved)",
+        "uvot_just": "UVOT Mode Justification",
+        "trigger_date": "GRB Trigger Date (YYYY/MM/DD)",
+        "trigger_time": "GRB Trigger Time (HH:MM:SS)",
+        "grb_detector": "GRB Discovery Instrument",
+        "grbinfo": "GRB Details",
+        "debug": "Debug mode",
+        "validate_only": "Validate only",
     }
 
     def __init__(self, *args, **kwargs):
-        '''
+        """
         Parameters
         ----------
         username : string
@@ -228,7 +302,7 @@ class Swift_TOO_Request(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_
             Text description of why tiling is justified (default None)
         debug : boolean
             Debug mode (default None)
-        '''
+        """
         # User chooseable values
         self.username = None  # Swift TOO username (string)
         # Swift TOO shared secret. Log in to Swift TOO page to find out / change your shared secret
@@ -243,7 +317,7 @@ class Swift_TOO_Request(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_
         self.source_type = None
         self.ra = None  # RA(J2000) Degrees decimal (float)
         self.dec = None  # declination (J2000) Degrees decimal (float)
-        self.poserr = 0.0    # Position error in arc-minutes (float)
+        self.poserr = 0.0  # Position error in arc-minutes (float)
 
         # Request details
         self.instrument = "XRT"  # Choices "XRT","UVOT","BAT" (string)
@@ -260,9 +334,9 @@ class Swift_TOO_Request(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_
         # What filter was this measured in (can be non-UVOT filters) (string)
         self.opt_filt = None
 
-        self.xrt_countrate = None      # XRT estimated counts/s (float)
+        self.xrt_countrate = None  # XRT estimated counts/s (float)
         self.bat_countrate = None  # BAT estimated counts/s (float)
-        self.other_brightness = None     # Any other brightness info (float)
+        self.other_brightness = None  # Any other brightness info (float)
 
         # GRB stuff
         # Should be "Mission/Detection" (e.g "Swift/BAT, Fermi/LAT") (string)
@@ -283,7 +357,7 @@ class Swift_TOO_Request(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_
         self.exp_time_just = None
         # Exposure per visit in seconds (integer)
         self.exp_time_per_visit = None
-        self.num_of_visits = 1         # Number of visits (integer)
+        self.num_of_visits = 1  # Number of visits (integer)
         # Formatted text to describe monitoring cadence. E.g. "2 days", "3 orbits", "1 week". See self.monitoring_units for valid units (string)
         self.monitoring_freq = None
         # GI stuff
@@ -352,7 +426,7 @@ class Swift_TOO_Request(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_
 
     @property
     def calendar(self):
-        '''If no calendar data exists for this TOO, fetch it.'''
+        """If no calendar data exists for this TOO, fetch it."""
         if self.too_id is not None:
             if self._calendar.too_id is None:
                 self._calendar.too_id = self.too_id
@@ -365,7 +439,7 @@ class Swift_TOO_Request(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_
 
     @property
     def uvot_mode_approved(self):
-        '''Return UVOT as a hex string. Stored as a number internally'''
+        """Return UVOT as a hex string. Stored as a number internally"""
         if type(self._uvot_mode_approved) == int:
             return f"0x{self._uvot_mode_approved:04x}"
         else:
@@ -373,7 +447,7 @@ class Swift_TOO_Request(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_
 
     @uvot_mode_approved.setter
     def uvot_mode_approved(self, mode):
-        self.uvot_mode_setter('uvot_mode_approved', mode)
+        self.uvot_mode_setter("uvot_mode_approved", mode)
 
     # Set up aliases for the inherited xrt and uvot mode
     xrt_mode = TOOAPI_Instruments.xrt
@@ -381,20 +455,20 @@ class Swift_TOO_Request(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_
 
     @property
     def xrt_mode_approved(self):
-        '''Return XRT mode as abbreviation string. Internally stored as a number.'''
+        """Return XRT mode as abbreviation string. Internally stored as a number."""
         if self._xrt_mode_approved is None:
-            return 'Unset'
+            return "Unset"
         else:
             return xrtmodes[self._xrt_mode_approved]
 
     @xrt_mode_approved.setter
     def xrt_mode_approved(self, mode):
-        '''Allow XRT mode to be set either as a string (e.g. "WT") or as a number (0, 6 or 7).'''
-        self.xrt_mode_setter('xrt_mode_approved', mode)
+        """Allow XRT mode to be set either as a string (e.g. "WT") or as a number (0, 6 or 7)."""
+        self.xrt_mode_setter("xrt_mode_approved", mode)
 
     @property
     def obs_n(self):
-        '''Is this a request for a single observation or multiple?'''
+        """Is this a request for a single observation or multiple?"""
         if self.num_of_visits != "" and self.num_of_visits > 1:
             return "multiple"
         else:
@@ -402,13 +476,22 @@ class Swift_TOO_Request(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_
 
     @obs_n.setter
     def obs_n(self, value):
-        '''Just ignore attempts to set this property'''
+        """Just ignore attempts to set this property"""
         pass
 
     def validate(self):
-        '''Check that the TOO fits the minimum requirements for submission'''
-        requirements = ['ra', 'dec', 'num_of_visits', 'exp_time_just', 'source_type', 'source_name', 'science_just',
-                        'username', 'obs_type']
+        """Check that the TOO fits the minimum requirements for submission"""
+        requirements = [
+            "ra",
+            "dec",
+            "num_of_visits",
+            "exp_time_just",
+            "source_type",
+            "source_name",
+            "science_just",
+            "username",
+            "obs_type",
+        ]
 
         # Check that the minimum requirements are met
         for req in requirements:
@@ -418,7 +501,8 @@ class Swift_TOO_Request(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_
 
         if self.obs_type not in self.obs_types:
             print(
-                f"ERROR: Observation Type needs to be one of the following: {self.obs_types}")
+                f"ERROR: Observation Type needs to be one of the following: {self.obs_types}"
+            )
             return False
 
         if self.instrument not in self.instruments:
@@ -432,12 +516,12 @@ class Swift_TOO_Request(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_
                 return False
 
             if not self.exp_time_per_visit:
-                self.exp_time_per_visit = int(
-                    self.exposure / self.num_of_visits)
+                self.exp_time_per_visit = int(self.exposure / self.num_of_visits)
             else:
                 if self.exp_time_per_visit * self.num_of_visits != self.exposure:
                     print(
-                        "INFO: Total exposure time does not match total of individuals. Correcting.")
+                        "INFO: Total exposure time does not match total of individuals. Correcting."
+                    )
                     self.exposure = self.exp_time_per_visit * self.num_of_visits
         else:
             if not self.exposure:
@@ -446,15 +530,14 @@ class Swift_TOO_Request(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_
         # Check monitoring frequency is correct
         if self.monitoring_freq:
             _, unit = self.monitoring_freq.strip().split()
-            if unit[-1] == 's':
+            if unit[-1] == "s":
                 unit = unit[0:-1]
             if unit not in self.monitoring_units:
                 print(f"ERROR: Monitoring unit ({unit}) not valid")
                 return False
 
         # Check validity of GI requests
-        gi_requirements = ['proposal_id',
-                           'proposal_pi', 'proposal_trigger_just']
+        gi_requirements = ["proposal_id", "proposal_pi", "proposal_trigger_just"]
         if self.proposal:
             for req in gi_requirements:
                 if getattr(self, req) is None:
@@ -462,7 +545,7 @@ class Swift_TOO_Request(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_
                     return False
 
         # Check trigger requirements
-        grb_requirements = ['grb_triggertime', 'grb_detector']
+        grb_requirements = ["grb_triggertime", "grb_detector"]
         if self.source_type == "GRB":
             for req in grb_requirements:
                 if getattr(self, req) is None:
@@ -472,7 +555,7 @@ class Swift_TOO_Request(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_
         return True
 
     def server_validate(self):
-        '''Validate the TOO request with the TOO API server.'''
+        """Validate the TOO request with the TOO API server."""
         # Perform a _local validation first
         self.validate()
         # Do a server side validation
@@ -498,14 +581,40 @@ class Swift_TOO_Request(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_
     def _table(self):
         tab = list()
         if self.decision is not None:
-            _parameters = ['too_id', 'l_name', 'timestamp', 'urgency', 'source_name',
-                           'source_type', 'grb_triggertime', 'grb_detector', 'ra',
-                           'dec', 'proposal_pi', 'proposal_id', 'proposal_trigger_just',
-                           'poserr', 'science_just', 'opt_mag', 'opt_filt', 'xrt_countrate',
-                           'other_brightness', 'bat_countrate', 'exp_time_per_visit_approved',
-                           'num_of_visits_approved', 'total_exp_time_approved', 'monitoring_freq',
-                           'immediate_objective', 'exp_time_just', 'instrument', 'obs_type',
-                           'xrt_mode_approved', 'uvot_mode_approved', 'uvot_just', 'target_id']
+            _parameters = [
+                "too_id",
+                "l_name",
+                "timestamp",
+                "urgency",
+                "source_name",
+                "source_type",
+                "grb_triggertime",
+                "grb_detector",
+                "ra",
+                "dec",
+                "proposal_pi",
+                "proposal_id",
+                "proposal_trigger_just",
+                "poserr",
+                "science_just",
+                "opt_mag",
+                "opt_filt",
+                "xrt_countrate",
+                "other_brightness",
+                "bat_countrate",
+                "exp_time_per_visit_approved",
+                "num_of_visits_approved",
+                "total_exp_time_approved",
+                "monitoring_freq",
+                "immediate_objective",
+                "exp_time_just",
+                "instrument",
+                "obs_type",
+                "xrt_mode_approved",
+                "uvot_mode_approved",
+                "uvot_just",
+                "target_id",
+            ]
         else:
             _parameters = self._parameters
         for row in _parameters:
@@ -513,7 +622,7 @@ class Swift_TOO_Request(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_
             if val is not None and val != "":
                 tab.append([self.varnames[row], val])
         if len(tab) > 0:
-            header = ['Parameter', 'Value']
+            header = ["Parameter", "Value"]
         else:
             header = []
         return header, tab

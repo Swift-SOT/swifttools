@@ -1,10 +1,11 @@
 from .common import TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_Daterange
+from .swift_clock import TOOAPI_ClockCorrect
 from .too_status import Swift_TOO_Status
 from datetime import timedelta
 
 
-class Swift_GUANO_GTI(TOOAPI_Baseclass, TOOAPI_Daterange):
-    '''Define GUANO event data Good Time Intervals (GTI)
+class Swift_GUANO_GTI(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
+    """Define GUANO event data Good Time Intervals (GTI)
 
     Attributes
     ----------
@@ -22,20 +23,29 @@ class Swift_GUANO_GTI(TOOAPI_Baseclass, TOOAPI_Daterange):
     utcf : float
         UT Correction Factor - this encompasses correction for both the
         inaccuracies in the Swift clock and also any leap seconds
-    '''
-    api_name = 'Swift_GUANO_GTI'
-    filename = None
-    acs = None
-    utcf = None
-    exposure = None
-    _attributes = ['begin', 'end', 'exposure', 'utcf', 'acs', 'filename']
+    """
+
+    api_name = "Swift_GUANO_GTI"
+    _attributes = ["begin", "end", "exposure", "utcf", "acs", "filename"]
+
+    def __init__(self):
+        self.filename = None
+        self.acs = None
+        self.utcf = None
+        self.exposure = None
+        self.begin = None
+        self.end = None
+        # All times UTC
+        self._isutc = True
 
     def __str__(self):
         return f"{self.begin} - {self.end} ({self.exposure})"
 
 
-class Swift_GUANO_Data(TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_Daterange):
-    '''Class to hold information about GUANO data based on analysis of the BAT
+class Swift_GUANO_Data(
+    TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect
+):
+    """Class to hold information about GUANO data based on analysis of the BAT
     event files that are downlinked.
 
     Attributes
@@ -65,23 +75,42 @@ class Swift_GUANO_Data(TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_Daterange):
     utcf : float
         UT Correction Factor - this encompasses correction for both the
         inaccuracies in the Swift clock and also any leap seconds
-    '''
+    """
 
     # API Name
-    api_name = 'Swift_GUANO_Data'
-    # Attributes
-    all_gtis = None
-    gti = None
-    utcf = None
-    acs = None
-    exposure = None
-    filenames = None
+    api_name = "Swift_GUANO_Data"
 
     # Core API definitions
-    _parameters = ['obsid', 'triggertime']
-    _attributes = ['begin', 'end', 'exposure',
-                   'filenames', 'gti', 'all_gtis', 'acs', 'utcf']
+    _parameters = ["obsid", "triggertime"]
+    _attributes = [
+        "begin",
+        "end",
+        "exposure",
+        "filenames",
+        "gti",
+        "all_gtis",
+        "acs",
+        "utcf",
+    ]
     _subclasses = [Swift_GUANO_GTI]
+
+    def __init__(self):
+        # All times UTC
+        self._isutc = True
+        # Attributes
+        self.all_gtis = None
+        self.gti = None
+        self._utcf = None
+        self.acs = None
+        self.exposure = None
+        self.filenames = None
+        self.begin = None
+        self.end = None
+
+    @property
+    def utcf(self):
+        if self.gti is not None:
+            return self.gti.utcf
 
     @property
     def _table(self):
@@ -94,11 +123,13 @@ class Swift_GUANO_Data(TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_Daterange):
                 table += [[row, "\n".join([gti.__str__() for gti in value])]]
             elif value is not None and value != "" and value != []:
                 table += [[row, f"{value}"]]
-        return ['Parameter', 'Value'], table
+        return ["Parameter", "Value"], table
 
 
-class Swift_GUANO_Entry(TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_Daterange):
-    '''Entry for an individual BAT ring buffer dump (AKA GUANO) event.
+class Swift_GUANO_Entry(
+    TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect
+):
+    """Entry for an individual BAT ring buffer dump (AKA GUANO) event.
 
     Attributes
     ----------
@@ -116,52 +147,62 @@ class Swift_GUANO_Entry(TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_Daterange):
         Number of seconds dumped
     status : str
         status of API request
-    '''
+    """
 
     # API name
-    api_name = 'Swift_GUANO_Entry'
-    # Attributes
-    triggertype = None
-    triggertime = None
-    duration = None
-    quadsaway = None
-    offset = None
-    ra = None
-    dec = None
-    data = None
-    utcf = None
+    api_name = "Swift_GUANO_Entry"
     # Core API definitions
     _subclasses = [Swift_GUANO_Data]
-    _parameters = ['triggertime']
-    _attributes = ['triggertype', 'offset', 'duration',
-                   'quadsaway', 'obsnum', 'ra', 'dec', 'data', 'utcf']
+    _parameters = ["triggertime"]
+    _local = ["begin", "end", "shared_secret"]
+    _attributes = [
+        "triggertype",
+        "offset",
+        "duration",
+        "quadsaway",
+        "obsnum",
+        "ra",
+        "dec",
+        "data",
+        "utcf",
+    ]
+
+    def __init__(self):
+        # All times UTC
+        self._isutc = True
+        # Attributes
+        self.triggertype = None
+        self.triggertime = None
+        self.duration = None
+        self.quadsaway = None
+        self.offset = None
+        self.ra = None
+        self.dec = None
+        self.data = None
+        self.utcf = None
+        self.begin = None
+        self.end = None
 
     @property
     def _table(self):
         table = []
         for row in self._parameters + self._attributes:
             value = getattr(self, row)
-            if row == 'data' and self.data.exposure is not None:
+            if row == "data" and self.data.exposure is not None:
                 table += [[row, f"{value.exposure:.1f}s of BAT event data"]]
-            elif row == 'data' and self.data.exposure is None:
+            elif row == "data" and self.data.exposure is None:
                 table += [[row, "No BAT event data found"]]
             elif value is not None:
                 table += [[row, f"{value}"]]
-        return ['Parameter', 'Value'], table
+        return ["Parameter", "Value"], table
 
-    @property
-    def begin(self):
-        dt = self.triggertime + \
-            timedelta(seconds=self.offset - self.duration / 2)
-        return dt
-
-    @property
-    def end(self):
-        return self.triggertime + timedelta(seconds=self.offset + self.duration / 2)
+    def _calc_begin_end(self):
+        self.begin = self.triggertime + timedelta(seconds=self.offset - self.duration / 2)
+        self.end = self.triggertime + timedelta(seconds=self.offset + self.duration / 2)
 
 
-class Swift_GUANO(TOOAPI_Baseclass, TOOAPI_Daterange):
-    '''Query BAT ring buffer dumps of event data associated with the Gamma-Ray
+class Swift_GUANO(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_ClockCorrect):
+    """Query BAT ring buffer dumps of event data associated with the Gamma-Ray
     Burst Urgent Archiver for Novel Opportunities (GUANO).
 
     Attributes
@@ -188,22 +229,29 @@ class Swift_GUANO(TOOAPI_Baseclass, TOOAPI_Daterange):
         current status of guano system
     lastcommand : datetime
         when was the last GUANO command executed
-    '''
+    """
 
     # API Name
-    api_name = 'Swift_GUANO'
+    api_name = "Swift_GUANO"
     # Core API definitions
-    _parameters = ['username', 'triggertime', 'begin',
-                   'end', 'limit', 'subthreshold', 'successful']
-    _local = ['length']
-    _attributes = ['guanostatus', 'lastcommand', 'entries', 'status']
+    _parameters = [
+        "username",
+        "triggertime",
+        "begin",
+        "end",
+        "limit",
+        "subthreshold",
+        "successful",
+    ]
+    _local = ["length", "shared_secret"]
+    _attributes = ["guanostatus", "lastcommand", "entries", "status"]
     _subclasses = [Swift_GUANO_Entry, Swift_TOO_Status]
     # Attributes
     guanostatus = None
     lastcommand = None
 
     def __init__(self, *args, **kwargs):
-        '''
+        """
         Parameters
         ----------
         username : str
@@ -220,9 +268,12 @@ class Swift_GUANO(TOOAPI_Baseclass, TOOAPI_Daterange):
             length of time to search after `begin`
         limit : int
             limit number of results fetched
-        '''
+        """
+        # Set all times in this class to UTC
+        self._isutc = True
+
         # Login user
-        self.username = 'anonymous'
+        self.username = "anonymous"
 
         # Parameters
         self.subthreshold = False
@@ -255,16 +306,29 @@ class Swift_GUANO(TOOAPI_Baseclass, TOOAPI_Daterange):
         return len(self.entries)
 
     def validate(self):
-        if self.limit is not None or self.begin is not None or self.end is not None or self.length is not None or self.triggertime is not None:
-            if self.subthreshold is True and self.username == 'anonymous':
-                self.status.error("For subthreshold triggers, username cannot be anonymous.")
+        if (
+            self.limit is not None
+            or self.begin is not None
+            or self.end is not None
+            or self.length is not None
+            or self.triggertime is not None
+        ):
+            if self.subthreshold is True and self.username == "anonymous":
+                self.status.error(
+                    "For subthreshold triggers, username cannot be anonymous."
+                )
                 return False
             return True
 
     @property
     def _table(self):
-        header = ['Trigger Type', 'Trigger Time',
-                  'Offset (s)', 'Window Duration (s)', 'Observation ID']
+        header = [
+            "Trigger Type",
+            "Trigger Time",
+            "Offset (s)",
+            "Window Duration (s)",
+            "Observation ID",
+        ]
         table = []
         for ent in self.entries:
             if ent.data.exposure is not None:
@@ -276,10 +340,18 @@ class Swift_GUANO(TOOAPI_Baseclass, TOOAPI_Daterange):
                     exposure += "*"
             else:
                 exposure = 0
-            table.append([ent.triggertype, ent.triggertime,
-                         ent.offset, exposure, ent.obsnum])
+            table.append(
+                [ent.triggertype, ent.triggertime, ent.offset, exposure, ent.obsnum]
+            )
 
         return header, table
+
+    def _post_process(self):
+        """Things to do after data are fetched from the API."""
+        # Calculate begin and end times for all GUANO entries
+        [e._calc_begin_end for e in self.entries]
+        # Perform clock correction by default for all dates retrieved
+        self.clock_correct()
 
 
 # Shorthand alias names for class
