@@ -35,7 +35,7 @@ class Swift_Resolve(TOOAPI_Baseclass, TOOAPI_SkyCoord):
     # Other API classes that may be used by this class
     _subclasses = [Swift_TOO_Status]
     # Local parameters
-    _local = ['shared_secret']
+    _local = ["shared_secret"]
     # API name
     api_name = "Swift_Resolve"
 

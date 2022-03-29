@@ -42,9 +42,7 @@ class Swift_GUANO_GTI(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
         return f"{self.begin} - {self.end} ({self.exposure})"
 
 
-class Swift_GUANO_Data(
-    TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect
-):
+class Swift_GUANO_Data(TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect):
     """Class to hold information about GUANO data based on analysis of the BAT
     event files that are downlinked.
 
@@ -126,9 +124,7 @@ class Swift_GUANO_Data(
         return ["Parameter", "Value"], table
 
 
-class Swift_GUANO_Entry(
-    TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect
-):
+class Swift_GUANO_Entry(TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect):
     """Entry for an individual BAT ring buffer dump (AKA GUANO) event.
 
     Attributes
@@ -197,7 +193,9 @@ class Swift_GUANO_Entry(
         return ["Parameter", "Value"], table
 
     def _calc_begin_end(self):
-        self.begin = self.triggertime + timedelta(seconds=self.offset - self.duration / 2)
+        self.begin = self.triggertime + timedelta(
+            seconds=self.offset - self.duration / 2
+        )
         self.end = self.triggertime + timedelta(seconds=self.offset + self.duration / 2)
 
 
@@ -349,7 +347,7 @@ class Swift_GUANO(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_ClockCorrect):
     def _post_process(self):
         """Things to do after data are fetched from the API."""
         # Calculate begin and end times for all GUANO entries
-        [e._calc_begin_end for e in self.entries]
+        [e._calc_begin_end() for e in self.entries]
         # Perform clock correction by default for all dates retrieved
         self.clock_correct()
 

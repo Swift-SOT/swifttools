@@ -6,6 +6,12 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
+## `swifttools` 2.4.1 / `swift_too` 1.2.9
+
+**March 29th, 2022**: Bug fix release
+
+* Bug where `begin` and `end` properities of `GUANO` entries were not being set.
+
 ## `swifttools` 2.4 / `swift_too` 1.2.8
 
 **March 28th, 2022**: Added clock correction through both `Swift_Clock` class and universal `clock_correct()` method.

@@ -5,7 +5,7 @@ from .common import (
     TOOAPI_Instruments,
     TOOAPI_SkyCoord,
     TOOAPI_ObsID,
-    swiftdatetime
+    swiftdatetime,
 )
 from .too_status import Swift_TOO_Status
 from .swift_obsquery import Swift_Observation, Swift_Observations

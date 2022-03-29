@@ -39,7 +39,7 @@ class Swift_Clock(TOOAPI_Baseclass):
     # Returned classes
     _subclasses = [Swift_TOO_Status, swiftdatetime]
     # Local parameters
-    _local = ['shared_secret']
+    _local = ["shared_secret"]
 
     def __init__(self, *args, **kwargs):
         """

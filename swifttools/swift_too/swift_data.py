@@ -143,7 +143,16 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
         "itsdc",
     ]
     # Local and alias parameters
-    _local = ["outdir", "clobber", "obsnum", "targetid", "target_id", "seg", "segment", "shared_secret"]
+    _local = [
+        "outdir",
+        "clobber",
+        "obsnum",
+        "targetid",
+        "target_id",
+        "seg",
+        "segment",
+        "shared_secret",
+    ]
     _attributes = ["entries", "status"]
 
     def __init__(self, *args, **kwargs):

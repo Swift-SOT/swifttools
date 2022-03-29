@@ -85,7 +85,7 @@ class UVOT_mode(TOOAPI_Baseclass, TOOAPI_Instruments):
     _parameters = ["username", "uvotmode"]
     _attributes = ["status", "entries"]
     # Local parameters
-    _local = ['shared_secret']
+    _local = ["shared_secret"]
     _subclasses = [UVOT_mode_entry, Swift_TOO_Status]
     api_name = "UVOT_mode"
     # Alias for uvotmode

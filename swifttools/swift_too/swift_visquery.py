@@ -50,7 +50,9 @@ class Swift_VisWindow(TOOAPI_Baseclass):
 
     @property
     def _table(self):
-        header = [self.__header_title(row) for row in self._parameters + self._attributes]
+        header = [
+            self.__header_title(row) for row in self._parameters + self._attributes
+        ]
         return header, [[self.begin, self.end, self.length]]
 
     def __str__(self):

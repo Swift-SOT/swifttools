@@ -99,7 +99,7 @@ class Swift_Calendar(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
     _parameters = ["username", "too_id"]
     _attributes = ["status", "entries"]
     # Local parameters
-    _local = ['shared_secret']
+    _local = ["shared_secret"]
     _subclasses = [Swift_Calendar_Entry, Swift_TOO_Status]
 
     def __init__(self, *args, **kwargs):

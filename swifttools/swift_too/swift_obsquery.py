@@ -4,7 +4,7 @@ from .common import (
     TOOAPI_SkyCoord,
     TOOAPI_ObsID,
     TOOAPI_Instruments,
-    swiftdatetime
+    swiftdatetime,
 )
 from .too_status import Swift_TOO_Status
 from datetime import timedelta
