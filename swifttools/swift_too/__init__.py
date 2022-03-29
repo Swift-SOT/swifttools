@@ -1,4 +1,4 @@
-'''The `swift_too` module provides a Python API that gives you almost
+"""The `swift_too` module provides a Python API that gives you almost
 everything you need to plan and submit Target of Opportunity (TOOs) 
 requests to the Neil Gehrels Swift Observatory (hereafter *Swift*).
 
@@ -131,7 +131,7 @@ Queries are constructed using Python classes provided by this module, and
 submitted to a queue system in which they are processed in a first come,
 first served basis. Typically processing requests takes a 10-20 seconds.
 Status of requests can be queried, and errors are reported back.
-'''
+"""
 from .version import __version__
 from .too_client import Swift_TOO, TOO
 from .swift_obsquery import Swift_ObsQuery, ObsQuery
@@ -144,3 +144,4 @@ from .swift_calendar import Swift_Calendar, Calendar
 from .swift_guano import Swift_GUANO, GUANO
 from .swift_data import Swift_Data, Data
 from .swift_resolve import Swift_Resolve, Resolve
+from .swift_clock import Swift_Clock, Clock

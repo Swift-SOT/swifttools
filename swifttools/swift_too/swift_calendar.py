@@ -1,9 +1,10 @@
 from .common import TOOAPI_Baseclass, TOOAPI_Instruments
+from .swift_clock import TOOAPI_ClockCorrect
 from .too_status import Swift_TOO_Status
 
 
-class Swift_Calendar_Entry(TOOAPI_Baseclass, TOOAPI_Instruments):
-    '''Class for a single entry in the Swift TOO calendar.
+class Swift_Calendar_Entry(TOOAPI_Baseclass, TOOAPI_Instruments, TOOAPI_ClockCorrect):
+    """Class for a single entry in the Swift TOO calendar.
 
     Attributes
     ----------
@@ -21,13 +22,27 @@ class Swift_Calendar_Entry(TOOAPI_Baseclass, TOOAPI_Instruments):
         exposure time of calendar entry in seconds
     asflown: float
         estimated exposure time in seconds
-    '''
+    """
 
     # Set up Core API values
-    _parameters = ['start', 'stop', 'xrt_mode', 'bat_mode',
-                   'uvot_mode', 'duration', 'asflown']
-    _names = ['Start', 'Stop', 'XRT Mode', 'BAT Mode',
-              'UVOT Mode', 'Exposure (s)', 'AFST (s)']
+    _parameters = [
+        "start",
+        "stop",
+        "xrt_mode",
+        "bat_mode",
+        "uvot_mode",
+        "duration",
+        "asflown",
+    ]
+    _names = [
+        "Start",
+        "Stop",
+        "XRT Mode",
+        "BAT Mode",
+        "UVOT Mode",
+        "Exposure (s)",
+        "AFST (s)",
+    ]
     api_name = "Swift_Calendar_Entry"
 
     def __init__(self):
@@ -61,8 +76,8 @@ class Swift_Calendar_Entry(TOOAPI_Baseclass, TOOAPI_Instruments):
         return header, [[getattr(self, row) for row in _parameters]]
 
 
-class Swift_Calendar(TOOAPI_Baseclass):
-    '''Class that fetches entries in the Swift Planning Calendar, which
+class Swift_Calendar(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
+    """Class that fetches entries in the Swift Planning Calendar, which
     are scheduled as part of a TOO request.
 
     Attributes
@@ -77,15 +92,18 @@ class Swift_Calendar(TOOAPI_Baseclass):
         list of calendar entries returned by query (`Swift_Calendar_Entries`)
     status : Swift_TOO_Status
         Status of API request
-    '''
+    """
+
     # Core API definitions
     api_name = "Swift_Calendar"
     _parameters = ["username", "too_id"]
     _attributes = ["status", "entries"]
+    # Local parameters
+    _local = ['shared_secret']
     _subclasses = [Swift_Calendar_Entry, Swift_TOO_Status]
 
     def __init__(self, *args, **kwargs):
-        '''
+        """
         Parameters
         ----------
         username : str
@@ -94,10 +112,10 @@ class Swift_Calendar(TOOAPI_Baseclass):
             shared secret for TOO API (default 'anonymous')
         too_id : int
             Unique TOO identifying number
-        '''
+        """
         # Parameters
         self.entries = list()
-        self.username = 'anonymous'
+        self.username = "anonymous"
         self.too_id = None
         self.status = Swift_TOO_Status()
 
@@ -126,7 +144,7 @@ class Swift_Calendar(TOOAPI_Baseclass):
 
     @property
     def _table(self):
-        '''Table of Calendar details'''
+        """Table of Calendar details"""
         table = list()
         for i in range(len(self.entries)):
             table.append([i] + self.entries[i]._table[-1][0])

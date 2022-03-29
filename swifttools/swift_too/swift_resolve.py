@@ -3,7 +3,7 @@ from .too_status import Swift_TOO_Status
 
 
 class Swift_Resolve(TOOAPI_Baseclass, TOOAPI_SkyCoord):
-    '''Swift_Resolve class
+    """Swift_Resolve class
 
     Performs name resolution using Simbad, TNS or MARS. Simply give the name of
     the source, and it will return `ra` and `dec` in decimal degrees, or a
@@ -27,17 +27,20 @@ class Swift_Resolve(TOOAPI_Baseclass, TOOAPI_SkyCoord):
         SkyCoord version of RA/Dec if astropy is installed
     status : str
         status of API request
-    '''
+    """
+
     # API input and return values definition
-    _parameters = ['username', 'name']
-    _attributes = ['ra', 'dec', 'resolver', 'status']
+    _parameters = ["username", "name"]
+    _attributes = ["ra", "dec", "resolver", "status"]
     # Other API classes that may be used by this class
     _subclasses = [Swift_TOO_Status]
+    # Local parameters
+    _local = ['shared_secret']
     # API name
-    api_name = 'Swift_Resolve'
+    api_name = "Swift_Resolve"
 
     def __init__(self, *args, **kwargs):
-        '''
+        """
         Parameters
         ----------
         name : str
@@ -46,10 +49,10 @@ class Swift_Resolve(TOOAPI_Baseclass, TOOAPI_SkyCoord):
             Swift TOO API username (default 'anonymous')
         shared_secret: str
             TOO API shared secret (default 'anonymous')
-        '''
+        """
         # Input parameters
         self.name = None
-        self.username = 'anonymous'
+        self.username = "anonymous"
         # Returned parameters
         self.ra = None
         self.dec = None
@@ -67,7 +70,7 @@ class Swift_Resolve(TOOAPI_Baseclass, TOOAPI_SkyCoord):
             self.status.clear()
 
     def validate(self):
-        '''Local validation that TOO_API object is ready for submission'''
+        """Local validation that TOO_API object is ready for submission"""
         if self.name is not None and self.shared_secret is not None:
             return True
         else:
@@ -75,19 +78,18 @@ class Swift_Resolve(TOOAPI_Baseclass, TOOAPI_SkyCoord):
 
     @property
     def _table(self):
-        '''Displays values in class as a table'''
+        """Displays values in class as a table"""
         if self.ra is not None:
-            header = ['Name', 'RA (J2000)', 'Dec (J2000)', 'Resolver']
-            table = [[self.name, f"{self.ra:.5f}",
-                      f"{self.dec:.5f}", self.resolver]]
+            header = ["Name", "RA (J2000)", "Dec (J2000)", "Resolver"]
+            table = [[self.name, f"{self.ra:.5f}", f"{self.dec:.5f}", self.resolver]]
             return header, table
         else:
             return [], []
 
 
 class TOOAPI_AutoResolve:
-    '''Mixin to automatically any given `name` into RA/Dec coordinates using
-    `Swift_Resolve`'''
+    """Mixin to automatically any given `name` into RA/Dec coordinates using
+    `Swift_Resolve`"""
 
     _name = None
     resolve = None
@@ -98,7 +100,7 @@ class TOOAPI_AutoResolve:
 
     @name.setter
     def name(self, sourcename):
-        '''If you set a name, use `Swift_Resolve` to retrieve it's `ra` and `dec`.'''
+        """If you set a name, use `Swift_Resolve` to retrieve it's `ra` and `dec`."""
         if self._name != sourcename:
             self._name = sourcename
             self.resolve = Swift_Resolve(name=sourcename)
@@ -106,7 +108,7 @@ class TOOAPI_AutoResolve:
                 self.ra = self.resolve.ra
                 self.dec = self.resolve.dec
             else:
-                self.status.error('Could not resolve name.')
+                self.status.error("Could not resolve name.")
 
 
 # Shorthand alias for class

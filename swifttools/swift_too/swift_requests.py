@@ -5,8 +5,10 @@ from .swift_calendar import Swift_Calendar, Swift_Calendar_Entry
 from .swift_resolve import TOOAPI_AutoResolve
 
 
-class Swift_TOO_Requests(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI_AutoResolve):
-    '''Class used to obtain details about previous TOO requests.
+class Swift_TOO_Requests(
+    TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI_AutoResolve
+):
+    """Class used to obtain details about previous TOO requests.
 
     Attributes
     ----------
@@ -40,22 +42,37 @@ class Swift_TOO_Requests(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TO
         SkyCoord version of RA/Dec if astropy is installed
     radius : float
         radius in degrees to search for TOOs
-    '''
+    """
+
     # Parameters for requested
-    _parameters = ['username', 'limit', 'too_id', 'year',
-                   'detail', 'ra', 'dec', 'radius', 'begin', 'length']
+    _parameters = [
+        "username",
+        "limit",
+        "too_id",
+        "year",
+        "detail",
+        "ra",
+        "dec",
+        "radius",
+        "begin",
+        "length",
+    ]
     # Local and alias parameters
-    _local = ['name', 'skycoord', 'end']
+    _local = ["name", "skycoord", "end", "shared_secret"]
     # Returned values
-    _attributes = ['entries', 'status']
+    _attributes = ["entries", "status"]
     # Returned classes
-    _subclasses = [Swift_TOO_Request, Swift_TOO_Status,
-                   Swift_Calendar, Swift_Calendar_Entry]
+    _subclasses = [
+        Swift_TOO_Request,
+        Swift_TOO_Status,
+        Swift_Calendar,
+        Swift_Calendar_Entry,
+    ]
     # API name
-    api_name = 'Swift_TOO_Requests'
+    api_name = "Swift_TOO_Requests"
 
     def __init__(self, *args, **kwargs):
-        '''
+        """
         Parameters
         ----------
         username: str
@@ -84,24 +101,24 @@ class Swift_TOO_Requests(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TO
             SkyCoord version of RA/Dec if astropy is installed
         radius : float
             radius in degrees to search for TOOs
-        '''
+        """
         # Parameter values
-        self.username = 'anonymous'
-        self.year = None            # TOOs for a specific year
+        self.username = "anonymous"
+        self.year = None  # TOOs for a specific year
         # Return detailed information (only returns your TOOs)
         self.detail = None
         # Limit the number of returned TOOs. Default limit is 10.
         self.limit = None
-        self.too_id = None          # Request a TOO of a specific TOO ID number
-        self.ra = None              # Search on RA / Dec
-        self.dec = None             # Default radius is 11.6 arc-minutes
-        self.radius = None          # which is the XRT FOV.
-        self.skycoord = None       # SkyCoord support in place of RA/Dec
-        self.begin = None           # Date range parameters Begin
-        self.end = None             # End
-        self.length = None          # and length.
+        self.too_id = None  # Request a TOO of a specific TOO ID number
+        self.ra = None  # Search on RA / Dec
+        self.dec = None  # Default radius is 11.6 arc-minutes
+        self.radius = None  # which is the XRT FOV.
+        self.skycoord = None  # SkyCoord support in place of RA/Dec
+        self.begin = None  # Date range parameters Begin
+        self.end = None  # End
+        self.length = None  # and length.
         # Request status
-        self.status = Swift_TOO_Status()     #
+        self.status = Swift_TOO_Status()  #
 
         # Results
         self.entries = list()
@@ -126,15 +143,36 @@ class Swift_TOO_Requests(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TO
         return {t.too_id: t for t in self.entries}[too_id]
 
     def validate(self):
-        if self.shared_secret is not None and (self.ra is not None and self.dec is not None) or self.year is not None or self.too_id is not None or self.begin is not None or self.length is not None or self.limit is not None:
+        if (
+            self.shared_secret is not None
+            and (self.ra is not None and self.dec is not None)
+            or self.year is not None
+            or self.too_id is not None
+            or self.begin is not None
+            or self.length is not None
+            or self.limit is not None
+        ):
             return True
         else:
             return False
 
     @property
     def _table(self):
-        table_cols = ['too_id', 'source_name', 'instrument', 'ra', 'dec', 'uvot_mode_approved',
-                      'xrt_mode_approved', 'timestamp', 'l_name', 'urgency', 'date_begin', 'date_end', 'target_id']
+        table_cols = [
+            "too_id",
+            "source_name",
+            "instrument",
+            "ra",
+            "dec",
+            "uvot_mode_approved",
+            "xrt_mode_approved",
+            "timestamp",
+            "l_name",
+            "urgency",
+            "date_begin",
+            "date_end",
+            "target_id",
+        ]
         if len(self.entries) > 0:
             header = [self.entries[0].varnames[col] for col in table_cols]
         else:

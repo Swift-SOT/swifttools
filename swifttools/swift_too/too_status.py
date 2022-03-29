@@ -2,7 +2,7 @@ from .common import TOOAPI_Baseclass
 
 
 class Swift_TOO_Status(TOOAPI_Baseclass):
-    '''Simple class to describe the status of a submitted TOO API request
+    """Simple class to describe the status of a submitted TOO API request
 
     Attributes
     ----------
@@ -26,17 +26,24 @@ class Swift_TOO_Status(TOOAPI_Baseclass):
         list of warning strings associated with the request
     too_id : list
         For a Swift_TOO request, the TOO ID assigned to a new request
-    '''
+    """
 
     # Core API definitions
-    _parameters = ['username', 'jobnumber', 'too_id', 'fetchresult']
-    _attributes = ['status', 'errors', 'warnings',
-                   'timestamp', 'began', 'completed', 'result']
-    _local = ['api_name']
-    api_name = 'Swift_TOO_Status'
+    _parameters = ["username", "jobnumber", "too_id", "fetchresult"]
+    _attributes = [
+        "status",
+        "errors",
+        "warnings",
+        "timestamp",
+        "began",
+        "completed",
+        "result",
+    ]
+    _local = ["api_name", "shared_secret"]
+    api_name = "Swift_TOO_Status"
 
     def __init__(self, *args, **kwargs):
-        '''
+        """
         Parameters
         ----------
         username : str
@@ -45,10 +52,10 @@ class Swift_TOO_Status(TOOAPI_Baseclass):
             shared secret for TOO API (default 'anonymous')
         jobnumber : int
             TOO API job number
-        '''
+        """
         # Required arguments
         self.jobnumber = None
-        self.username = 'anonymous'
+        self.username = "anonymous"
         # Optional arguments
         self.fetchresult = None  # This is only to be used with QueryJob
 
@@ -74,28 +81,28 @@ class Swift_TOO_Status(TOOAPI_Baseclass):
         return value == self.status
 
     def __bool__(self):
-        if self.status == 'Accepted':
+        if self.status == "Accepted":
             return True
         else:
             return False
 
     def validate(self):
-        '''Validate if request meets requirements before submitting'''
+        """Validate if request meets requirements before submitting"""
         if self.username and self.jobnumber and self.shared_secret:
             return True
         else:
             return False
 
     def error(self, error):
-        '''Add an error to the list of errors'''
+        """Add an error to the list of errors"""
         if error not in self.errors:
             self.errors.append(error)
 
     def warning(self, warning):
-        '''Add a warning to the list of warnings'''
+        """Add a warning to the list of warnings"""
         if warning not in self.warnings:
             self.warnings.append(warning)
 
     def clear(self):
-        '''Reset status'''
+        """Reset status"""
         self.__init__()

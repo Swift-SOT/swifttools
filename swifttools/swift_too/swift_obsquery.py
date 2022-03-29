@@ -1,11 +1,25 @@
-from .common import TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_Instruments
+from .common import (
+    TOOAPI_Baseclass,
+    TOOAPI_Daterange,
+    TOOAPI_SkyCoord,
+    TOOAPI_ObsID,
+    TOOAPI_Instruments,
+    swiftdatetime
+)
 from .too_status import Swift_TOO_Status
 from datetime import timedelta
 from .swift_resolve import TOOAPI_AutoResolve
+from .swift_clock import TOOAPI_ClockCorrect
 
 
-class Swift_AFST_Entry(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_Instruments):
-    '''Class that defines an individual entry in the Swift As-Flown Timeline
+class Swift_AFST_Entry(
+    TOOAPI_Baseclass,
+    TOOAPI_SkyCoord,
+    TOOAPI_ObsID,
+    TOOAPI_Instruments,
+    TOOAPI_ClockCorrect,
+):
+    """Class that defines an individual entry in the Swift As-Flown Timeline
 
     Attributes
     ----------
@@ -43,29 +57,60 @@ class Swift_AFST_Entry(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_I
         dec of the object that is the target of the pointing
     targname : str
         Target name of the primary target of the observation
-    '''
+    """
+
     # API core definition
-    _parameters = ['begin', 'settle', 'end', 'ra', 'dec', 'roll', 'targname', 'targetid',
-                   'seg', 'ra_point', 'dec_point', 'xrt', 'uvot', 'bat', 'fom', 'obstype']
-    _attributes = []
+    _attributes = [
+        "begin",
+        "settle",
+        "end",
+        "ra",
+        "dec",
+        "roll",
+        "targname",
+        "targetid",
+        "seg",
+        "ra_point",
+        "dec_point",
+        "xrt",
+        "uvot",
+        "bat",
+        "fom",
+        "obstype",
+    ]
+    _parameters = []
     # Variable names
-    names = ['Begin Time', 'Settle Time', 'End Time', 'RA(J2000)', 'Dec(J200)',
-             'Roll (deg)', 'Target Name', 'Target ID', 'Segment', 'Object RA(J2000)',
-             'Object Dec(J2000)', 'XRT Mode', 'UVOT Mode', 'BAT Mode', 'Figure of Merit',
-             'Observation Type']
+    names = [
+        "Begin Time",
+        "Settle Time",
+        "End Time",
+        "RA(J2000)",
+        "Dec(J200)",
+        "Roll (deg)",
+        "Target Name",
+        "Target ID",
+        "Segment",
+        "Object RA(J2000)",
+        "Object Dec(J2000)",
+        "XRT Mode",
+        "UVOT Mode",
+        "BAT Mode",
+        "Figure of Merit",
+        "Observation Type",
+    ]
     # API name
     api_name = "Swift_AFST_Entry"
 
     def __init__(self):
         # Attributes of the class and their descriptions
         self.varnames = dict()
-        for i in range(len(self._parameters)):
-            self.varnames[self._parameters[i]] = self.names[i]
-        self.varnames['obsnum'] = 'Observation Number'
-        self.varnames['exposure'] = 'Exposure (s)'
-        self.varnames['slewtime'] = 'Slewtime (s)'
-        self.varnames['ra_object'] = self.varnames['ra_point']
-        self.varnames['dec_object'] = self.varnames['dec_point']
+        for i in range(len(self._attributes)):
+            self.varnames[self._attributes[i]] = self.names[i]
+        self.varnames["obsnum"] = "Observation Number"
+        self.varnames["exposure"] = "Exposure (s)"
+        self.varnames["slewtime"] = "Slewtime (s)"
+        self.varnames["ra_object"] = self.varnames["ra_point"]
+        self.varnames["dec_object"] = self.varnames["dec_point"]
 
         # Attributes
         self.begin = None
@@ -112,17 +157,37 @@ class Swift_AFST_Entry(TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_I
     @dec_point.setter
     def dec_point(self, dec):
         self.dec_object = dec
+
     # Compat end
+
+    def __header_title(self, parameter):
+        title = self.varnames[parameter]
+        value = getattr(self, parameter)
+        if type(value) == swiftdatetime:
+            if value.isutc:
+                title += " (UTC)"
+            else:
+                title += " (Swift)"
+        return title
 
     @property
     def _table(self):
-        _parameters = ['begin', 'end', 'targname', 'obsnum', 'exposure', 'slewtime']
-        header = [self.varnames[row] for row in _parameters]
-        return header, [[self.begin, self.end, self.targname, self.obsnum, self.exposure.seconds, self.slewtime.seconds]]
+        parameters = ["begin", "end", "targname", "obsnum", "exposure", "slewtime"]
+        header = [self.__header_title(row) for row in parameters]
+        return header, [
+            [
+                self.begin,
+                self.end,
+                self.targname,
+                self.obsnum,
+                self.exposure.seconds,
+                self.slewtime.seconds,
+            ]
+        ]
 
 
 class Swift_Observation(TOOAPI_Baseclass):
-    '''Class to summarize observations taken for given observation ID (obsnum).
+    """Class to summarize observations taken for given observation ID (obsnum).
     Whereas observations are typically one or more individual snapshot, in TOO
     API speak a `Swift_AFST_Entry`, this class summarizes all snapshots into a
     single begin time, end time. Note that as ra/dec varies between each
@@ -156,11 +221,23 @@ class Swift_Observation(TOOAPI_Baseclass):
         dec of the object that is the target of the pointing
     targname : str
         Target name of the primary target of the observation
-    '''
+    """
+
     # Core API definitions
     api_name = "Swift_Observation"
-    _parameters = ['begin', 'end', 'targname', 'targetid', 'seg',
-                   'ra_object', 'dec_object', 'xrt', 'uvot', 'bat', 'entries']
+    _parameters = [
+        "begin",
+        "end",
+        "targname",
+        "targetid",
+        "seg",
+        "ra_object",
+        "dec_object",
+        "xrt",
+        "uvot",
+        "bat",
+        "entries",
+    ]
 
     def __init__(self):
         # All the Swift_AFST_Entries for this observation
@@ -196,12 +273,12 @@ class Swift_Observation(TOOAPI_Baseclass):
 
     @property
     def ra_object(self):
-        if hasattr(self.entries[0], 'ra_object'):
+        if hasattr(self.entries[0], "ra_object"):
             return self.entries[0].ra_object
 
     @property
     def dec_object(self):
-        if hasattr(self.entries[0], 'dec_object'):
+        if hasattr(self.entries[0], "dec_object"):
             return self.entries[0].dec_object
 
     @property
@@ -253,6 +330,7 @@ class Swift_Observation(TOOAPI_Baseclass):
     @dec_point.setter
     def dec_point(self, dec):
         self.dec_object = dec
+
     # Compat end
 
     @property
@@ -261,13 +339,22 @@ class Swift_Observation(TOOAPI_Baseclass):
             header = self.entries[0]._table[0]
         else:
             header = []
-        return header, [[self.begin, self.end, self.targname, self.obsnum, self.exposure.seconds, self.slewtime.seconds]]
+        return header, [
+            [
+                self.begin,
+                self.end,
+                self.targname,
+                self.obsnum,
+                self.exposure.seconds,
+                self.slewtime.seconds,
+            ]
+        ]
 
 
 class Swift_Observations(dict, TOOAPI_Baseclass):
-    '''Adapted dictionary class for containing observations that mostly is just
+    """Adapted dictionary class for containing observations that mostly is just
     to ensure that data can be displayed in a consistent format. Key is
-    typically the Swift Observation ID in SDC format (e.g. '00012345012').'''
+    typically the Swift Observation ID in SDC format (e.g. '00012345012')."""
 
     @property
     def _table(self):
@@ -278,8 +365,15 @@ class Swift_Observations(dict, TOOAPI_Baseclass):
         return header, [self[obsid]._table[1][0] for obsid in self.keys()]
 
 
-class Swift_AFST(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_AutoResolve):
-    '''Class to fetch Swift As-Flown Science Timeline (AFST) for given
+class Swift_AFST(
+    TOOAPI_Baseclass,
+    TOOAPI_Daterange,
+    TOOAPI_SkyCoord,
+    TOOAPI_ObsID,
+    TOOAPI_AutoResolve,
+    TOOAPI_ClockCorrect,
+):
+    """Class to fetch Swift As-Flown Science Timeline (AFST) for given
     constraints. Essentially this will return what Swift observed and when, for
     given constraints. Constraints can be for give coordinate (SkyCoord or J2000
     RA/Dec) and radius (in degrees), a given date range, or a given target ID
@@ -309,19 +403,28 @@ class Swift_AFST(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI_Obs
         Status of API request
     afstmax: datetime
         When is the AFST valid up to
-    '''
+    """
+
     # Define API name
     api_name = "Swift_AFST"
     # Contents of the _parameters
-    _parameters = ['username', 'begin', 'end', 'ra',
-                   'dec', 'radius', 'targetid', 'obsnum']
-    _local = ['obsid', 'name', 'skycoord', 'length', 'target_id']
-    _attributes = ['status', 'afstmax', 'entries']
+    _parameters = [
+        "username",
+        "begin",
+        "end",
+        "ra",
+        "dec",
+        "radius",
+        "targetid",
+        "obsnum",
+    ]
+    _local = ["obsid", "name", "skycoord", "length", "target_id", "shared_secret"]
+    _attributes = ["status", "afstmax", "entries"]
     # Acceptable classes that be part of this class
     _subclasses = [Swift_AFST_Entry, Swift_TOO_Status]
 
     def __init__(self, *args, **kwargs):
-        '''
+        """
         Parameters
         ----------
         begin : datetime
@@ -347,19 +450,19 @@ class Swift_AFST(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI_Obs
             username for TOO API (default 'anonymous')
         shared_secret : str
             shared secret for TOO API (default 'anonymous')
-        '''
+        """
 
         # Coordinate search
         self.ra = None
         self.dec = None
-        self.radius = 11.8/60  # Default 11.8 arcmin - XRT FOV
+        self.radius = 11.8 / 60  # Default 11.8 arcmin - XRT FOV
 
         # Search on targetid/obsnum
         self.targetid = None
         self.obsnum = None
 
         # Login
-        self.username = 'anonymous'
+        self.username = "anonymous"
         # AFST entries go here
         self.entries = list()
         # Status of request
@@ -407,17 +510,13 @@ class Swift_AFST(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI_Obs
         self.entries.append(value)
 
     def validate(self):
-        '''Make sure that all parameters required for a valid request are
-        passed'''
+        """Make sure that all parameters required for a valid request are
+        passed"""
         # How many search keys? Require at least one
         keys = self.api_data.keys()
 
         # We need at least one of these keys to be submitted
-        req_keys = ['begin',
-                    'ra',
-                    'dec',
-                    'targetid',
-                    'obsnum']
+        req_keys = ["begin", "ra", "dec", "targetid", "obsnum"]
 
         # Check how many of them are in the request
         total_keys = 0
@@ -428,12 +527,14 @@ class Swift_AFST(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI_Obs
 
         # We need at least one key to be set
         if total_keys == 0:
-            self.status.error("ERROR: Please supply search parameters to narrow search.")
+            self.status.error(
+                "ERROR: Please supply search parameters to narrow search."
+            )
             return False
 
         # Check if ra or dec are in keys, we have both.
-        if 'ra' in keys or 'dec' in keys:
-            if not ('ra' in keys and 'dec' in keys):
+        if "ra" in keys or "dec" in keys:
+            if not ("ra" in keys and "dec" in keys):
                 self.status.error("ERROR: Must supply both RA and Dec.")
                 return False
 
