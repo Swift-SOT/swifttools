@@ -13,7 +13,7 @@
 * Add new class `Swift_Clock` that for a time in either Swift Time, UTC Time or Mission Elapsed Time (MET), will return an object containing all three, along with the Universal Time Correction Factor (UTCF) that is used to correct Swift Time to UTC. The UTCF corrects for both Swift's clock drift and for any leap seconds.
 * Added `clock_correct()` method to classes that return dates. Using this you can add UTCF to any returned time, and thereofer MET, UTC and Swift Time using the `met`, `utc` and `swift` attributes.
 * All times are now defined as `swiftdatetime` which is an extended version of datetime that is either based on Swift Time or UTC Time. `swiftdatetime` act like datetimes, except that you can now obtain MET, UTC, UTCF or Swift Time using the `met`, `utc`, `utc` or `swift` attributes. In additionthe `frommet` classmethod allows you to construct a `swiftdatetime` from an MET. `isutc` parameter defines if the basis of the `swiftdatetime` is UT time or Swift Time. Standard `datetime` arithmetic can be performed, however UTCF is not propogated.
-* `GUANO` query results are not clock corrected by default, to avoid confusion.
+* `GUANO` query results are now clock corrected by default, to avoid confusion.
 
 ## `swifttools` 2.3.1 / `swift_too` 1.2.7
 
