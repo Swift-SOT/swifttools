@@ -246,21 +246,21 @@ class TOOAPI_ClockCorrect:
     def clock_correct(self):
         """Spider through the class dictionary recording datetimes, and then
         updating them using Swift_Clock"""
+        if not hasattr(self, '_clock'):
+            # Read in all datetime values into an array
+            _, datevalues = index_datetimes(self.__dict__, 0, [])
 
-        # Read in all datetime values into an array
-        _, datevalues = index_datetimes(self.__dict__, 0, [])
+            # What is the base time format for this class? Send that to Clock for
+            # clock correction
+            if self._isutc:
+                dts = [dt for dt in datevalues]
+                self._clock = Swift_Clock(utctime=dts)
+            else:
+                dts = [dt for dt in datevalues]
+                self._clock = Swift_Clock(swifttime=dts)
 
-        # What is the base time format for this class? Send that to Clock for
-        # clock correction
-        if self._isutc:
-            dts = [dt for dt in datevalues]
-            self._clock = Swift_Clock(utctime=dts)
-        else:
-            dts = [dt for dt in datevalues]
-            self._clock = Swift_Clock(swifttime=dts)
-
-        # Replace existing datetime values with clock corrected swiftdatetimes
-        _, _ = index_datetimes(self.__dict__, 0, [], setvals=self._clock)
+            # Replace existing datetime values with clock corrected swiftdatetimes
+            _, _ = index_datetimes(self.__dict__, 0, [], setvals=self._clock)
 
         # After clock correction, make UTC the default time system
         self.to_utctime()

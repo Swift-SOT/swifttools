@@ -6,11 +6,19 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
+## `swifttools` 2.4.2 / `swift_too` 1.2.10
+
+**April 1st, 2022**: Added `Swift_SAA` method for calculating times when Swift is inside the South Atlantic Anomaly (SAA). Bug fix.
+
+* `Swift_SAA` AKA `SAA` class added for calculating SAA passage times for the Spacecraft definition of SAA (default) or an estimate of the Burst Alert Telescope SAA passage times.
+
+* Fix issue where running `clock_correct` multiple times could cause issues with times.
+
 ## `swifttools` 2.4.1 / `swift_too` 1.2.9
 
 **March 29th, 2022**: Bug fix release
 
-* Bug where `begin` and `end` properities of `GUANO` entries were not being set.
+* Bug where `begin` and `end` properties of `GUANO` entries were not being set.
 
 ## `swifttools` 2.4 / `swift_too` 1.2.8
 

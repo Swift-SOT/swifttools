@@ -145,3 +145,4 @@ from .swift_guano import Swift_GUANO, GUANO
 from .swift_data import Swift_Data, Data
 from .swift_resolve import Swift_Resolve, Resolve
 from .swift_clock import Swift_Clock, Clock
+from .swift_saa import Swift_SAA, SAA

@@ -1,3 +1,5 @@
+from .swift_clock import Swift_Clock
+from .swift_saa import Swift_SAA
 from .swift_guano import Swift_GUANO
 from .swift_calendar import Swift_Calendar
 from .too_status import Swift_TOO_Status
@@ -53,6 +55,8 @@ class QueryJob(Swift_TOO_Status):
         Swift_Calendar,
         Swift_GUANO,
         Swift_Data,
+        Swift_Clock,
+        Swift_SAA
     ]
     # API name
     # This is really just a Swift_TOO_Status request with a twist
