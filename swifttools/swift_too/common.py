@@ -4,13 +4,9 @@ import re
 from jose import jwt
 import requests
 from time import sleep
-from .version import version_tuple
+from .version import api_version
 from tabulate import tabulate
 import textwrap
-
-
-# Define the API version
-api_version = f"{version_tuple[0]}.{version_tuple[1]}"
 
 # Next imports are not dependancies, but if you have them installed, we'll use
 # them
@@ -80,28 +76,6 @@ API_URL = "https://www.swift.psu.edu/toop/submit_json.php"
 
 
 def convert_to_dt(value, isutc=False, outfunc=datetime):
-    """Convert various date formats to swiftdatetime or datetime
-
-    Parameters
-    ----------
-    value : varies
-        Value to be converted.
-    isutc : bool, optional
-        Is the value in UTC, by default False
-    outfunc : datetime / swiftdatetime, optional
-        What format should the output be? By default datetime, can be
-        swiftdatetime
-
-    Returns
-    -------
-    datetime / swiftdatetime
-        Returned datetime / swiftdatetime object
-
-    Raises
-    ------
-    TypeError
-        Raised if incorrect format is given for conversion.
-    """
     """Convert various date formats to swiftdatetime"""
     if type(value) == str:
         if re.match(_datetime_regex, value):
@@ -137,20 +111,7 @@ def convert_to_dt(value, isutc=False, outfunc=datetime):
 
 
 def _tablefy(table, header=None):
-    """Simple HTML table generator
-
-    Parameters
-    ----------
-    table : list
-        Data for table
-    header : list
-        Headers for table, by default None
-
-    Returns
-    -------
-    str
-        HTML formatted table.
-    """
+    """Simple HTML table generator."""
 
     tab = "<table>"
     if header is not None:
