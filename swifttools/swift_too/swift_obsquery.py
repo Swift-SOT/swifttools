@@ -4,7 +4,6 @@ from .common import (
     TOOAPI_SkyCoord,
     TOOAPI_ObsID,
     TOOAPI_Instruments,
-    swiftdatetime,
 )
 from .too_status import Swift_TOO_Status
 from datetime import timedelta
@@ -80,37 +79,34 @@ class Swift_AFST_Entry(
     ]
     _parameters = []
     # Variable names
-    names = [
-        "Begin Time",
-        "Settle Time",
-        "End Time",
-        "RA(J2000)",
-        "Dec(J200)",
-        "Roll (deg)",
-        "Target Name",
-        "Target ID",
-        "Segment",
-        "Object RA(J2000)",
-        "Object Dec(J2000)",
-        "XRT Mode",
-        "UVOT Mode",
-        "BAT Mode",
-        "Figure of Merit",
-        "Observation Type",
-    ]
+    _varnames = {
+        "begin": "Begin Time",
+        "settle": "Settle Time",
+        "end": "End Time",
+        "ra": "RA(J2000)",
+        "dec": "Dec(J200)",
+        "roll": "Roll (deg)",
+        "targname": "Target Name",
+        "targetid": "Target ID",
+        "seg": "Segment",
+        "ra_object": "Object RA(J2000)",
+        "dec_object": "Object Dec(J2000)",
+        "xrt": "XRT Mode",
+        "uvot": "UVOT Mode",
+        "bat": "BAT Mode",
+        "fom": "Figure of Merit",
+        "obstype": "Observation Type",
+        "obsnum": "Observation Number",
+        "exposure": "Exposure (s)",
+        "slewtime": "Slewtime (s)",
+    }
     # API name
     api_name = "Swift_AFST_Entry"
 
     def __init__(self):
-        # Attributes of the class and their descriptions
-        self.varnames = dict()
-        for i in range(len(self._attributes)):
-            self.varnames[self._attributes[i]] = self.names[i]
-        self.varnames["obsnum"] = "Observation Number"
-        self.varnames["exposure"] = "Exposure (s)"
-        self.varnames["slewtime"] = "Slewtime (s)"
-        self.varnames["ra_object"] = self.varnames["ra_point"]
-        self.varnames["dec_object"] = self.varnames["dec_point"]
+        # For backward compat FIXME API 1.3
+        self._varnames["ra_point"] = self._varnames["ra_object"]
+        self._varnames["dec_point"] = self._varnames["dec_object"]
 
         # Attributes
         self.begin = None
@@ -141,7 +137,7 @@ class Swift_AFST_Entry(
         return self.settle - self.begin
 
     # The following provides compatibility as we changed ra/dec_point to
-    # ra/dec_object. These will go away with a future API update.
+    # ra/dec_object. These will go away with a future API update. FIXME API 1.3
     @property
     def ra_point(self):
         return self.ra_object
@@ -160,20 +156,10 @@ class Swift_AFST_Entry(
 
     # Compat end
 
-    def __header_title(self, parameter):
-        title = self.varnames[parameter]
-        value = getattr(self, parameter)
-        if type(value) == swiftdatetime:
-            if value.isutc:
-                title += " (UTC)"
-            else:
-                title += " (Swift)"
-        return title
-
     @property
     def _table(self):
         parameters = ["begin", "end", "targname", "obsnum", "exposure", "slewtime"]
-        header = [self.__header_title(row) for row in parameters]
+        header = [self._header_title(row) for row in parameters]
         return header, [
             [
                 self.begin,

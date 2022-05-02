@@ -1,2 +1,2 @@
-__version__ = "1.2.10"
-api_version = "1.2"
+version = "1.2.11"
+version_tuple = (1, 2, 11)

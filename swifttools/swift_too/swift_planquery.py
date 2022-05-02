@@ -5,7 +5,6 @@ from .common import (
     TOOAPI_Instruments,
     TOOAPI_SkyCoord,
     TOOAPI_ObsID,
-    swiftdatetime,
 )
 from .too_status import Swift_TOO_Status
 from .swift_obsquery import Swift_Observation, Swift_Observations
@@ -14,7 +13,11 @@ from .swift_resolve import TOOAPI_AutoResolve
 
 
 class Swift_PPST_Entry(
-    TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_Instruments
+    TOOAPI_Baseclass,
+    TOOAPI_SkyCoord,
+    TOOAPI_ObsID,
+    TOOAPI_Instruments,
+    TOOAPI_ClockCorrect,
 ):
     """Class that defines an individual entry in the Swift Pre-Planned Science
     Timeline
@@ -64,34 +67,29 @@ class Swift_PPST_Entry(
         "bat",
         "fom",
     ]
-    names = [
-        "Begin Time",
-        "End Time",
-        "Target Name",
-        "RA(J2000)",
-        "Dec(J200)",
-        "Roll (deg)",
-        "Target ID",
-        "Segment",
-        "XRT Mode",
-        "UVOT Mode",
-        "BAT Mode",
-        "Figure of Merit",
-    ]
+    _varnames = {
+        "begin": "Begin Time",
+        "end": "End Time",
+        "targname": "Target Name",
+        "ra": "RA(J2000)",
+        "dec": "Dec(J200)",
+        "roll": "Roll (deg)",
+        "targetid": "Target ID",
+        "seg": "Segment",
+        "xrt": "XRT Mode",
+        "uvot": "UVOT Mode",
+        "bat": "BAT Mode",
+        "fom": "Figure of Merit",
+        "obsnum": "Observation Number",
+        "exposure": "Exposure (s)",
+        "slewtime": "Slewtime (s)",
+    }
     _attributes = []
     _subclasses = [Swift_TOO_Status]
     # API name
     api_name = "Swift_PPST_Entry"
 
     def __init__(self):
-        # Set up naming of variables
-        self.varnames = dict()
-        for i in range(len(self._parameters)):
-            self.varnames[self._parameters[i]] = self.names[i]
-        self.varnames["obsnum"] = "Observation Number"
-        self.varnames["exposure"] = "Exposure (s)"
-        self.varnames["slewtime"] = "Slewtime (s)"
-
         # Parameters
         self.begin = None
         self.end = None
@@ -110,20 +108,10 @@ class Swift_PPST_Entry(
     def exposure(self):
         return self.end - self.begin
 
-    def __header_title(self, parameter):
-        title = self.varnames[parameter]
-        value = getattr(self, parameter)
-        if type(value) == swiftdatetime:
-            if value.isutc:
-                title += " (UTC)"
-            else:
-                title += " (Swift)"
-        return title
-
     @property
     def _table(self):
         _parameters = ["begin", "end", "targname", "obsnum", "exposure"]
-        header = [self.__header_title(row) for row in _parameters]
+        header = [self._header_title(row) for row in _parameters]
         return header, [
             [self.begin, self.end, self.targname, self.obsnum, self.exposure.seconds]
         ]
@@ -268,8 +256,13 @@ class Swift_PPST(
         return len(self.entries)
 
     def validate(self):
-        """Make sure that all parameters required for a valid request are
-        passed"""
+        """Validate API submission before submit
+
+        Returns
+        -------
+        bool
+            Was validation successful?
+        """
         # How many search keys? Require at least one
         keys = self.api_data.keys()
 

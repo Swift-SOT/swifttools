@@ -34,15 +34,16 @@ class Swift_Calendar_Entry(TOOAPI_Baseclass, TOOAPI_Instruments, TOOAPI_ClockCor
         "duration",
         "asflown",
     ]
-    _names = [
-        "Start",
-        "Stop",
-        "XRT Mode",
-        "BAT Mode",
-        "UVOT Mode",
-        "Exposure (s)",
-        "AFST (s)",
-    ]
+    # Variable names
+    _varnames = {
+        "start": "Start",
+        "stop": "Stop",
+        "xrt_mode": "XRT Mode",
+        "bat_mode": "BAT Mode",
+        "uvot_mode": "UVOT Mode",
+        "duration": "Exposure (s)",
+        "asflown": "AFST (s)",
+    }
     api_name = "Swift_Calendar_Entry"
 
     def __init__(self):
@@ -55,10 +56,6 @@ class Swift_Calendar_Entry(TOOAPI_Baseclass, TOOAPI_Instruments, TOOAPI_ClockCor
         self.duration = None  # Exposure time in seconds
         self.asflown = None  # Amount of exposure taken
         self.ignorekeys = True
-        # Set up varnames
-        self.varnames = dict()
-        for i in range(len(self._parameters)):
-            self.varnames[self._parameters[i]] = self._names[i]
 
     def __getitem__(self, key):
         if key in self._parameters:
@@ -71,9 +68,9 @@ class Swift_Calendar_Entry(TOOAPI_Baseclass, TOOAPI_Instruments, TOOAPI_ClockCor
 
     @property
     def _table(self):
-        _parameters = ["start", "stop", "xrt_mode", "uvot_mode", "duration", "asflown"]
-        header = [self.varnames[row] for row in _parameters]
-        return header, [[getattr(self, row) for row in _parameters]]
+        parameters = ["start", "stop", "xrt_mode", "uvot_mode", "duration", "asflown"]
+        header = [self._varnames[row] for row in parameters]
+        return header, [[getattr(self, row) for row in parameters]]
 
 
 class Swift_Calendar(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
@@ -100,6 +97,7 @@ class Swift_Calendar(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
     _attributes = ["status", "entries"]
     # Local parameters
     _local = ["shared_secret"]
+    # Subclasses used by class
     _subclasses = [Swift_Calendar_Entry, Swift_TOO_Status]
 
     def __init__(self, *args, **kwargs):

@@ -70,7 +70,13 @@ class Swift_Resolve(TOOAPI_Baseclass, TOOAPI_SkyCoord):
             self.status.clear()
 
     def validate(self):
-        """Local validation that TOO_API object is ready for submission"""
+        """Validate API submission before submit
+
+        Returns
+        -------
+        bool
+            Was validation successful?
+        """
         if self.name is not None and self.shared_secret is not None:
             return True
         else:

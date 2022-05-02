@@ -110,18 +110,18 @@ class Swift_GUANO_Data(TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect):
         if self.gti is not None:
             return self.gti.utcf
 
-    @property
-    def _table(self):
-        table = []
-        if self.exposure is None:
-            return [], []
-        for row in self._parameters + self._attributes:
-            value = getattr(self, row)
-            if type(value) == list and value != []:
-                table += [[row, "\n".join([gti.__str__() for gti in value])]]
-            elif value is not None and value != "" and value != []:
-                table += [[row, f"{value}"]]
-        return ["Parameter", "Value"], table
+    # @property
+    # def _table(self):
+    #     table = []
+    #     if self.exposure is None:
+    #         return [], []
+    #     for row in self._parameters + self._attributes:
+    #         value = getattr(self, row)
+    #         if type(value) == list and value != []:
+    #             table += [[row, "\n".join([gti.__str__() for gti in value])]]
+    #         elif value is not None and value != "" and value != []:
+    #             table += [[row, f"{value}"]]
+    #     return ["Parameter", "Value"], table
 
 
 class Swift_GUANO_Entry(TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect):
@@ -304,6 +304,13 @@ class Swift_GUANO(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_ClockCorrect):
         return len(self.entries)
 
     def validate(self):
+        """Validate API submission before submit
+
+        Returns
+        -------
+        bool
+            Was validation successful?
+        """
         if (
             self.limit is not None
             or self.begin is not None

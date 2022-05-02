@@ -56,7 +56,7 @@ class QueryJob(Swift_TOO_Status):
         Swift_GUANO,
         Swift_Data,
         Swift_Clock,
-        Swift_SAA
+        Swift_SAA,
     ]
     # API name
     # This is really just a Swift_TOO_Status request with a twist

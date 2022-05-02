@@ -1,5 +1,5 @@
 from .swift_clock import TOOAPI_ClockCorrect
-from .common import TOOAPI_Baseclass, TOOAPI_Daterange, swiftdatetime
+from .common import TOOAPI_Baseclass, TOOAPI_Daterange
 from .too_status import Swift_TOO_Status
 
 
@@ -27,19 +27,9 @@ class Swift_SAA_Entry(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
         # Internal values
         self._isutc = True
 
-    def __header_title(self, parameter):
-        title = self._varnames[parameter]
-        value = getattr(self, parameter)
-        if type(value) == swiftdatetime:
-            if value.isutc:
-                title += " (UTC)"
-            else:
-                title += " (Swift)"
-        return title
-
     @property
     def _table(self):
-        header = [self.__header_title("begin"), self.__header_title("end")]
+        header = [self._header_title("begin"), self._header_title("end")]
         data = [[self.begin, self.end]]
         return header, data
 
@@ -56,31 +46,22 @@ class Swift_SAA(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_ClockCorrect):
 
     Attributes
     ----------
-    begin : datetime
-        Start of the period for which to fetch SAA passages
-    end : datetime
-        End of the period for which to fetch SAA passages
-    bat : boolean
-        If set to `True`, use BAT calculation for SAA passages, otherwise, use
-        spacecraft.
     entries : list
         Array of Swift_SAA_Entry classes containing the windows.
     status : Swift_TOO_Status
         Status of API request
-    username : str (default 'anonymous')
-        TOO API username.
     """
 
     # API details
     api_name = "Swift_SAA"
     # Arguments
     _parameters = ["username", "begin", "end", "bat"]
+    # Local parameters
+    _local = ["shared_secret", "length"]
     # Returned Values
     _attributes = ["entries", "status"]
     # Returned classes
     _subclasses = [Swift_SAA_Entry, Swift_TOO_Status]
-    # Local parameters
-    _local = ["shared_secret", "length"]
 
     def __init__(self, *args, **kwargs):
         """
@@ -93,8 +74,8 @@ class Swift_SAA(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_ClockCorrect):
         length : int (default: 1)
             Number of days to calculate for
         bat : boolean
-            If set to `True`, use BAT calculation for SAA passages, otherwise, use
-            spacecraft.
+            If set to `True`, use BAT calculation for SAA passages, otherwise,
+            use spacecraft.
         username : str (default 'anonymous')
             TOO API username.
         shared_secret : str (default 'anonymous')
@@ -134,10 +115,16 @@ class Swift_SAA(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_ClockCorrect):
             for i in range(len(self.entries)):
                 header, values = self.entries[i]._table
                 vals.append([i] + values[0])
-            return ['#'] + header, vals
+            return ["#"] + header, vals
 
     def validate(self):
-        """Simple validation for submit"""
+        """Validate API submission before submit
+
+        Returns
+        -------
+        bool
+            Was validation successful?
+        """
         if self.begin is not None and self.end is not None:
             return True
         return False

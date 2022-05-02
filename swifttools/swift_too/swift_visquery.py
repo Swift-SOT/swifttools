@@ -1,10 +1,10 @@
 from .swift_clock import TOOAPI_ClockCorrect
 from .too_status import Swift_TOO_Status
-from .common import TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, swiftdatetime
+from .common import TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord
 from .swift_resolve import TOOAPI_AutoResolve
 
 
-class Swift_VisWindow(TOOAPI_Baseclass):
+class Swift_VisWindow(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
     """Simple class to define a Visibility window. Begin and End of window can
     either be accessed as self.begin or self.end, or as self[0] or self[1].
 
@@ -21,7 +21,7 @@ class Swift_VisWindow(TOOAPI_Baseclass):
     # API parameter definition
     _attributes = ["begin", "end", "length"]
     # Names for parameters
-    varnames = {"begin": "Begin Time", "end": "End Time", "length": "Window length"}
+    _varnames = {"begin": "Begin Time", "end": "End Time", "length": "Window length"}
     # API name
     api_name = "Swift_VisWindow"
 
@@ -38,20 +38,10 @@ class Swift_VisWindow(TOOAPI_Baseclass):
             return None
         return self.end - self.begin
 
-    def __header_title(self, parameter):
-        title = self.varnames[parameter]
-        value = getattr(self, parameter)
-        if type(value) == swiftdatetime:
-            if value.isutc:
-                title += " (UTC)"
-            else:
-                title += " (Swift)"
-        return title
-
     @property
     def _table(self):
         header = [
-            self.__header_title(row) for row in self._parameters + self._attributes
+            self._header_title(row) for row in self._parameters + self._attributes
         ]
         return header, [[self.begin, self.end, self.length]]
 
@@ -183,7 +173,13 @@ class Swift_VisQuery(
         return len(self.windows)
 
     def validate(self):
-        """Validate all parameters are given before submission"""
+        """Validate API submission before submit
+
+        Returns
+        -------
+        bool
+            Was validation successful?
+        """
         # If length is not set, set to default of 7 days, or 1 day for hires
         if self.length is None:
             if self.hires:

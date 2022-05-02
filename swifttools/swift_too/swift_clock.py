@@ -163,6 +163,13 @@ class Swift_Clock(TOOAPI_Baseclass):
         return header, values
 
     def validate(self):
+        """Validate API submission before submit
+
+        Returns
+        -------
+        bool
+            Was validation successful?
+        """
         # Check what the source is, and set _isutc appropriately
         if self.swifttime is not None or self.met is not None:
             self._isutc = False
@@ -246,7 +253,7 @@ class TOOAPI_ClockCorrect:
     def clock_correct(self):
         """Spider through the class dictionary recording datetimes, and then
         updating them using Swift_Clock"""
-        if not hasattr(self, '_clock'):
+        if not hasattr(self, "_clock"):
             # Read in all datetime values into an array
             _, datevalues = index_datetimes(self.__dict__, 0, [])
 
@@ -274,3 +281,14 @@ class TOOAPI_ClockCorrect:
         """Convert times to a Swift time base"""
         self._clock.to_swifttime()
         _, _ = index_datetimes(self.__dict__, 0, [], setvals=self._clock)
+
+    def _header_title(self, parameter):
+        """Add UTC or Swift to headers in table depending on the default"""
+        title = self._varnames[parameter]
+        value = getattr(self, parameter)
+        if type(value) == swiftdatetime:
+            if value.isutc:
+                title += " (UTC)"
+            else:
+                title += " (Swift)"
+        return title

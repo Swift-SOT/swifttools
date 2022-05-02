@@ -87,7 +87,13 @@ class Swift_TOO_Status(TOOAPI_Baseclass):
             return False
 
     def validate(self):
-        """Validate if request meets requirements before submitting"""
+        """Validate API submission before submit
+
+        Returns
+        -------
+        bool
+            Was validation successful?
+        """
         if self.username and self.jobnumber and self.shared_secret:
             return True
         else:

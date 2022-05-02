@@ -480,7 +480,14 @@ class Swift_TOO_Request(
         pass
 
     def validate(self):
-        """Check that the TOO fits the minimum requirements for submission"""
+        """Validate API submission before submit
+
+        Returns
+        -------
+        bool
+            Was validation successful?
+        """
+        # Required arguments for a valid TOO
         requirements = [
             "ra",
             "dec",

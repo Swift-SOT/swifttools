@@ -222,6 +222,13 @@ class UVOT_mode(TOOAPI_Baseclass, TOOAPI_Instruments):
             return "No data"
 
     def validate(self):
+        """Validate API submission before submit
+
+        Returns
+        -------
+        bool
+            Was validation successful?
+        """
         # Check username and shared_secret are set
         if self.uvotmode is None:
             return False

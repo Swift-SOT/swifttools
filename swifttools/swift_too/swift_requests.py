@@ -140,9 +140,28 @@ class Swift_TOO_Requests(
         return len(self.entries)
 
     def by_id(self, too_id):
+        """Return Swift_TOO_Request object for a given too_id.
+
+        Parameters
+        ----------
+        too_id : id
+            TOO ID number
+
+        Returns
+        -------
+        Swift_TOO_Request
+            TOO request matching the given too_id
+        """
         return {t.too_id: t for t in self.entries}[too_id]
 
     def validate(self):
+        """Validate API submission before submit
+
+        Returns
+        -------
+        bool
+            Was validation successful?
+        """
         if (
             self.shared_secret is not None
             and (self.ra is not None and self.dec is not None)

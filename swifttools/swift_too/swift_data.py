@@ -276,6 +276,13 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
             self.xrt = self.bat = self.uvot = self.log = self.auxil = self.tdrss = bool
 
     def validate(self):
+        """Validate API submission before submit
+
+        Returns
+        -------
+        bool
+            Was validation successful?
+        """
         if self.uksdc is True and self.itsdc is True:
             self.status.error("Cannot download from UK and Italian SDC")
         if self.obsid is None:
