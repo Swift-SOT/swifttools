@@ -6,6 +6,20 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
+## `swifttools` 2.4.4 / `swift_too` 1.2.12
+
+**May 2nd, 2022**: Bug fix release.
+
+* Minor bug fix.
+
+## `swifttools` 2.4.3 / `swift_too` 1.2.11
+
+**May 2nd, 2022**: Bug fix release.
+
+* Fixed crash related to `keyring` module on macOS, where module was called non-interactively or over an ssh login.
+
+* Other minor code cleanups.
+
 ## `swifttools` 2.4.2 / `swift_too` 1.2.10
 
 **April 1st, 2022**: Added `Swift_SAA` method for calculating times when Swift is inside the South Atlantic Anomaly (SAA). Bug fix.

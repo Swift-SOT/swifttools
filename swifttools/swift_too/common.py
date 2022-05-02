@@ -214,7 +214,15 @@ class TOOAPI_Baseclass:
         ):
             # Try to remember the password using keyring if available
             if keyring_support:
-                keyring.set_password("swifttools.swift_too", self.username, secret)
+                try:
+                    keyring.set_password("swifttools.swift_too", self.username, secret)
+                except keyring.errors.PasswordSetError:
+                    # This error is raised in if keyring support is enabled on
+                    # macOS, but the person isn't running the code interactively
+                    # or if they're logged in via ssh. Just trap and move on to
+                    # avoid code crashing.
+                    pass
+                    
         if self.username != "anonymous":
             self._shared_secret = secret
 
