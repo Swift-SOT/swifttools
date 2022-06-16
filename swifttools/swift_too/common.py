@@ -8,6 +8,8 @@ from .version import version_tuple
 from tabulate import tabulate
 import textwrap
 
+# Configure for IPV4 only due to issue
+requests.packages.urllib3.util.connection.HAS_IPV6 = False
 
 # Define the API version
 api_version = f"{version_tuple[0]}.{version_tuple[1]}"
@@ -222,7 +224,7 @@ class TOOAPI_Baseclass:
                     # or if they're logged in via ssh. Just trap and move on to
                     # avoid code crashing.
                     pass
-                    
+
         if self.username != "anonymous":
             self._shared_secret = secret
 
@@ -479,7 +481,7 @@ class TOOAPI_Baseclass:
             return True
         return False
 
-    def __submit_jwt(self, post=True):
+    def __submit_jwt(self, post=False):
         """Submit JWT request to the TOO API server, read in the reply and parse it."""
         # Don't submit an accepted or rejected request more than once
         if self.status == "Accepted":

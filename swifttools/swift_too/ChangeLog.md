@@ -6,6 +6,12 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
+## `swifttools` 2.4.5 / `swift_too` 1.2.13
+
+**June 16th, 2022**: Bug fix release
+
+* Fix issue with failing IPV6 access to API
+
 ## `swifttools` 2.4.4 / `swift_too` 1.2.12
 
 **May 2nd, 2022**: Bug fix release.
