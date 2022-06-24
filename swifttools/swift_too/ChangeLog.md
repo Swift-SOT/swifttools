@@ -6,6 +6,14 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
+## `swifttools` 2.4.6 / `swift_too` 1.2.14
+
+**June 24th, 2022**: Bug fix and new feature release
+
+* Fix issue in `Swift_Data` where `fetch` argument was not working.
+
+* Add `match` argument to `Swift_Data` which allows user to filter on filenames using unix-style filename pattern matches. Multiple matches can be passed as a list, and files matching any of the matches will be downloaded.
+
 ## `swifttools` 2.4.5 / `swift_too` 1.2.13
 
 **June 16th, 2022**: Bug fix release

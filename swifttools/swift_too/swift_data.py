@@ -2,6 +2,7 @@ from .common import TOOAPI_Baseclass, TOOAPI_ObsID
 from .too_status import Swift_TOO_Status
 import requests
 import os
+from fnmatch import fnmatch
 
 try:
     from tqdm.auto import tqdm
@@ -110,7 +111,7 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
         overwrite existing data on disk (default: False)
     outdir : str
         Directory where data should be downloaded to.
-    fetch  : boolean
+    fetch : boolean
         Download the data straight away (default: True).
     quiet  : boolean
         When downloading, don't print anything out. (default: False)
@@ -152,6 +153,8 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
         "seg",
         "segment",
         "shared_secret",
+        "fetch",
+        "match",
     ]
     _attributes = ["entries", "status"]
 
@@ -190,10 +193,15 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
             overwrite existing data on disk (default: False)
         outdir : str
             Directory where data should be downloaded to.
-        fetch  : boolean
+        fetch : boolean
             Download the data straight away (default: True).
-        quiet  : boolean
+        quiet : boolean
             When downloading, don't print anything out. (default: False)
+        match : str / list
+            Only download files matching this filename pattern (e.g.
+            "*xrt*pc*"). If multiple templates are given as a list, files
+            matching any of filename patterns will be downloaded. Uses standard
+            UNIX style filename pattern matching with Python `fnmatch` module.
         username : str
             username for TOO API (default 'anonymous')
         shared_secret : str
@@ -219,6 +227,8 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
         self.quiet = False
         # Download data straight away
         self.fetch = True
+        # Only download files matching this expression
+        self.match = None
         # Default to not overwrite existing data
         self.clobber = False
         # Directory to save data
@@ -275,6 +285,25 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
         if self.all is not None:
             self.xrt = self.bat = self.uvot = self.log = self.auxil = self.tdrss = bool
 
+    def _post_process(self):
+        """A place to do things to API results after they have been fetched."""
+        # Filter out files that don't match `match` expression
+        if self.match is not None:
+            if type(self.match) is str:
+                self.match = [self.match]
+            i = 0
+            while i < len(self.entries):
+                keep = False
+                for match in self.match:
+                    if fnmatch(
+                        f"{self.entries[i].path}/{self.entries[i].filename}", match
+                    ):
+                        keep = True
+                if not keep:
+                    del self.entries[i]
+                else:
+                    i += 1
+
     def validate(self):
         """Validate API submission before submit
 
@@ -326,14 +355,6 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
             if os.path.exists(fullfilepath):
                 self.entries[i].localpath = fullfilepath
 
-        # Check that this directory doesn't already exist, if clobber == False
-        topdir = os.path.join(self.outdir, self.obsid)
-        if not self.clobber and os.path.exists(topdir):
-            print(
-                f"ERROR: Directory {topdir} exists (set clobber=True to override this)."
-            )
-            return False
-
         # Download files to outdir
         if self.quiet:
             display = False
@@ -342,7 +363,13 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
         for dfile in tqdm(
             self.entries, desc="Downloading files", unit="files", display=display
         ):
-            if not dfile.download(outdir=self.outdir):
+            # Don't re-download a file unless clobber=True
+            localfile = f"{self.outdir}/{dfile.path}/{dfile.filename}"
+            if not self.clobber and os.path.exists(localfile):
+                print(
+                    f"ERROR: {dfile.filename} exists (set clobber=True to override this)."
+                )
+            elif not dfile.download(outdir=self.outdir):
                 self.status.error(f"Error downloading {dfile.filename}")
                 return False
 
