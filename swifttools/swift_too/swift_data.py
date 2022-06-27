@@ -155,6 +155,7 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
         "shared_secret",
         "fetch",
         "match",
+        "quiet"
     ]
     _attributes = ["entries", "status"]
 
@@ -324,6 +325,7 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
             and self.uvot is not True
         ):
             self.status.error("No data products selected")
+            self.status.status = 'Rejected'
         if len(self.status.errors) > 0:
             return False
         else:
@@ -337,7 +339,8 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
 
         # If no files, return error
         if len(self.entries) == 0:
-            print(f"ERROR: No data found for {self.obsid}")
+            self.status.error(f"No data found for {self.obsid}.")
+            self.status.status = 'Rejected'
             return False
 
         # Translate any ~, "." and $ENV in the output path
@@ -357,17 +360,17 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
 
         # Download files to outdir
         if self.quiet:
-            display = False
+            dfiles = self.entries
         else:
-            display = True
-        for dfile in tqdm(
-            self.entries, desc="Downloading files", unit="files", display=display
-        ):
+            dfiles = tqdm(
+                self.entries, desc="Downloading files", unit="files"
+            )
+        for dfile in dfiles:
             # Don't re-download a file unless clobber=True
             localfile = f"{self.outdir}/{dfile.path}/{dfile.filename}"
             if not self.clobber and os.path.exists(localfile):
                 print(
-                    f"ERROR: {dfile.filename} exists (set clobber=True to override this)."
+                    f"WARNING: {dfile.filename} exists and not overwritten (set clobber=True to override this)."
                 )
             elif not dfile.download(outdir=self.outdir):
                 self.status.error(f"Error downloading {dfile.filename}")

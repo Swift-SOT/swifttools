@@ -233,21 +233,16 @@ class UVOT_mode(TOOAPI_Baseclass, TOOAPI_Instruments):
         if self.uvotmode is None:
             return False
         if not self.username or not self.shared_secret:
-            print(
-                f"{self.__class__.__name__} ERROR: username and shared_secret parameters need to be supplied."
-            )
             self.status.error(
                 "username and shared_secret parameters need to be supplied."
             )
-            return None
+            return False
+
         if type(self._uvot) != int:
             try:
                 # See if it's a hex string
                 self.uvotmode = int(self.uvotmode, 16)
             except ValueError:
-                print(
-                    f"{self.__class__.__name__} ERROR: Invalid UVOT mode: {self.uvotmode}."
-                )
                 self.status.error(f"Invalid UVOT mode: {self.uvotmode}.")
-                return None
+                return False
         return True

@@ -697,7 +697,7 @@ class TOOAPI_ObsID:
         """Convert various formats for obsnum (SDC and Spacecraft) into one format (Spacecraft)"""
         if type(obsnum) == str:
             if re.match("^[0-9]{11}?$", obsnum) is None:
-                raise ValueError("ERROR: Obsnum string format incorrect")
+                raise ValueError("obsnum string format incorrect")
             else:
                 targetid = int(obsnum[0:8])
                 segment = int(obsnum[8:12])
@@ -707,7 +707,7 @@ class TOOAPI_ObsID:
         elif obsnum is None:
             return None
         else:
-            raise ValueError("`obsnum` in wrong format.")
+            raise ValueError("obsnum in wrong format.")
 
     @property
     def target_id(self):

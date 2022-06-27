@@ -6,6 +6,12 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
+## `swifttools` 2.4.7 / `swift_too` 1.2.15
+
+**June 27th, 2022**: Bug fix release
+
+* Fix issue where `quiet` option wasn't available in `Swift_Data` and only worked in Jupyter Notebooks.
+
 ## `swifttools` 2.4.6 / `swift_too` 1.2.14
 
 **June 24th, 2022**: Bug fix and new feature release

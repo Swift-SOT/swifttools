@@ -514,14 +514,14 @@ class Swift_AFST(
         # We need at least one key to be set
         if total_keys == 0:
             self.status.error(
-                "ERROR: Please supply search parameters to narrow search."
+                "Please supply search parameters to narrow search."
             )
             return False
 
         # Check if ra or dec are in keys, we have both.
         if "ra" in keys or "dec" in keys:
             if not ("ra" in keys and "dec" in keys):
-                self.status.error("ERROR: Must supply both RA and Dec.")
+                self.status.error("Must supply both RA and Dec.")
                 return False
 
         return True

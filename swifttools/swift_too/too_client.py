@@ -312,7 +312,7 @@ class Swift_TOO_Request(
         self.too_id = None  # TOO ID assigned by server on acceptance (int)
         self.timestamp = None  # Timestamp that TOO was accepted (datetime)
         # Source name, type, location, position_error
-        # self.source_name = None # Name of the object we're requesting a TOO for (string)
+        self.source_name = None # Name of the object we're requesting a TOO for (string)
         # Type of object (e.g. "Supernova", "LMXB", "BL Lac")  (string)
         self.source_type = None
         self.ra = None  # RA(J2000) Degrees decimal (float)
@@ -503,31 +503,31 @@ class Swift_TOO_Request(
         # Check that the minimum requirements are met
         for req in requirements:
             if self.__getattribute__(req) is None:
-                print(f"ERROR: Missing key: {req}")
+                self.status.error(f"Missing key: {req}")
                 return False
 
         if self.obs_type not in self.obs_types:
-            print(
-                f"ERROR: Observation Type needs to be one of the following: {self.obs_types}"
+            self.status.error(
+                f"Observation Type needs to be one of the following: {self.obs_types}"
             )
             return False
 
         if self.instrument not in self.instruments:
-            print(f"ERROR: Instrument name ({self.instrument}) not valid")
+            self.status.error(f"Instrument name ({self.instrument}) not valid")
             return False
 
         # If this is monitoring, we need time between exposures
         if self.num_of_visits > 1:
             if self.monitoring_freq is None or self.monitoring_freq == "":
-                print("ERROR: Need monitoring cadence.")
+                self.status.error("Need monitoring cadence.")
                 return False
 
             if not self.exp_time_per_visit:
                 self.exp_time_per_visit = int(self.exposure / self.num_of_visits)
             else:
                 if self.exp_time_per_visit * self.num_of_visits != self.exposure:
-                    print(
-                        "INFO: Total exposure time does not match total of individuals. Correcting."
+                    self.status.warning(
+                        "INFO: Total exposure time does not match total of individuals. Corrected."
                     )
                     self.exposure = self.exp_time_per_visit * self.num_of_visits
         else:
@@ -540,7 +540,7 @@ class Swift_TOO_Request(
             if unit[-1] == "s":
                 unit = unit[0:-1]
             if unit not in self.monitoring_units:
-                print(f"ERROR: Monitoring unit ({unit}) not valid")
+                self.status.error(f"Monitoring unit ({unit}) not valid")
                 return False
 
         # Check validity of GI requests
@@ -548,7 +548,7 @@ class Swift_TOO_Request(
         if self.proposal:
             for req in gi_requirements:
                 if getattr(self, req) is None:
-                    print(f"ERROR: Missing key: {req}")
+                    self.status.error(f"Missing key: {req}")
                     return False
 
         # Check trigger requirements
@@ -556,7 +556,7 @@ class Swift_TOO_Request(
         if self.source_type == "GRB":
             for req in grb_requirements:
                 if getattr(self, req) is None:
-                    print(f"ERROR: Missing key: {req}")
+                    self.status.error(f"Missing key: {req}")
                     return False
 
         return True
@@ -572,10 +572,6 @@ class Swift_TOO_Request(
             self.validate_only = True
             self.submit()
             self.validate_only = False
-            for error in self.status.errors:
-                print(f"ERROR: {error}")
-            for warning in self.status.warnings:
-                print(f"Warning: {warning}")
             self.status.warnings += warnings
             if len(self.status.errors) == 0:
                 return True
