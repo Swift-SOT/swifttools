@@ -481,7 +481,7 @@ class TOOAPI_Baseclass:
             return True
         return False
 
-    def __submit_jwt(self, post=False):
+    def __submit_jwt(self, post=True):
         """Submit JWT request to the TOO API server, read in the reply and parse it."""
         # Don't submit an accepted or rejected request more than once
         if self.status == "Accepted":

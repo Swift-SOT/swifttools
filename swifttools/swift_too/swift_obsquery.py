@@ -513,9 +513,7 @@ class Swift_AFST(
 
         # We need at least one key to be set
         if total_keys == 0:
-            self.status.error(
-                "Please supply search parameters to narrow search."
-            )
+            self.status.error("Please supply search parameters to narrow search.")
             return False
 
         # Check if ra or dec are in keys, we have both.

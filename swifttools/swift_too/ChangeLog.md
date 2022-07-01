@@ -6,6 +6,12 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
+## `swifttools` 2.4.8 / `swift_too` 1.2.16
+
+**July 1st, 2022**: Bug fix release
+
+* Revert default TOO_API submission to POST
+
 ## `swifttools` 2.4.7 / `swift_too` 1.2.15
 
 **June 27th, 2022**: Bug fix release

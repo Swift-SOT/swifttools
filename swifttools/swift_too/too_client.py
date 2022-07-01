@@ -312,7 +312,9 @@ class Swift_TOO_Request(
         self.too_id = None  # TOO ID assigned by server on acceptance (int)
         self.timestamp = None  # Timestamp that TOO was accepted (datetime)
         # Source name, type, location, position_error
-        self.source_name = None # Name of the object we're requesting a TOO for (string)
+        self.source_name = (
+            None  # Name of the object we're requesting a TOO for (string)
+        )
         # Type of object (e.g. "Supernova", "LMXB", "BL Lac")  (string)
         self.source_type = None
         self.ra = None  # RA(J2000) Degrees decimal (float)

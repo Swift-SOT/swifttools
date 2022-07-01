@@ -155,7 +155,7 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
         "shared_secret",
         "fetch",
         "match",
-        "quiet"
+        "quiet",
     ]
     _attributes = ["entries", "status"]
 
@@ -325,7 +325,7 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
             and self.uvot is not True
         ):
             self.status.error("No data products selected")
-            self.status.status = 'Rejected'
+            self.status.status = "Rejected"
         if len(self.status.errors) > 0:
             return False
         else:
@@ -340,7 +340,7 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
         # If no files, return error
         if len(self.entries) == 0:
             self.status.error(f"No data found for {self.obsid}.")
-            self.status.status = 'Rejected'
+            self.status.status = "Rejected"
             return False
 
         # Translate any ~, "." and $ENV in the output path
@@ -362,9 +362,7 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
         if self.quiet:
             dfiles = self.entries
         else:
-            dfiles = tqdm(
-                self.entries, desc="Downloading files", unit="files"
-            )
+            dfiles = tqdm(self.entries, desc="Downloading files", unit="files")
         for dfile in dfiles:
             # Don't re-download a file unless clobber=True
             localfile = f"{self.outdir}/{dfile.path}/{dfile.filename}"
