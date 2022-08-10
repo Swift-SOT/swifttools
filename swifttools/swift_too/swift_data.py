@@ -138,6 +138,7 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
         "bat",
         "xrt",
         "uvot",
+        "subthresh",
         "log",
         "tdrss",
         "uksdc",
@@ -178,6 +179,8 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
             Set to True to download XRT data.
         uvot : boolean
             Set to True to download UVOT data.
+        subthresh : boolean
+            Set to True to download BAT Subthreshold trigger data
         log : boolean
             Set to True to download SDC processing logs.
         all : boolean
@@ -223,6 +226,7 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
         self.uvot = None
         self.xrt = None
         self.tdrss = None
+        self.subthresh = None
         self.log = None
         # Should we display anything when downloading
         self.quiet = False
@@ -323,6 +327,7 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
             and self.log is not True
             and self.bat is not True
             and self.uvot is not True
+            and self.subthresh is not True
         ):
             self.status.error("No data products selected")
             self.status.status = "Rejected"

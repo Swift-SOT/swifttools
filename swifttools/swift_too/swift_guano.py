@@ -73,6 +73,12 @@ class Swift_GUANO_Data(TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect):
     utcf : float
         UT Correction Factor - this encompasses correction for both the
         inaccuracies in the Swift clock and also any leap seconds
+    subthresh : boolean
+        Indicates if the BAT event data associated with this trigger is
+        located in the subthreshold triggers section of the SDC, rather
+        than being associated with normal observation data. If this is
+        true, the data can be fetched utilizing the 'subthresh = True'
+        option of Swift_Data (AKA Data)
     """
 
     # API Name
@@ -89,6 +95,7 @@ class Swift_GUANO_Data(TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect):
         "all_gtis",
         "acs",
         "utcf",
+        "subthresh",
     ]
     _subclasses = [Swift_GUANO_GTI]
 
@@ -110,18 +117,15 @@ class Swift_GUANO_Data(TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect):
         if self.gti is not None:
             return self.gti.utcf
 
-    # @property
-    # def _table(self):
-    #     table = []
-    #     if self.exposure is None:
-    #         return [], []
-    #     for row in self._parameters + self._attributes:
-    #         value = getattr(self, row)
-    #         if type(value) == list and value != []:
-    #             table += [[row, "\n".join([gti.__str__() for gti in value])]]
-    #         elif value is not None and value != "" and value != []:
-    #             table += [[row, f"{value}"]]
-    #     return ["Parameter", "Value"], table
+    @property
+    def subthresh(self):
+        """Is this data subthreshold? I.e. located in the 'BAT Data for
+        Subthreshold Triggers' directory of SDC, as opposed to being associated
+        with the target ID."""
+        if len(self.filenames) == 1 and "ms" in self.filenames[0]:
+            return True
+        else:
+            return False
 
 
 class Swift_GUANO_Entry(TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect):

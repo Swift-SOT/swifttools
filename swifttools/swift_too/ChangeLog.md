@@ -6,6 +6,13 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
+## `swifttools` 2.4.9 / `swift_too` 1.2.17
+
+**August 10th, 2022**
+
+* Add flag to `Swift_GUANO_Data` indicating if GUANO data are located in the "BAT Data For Subthreshold Triggers" section of the Swift SDC, rather than being associated with normal data. If this is true then `subthresh = True`, otherwise `subthresh = False`.
+* Add support for downloading BAT subthreshold trigger data to `Swift_Data` (AKA `Data`). To download subthreshold trigger data, give the `obsid` and set argument `subthresh = True`. Data will be downloaded into a directory named after the obsid containing just the subthreshold trigger data. 
+
 ## `swifttools` 2.4.8 / `swift_too` 1.2.16
 
 **July 1st, 2022**: Bug fix release
@@ -23,7 +30,6 @@
 **June 24th, 2022**: Bug fix and new feature release
 
 * Fix issue in `Swift_Data` where `fetch` argument was not working.
-
 * Add `match` argument to `Swift_Data` which allows user to filter on filenames using unix-style filename pattern matches. Multiple matches can be passed as a list, and files matching any of the matches will be downloaded.
 
 ## `swifttools` 2.4.5 / `swift_too` 1.2.13
@@ -43,7 +49,6 @@
 **May 2nd, 2022**: Bug fix release.
 
 * Fixed crash related to `keyring` module on macOS, where module was called non-interactively or over an ssh login.
-
 * Other minor code cleanups.
 
 ## `swifttools` 2.4.2 / `swift_too` 1.2.10
@@ -51,7 +56,6 @@
 **April 1st, 2022**: Added `Swift_SAA` method for calculating times when Swift is inside the South Atlantic Anomaly (SAA). Bug fix.
 
 * `Swift_SAA` AKA `SAA` class added for calculating SAA passage times for the Spacecraft definition of SAA (default) or an estimate of the Burst Alert Telescope SAA passage times.
-
 * Fix issue where running `clock_correct` multiple times could cause issues with times.
 
 ## `swifttools` 2.4.1 / `swift_too` 1.2.9
