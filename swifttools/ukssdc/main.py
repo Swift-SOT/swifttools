@@ -779,11 +779,11 @@ def mergeLightCurveBins(
         else:
             print("WARNING: Ignoring `forceUL` as insert=True")
 
-    if not isinstance(conf, float):
+    if not isinstance(ulConf, float):
         raise ValueError("`conf` parameter must be a float!")
     if ulConf > 1:
         if verbose:
-            print(f"Interpreting conf={conf} as a percentage")
+            print(f"Interpreting conf={ulConf} as a percentage")
         ulConf = ulConf / 100.0
 
     dtIsC = False
