@@ -6,11 +6,17 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
+## `swifttools` 3.0.4 / `swift_too` 1.2.19
+
+**September 2nd, 2022**: Bug fix release
+
+* Make error reporting for `UVOT_mode` consistent with other classes.
+
 ## `swifttools` 3.0.3 / `swift_too` 1.2.18
 
 **September 2nd, 2022**: Add support for checking if UVOT mode is valid for a give coordinate
 
-* Add mode checking to UVOT_mode. Now if you pass `ra` and `dec`, `skycoord` or use `name` to resolve a target name to coordinates, it will check if mode associated with `uvotmode` is valid for this position. This on the server side performs a bright star check, and if it fails for any reason, the request will be rejected with an error along the lines of 'The following UVOT filters are not allowed due to a bright star: White'.
+* Add mode checking to `UVOT_mode`. Now if you pass `ra` and `dec`, `skycoord` or use `name` to resolve a target name to coordinates, it will check if mode associated with `uvotmode` is valid for this position. This on the server side performs a bright star check, and if it fails for any reason, the request will be rejected with an error along the lines of 'The following UVOT filters are not allowed due to a bright star: White'.
 
 ## `swifttools` 2.4.9 / `swift_too` 1.2.17
 

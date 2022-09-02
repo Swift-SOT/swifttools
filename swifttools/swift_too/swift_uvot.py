@@ -136,7 +136,15 @@ class UVOT_mode(
 
     def __str__(self):
         """Display UVOT mode table"""
-        if self.entries is not None:
+        if (
+            hasattr(self, "status")
+            and self.status == "Rejected"
+            and self.status.__class__.__name__ == "Swift_TOO_Status"
+        ):
+            return "Rejected with the following error(s): " + " ".join(
+                self.status.errors
+            )
+        elif self.entries is not None:
             table_cols = [
                 "filter_name",
                 "eventmode",
@@ -180,7 +188,15 @@ class UVOT_mode(
 
     def _repr_html_(self):
         """Jupyter Notebook friendly display of UVOT mode table"""
-        if self.entries is not None:
+        if (
+            hasattr(self, "status")
+            and self.status == "Rejected"
+            and self.status.__class__.__name__ == "Swift_TOO_Status"
+        ):
+            return "<b>Rejected with the following error(s): </b>" + " ".join(
+                self.status.errors
+            )
+        elif self.entries is not None:
             html = f"<h2>UVOT Mode: {self.uvotmode}</h2>"
             html += "<p>The following table summarizes this mode, ordered by the filter sequence:</p>"
 
