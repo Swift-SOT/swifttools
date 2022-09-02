@@ -1,4 +1,5 @@
-from .common import TOOAPI_Baseclass, TOOAPI_Instruments
+from .common import TOOAPI_Baseclass, TOOAPI_Instruments, TOOAPI_SkyCoord
+from .swift_resolve import TOOAPI_AutoResolve
 from .too_status import Swift_TOO_Status
 from tabulate import tabulate
 
@@ -62,7 +63,9 @@ class UVOT_mode_entry(TOOAPI_Baseclass):
         return self.filter_name
 
 
-class UVOT_mode(TOOAPI_Baseclass, TOOAPI_Instruments):
+class UVOT_mode(
+    TOOAPI_Baseclass, TOOAPI_Instruments, TOOAPI_SkyCoord, TOOAPI_AutoResolve
+):
     """Class to fetch information about a given UVOT mode. Specifically this is
     useful for understanding for a given UVOT hex mode (e.g. 0x30ed), which
     filters and configuration are used by UVOT.
@@ -82,10 +85,10 @@ class UVOT_mode(TOOAPI_Baseclass, TOOAPI_Instruments):
     """
 
     # Core API definitions
-    _parameters = ["username", "uvotmode"]
+    _parameters = ["username", "uvotmode", "ra", "dec"]
     _attributes = ["status", "entries"]
     # Local parameters
-    _local = ["shared_secret"]
+    _local = ["shared_secret", "name"]
     _subclasses = [UVOT_mode_entry, Swift_TOO_Status]
     api_name = "UVOT_mode"
     # Alias for uvotmode
@@ -102,10 +105,15 @@ class UVOT_mode(TOOAPI_Baseclass, TOOAPI_Instruments):
         shared_secret : str
             shared secret for TOO API (default 'anonymous')
         """
+        TOOAPI_SkyCoord.__init__(self)
+        TOOAPI_AutoResolve.__init__(self)
         # Set up username
         self.username = "anonymous"
         # Set up uvotmode
         self.uvotmode = None
+        # Set up coordinates
+        self.ra = None
+        self.dec = None
         # Here is where the data go
         self.entries = None
         # TOO API status

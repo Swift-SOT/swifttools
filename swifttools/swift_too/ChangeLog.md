@@ -6,12 +6,18 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
+## `swifttools` 3.0.3 / `swift_too` 1.2.18
+
+**September 2nd, 2022**: Add support for checking if UVOT mode is valid for a give coordinate
+
+* Add mode checking to UVOT_mode. Now if you pass `ra` and `dec`, `skycoord` or use `name` to resolve a target name to coordinates, it will check if mode associated with `uvotmode` is valid for this position. This on the server side performs a bright star check, and if it fails for any reason, the request will be rejected with an error along the lines of 'The following UVOT filters are not allowed due to a bright star: White'.
+
 ## `swifttools` 2.4.9 / `swift_too` 1.2.17
 
-**August 10th, 2022**
+**August 10th, 2022**: Subthreshold data support
 
 * Add flag to `Swift_GUANO_Data` indicating if GUANO data are located in the "BAT Data For Subthreshold Triggers" section of the Swift SDC, rather than being associated with normal data. If this is true then `subthresh = True`, otherwise `subthresh = False`.
-* Add support for downloading BAT subthreshold trigger data to `Swift_Data` (AKA `Data`). To download subthreshold trigger data, give the `obsid` and set argument `subthresh = True`. Data will be downloaded into a directory named after the obsid containing just the subthreshold trigger data. 
+* Add support for downloading BAT subthreshold trigger data to `Swift_Data` (AKA `Data`). To download subthreshold trigger data, give the `obsid` and set argument `subthresh = True`. Data will be downloaded into a directory named after the obsid containing just the subthreshold trigger data.
 
 ## `swifttools` 2.4.8 / `swift_too` 1.2.16
 
