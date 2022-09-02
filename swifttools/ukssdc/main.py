@@ -875,7 +875,7 @@ def mergeLightCurveBins(
         (smin, smax, mean) = bayesRate(C, B, detThresh)
         if dtIsC:
             gotUL = True
-        UL = smax
+        UL = smax * CF / E
         if smin > 0:
             getUL = False
             if not silent:
