@@ -571,6 +571,8 @@ def bayesRate(N, B, conf):
             nupper = 30
     else:
         tmp = int(N - B)
+        if tmp < 0:
+            tmp = 0
         nlower = tmp - 20 * tmp**0.5
         if nlower < 0:
             nlower = 0
@@ -828,7 +830,7 @@ def mergeLightCurveBins(
 
     # Now calculate the values for the new bin
     E = tmp["Exposure"].sum()
-    C = tmp["CtsInSrc"].sum()
+    C = int(tmp["CtsInSrc"].sum())
     B = tmp["BGInSrc"].sum()
     CFE = tmp["CFE"].sum()
     weight = tmp[sumCol].sum()
@@ -1106,7 +1108,7 @@ def mergeUpperLimits(
 
         tmp[f"{b}_CFE"] = tmp[f"{b}_CorrectionFactor"] * tmp["ImageExposure"]
 
-        totC = tmp[f"{b}_Counts"].sum()
+        totC = int(tmp[f"{b}_Counts"].sum())
         totB = tmp[f"{b}_BGCounts"].sum()
         CF = tmp[f"{b}_CFE"].sum() / totImExp
 
