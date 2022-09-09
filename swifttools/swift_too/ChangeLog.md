@@ -6,6 +6,12 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
+## `swifttools` 3.0.6 / `swift_too` 1.2.20
+
+**September 8nd, 2022**: Add `download` method
+
+* Added `download` method for easy downloading of SDC data for any class with an associated observation id. See Jupyter notebook `UVOT_mode example notebook.ipynb` for examples of use.
+
 ## `swifttools` 3.0.4 / `swift_too` 1.2.19
 
 **September 2nd, 2022**: Bug fix release

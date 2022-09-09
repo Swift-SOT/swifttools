@@ -2,6 +2,7 @@ from .common import TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_Daterange
 from .swift_clock import TOOAPI_ClockCorrect
 from .too_status import Swift_TOO_Status
 from datetime import timedelta
+from .swift_data import TOOAPI_DownloadData
 
 
 class Swift_GUANO_GTI(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
@@ -42,7 +43,7 @@ class Swift_GUANO_GTI(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
         return f"{self.begin} - {self.end} ({self.exposure})"
 
 
-class Swift_GUANO_Data(TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect):
+class Swift_GUANO_Data(TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect, TOOAPI_DownloadData):
     """Class to hold information about GUANO data based on analysis of the BAT
     event files that are downlinked.
 
@@ -128,7 +129,7 @@ class Swift_GUANO_Data(TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect):
             return False
 
 
-class Swift_GUANO_Entry(TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect):
+class Swift_GUANO_Entry(TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect, TOOAPI_DownloadData):
     """Entry for an individual BAT ring buffer dump (AKA GUANO) event.
 
     Attributes

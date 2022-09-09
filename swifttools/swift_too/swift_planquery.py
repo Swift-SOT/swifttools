@@ -10,12 +10,14 @@ from .too_status import Swift_TOO_Status
 from .swift_obsquery import Swift_Observation, Swift_Observations
 from datetime import timedelta
 from .swift_resolve import TOOAPI_AutoResolve
+from .swift_data import TOOAPI_DownloadData
 
 
 class Swift_PPST_Entry(
     TOOAPI_Baseclass,
     TOOAPI_SkyCoord,
     TOOAPI_ObsID,
+    TOOAPI_DownloadData,
     TOOAPI_Instruments,
     TOOAPI_ClockCorrect,
 ):
@@ -122,6 +124,7 @@ class Swift_PPST(
     TOOAPI_Daterange,
     TOOAPI_SkyCoord,
     TOOAPI_ObsID,
+    TOOAPI_DownloadData,
     TOOAPI_AutoResolve,
     TOOAPI_ClockCorrect,
 ):

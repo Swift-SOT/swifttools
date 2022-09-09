@@ -90,6 +90,7 @@ class Swift_TOO_Request(
         "grb_triggertime",
         "debug",
         "validate_only",
+        "quiet"
     ]
     # Alias parameter names
     _local = ["skycoord", "shared_secret"]
@@ -205,6 +206,7 @@ class Swift_TOO_Request(
         "grbinfo": "GRB Details",
         "debug": "Debug mode",
         "validate_only": "Validate only",
+        "quiet": "Quiet mode",
     }
 
     def __init__(self, *args, **kwargs):
@@ -412,6 +414,7 @@ class Swift_TOO_Request(
 
         # Debug parameter - if this is set, sending a TOO won't actually submit it. Good for testing.
         self.debug = None  # Debug mode (boolean)
+        self.quiet = False
 
         # Status of request
         self.status = Swift_TOO_Status()

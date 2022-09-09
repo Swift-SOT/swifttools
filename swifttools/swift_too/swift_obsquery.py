@@ -9,6 +9,7 @@ from .too_status import Swift_TOO_Status
 from datetime import timedelta
 from .swift_resolve import TOOAPI_AutoResolve
 from .swift_clock import TOOAPI_ClockCorrect
+from .swift_data import TOOAPI_DownloadData
 
 
 class Swift_AFST_Entry(
@@ -17,6 +18,7 @@ class Swift_AFST_Entry(
     TOOAPI_ObsID,
     TOOAPI_Instruments,
     TOOAPI_ClockCorrect,
+    TOOAPI_DownloadData
 ):
     """Class that defines an individual entry in the Swift As-Flown Timeline
 
@@ -172,7 +174,7 @@ class Swift_AFST_Entry(
         ]
 
 
-class Swift_Observation(TOOAPI_Baseclass):
+class Swift_Observation(TOOAPI_Baseclass, TOOAPI_DownloadData):
     """Class to summarize observations taken for given observation ID (obsnum).
     Whereas observations are typically one or more individual snapshot, in TOO
     API speak a `Swift_AFST_Entry`, this class summarizes all snapshots into a
@@ -227,6 +229,7 @@ class Swift_Observation(TOOAPI_Baseclass):
 
     def __init__(self):
         # All the Swift_AFST_Entries for this observation
+        TOOAPI_ObsID.__init__(self)
         self.entries = Swift_AFST()
 
     def __getitem__(self, index):
@@ -336,6 +339,10 @@ class Swift_Observation(TOOAPI_Baseclass):
             ]
         ]
 
+    # Aliases
+    obsid = obsnum
+    target_id = targetid
+    segment = seg
 
 class Swift_Observations(dict, TOOAPI_Baseclass):
     """Adapted dictionary class for containing observations that mostly is just

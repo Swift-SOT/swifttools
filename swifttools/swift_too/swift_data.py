@@ -387,3 +387,32 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
 
 
 Data = Swift_Data
+
+class TOOAPI_DownloadData:
+    '''Mixin to add add download method to any class that has an associated obsid.'''
+    def download(self, *args, **kwargs):
+        '''Download data from SDC'''
+        # Set up the Data class        
+        data = Swift_Data()
+        params = Swift_Data._parameters + Swift_Data._local
+        # Read in arguments
+        for i in range(len(args)):
+            setattr(data, params[i + 1], args[i])
+        # Parse argument keywords
+        for key in kwargs.keys():
+            if key in params + self._local:
+                setattr(data, key, kwargs[key])
+            else:
+                raise TypeError(
+                    f"{self.api_name} got an unexpected keyword argument '{key}'"
+                )
+        # Set up and download data
+        data.obsid = self.obsid
+        data.username = self.username
+        data.shared_secret = self.shared_secret
+        data.submit()
+        if data.fetch:
+            data.download()
+        # Return the Swift_Data class on completion
+        return data
+        
