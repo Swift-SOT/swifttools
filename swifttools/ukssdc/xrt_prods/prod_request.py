@@ -294,7 +294,7 @@ class XRTProductRequest:
     # default) but may be useful for future debugging
     _apiName = "xrt_prods"
     _apiVer = _apiVersion  # "1.8"
-    useDeprecate = False
+    useDeprecate = True
 
     # Now begin the instantiated stuff.  First what to output when this
     # instance is entered in an ipython shell.
