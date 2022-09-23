@@ -1,9 +1,13 @@
-from .common import TOOAPI_Baseclass, TOOAPI_Instruments
+from .api_common import TOOAPI_Baseclass
+from .swift_instruments import TOOAPI_Instruments
 from .swift_clock import TOOAPI_ClockCorrect
-from .too_status import Swift_TOO_Status
+from .api_status import Swift_TOO_Status
+from .api_daterange import TOOAPI_Daterange
 
 
-class Swift_Calendar_Entry(TOOAPI_Baseclass, TOOAPI_Instruments, TOOAPI_ClockCorrect):
+class Swift_Calendar_Entry(
+    TOOAPI_Baseclass, TOOAPI_Instruments, TOOAPI_ClockCorrect, TOOAPI_Daterange
+):
     """Class for a single entry in the Swift TOO calendar.
 
     Attributes
@@ -60,11 +64,6 @@ class Swift_Calendar_Entry(TOOAPI_Baseclass, TOOAPI_Instruments, TOOAPI_ClockCor
     def __getitem__(self, key):
         if key in self._parameters:
             return getattr(self, key)
-
-    # Set up aliases
-    xrt_mode = TOOAPI_Instruments.xrt
-    uvot_mode = TOOAPI_Instruments.uvot
-    bat_mode = TOOAPI_Instruments.bat
 
     @property
     def _table(self):
@@ -155,3 +154,5 @@ class Swift_Calendar(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
 
 # Shorthand alias
 Calendar = Swift_Calendar
+CalendarEntry = Swift_Calendar_Entry
+Swift_CalendarEntry = CalendarEntry

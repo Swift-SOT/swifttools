@@ -1,16 +1,28 @@
 from .swift_calendar import Swift_Calendar
-from .common import (
-    TOOAPI_Baseclass,
-    TOOAPI_Instruments,
-    TOOAPI_ObsID,
-    TOOAPI_SkyCoord,
-    xrtmodes,
-)
-from .too_status import Swift_TOO_Status
+from .api_common import TOOAPI_Baseclass
+from .swift_instruments import TOOAPI_Instruments
+from .api_status import Swift_TOO_Status
+from .swift_obsid import TOOAPI_ObsID
+from .api_skycoord import TOOAPI_SkyCoord
+from .api_daterange import TOOAPI_Daterange
+from .api_resolve import TOOAPI_AutoResolve
+
+HAS_ASTROPY = False
+try:
+    import astropy.units as u
+
+    HAS_ASTROPY = True
+except ImportError:
+    pass
 
 
 class Swift_TOO_Request(
-    TOOAPI_Baseclass, TOOAPI_SkyCoord, TOOAPI_ObsID, TOOAPI_Instruments
+    TOOAPI_Baseclass,
+    TOOAPI_SkyCoord,
+    TOOAPI_ObsID,
+    TOOAPI_Instruments,
+    TOOAPI_Daterange,
+    TOOAPI_AutoResolve
 ):
     """Class to construct a TOO for submission to Swift MOC. Class provides
     internal validation of TOO, based on simple criteria. Submission is handled
@@ -90,10 +102,10 @@ class Swift_TOO_Request(
         "grb_triggertime",
         "debug",
         "validate_only",
-        "quiet"
+        "quiet",
     ]
     # Alias parameter names
-    _local = ["skycoord", "shared_secret"]
+    _local = ["skycoord", "shared_secret", "xrt", "uvot"]
     # Attributes that may get returned
     _attributes = [
         "too_id",
@@ -265,7 +277,7 @@ class Swift_TOO_Request(
             Exposure per visit in seconds (default None)
         num_of_visits : integer
             Number of visits (default 1)
-        monitoring_freq : string
+        monitoring_freq : string / astropy.units
             Formatted text to describe monitoring cadence. E.g. "2 days", "3
             orbits", "1 week". See monitoring_units for valid units (default
             None)
@@ -354,7 +366,7 @@ class Swift_TOO_Request(
         self.science_just = None
 
         # Exposure requested time (total)
-        self.exposure = None  # Note this is the user requested exposure
+        self._exposure = None  # Note this is the user requested exposure
 
         # Monitoring request
         # Justification of monitoring exposure (string)
@@ -443,35 +455,6 @@ class Swift_TOO_Request(
         self._calendar = cal
 
     @property
-    def uvot_mode_approved(self):
-        """Return UVOT as a hex string. Stored as a number internally"""
-        if type(self._uvot_mode_approved) == int:
-            return f"0x{self._uvot_mode_approved:04x}"
-        else:
-            return self._uvot_mode_approved
-
-    @uvot_mode_approved.setter
-    def uvot_mode_approved(self, mode):
-        self.uvot_mode_setter("uvot_mode_approved", mode)
-
-    # Set up aliases for the inherited xrt and uvot mode
-    xrt_mode = TOOAPI_Instruments.xrt
-    uvot_mode = TOOAPI_Instruments.uvot
-
-    @property
-    def xrt_mode_approved(self):
-        """Return XRT mode as abbreviation string. Internally stored as a number."""
-        if self._xrt_mode_approved is None:
-            return "Unset"
-        else:
-            return xrtmodes[self._xrt_mode_approved]
-
-    @xrt_mode_approved.setter
-    def xrt_mode_approved(self, mode):
-        """Allow XRT mode to be set either as a string (e.g. "WT") or as a number (0, 6 or 7)."""
-        self.xrt_mode_setter("xrt_mode_approved", mode)
-
-    @property
     def obs_n(self):
         """Is this a request for a single observation or multiple?"""
         if self.num_of_visits != "" and self.num_of_visits > 1:
@@ -540,7 +523,13 @@ class Swift_TOO_Request(
                 self.exposure = self.exp_time_per_visit
 
         # Check monitoring frequency is correct
-        if self.monitoring_freq:
+        if self.monitoring_freq is not None:
+            if HAS_ASTROPY and type(self.monitoring_freq) is u.quantity.Quantity:
+                if self.monitoring_freq.to(u.day).value >= (1 * u.day).value:
+                    self.monitoring_freq = f"{self.monitoring_freq.to(u.day).value} days"
+                else:
+                    self.monitoring_freq = f"{self.monitoring_freq.to(u.hour).value} hours"
+
             _, unit = self.monitoring_freq.strip().split()
             if unit[-1] == "s":
                 unit = unit[0:-1]
@@ -639,3 +628,5 @@ class Swift_TOO_Request(
 # Aliases for class
 Swift_TOO = Swift_TOO_Request
 TOO = Swift_TOO_Request
+TOORequest = Swift_TOO_Request
+Swift_TOORequest = Swift_TOO_Request

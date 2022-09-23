@@ -1,5 +1,5 @@
-from .common import TOOAPI_Baseclass, swiftdatetime, convert_to_dt
-from .too_status import Swift_TOO_Status
+from .api_common import TOOAPI_Baseclass, swiftdatetime, convert_to_dt
+from .api_status import Swift_TOO_Status
 from datetime import datetime
 
 

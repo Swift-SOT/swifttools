@@ -27,10 +27,11 @@ try:
 except ImportError:
     keyring_support = False
 
+# Check if we have astropy support
 HAS_ASTROPY = False
 try:
-    from astropy.coordinates import SkyCoord
-
+    from astropy.time import Time
+    import astropy.units as u
     HAS_ASTROPY = True
 except ImportError:
     pass
@@ -38,44 +39,13 @@ except ImportError:
 
 # Convert degrees to radians
 dtor = 0.017453292519943295
-# Lookup table for XRT modes
-xrtmodes = {
-    0: "Auto",
-    1: "Null",
-    2: "ShortIM",
-    3: "LongIM",
-    4: "PUPD",
-    5: "LRPD",
-    6: "WT",
-    7: "PC",
-    8: "Raw",
-    9: "Bias",
-    150: "PC_150",
-    200: "PC_200",
-    255: "Manual",
-    None: "Unset",
-}
-modesxrt = {
-    "Auto": 0,
-    "Null": 1,
-    "ShortIM": 2,
-    "LongIM": 3,
-    "PUPD": 4,
-    "LRPD": 5,
-    "WT": 6,
-    "PC": 7,
-    "Raw": 8,
-    "Bias": 9,
-    "PC_150": 150,
-    "PC_200": 200,
-    "Manual": 255,
-}
 
 # Regex for matching date, time and datetime strings
 _date_regex = r"^[0-2]\d{3}-(0?[1-9]|1[012])-([0][1-9]|[1-2][0-9]|3[0-1])?$"
 _time_regex = r"^([0-9]:|[0-1][0-9]:|2[0-3]:)[0-5][0-9]:[0-5][0-9]+(\.\d+)?$"
 _datetime_regex = r"^[0-2]\d{3}-(0?[1-9]|1[012])-([0][1-9]|[1-2][0-9]|3[0-1]) ([0-9]:|[0-1][0-9]:|2[0-3]:)[0-5][0-9]:[0-5][0-9]+(\.\d+)?$"
 _float_regex = r"^[+-]?(?=\d*[.eE])(?=\.?\d)\d*\.?\d*(?:[eE][+-]?\d+)?$"
+_int_regex = r"^(0|[1-9][0-9]+)$"
 
 # Submission URL
 API_URL = "https://www.swift.psu.edu/toop/submit_json.php"
@@ -126,7 +96,7 @@ def convert_to_dt(value, isutc=False, outfunc=datetime):
         dtvalue = outfunc.fromtimestamp(value.timestamp())
     elif value is None:
         dtvalue = None
-    elif value.__module__ == "astropy.time.core" and value.__class__.__name__ == "Time":
+    elif HAS_ASTROPY and type(value) is Time:
         dtvalue = value.datetime
     else:
         raise TypeError(
@@ -337,8 +307,11 @@ class TOOAPI_Baseclass:
                 ):
                     data[param] = f"{value}"
                 # Detect and convert astropy Time
-                elif type(value).__module__ == "astropy.time.core":
+                elif HAS_ASTROPY and type(value) == Time:
                     data[param] = f"{value.datetime}"
+                elif HAS_ASTROPY and type(value) == u.quantity.Quantity:
+                    # For any astropy units not handled explicitly, pass as string
+                    data[param] = f"{value}"
                 else:
                     data[param] = value
         return data
@@ -405,6 +378,12 @@ class TOOAPI_Baseclass:
                     if match is not None:
                         val = float(entry)
 
+                # If it's an int, convert it
+                if type(entry) == str:
+                    match = re.match(_int_regex, entry)
+                    if match is not None:
+                        val = int(entry)
+
             # None of the above? It is what it is.
             if val is False:
                 val = entry
@@ -437,7 +416,10 @@ class TOOAPI_Baseclass:
                 if (
                     val is not None
                 ):  # If value is set to None, then don't change the value
-                    setattr(self, key, val)
+                    if hasattr(self,f"_{key}"):
+                        setattr(self, f"_{key}", val)
+                    else:
+                        setattr(self, key, val)
             else:
                 if (
                     not self.ignorekeys
@@ -464,10 +446,6 @@ class TOOAPI_Baseclass:
                 "Swift TOO API submission did not pass internal validation checks."
             )
             return False
-
-        # For Swift_ObsQuery if end is set as the future, just set it to now as this can cause confusion with caching.
-        #        if self.api_name == 'Swift_AFST' and self.end is not None and self.end > datetime.utcnow():
-        #            self.end = datetime.utcnow()
 
         return self.__submit_jwt(post=post)
 
@@ -570,283 +548,6 @@ class TOOAPI_Baseclass:
     def __submit_post(self):
         """Submit the request through the web based API, as a JWT through POST (recommended)"""
         return requests.post(url=API_URL, verify=True, data={"jwt": self.jwt})
-
-
-class TOOAPI_Daterange:
-    """A Mixin for all classes that have begin, end and length for setting date
-    ranges. These functions allow dates to be givin as strings,
-    datetime.datetime or astropy Time objects, and length to be given in number
-    of days, or as a datetime.timedelta object or an astropy TimeDelta
-    object."""
-
-    _length = None
-    _begin = None
-    _end = None
-
-    @property
-    def begin(self):
-        if (
-            hasattr(self._begin, "utcf")
-            and self._begin.utcf is None
-            and self.utcf is not None
-        ):
-            self._begin.utcf = self.utcf
-        return self._begin
-
-    @property
-    def end(self):
-        if self._begin is not None and self._length is not None and self._end is None:
-            self._end = self.begin + timedelta(days=self._length)
-        if (
-            hasattr(self._end, "utcf")
-            and self._end.utcf is None
-            and self.utcf is not None
-        ):
-            self._end.utcf = self.utcf
-        return self._end
-
-    @property
-    def length(self):
-        if self._length is None and self._begin is not None and self._end is not None:
-            return (self._end - self._begin).total_seconds() / 86400.0
-        return self._length
-
-    @begin.setter
-    def begin(self, begin):
-        self._begin = convert_to_dt(begin, self._isutc, outfunc=datetime)
-
-    @end.setter
-    def end(self, end):
-        self._end = convert_to_dt(end, self._isutc, outfunc=datetime)
-        # If we're changing the end, and begin is defined, then update length
-        if self._begin is not None and self._end is not None:
-            self._length = (self._end - self._begin).total_seconds() / 86400.0
-
-    @length.setter
-    def length(self, length):
-        if type(length) == timedelta:
-            self._length = length.total_seconds() / 86400.0
-        elif (
-            type(length).__module__ == "astropy.time.core"
-            and type(length).__name__ == "TimeDelta"
-        ):
-            self._length = length.to_datetime().total_seconds() / 86400.0
-        elif length is None:
-            self._length = None
-        else:
-            try:
-                self._length = float(length)
-            except ValueError:
-                raise TypeError(
-                    "Length should be given as a datetime.timedelta, astropy Time or as a number of days"
-                )
-
-        # If we're changing length, make sure end is changed
-        if self._begin is not None and self._length is not None:
-            self._end = self._begin + timedelta(days=self._length)
-
-
-class TOOAPI_SkyCoord:
-    """Mixin to support for using a SkyCoord in place of RA/Dec. Note that
-    swift_too only support SkyCoords if astropy itself is installed. astropy is
-    not a dependency for swift_too so will not get installed if you don't already
-    have it."""
-
-    _skycoord = None
-    _radius = None
-    _ra = None
-    _dec = None
-
-    @property
-    def skycoord(self):
-        """Allow TOO requesters to give an astropy SkyCoord object instead of
-        RA/Dec. Handy if you want to do things like submit 1950 coordinates or
-        Galactic Coordinates."""
-        # Check if the RA/Dec match the SkyCoord, and if they don't modify the skycoord
-        if HAS_ASTROPY:
-            if self.ra != self._ra or self.dec != self._dec:
-                self._skycoord = SkyCoord(self.ra, self.dec, unit="deg", frame="fk5")
-                self._ra, self._dec = self.ra, self.dec
-            return self._skycoord
-        else:
-            raise ImportError("To use skycoord, astropy needs to be installed.")
-
-    @skycoord.setter
-    def skycoord(self, sc):
-        """Convert the SkyCoord into RA/Dec (J2000) when set."""
-        if HAS_ASTROPY:
-            if sc is None:
-                self._skycoord = None
-            elif type(sc).__module__ == "astropy.coordinates.sky_coordinate":
-                self._skycoord = sc
-                self.ra = sc.fk5.ra.deg
-                self.dec = sc.fk5.dec.deg
-            else:
-                raise TypeError("Needs to be assigned an Astropy SkyCoord")
-        else:
-            raise ImportError("To use skycoord, astropy needs to be installed.")
-
-
-class TOOAPI_ObsID:
-    """Mixin for handling target ID / Observation ID with various aliases"""
-
-    _target_id = None
-    _seg = None
-
-    def convert_obsnum(self, obsnum):
-        """Convert various formats for obsnum (SDC and Spacecraft) into one format (Spacecraft)"""
-        if type(obsnum) == str:
-            if re.match("^[0-9]{11}?$", obsnum) is None:
-                raise ValueError("obsnum string format incorrect")
-            else:
-                targetid = int(obsnum[0:8])
-                segment = int(obsnum[8:12])
-                return targetid + (segment << 24)
-        elif type(obsnum) == int:
-            return obsnum
-        elif obsnum is None:
-            return None
-        else:
-            raise ValueError("obsnum in wrong format.")
-
-    @property
-    def target_id(self):
-        return self._target_id
-
-    @target_id.setter
-    def target_id(self, tid):
-        if type(tid) == str:
-            self._target_id = int(tid)
-        else:
-            self._target_id = tid
-
-    @property
-    def seg(self):
-        return self._seg
-
-    @seg.setter
-    def seg(self, segment):
-        self._seg = segment
-
-    @property
-    def obsnum(self):
-        """Return the obsnum in SDC format"""
-        if self._target_id is None or self._seg is None:
-            return None
-        elif type(self._target_id) == list:
-            return [
-                f"{self.target_id[i]:08d}{self.seg[i]:03d}"
-                for i in range(len(self._target_id))
-            ]
-        else:
-            return f"{self.target_id:08d}{self.seg:03d}"
-
-    @obsnum.setter
-    def obsnum(self, obsnum):
-        """Set the obsnum value, by figuring out what the two formats are."""
-        # Deal with lists of obsnumbers
-        if type(obsnum) == list and len(obsnum) > 0:
-            self._target_id = list()
-            self._seg = list()
-            for on in obsnum:
-                onsc = self.convert_obsnum(on)
-                self._target_id.append(onsc & 0xFFFFFF)
-                self._seg.append(onsc >> 24)
-
-        elif obsnum is not None and obsnum != []:
-            obsnum = self.convert_obsnum(obsnum)
-            self._target_id = obsnum & 0xFFFFFF
-            self._seg = obsnum >> 24
-
-    @property
-    def obsnumsc(self):
-        """Return the obsnum in spacecraft format"""
-        if type(self._target_id) == list:
-            return [
-                self._target_id[i] + (self._seg[i] << 24)
-                for i in range(len(self._target_id))
-            ]
-        return self._target_id + (self._seg << 24)
-
-    # Aliases
-    targetid = target_id
-    segment = seg
-    obsid = obsnum
-    obsidsc = obsnumsc
-
-
-class TOOAPI_Instruments:
-    """Mixin for XRT / UVOT mode display and capture"""
-
-    _uvot = None
-    _xrt = None
-    _bat = None  # For now, bat mode is just an integer
-
-    def uvot_mode_setter(self, attr, mode):
-        if type(mode) == str and "0x" in mode:
-            """Convert hex string to int"""
-            setattr(self, f"_{attr}", int(mode.split(":")[0], 16))
-        elif type(mode) == str:
-            """Convert decimal string to int"""
-            try:
-                setattr(self, f"_{attr}", int(mode))
-            except (TypeError, ValueError):
-                setattr(self, f"_{attr}", mode)
-        else:
-            """Pass through anything else"""
-            setattr(self, f"_{attr}", mode)
-
-    def xrt_mode_setter(self, attr, mode):
-        if type(mode) == str:
-            if mode in modesxrt.keys():
-                setattr(self, f"_{attr}", modesxrt[mode])
-            else:
-                raise NameError(f"Unknown mode ({mode}), should be PC, WT or Auto")
-        elif mode is None:
-            setattr(self, f"_{attr}", mode)
-        else:
-            if mode in xrtmodes.keys():
-                setattr(self, f"_{attr}", mode)
-            else:
-                raise ValueError(
-                    f"Unknown mode ({mode}), should be PC (7), WT (6) or Auto (0)"
-                )
-
-    @property
-    def xrt(self):
-        """Given a XRT mode number returns a string containing the name of the
-        mode"""
-        return xrtmodes[self._xrt]
-
-    @xrt.setter
-    def xrt(self, mode):
-        self.xrt_mode_setter("xrt", mode)
-
-    @property
-    def uvot(self):
-        """Given a UVOT mode number returns a string containing the name of the
-        mode"""
-        if type(self._uvot) == int:
-            return f"0x{self._uvot:04x}"
-        else:
-            return self._uvot
-
-    @uvot.setter
-    def uvot(self, mode):
-        self.uvot_mode_setter("uvot", mode)
-
-    @property
-    def bat(self):
-        """Given a BAT mode number returns a string containing the name of the
-        mode"""
-        if type(self._bat) == int:
-            return f"0x{self._bat:04x}"
-        else:
-            return self._bat
-
-    @bat.setter
-    def bat(self, mode):
-        self.uvot_mode_setter("bat", mode)
 
 
 class swiftdatetime(datetime, TOOAPI_Baseclass):

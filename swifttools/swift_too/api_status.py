@@ -1,4 +1,4 @@
-from .common import TOOAPI_Baseclass
+from .api_common import TOOAPI_Baseclass
 
 
 class Swift_TOO_Status(TOOAPI_Baseclass):
@@ -25,7 +25,7 @@ class Swift_TOO_Status(TOOAPI_Baseclass):
     warnings : list
         list of warning strings associated with the request
     too_id : list
-        For a Swift_TOO request, the TOO ID assigned to a new request
+        For a TOO request, the TOO ID assigned to a new request
     """
 
     # Core API definitions
@@ -112,3 +112,7 @@ class Swift_TOO_Status(TOOAPI_Baseclass):
     def clear(self):
         """Reset status"""
         self.__init__()
+
+# Aliases for better PEP8 compliance, and future API updates
+Swift_TOOStatus= Swift_TOO_Status
+TOOStatus = Swift_TOOStatus

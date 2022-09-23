@@ -1,15 +1,13 @@
-from .common import (
-    TOOAPI_Baseclass,
-    TOOAPI_Daterange,
-    TOOAPI_SkyCoord,
-    TOOAPI_ObsID,
-    TOOAPI_Instruments,
-)
-from .too_status import Swift_TOO_Status
+from .api_common import TOOAPI_Baseclass
+from .api_status import Swift_TOO_Status
 from datetime import timedelta
-from .swift_resolve import TOOAPI_AutoResolve
+from .api_resolve import TOOAPI_AutoResolve
 from .swift_clock import TOOAPI_ClockCorrect
 from .swift_data import TOOAPI_DownloadData
+from .swift_instruments import TOOAPI_Instruments
+from .swift_obsid import TOOAPI_ObsID
+from .api_daterange import TOOAPI_Daterange
+from .api_skycoord import TOOAPI_SkyCoord
 
 
 class Swift_AFST_Entry(
@@ -18,7 +16,7 @@ class Swift_AFST_Entry(
     TOOAPI_ObsID,
     TOOAPI_Instruments,
     TOOAPI_ClockCorrect,
-    TOOAPI_DownloadData
+    TOOAPI_DownloadData,
 ):
     """Class that defines an individual entry in the Swift As-Flown Timeline
 
@@ -344,6 +342,7 @@ class Swift_Observation(TOOAPI_Baseclass, TOOAPI_DownloadData):
     target_id = targetid
     segment = seg
 
+
 class Swift_Observations(dict, TOOAPI_Baseclass):
     """Adapted dictionary class for containing observations that mostly is just
     to ensure that data can be displayed in a consistent format. Key is
@@ -532,7 +531,10 @@ class Swift_AFST(
         return True
 
 
-# Alias names for class
+# Alias names for class for better PEP8 and future compat
 Swift_ObsQuery = Swift_AFST
 ObsQuery = Swift_AFST
 AFST = Swift_AFST
+Swift_AFST_Entry
+ObsEntry = Swift_AFST_Entry
+Swift_ObsEntry = Swift_AFST_Entry

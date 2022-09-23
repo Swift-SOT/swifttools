@@ -1,5 +1,6 @@
-from .common import TOOAPI_Baseclass, TOOAPI_ObsID
-from .too_status import Swift_TOO_Status
+from .api_common import TOOAPI_Baseclass
+from .swift_obsid import TOOAPI_ObsID
+from .api_status import Swift_TOO_Status
 import requests
 import os
 from fnmatch import fnmatch
@@ -383,16 +384,17 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
         return True
 
 
-# Shorthand Aliases
-
-
+# Shorthand Aliases for better PEP8 compliant and future compat
 Data = Swift_Data
+DataFile = Swift_Data_File
+Swift_DataFile = Swift_Data_File
 
 class TOOAPI_DownloadData:
-    '''Mixin to add add download method to any class that has an associated obsid.'''
+    """Mixin to add add download method to any class that has an associated obsid."""
+
     def download(self, *args, **kwargs):
-        '''Download data from SDC'''
-        # Set up the Data class        
+        """Download data from SDC"""
+        # Set up the Data class
         data = Swift_Data()
         params = Swift_Data._parameters + Swift_Data._local
         # Read in arguments
@@ -415,4 +417,3 @@ class TOOAPI_DownloadData:
             data.download()
         # Return the Swift_Data class on completion
         return data
-        

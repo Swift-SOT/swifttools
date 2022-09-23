@@ -2,7 +2,7 @@ from .swift_clock import Swift_Clock
 from .swift_saa import Swift_SAA
 from .swift_guano import Swift_GUANO
 from .swift_calendar import Swift_Calendar
-from .too_status import Swift_TOO_Status
+from .api_status import Swift_TOO_Status
 from .swift_visquery import Swift_VisQuery
 from .swift_obsquery import Swift_AFST
 from .swift_planquery import Swift_PPST

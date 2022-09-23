@@ -1,8 +1,10 @@
-from .common import TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_Daterange
+from .api_common import TOOAPI_Baseclass
+from .api_daterange import TOOAPI_Daterange
 from .swift_clock import TOOAPI_ClockCorrect
-from .too_status import Swift_TOO_Status
+from .api_status import Swift_TOO_Status
 from datetime import timedelta
 from .swift_data import TOOAPI_DownloadData
+from .swift_obsid import TOOAPI_ObsID
 
 
 class Swift_GUANO_GTI(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
@@ -43,7 +45,9 @@ class Swift_GUANO_GTI(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
         return f"{self.begin} - {self.end} ({self.exposure})"
 
 
-class Swift_GUANO_Data(TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect, TOOAPI_DownloadData):
+class Swift_GUANO_Data(
+    TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect, TOOAPI_DownloadData
+):
     """Class to hold information about GUANO data based on analysis of the BAT
     event files that are downlinked.
 
@@ -123,13 +127,17 @@ class Swift_GUANO_Data(TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect, TOOA
         """Is this data subthreshold? I.e. located in the 'BAT Data for
         Subthreshold Triggers' directory of SDC, as opposed to being associated
         with the target ID."""
+        if self.filenames is None:
+            return None
         if len(self.filenames) == 1 and "ms" in self.filenames[0]:
             return True
         else:
             return False
 
 
-class Swift_GUANO_Entry(TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect, TOOAPI_DownloadData):
+class Swift_GUANO_Entry(
+    TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect, TOOAPI_DownloadData
+):
     """Entry for an individual BAT ring buffer dump (AKA GUANO) event.
 
     Attributes
@@ -364,5 +372,12 @@ class Swift_GUANO(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_ClockCorrect):
         self.clock_correct()
 
 
-# Shorthand alias names for class
+# Shorthand alias names for class and for better PEP8 compliance
 GUANO = Swift_GUANO
+GUANOData = Swift_GUANO_Data
+GUANOEntry = Swift_GUANO_Entry
+GUANOGTI = Swift_GUANO_GTI
+# Future API compat
+Swift_GUANOEntry = GUANOEntry
+Swift_GUANOGTI = GUANOGTI
+Swift_GUANOEntry = GUANOEntry

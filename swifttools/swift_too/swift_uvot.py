@@ -1,6 +1,8 @@
-from .common import TOOAPI_Baseclass, TOOAPI_Instruments, TOOAPI_SkyCoord
-from .swift_resolve import TOOAPI_AutoResolve
-from .too_status import Swift_TOO_Status
+from .api_common import TOOAPI_Baseclass
+from .api_skycoord import TOOAPI_SkyCoord
+from .swift_instruments import TOOAPI_Instruments
+from .api_resolve import TOOAPI_AutoResolve
+from .api_status import Swift_TOO_Status
 from tabulate import tabulate
 
 
@@ -270,3 +272,10 @@ class UVOT_mode(
                 self.status.error(f"Invalid UVOT mode: {self.uvotmode}.")
                 return False
         return True
+
+# Aliases that are more PEP8 compliant
+UVOTMode = UVOT_mode
+UVOTModeEntry = UVOT_mode_entry
+# Future API names
+Swift_UVOTMode = UVOT_mode
+Swift_UVOTModeEntry = UVOT_mode_entry

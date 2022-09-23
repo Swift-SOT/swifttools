@@ -6,6 +6,14 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
+## `swifttools` 3.0.8 / `swift_too` 1.2.21
+
+**September 23rd, 2022**: Add `astropy` units support.
+
+* Add `astropy` units support, so now for values like radius, lengths of time etc, you can add units using the standard `astropy.units` module. So for example, if you want to query the visibility of Sgr A* for the 2 weeks: `VisQuery(name='Sgr A*',length=2*u.week)`, or say query all observations within 30 arc-mins of the Vela Pulsar: `ObsQuery(name='Vela Pulsar',radius=30*u.arcmin)`.
+
+* In preparation for a future update, many class aliases have been updated for better PEP8 compliance, and internal consistency. So for example, `UVOT_mode` becomes `UVOTMode` etc. The old class names still work, but will be deprecated upon moving to API version 1.3. Where necessary example Jupyter Notebooks are being updated for the new style class name.
+
 ## `swifttools` 3.0.6 / `swift_too` 1.2.20
 
 **September 8nd, 2022**: Add `download` method

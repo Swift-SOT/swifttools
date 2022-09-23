@@ -1,8 +1,10 @@
-from .common import TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord
-from .too_client import Swift_TOO_Request
-from .too_status import Swift_TOO_Status
+from .api_common import TOOAPI_Baseclass
+from .swift_toorequest import Swift_TOO_Request
+from .api_status import Swift_TOO_Status
 from .swift_calendar import Swift_Calendar, Swift_Calendar_Entry
-from .swift_resolve import TOOAPI_AutoResolve
+from .api_resolve import TOOAPI_AutoResolve
+from .api_daterange import TOOAPI_Daterange
+from .api_skycoord import TOOAPI_SkyCoord
 
 
 class Swift_TOO_Requests(
@@ -202,5 +204,8 @@ class Swift_TOO_Requests(
         return header, t
 
 
-# Shorthand alias
+# PEP8 compliant shorthand alias 
 TOORequests = Swift_TOO_Requests
+# Future API compat
+Swift_TOORequests = Swift_TOO_Requests
+

@@ -1,7 +1,9 @@
 from .swift_clock import TOOAPI_ClockCorrect
-from .too_status import Swift_TOO_Status
-from .common import TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord
-from .swift_resolve import TOOAPI_AutoResolve
+from .api_status import Swift_TOO_Status
+from .api_common import TOOAPI_Baseclass
+from .api_resolve import TOOAPI_AutoResolve
+from .api_daterange import TOOAPI_Daterange
+from .api_skycoord import TOOAPI_SkyCoord
 
 
 class Swift_VisWindow(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
@@ -200,3 +202,4 @@ class Swift_VisQuery(
 
 # Shorthand alias for class
 VisQuery = Swift_VisQuery
+VisWindow = Swift_VisWindow

@@ -1,6 +1,7 @@
 from .swift_clock import TOOAPI_ClockCorrect
-from .common import TOOAPI_Baseclass, TOOAPI_Daterange
-from .too_status import Swift_TOO_Status
+from .api_common import TOOAPI_Baseclass
+from .api_status import Swift_TOO_Status
+from .api_daterange import TOOAPI_Daterange
 
 
 class Swift_SAA_Entry(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
@@ -129,5 +130,5 @@ class Swift_SAA(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_ClockCorrect):
             return True
         return False
 
-
+# Alias
 SAA = Swift_SAA

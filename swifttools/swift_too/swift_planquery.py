@@ -1,16 +1,14 @@
 from .swift_clock import TOOAPI_ClockCorrect
-from .common import (
-    TOOAPI_Baseclass,
-    TOOAPI_Daterange,
-    TOOAPI_Instruments,
-    TOOAPI_SkyCoord,
-    TOOAPI_ObsID,
-)
-from .too_status import Swift_TOO_Status
+from .api_common import TOOAPI_Baseclass
+from .api_status import Swift_TOO_Status
 from .swift_obsquery import Swift_Observation, Swift_Observations
 from datetime import timedelta
-from .swift_resolve import TOOAPI_AutoResolve
+from .api_resolve import TOOAPI_AutoResolve
 from .swift_data import TOOAPI_DownloadData
+from .swift_instruments import TOOAPI_Instruments
+from .swift_obsid import TOOAPI_ObsID
+from .api_daterange import TOOAPI_Daterange
+from .api_skycoord import TOOAPI_SkyCoord
 
 
 class Swift_PPST_Entry(
@@ -293,7 +291,9 @@ class Swift_PPST(
         return True
 
 
-# Class aliases
+# Class aliases for better PEP8 compliant and future compat
 Swift_PlanQuery = Swift_PPST
 PlanQuery = Swift_PPST
 PPST = Swift_PPST
+PPSTEntry = Swift_PPST_Entry
+Swift_PPSTEntry = Swift_PPST_Entry

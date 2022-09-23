@@ -1,5 +1,6 @@
-from .common import TOOAPI_Baseclass, TOOAPI_SkyCoord
-from .too_status import Swift_TOO_Status
+from .api_common import TOOAPI_Baseclass
+from .api_status import Swift_TOO_Status
+from .api_skycoord import TOOAPI_SkyCoord
 
 
 class Swift_Resolve(TOOAPI_Baseclass, TOOAPI_SkyCoord):
@@ -115,6 +116,9 @@ class TOOAPI_AutoResolve:
                 self.dec = self.resolve.dec
             else:
                 self.status.error("Could not resolve name.")
+
+    source_name = name
+    _source_name = _name
 
 
 # Shorthand alias for class
