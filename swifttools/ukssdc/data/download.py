@@ -503,9 +503,10 @@ def _handleLightCurve(data, oldCols=False, silent=True, verbose=False):
 
         if len(data[tmpKey]["data"]) > 0:
             if len(cols) != len(data[tmpKey]["data"][0]):
-                print(f"ARSE - {tmpKey}")
-                print(cols)
-                print(data[tmpKey]["data"])
+                # print(f"ARSE - {tmpKey}")
+                # print(cols)
+                # print(data[tmpKey]["data"])
+                raise RuntimeError(f"Unable to handle the {tmpKey} light curve, corrupt data?")
 
         if "UL" in key and not oldCols:
             cols = ["UpperLimit" if x == "Rate" else x for x in cols]

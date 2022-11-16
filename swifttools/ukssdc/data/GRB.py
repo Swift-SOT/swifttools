@@ -995,6 +995,8 @@ def getBurstAnalyser(
     GRBName=None,
     returnData=False,
     instruments="all",
+    BATBinning="all",
+    bands="all",
     nosys="no",
     incbad="yes",
     saveData=True,
@@ -1066,6 +1068,16 @@ def getBurstAnalyser(
     instruments : str or list, optional
         Which instrument data to retrieve. Must be 'all' or a list of
         instruments (from: BAT, XRT, UVOT) (default: 'all').
+
+    BATBinning : str or list, optional
+        Which BAT binning methods' data to retrieve. Must be 'all' or a
+        case-insensitive list of binning methods (e.g. ['snr4',
+        'timedel0.064']); (default: 'all').
+
+    bands : str or list, optional
+        Which energy band data to retrieve. Must be 'all' or a list of
+        case-insensitive bands (from 'ObservedFlux', 'Density',
+        'BATBand', 'XRTBand'); (default: 'all').
 
     nosys : str
         Whether to return the light curves from which the WT
@@ -1165,7 +1177,14 @@ def getBurstAnalyser(
 
         if saveData or returnData:
 
-            sendData = {"targetID": t, "instruments": instruments, "incbad": incbad, "nosys": nosys}
+            sendData = {
+                "targetID": t,
+                "instruments": instruments,
+                "bands": bands,
+                "BATBinning": BATBinning,
+                "incbad": incbad,
+                "nosys": nosys,
+            }
             tmp = base.submitAPICall("downloadBurstAnalyser", sendData, verbose=verbose, minKeys=("Instruments",))
 
             # If we are getting multiple light curves, and no subdirs, then the file names will need prefixes.

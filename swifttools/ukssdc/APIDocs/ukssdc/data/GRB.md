@@ -1697,6 +1697,15 @@ data['UVOT']['uvm2']
 
 Yep, nothing surprising there.
 
+#### Other arguments, and a note on memory usage
+
+The above example was a very simple one, in which all of the data for GRB 201013A were retrieved. Sometimes you may not want to get all of the data (why waste time transferring things you don't need?) and indeed, there are cases where you *can't* get all of the data in one go, as it violates the memory resource limits of our web server (try replacing "GRB 201013A" with "GRB 130427A" in the example above and you'll hit this problem). So there are three arguments you can pass to `udg.getBurstAnalyser()` to request only some of the data be retrieved. **I strongly advocate using some of these** if only because I find it hard to believe that you most users will actually want all of the data. These arguments are below. All of them can be the string 'all' (the default if unspecified), or a list/tuple of strings. The contents of these are case insensitive. But what are they?
+
+* `instruments` - which instrument(s) data to get (bat, xrt, uvot).
+* `BATbinning` - which methods of BAT data binning to get (snr4, snr5, snr6, snr7, timedel0.004, timedel0.064, timedel1, timedel10)
+* `bands` - The energy bands to retrieve (observedflux, density, batband, xrtband)
+
+
 ### Saving the data
 
 Now we've dug through what the returned data look like, we can get to the point of writing them to disk. We can do this in two ways, either by calling `udg.saveBurstAnalyserData(data, **kwargs)`, where the `data` object is the one we created above; or by setting `saveData=True` in the call to `getBurstAnalyserData`. These two things act in exactly the same way behind the scenes, so can be considered identical.
