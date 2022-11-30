@@ -2,11 +2,11 @@ from .api_common import TOOAPI_Baseclass
 from .api_skycoord import TOOAPI_SkyCoord
 from .swift_instruments import TOOAPI_Instruments
 from .api_resolve import TOOAPI_AutoResolve
-from .api_status import Swift_TOO_Status
+from .api_status import TOOStatus
 from tabulate import tabulate
 
 
-class UVOT_mode_entry(TOOAPI_Baseclass):
+class Swift_UVOTModeEntry(TOOAPI_Baseclass):
     """Class describing a single entry in the UVOT Mode table
 
     Attributes
@@ -65,7 +65,7 @@ class UVOT_mode_entry(TOOAPI_Baseclass):
         return self.filter_name
 
 
-class UVOT_mode(
+class Swift_UVOTMode(
     TOOAPI_Baseclass, TOOAPI_Instruments, TOOAPI_SkyCoord, TOOAPI_AutoResolve
 ):
     """Class to fetch information about a given UVOT mode. Specifically this is
@@ -80,7 +80,7 @@ class UVOT_mode(
         username for TOO API (default 'anonymous')
     shared_secret : str
         shared secret for TOO API (default 'anonymous')
-    status : Swift_TOO_Status
+    status : TOOStatus
         TOO API submission status
     entries : list
         entries (`UVOT_mode_entry`) in UVOT mode table
@@ -91,7 +91,7 @@ class UVOT_mode(
     _attributes = ["status", "entries"]
     # Local parameters
     _local = ["shared_secret", "name"]
-    _subclasses = [UVOT_mode_entry, Swift_TOO_Status]
+    _subclasses = [Swift_UVOTModeEntry, TOOStatus]
     api_name = "UVOT_mode"
     # Alias for uvotmode
     uvotmode = TOOAPI_Instruments.uvot
@@ -119,7 +119,7 @@ class UVOT_mode(
         # Here is where the data go
         self.entries = None
         # TOO API status
-        self.status = Swift_TOO_Status()
+        self.status = TOOStatus()
         # Parse argument keywords
         self._parseargs(*args, **kwargs)
 
@@ -141,7 +141,7 @@ class UVOT_mode(
         if (
             hasattr(self, "status")
             and self.status == "Rejected"
-            and self.status.__class__.__name__ == "Swift_TOO_Status"
+            and self.status.__class__.__name__ == "TOOStatus"
         ):
             return "Rejected with the following error(s): " + " ".join(
                 self.status.errors
@@ -193,7 +193,7 @@ class UVOT_mode(
         if (
             hasattr(self, "status")
             and self.status == "Rejected"
-            and self.status.__class__.__name__ == "Swift_TOO_Status"
+            and self.status.__class__.__name__ == "TOOStatus"
         ):
             return "<b>Rejected with the following error(s): </b>" + " ".join(
                 self.status.errors
@@ -273,9 +273,10 @@ class UVOT_mode(
                 return False
         return True
 
+
 # Aliases that are more PEP8 compliant
-UVOTMode = UVOT_mode
-UVOTModeEntry = UVOT_mode_entry
-# Future API names
-Swift_UVOTMode = UVOT_mode
-Swift_UVOTModeEntry = UVOT_mode_entry
+UVOTMode = Swift_UVOTMode
+UVOTModeEntry = Swift_UVOTModeEntry
+# Backwards compatibility names
+UVOT_mode_entry = Swift_UVOTModeEntry
+UVOT_mode = Swift_UVOTMode

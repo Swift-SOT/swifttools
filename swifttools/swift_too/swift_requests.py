@@ -1,6 +1,6 @@
 from .api_common import TOOAPI_Baseclass
 from .swift_toorequest import Swift_TOO_Request
-from .api_status import Swift_TOO_Status
+from .api_status import TOOStatus
 from .swift_calendar import Swift_Calendar, Swift_Calendar_Entry
 from .api_resolve import TOOAPI_AutoResolve
 from .api_daterange import TOOAPI_Daterange
@@ -20,7 +20,7 @@ class Swift_TOO_Requests(
         TOO API shared secret (default 'anonymous')
     entries : list
         List of TOOs (`Swift_TOO_Request`)
-    status : Swift_TOO_Status
+    status : TOOStatus
         Status of API request
     detail : boolean
         Return detailed TOO information (only valid if username matches TOO)
@@ -66,7 +66,7 @@ class Swift_TOO_Requests(
     # Returned classes
     _subclasses = [
         Swift_TOO_Request,
-        Swift_TOO_Status,
+        TOOStatus,
         Swift_Calendar,
         Swift_Calendar_Entry,
     ]
@@ -120,7 +120,7 @@ class Swift_TOO_Requests(
         self.end = None  # End
         self.length = None  # and length.
         # Request status
-        self.status = Swift_TOO_Status()  #
+        self.status = TOOStatus()  #
 
         # Results
         self.entries = list()
@@ -204,8 +204,7 @@ class Swift_TOO_Requests(
         return header, t
 
 
-# PEP8 compliant shorthand alias 
+# PEP8 compliant shorthand alias
 TOORequests = Swift_TOO_Requests
 # Future API compat
 Swift_TOORequests = Swift_TOO_Requests
-

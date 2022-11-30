@@ -111,3 +111,20 @@ class TOOAPI_Daterange:
     start = begin
     stop = end
     duration = exposure
+
+
+class TOOAPI_TriggerTime:
+    """Mixin to set triggertime and convert internally to a UTC naive datetime."""
+
+    _triggertime = None
+
+    @property
+    def triggertime(self):
+        return self._triggertime
+
+    @triggertime.setter
+    def triggertime(self, tt):
+        self._triggertime = convert_to_dt(tt)
+
+    # Alias for Swift_TOO
+    grb_triggertime = triggertime

@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, timezone
 import re
 from jose import jwt
 import requests
@@ -7,6 +7,7 @@ from time import sleep
 from .version import version_tuple
 from tabulate import tabulate
 import textwrap
+from dateutil import parser
 
 # Configure for IPV4 only due to issue
 requests.packages.urllib3.util.connection.HAS_IPV6 = False
@@ -32,6 +33,7 @@ HAS_ASTROPY = False
 try:
     from astropy.time import Time
     import astropy.units as u
+
     HAS_ASTROPY = True
 except ImportError:
     pass
@@ -43,6 +45,7 @@ dtor = 0.017453292519943295
 # Regex for matching date, time and datetime strings
 _date_regex = r"^[0-2]\d{3}-(0?[1-9]|1[012])-([0][1-9]|[1-2][0-9]|3[0-1])?$"
 _time_regex = r"^([0-9]:|[0-1][0-9]:|2[0-3]:)[0-5][0-9]:[0-5][0-9]+(\.\d+)?$"
+_iso8601_regex = r"^([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]\d|0[1-9]|3[01]))?|W([0-4]\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\d|[12]\d{2}|3([0-5]\d|6[1-6])))([T\s]((([01]\d|2[0-3])((:?)[0-5]\d)?|24\:?00)([\.,]\d+(?!:))?)?(\17[0-5]\d([\.,]\d+)?)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)?)?)?$"
 _datetime_regex = r"^[0-2]\d{3}-(0?[1-9]|1[012])-([0][1-9]|[1-2][0-9]|3[0-1]) ([0-9]:|[0-1][0-9]:|2[0-3]:)[0-5][0-9]:[0-5][0-9]+(\.\d+)?$"
 _float_regex = r"^[+-]?(?=\d*[.eE])(?=\.?\d)\d*\.?\d*(?:[eE][+-]?\d+)?$"
 _int_regex = r"^(0|[1-9][0-9]+)$"
@@ -74,6 +77,7 @@ def convert_to_dt(value, isutc=False, outfunc=datetime):
     TypeError
         Raised if incorrect format is given for conversion.
     """
+
     if type(value) == str:
         if re.match(_datetime_regex, value):
             if "." in value:
@@ -83,9 +87,18 @@ def convert_to_dt(value, isutc=False, outfunc=datetime):
                 dtvalue = outfunc.strptime(value, "%Y-%m-%d %H:%M:%S")
         elif re.match(_date_regex, value):
             dtvalue = outfunc.strptime(f"{value} 00:00:00", "%Y-%m-%d %H:%M:%S")
+        elif re.match(_iso8601_regex, value):
+            dtvalue = parser.parse(value).astimezone(timezone.utc).replace(tzinfo=None)
+        else:
+            raise ValueError(
+                "Date/time given as string should 'YYYY-MM-DD HH:MM:SS' or ISO8601 format."
+            )
     elif type(value) == date:
         dtvalue = outfunc.strptime(f"{value} 00:00:00", "%Y-%m-%d %H:%M:%S")
     elif type(value) == outfunc:
+        if value.tzinfo is not None:
+            # Strip out timezone info and convert to UTC
+            value = value.astimezone(timezone.utc).replace(tzinfo=None)
         dtvalue = value  # Just pass through un molested
     elif (
         type(value) == swiftdatetime
@@ -93,6 +106,9 @@ def convert_to_dt(value, isutc=False, outfunc=datetime):
         or type(value) == datetime
         and outfunc == swiftdatetime
     ):
+        if type(value) == datetime and value.tzinfo is not None:
+            # Strip out timezone info and convert to UTC
+            value = value.astimezone(timezone.utc).replace(tzinfo=None)
         dtvalue = outfunc.fromtimestamp(value.timestamp())
     elif value is None:
         dtvalue = None
@@ -322,12 +338,12 @@ class TOOAPI_Baseclass:
         return jwt.encode(self.too_api_dict, self.shared_secret, algorithm="HS256")
 
     def __convert_dict_entry(self, entry):
-        """Parse data entry from a dictionary (usualy originating as a JSON) to
+        """Parse data entry from a dictionary (usually originating as a JSON) to
         convert into Python data types. Danger! Danger Will Robinson! Recursion!
         Recursion!"""
         # Parse a JSON entry
         if type(entry) == dict and "api_name" in entry.keys():
-            index = [s.__name__ for s in self._subclasses].index(entry["api_name"])
+            index = [s.api_name for s in self._subclasses].index(entry["api_name"])
             if self._subclasses[index] == swiftdatetime:
                 # Handle swiftdatetime as it cannot be created with no arguments
                 val = swiftdatetime.frommet(
@@ -416,7 +432,7 @@ class TOOAPI_Baseclass:
                 if (
                     val is not None
                 ):  # If value is set to None, then don't change the value
-                    if hasattr(self,f"_{key}"):
+                    if hasattr(self, f"_{key}"):
                         setattr(self, f"_{key}", val)
                     else:
                         setattr(self, key, val)
@@ -655,15 +671,8 @@ class swiftdatetime(datetime, TOOAPI_Baseclass):
     def utctime(self, utc):
         if isinstance(utc, datetime):
             # Ensure that utctime set to a pure datetime
-            self._utctime = datetime(
-                utc.year,
-                utc.month,
-                utc.day,
-                utc.hour,
-                utc.minute,
-                utc.second,
-                utc.microsecond,
-            )
+            if utc.tzinfo is not None:
+                utc = utc.astimezone(timezone.utc).replace(tzinfo=None)
         else:
             self._utctime = utc
 
@@ -687,12 +696,12 @@ class swiftdatetime(datetime, TOOAPI_Baseclass):
     @swifttime.setter
     def swifttime(self, st):
         if isinstance(st, datetime):
-            # Ensure that swifttime is set to a pure datetime
-            self._swifttime = datetime(
-                st.year, st.month, st.day, st.hour, st.minute, st.second, st.microsecond
-            )
-        else:
+            # Ensure that swifttime set to a pure datetime
+            if st.tzinfo is not None:
+                st = st.astimezone(timezone.utc).replace(tzinfo=None)
             self._swifttime = st
+        else:
+            self._swifttime = convert_to_dt(st)
 
     @property
     def _table(self):

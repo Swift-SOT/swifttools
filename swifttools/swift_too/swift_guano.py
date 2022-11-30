@@ -1,13 +1,13 @@
 from .api_common import TOOAPI_Baseclass
-from .api_daterange import TOOAPI_Daterange
+from .api_daterange import TOOAPI_Daterange, TOOAPI_TriggerTime
 from .swift_clock import TOOAPI_ClockCorrect
-from .api_status import Swift_TOO_Status
+from .api_status import TOOStatus
 from datetime import timedelta
 from .swift_data import TOOAPI_DownloadData
 from .swift_obsid import TOOAPI_ObsID
 
 
-class Swift_GUANO_GTI(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
+class Swift_GUANOGTI(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
     """Define GUANO event data Good Time Intervals (GTI)
 
     Attributes
@@ -45,7 +45,7 @@ class Swift_GUANO_GTI(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
         return f"{self.begin} - {self.end} ({self.exposure})"
 
 
-class Swift_GUANO_Data(
+class Swift_GUANOData(
     TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect, TOOAPI_DownloadData
 ):
     """Class to hold information about GUANO data based on analysis of the BAT
@@ -64,7 +64,7 @@ class Swift_GUANO_Data(
         end time of GUANO dump
     triggertime : datetime
         trigger time of event that generated GUANO dump
-    gti : Swift_GUANO_GTI
+    gti : Swift_GUANOGTI
         Good Time Interval (GTI) for the combined event data
     all_gtis : list
         list of individual GTIs. More than one GTI can exist if data is split
@@ -102,7 +102,7 @@ class Swift_GUANO_Data(
         "utcf",
         "subthresh",
     ]
-    _subclasses = [Swift_GUANO_GTI]
+    _subclasses = [Swift_GUANOGTI]
 
     def __init__(self):
         # All times UTC
@@ -135,8 +135,12 @@ class Swift_GUANO_Data(
             return False
 
 
-class Swift_GUANO_Entry(
-    TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect, TOOAPI_DownloadData
+class Swift_GUANOEntry(
+    TOOAPI_Baseclass,
+    TOOAPI_ObsID,
+    TOOAPI_ClockCorrect,
+    TOOAPI_DownloadData,
+    TOOAPI_TriggerTime,
 ):
     """Entry for an individual BAT ring buffer dump (AKA GUANO) event.
 
@@ -161,7 +165,7 @@ class Swift_GUANO_Entry(
     # API name
     api_name = "Swift_GUANO_Entry"
     # Core API definitions
-    _subclasses = [Swift_GUANO_Data]
+    _subclasses = [Swift_GUANOData]
     _parameters = ["triggertime"]
     _local = ["begin", "end", "shared_secret"]
     _attributes = [
@@ -181,7 +185,7 @@ class Swift_GUANO_Entry(
         self._isutc = True
         # Attributes
         self.triggertype = None
-        self.triggertime = None
+        # self.triggertime = None
         self.duration = None
         self.quadsaway = None
         self.offset = None
@@ -212,7 +216,9 @@ class Swift_GUANO_Entry(
         self.end = self.triggertime + timedelta(seconds=self.offset + self.duration / 2)
 
 
-class Swift_GUANO(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_ClockCorrect):
+class Swift_GUANO(
+    TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_ClockCorrect, TOOAPI_TriggerTime
+):
     """Query BAT ring buffer dumps of event data associated with the Gamma-Ray
     Burst Urgent Archiver for Novel Opportunities (GUANO).
 
@@ -256,7 +262,7 @@ class Swift_GUANO(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_ClockCorrect):
     ]
     _local = ["length", "shared_secret"]
     _attributes = ["guanostatus", "lastcommand", "entries", "status"]
-    _subclasses = [Swift_GUANO_Entry, Swift_TOO_Status]
+    _subclasses = [Swift_GUANOEntry, TOOStatus]
     # Attributes
     guanostatus = None
     lastcommand = None
@@ -289,7 +295,7 @@ class Swift_GUANO(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_ClockCorrect):
         # Parameters
         self.subthreshold = False
         self.successful = True
-        self.triggertime = None
+        # self.triggertime = None
         self.begin = None
         self.end = None
         self.length = None
@@ -298,7 +304,7 @@ class Swift_GUANO(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_ClockCorrect):
         self.entries = []
 
         # Status of query
-        self.status = Swift_TOO_Status()
+        self.status = TOOStatus()
 
         # Parse argument keywords
         self._parseargs(*args, **kwargs)
@@ -374,10 +380,10 @@ class Swift_GUANO(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_ClockCorrect):
 
 # Shorthand alias names for class and for better PEP8 compliance
 GUANO = Swift_GUANO
-GUANOData = Swift_GUANO_Data
-GUANOEntry = Swift_GUANO_Entry
-GUANOGTI = Swift_GUANO_GTI
-# Future API compat
-Swift_GUANOEntry = GUANOEntry
-Swift_GUANOGTI = GUANOGTI
-Swift_GUANOEntry = GUANOEntry
+GUANOData = Swift_GUANOData
+GUANOEntry = Swift_GUANOEntry
+GUANOGTI = Swift_GUANOGTI
+# Backwards API compat
+Swift_GUANO_Entry = GUANOEntry
+Swift_GUANO_GTI = GUANOGTI
+Swift_GUANO_Entry = GUANOEntry

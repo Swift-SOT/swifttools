@@ -1,10 +1,10 @@
 from .swift_clock import TOOAPI_ClockCorrect
 from .api_common import TOOAPI_Baseclass
-from .api_status import Swift_TOO_Status
+from .api_status import TOOStatus
 from .api_daterange import TOOAPI_Daterange
 
 
-class Swift_SAA_Entry(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
+class Swift_SAAEntry(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
     """Simple class describing the start and end time of a Swift SAA passage.
      Attributes
     ----------
@@ -48,8 +48,8 @@ class Swift_SAA(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_ClockCorrect):
     Attributes
     ----------
     entries : list
-        Array of Swift_SAA_Entry classes containing the windows.
-    status : Swift_TOO_Status
+        Array of Swift_SAAEntry classes containing the windows.
+    status : TOOStatus
         Status of API request
     """
 
@@ -62,7 +62,7 @@ class Swift_SAA(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_ClockCorrect):
     # Returned Values
     _attributes = ["entries", "status"]
     # Returned classes
-    _subclasses = [Swift_SAA_Entry, Swift_TOO_Status]
+    _subclasses = [Swift_SAAEntry, TOOStatus]
 
     def __init__(self, *args, **kwargs):
         """
@@ -89,7 +89,7 @@ class Swift_SAA(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_ClockCorrect):
         self.bat = False
         # parse arguments
         self._parseargs(*args, **kwargs)
-        self.status = Swift_TOO_Status()
+        self.status = TOOStatus()
         # Returned values
         self.entries = None
         # Internal values
@@ -130,5 +130,8 @@ class Swift_SAA(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_ClockCorrect):
             return True
         return False
 
+
 # Alias
 SAA = Swift_SAA
+Swift_SAA_Entry = Swift_SAAEntry
+SAAEntry = Swift_SAAEntry

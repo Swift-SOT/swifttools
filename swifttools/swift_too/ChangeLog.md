@@ -6,6 +6,15 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
+## `swifttools` 3.0.10 / `swift_too` 1.2.22
+
+**November 30, 2022**: Update class names to new style. Add better support for date formats.
+
+* Class names and aliases have been updated to be better PEP8 compliant across the board.
+* Added support for accepting dates in ISO8601 format.
+* Added support for accepting timezone aware `datetime`, they are converted to naive UTC `datetime` values internally.
+* Extended `Swift_Calendar` to support searching for scheduling information. The Swift Scheduling Calendar is the long-term plan for Swift observations. Note that an entry into the Calendar does not guarantee that an observation will be scheduled, however it does mean that it is in the calendar to be scheduled for that day. You can now use `Calendar` class to query upcoming plans, by date range, coordinate, TOO ID and target ID.
+
 ## `swifttools` 3.0.8 / `swift_too` 1.2.21
 
 **September 23rd, 2022**: Add `astropy` units support.

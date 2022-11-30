@@ -1,5 +1,5 @@
 from .api_common import TOOAPI_Baseclass, swiftdatetime, convert_to_dt
-from .api_status import Swift_TOO_Status
+from .api_status import TOOStatus
 from datetime import datetime
 
 
@@ -24,7 +24,7 @@ class Swift_Clock(TOOAPI_Baseclass):
     utcf : float
         Univeral Time Correction Factor. The number of seconds to apply to
         correct MET / Spacecraft time into UTC.
-    status : Swift_TOO_Status
+    status : TOOStatus
         Status of API request
     username : str (default 'anonymous')
         TOO API username.
@@ -37,7 +37,7 @@ class Swift_Clock(TOOAPI_Baseclass):
     # Returned values
     _attributes = ["status", "entries"]
     # Returned classes
-    _subclasses = [Swift_TOO_Status, swiftdatetime]
+    _subclasses = [TOOStatus, swiftdatetime]
     # Local parameters
     _local = ["shared_secret"]
 
@@ -67,7 +67,7 @@ class Swift_Clock(TOOAPI_Baseclass):
         self._utcf = None
         # parse arguments
         self._parseargs(*args, **kwargs)
-        self.status = Swift_TOO_Status()
+        self.status = TOOStatus()
         self.entries = None
 
         # Submit if enough parameters are passed to the constructor

@@ -1,5 +1,5 @@
 from .api_common import TOOAPI_Baseclass
-from .api_status import Swift_TOO_Status
+from .api_status import TOOStatus
 from datetime import timedelta
 from .api_resolve import TOOAPI_AutoResolve
 from .swift_clock import TOOAPI_ClockCorrect
@@ -10,7 +10,7 @@ from .api_daterange import TOOAPI_Daterange
 from .api_skycoord import TOOAPI_SkyCoord
 
 
-class Swift_AFST_Entry(
+class Swift_AFSTEntry(
     TOOAPI_Baseclass,
     TOOAPI_SkyCoord,
     TOOAPI_ObsID,
@@ -120,8 +120,8 @@ class Swift_AFST_Entry(
         self.targname = None
         self.targetid = None
         self.seg = None
-        self.status = Swift_TOO_Status()
-        self._subclasses = [Swift_TOO_Status]
+        self.status = TOOStatus()
+        self._subclasses = [TOOStatus]
         # Instrument config
         self._xrt = None
         self._uvot = None
@@ -175,7 +175,7 @@ class Swift_AFST_Entry(
 class Swift_Observation(TOOAPI_Baseclass, TOOAPI_DownloadData):
     """Class to summarize observations taken for given observation ID (obsnum).
     Whereas observations are typically one or more individual snapshot, in TOO
-    API speak a `Swift_AFST_Entry`, this class summarizes all snapshots into a
+    API speak a `Swift_AFSTEntry`, this class summarizes all snapshots into a
     single begin time, end time. Note that as ra/dec varies between each
     snapshot, only `ra_object`, `dec_object` are given as coordinates.
 
@@ -226,7 +226,7 @@ class Swift_Observation(TOOAPI_Baseclass, TOOAPI_DownloadData):
     ]
 
     def __init__(self):
-        # All the Swift_AFST_Entries for this observation
+        # All the Swift_AFSTEntries for this observation
         TOOAPI_ObsID.__init__(self)
         self.entries = Swift_AFST()
 
@@ -377,12 +377,14 @@ class Swift_AFST(
         begin time of visibility window
     end : datetime
         end time of visibility window
-    length : timedelta
+    length : timedelta / int
         length of visibility window
     ra : float
         Right Ascension of target in J2000 (decimal degrees)
     dec : float
         Declination of target in J2000 (decimal degrees)
+    radius : float
+        Search radius in degrees
     skycoord : SkyCoord
         SkyCoord version of RA/Dec if astropy is installed
     username: str
@@ -390,8 +392,8 @@ class Swift_AFST(
     shared_secret: str
         TOO API shared secret (default 'anonymous')
     entries : list
-        List of observations (`Swift_AFST_Entry`)
-    status : Swift_TOO_Status
+        List of observations (`Swift_AFSTEntry`)
+    status : TOOStatus
         Status of API request
     afstmax: datetime
         When is the AFST valid up to
@@ -413,7 +415,7 @@ class Swift_AFST(
     _local = ["obsid", "name", "skycoord", "length", "target_id", "shared_secret"]
     _attributes = ["status", "afstmax", "entries"]
     # Acceptable classes that be part of this class
-    _subclasses = [Swift_AFST_Entry, Swift_TOO_Status]
+    _subclasses = [Swift_AFSTEntry, TOOStatus]
 
     def __init__(self, *args, **kwargs):
         """
@@ -458,7 +460,7 @@ class Swift_AFST(
         # AFST entries go here
         self.entries = list()
         # Status of request
-        self.status = Swift_TOO_Status()
+        self.status = TOOStatus()
 
         # Parse argument keywords
         self._parseargs(*args, **kwargs)
@@ -535,6 +537,7 @@ class Swift_AFST(
 Swift_ObsQuery = Swift_AFST
 ObsQuery = Swift_AFST
 AFST = Swift_AFST
-Swift_AFST_Entry
-ObsEntry = Swift_AFST_Entry
-Swift_ObsEntry = Swift_AFST_Entry
+Swift_AFST_Entry = Swift_AFSTEntry
+ObsEntry = Swift_AFSTEntry
+Swift_ObsEntry = Swift_AFSTEntry
+AFSTEntry = Swift_AFSTEntry
