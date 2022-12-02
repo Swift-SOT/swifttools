@@ -214,10 +214,13 @@ def index_datetimes(dictionary, i=0, values=[], setvals=None):
     """Recursively spider a dictionary looking for datetimes and updating them
     if necessary"""
     # Don't spider internal variables
-    keys = [key for key in list(dictionary.keys()) if key[0] != "_"]
+    keys = [key for key in list(dictionary.keys())]
     # Go through all keys
     for key in keys:
         value = dictionary[key]
+        # Don't index any `Swift_Clock`s
+        if type(value) is Swift_Clock:
+            continue
         # If value is another dict, recurse
         if isinstance(value, dict):
             i, values = index_datetimes(value, i, values, setvals=setvals)
@@ -259,15 +262,15 @@ class TOOAPI_ClockCorrect:
 
             # What is the base time format for this class? Send that to Clock for
             # clock correction
-            if self._isutc:
-                dts = [dt for dt in datevalues]
-                self._clock = Swift_Clock(utctime=dts)
-            else:
-                dts = [dt for dt in datevalues]
-                self._clock = Swift_Clock(swifttime=dts)
+            dts = [dt for dt in datevalues]
+            if len(dts) > 0:
+                if self._isutc:
+                    self._clock = Swift_Clock(utctime=dts)
+                else:
+                    self._clock = Swift_Clock(swifttime=dts)
 
-            # Replace existing datetime values with clock corrected swiftdatetimes
-            _, _ = index_datetimes(self.__dict__, 0, [], setvals=self._clock)
+                # Replace existing datetime values with clock corrected swiftdatetimes
+                _, _ = index_datetimes(self.__dict__, 0, [], setvals=self._clock)
 
         # After clock correction, make UTC the default time system
         self.to_utctime()

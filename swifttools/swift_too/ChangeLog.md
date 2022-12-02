@@ -6,7 +6,12 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
-## `swifttools` 3.0.10 / `swift_too` 1.2.22
+## `swifttools` 3.0.11 / `swift_too` 1.2.23
+
+**December 2, 2022**: Bug fix release 
+
+* Fix issue where trigger time in `GUANOEntry` did not get clock corrected.
+* Fix issue where running `clock_correct()` on a zero length entry or an already corrected entry could cause a hang.
 
 **November 30, 2022**: Update class names to new style. Add better support for date formats.
 

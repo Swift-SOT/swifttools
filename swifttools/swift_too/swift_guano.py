@@ -46,7 +46,7 @@ class Swift_GUANOGTI(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
 
 
 class Swift_GUANOData(
-    TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect, TOOAPI_DownloadData
+    TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect, TOOAPI_DownloadData, TOOAPI_TriggerTime
 ):
     """Class to hold information about GUANO data based on analysis of the BAT
     event files that are downlinked.
@@ -185,7 +185,6 @@ class Swift_GUANOEntry(
         self._isutc = True
         # Attributes
         self.triggertype = None
-        # self.triggertime = None
         self.duration = None
         self.quadsaway = None
         self.offset = None
@@ -295,7 +294,6 @@ class Swift_GUANO(
         # Parameters
         self.subthreshold = False
         self.successful = True
-        # self.triggertime = None
         self.begin = None
         self.end = None
         self.length = None
