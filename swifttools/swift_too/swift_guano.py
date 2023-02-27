@@ -46,7 +46,11 @@ class Swift_GUANOGTI(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
 
 
 class Swift_GUANOData(
-    TOOAPI_Baseclass, TOOAPI_ObsID, TOOAPI_ClockCorrect, TOOAPI_DownloadData, TOOAPI_TriggerTime
+    TOOAPI_Baseclass,
+    TOOAPI_ObsID,
+    TOOAPI_ClockCorrect,
+    TOOAPI_DownloadData,
+    TOOAPI_TriggerTime,
 ):
     """Class to hold information about GUANO data based on analysis of the BAT
     event files that are downlinked.
@@ -186,7 +190,7 @@ class Swift_GUANOEntry(
         # Attributes
         self.triggertype = None
         self.duration = None
-        self.quadsaway = None
+        self._quadsaway = None
         self.offset = None
         self.ra = None
         self.dec = None
@@ -194,6 +198,32 @@ class Swift_GUANOEntry(
         self.utcf = None
         self.begin = None
         self.end = None
+
+    # Next part handles the use of "quadsaway" to determine if a GUANO command has been uplinked to the spacecraft,
+    # and if it has been executed onboard.
+    @property
+    def quadsaway(self):
+        if self._quadsaway > 0 and self._quadsaway < 4:
+            return 0
+        return self._quadsaway
+
+    @quadsaway.setter
+    def quadsaway(self, qa):
+        self._quadsaway = qa
+
+    @property
+    def uplinked(self):
+        """Has the GUANO command been uplinked to Swift?"""
+        if self._quadsaway == 1 or self._quadsaway == 3:
+            return False
+        return True
+
+    @property
+    def executed(self):
+        """Has the GUANO command been executed on board Swift?"""
+        if self._quadsaway == 2 or self._quadsaway == 3:
+            return False
+        return True
 
     @property
     def _table(self):
@@ -361,9 +391,16 @@ class Swift_GUANO(
                 if ent.data.gti is None:
                     exposure += "*"
             else:
-                exposure = 0
+                exposure = ent.duration
+            if ent.obsnum is not None:
+                obsnum = ent.obsnum
+            else:
+                if ent.executed:
+                    obsnum = "Pending Data"
+                elif ent.uplinked:
+                    obsnum = "Pending Execution"
             table.append(
-                [ent.triggertype, ent.triggertime, ent.offset, exposure, ent.obsnum]
+                [ent.triggertype, ent.triggertime, ent.offset, exposure, obsnum]
             )
 
         return header, table

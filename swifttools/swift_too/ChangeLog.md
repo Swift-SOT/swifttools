@@ -2,16 +2,24 @@
 
 ## Change history for `swift_too` module
 
-### API version = 1.2, `swifttools` version 2.4
+### API version = 1.2, `swifttools` version 3.0
 
 #### Author: Jamie A. Kennea (Penn State)
 
+## `swifttools` 3.0.12 / `swift_too` 1.2.24
+
+**February 22, 2023**: GUANO update
+
+* Each `GUANO_Entry` now has `uplinked` and `executed` flag, which indicate if the GUANO command has been uplinked to Swift, and executed onboard. If you set `successful=False` when executing a `GUANO` API call, it will load GUANO entries that have no data associated with them yet. This way, you can fetch recent GUANO commands that have not yet been fully processed by the Swift SDC.
+
 ## `swifttools` 3.0.11 / `swift_too` 1.2.23
 
-**December 2, 2022**: Bug fix release 
+**December 2, 2022**: Bug fix release
 
 * Fix issue where trigger time in `GUANOEntry` did not get clock corrected.
 * Fix issue where running `clock_correct()` on a zero length entry or an already corrected entry could cause a hang.
+
+## `swifttools` 3.0.10 / `swift_too` 1.2.22
 
 **November 30, 2022**: Update class names to new style. Add better support for date formats.
 
