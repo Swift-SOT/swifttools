@@ -6,6 +6,12 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
+## `swifttools` 3.0.15 / `swift_too` 1.2.27
+
+**March 17, 2023**: `TOORequests` fix
+
+* Remove a print rogue print statement. Make sure status is cleared on `TOO` submission validation.
+
 ## `swifttools` 3.0.14 / `swift_too` 1.2.26
 
 **March 17, 2023**: `TOORequests` fix

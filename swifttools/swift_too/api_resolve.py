@@ -115,7 +115,6 @@ class TOOAPI_AutoResolve:
         if self._name != sourcename:
             self._name = sourcename
             self._source_name = sourcename
-            print("DOOG")
             self.resolve = Swift_Resolve(name=sourcename)
             if self.resolve.ra is not None:
                 self.ra = self.resolve.ra

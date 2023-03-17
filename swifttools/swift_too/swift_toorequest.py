@@ -489,6 +489,9 @@ class Swift_TOORequest(
             "obs_type",
         ]
 
+        # Clear the status
+        self.status.clear()
+
         # Check that the minimum requirements are met
         for req in requirements:
             if self.__getattribute__(req) is None:
