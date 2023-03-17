@@ -99,6 +99,7 @@ class TOOAPI_AutoResolve:
     `Swift_Resolve`"""
 
     _name = None
+    _source_name = None
     resolve = None
 
     @property
@@ -113,6 +114,8 @@ class TOOAPI_AutoResolve:
         """If you set a name, use `Swift_Resolve` to retrieve it's `ra` and `dec`."""
         if self._name != sourcename:
             self._name = sourcename
+            self._source_name = sourcename
+            print("DOOG")
             self.resolve = Swift_Resolve(name=sourcename)
             if self.resolve.ra is not None:
                 self.ra = self.resolve.ra
@@ -128,7 +131,6 @@ class TOOAPI_AutoResolve:
     def source_name(self, sourcename):
         self.__name_setter(sourcename)
 
-    _source_name = _name
 
 # Shorthand alias for class
 Resolve = Swift_Resolve

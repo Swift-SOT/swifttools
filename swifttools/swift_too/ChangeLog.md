@@ -6,11 +6,19 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
-## `swifttools` 3.0.12 / `swift_too` 1.2.24
+## `swifttools` 3.0.14 / `swift_too` 1.2.26
+
+**March 17, 2023**: `TOORequests` fix
+
+* Fixed a bug related to the last update, where `source_name` wasn't being set correctly.
+
+## `swifttools` 3.0.13 / `swift_too` 1.2.25
 
 **March 16, 2023**: `TOORequests` fix
 
 * In a recent update, `TOORequests` was not correctly assigning the name of the TOO target name into `source_name`, this has been corrected.
+
+## `swifttools` 3.0.12 / `swift_too` 1.2.24
 
 **February 27, 2023**: GUANO update
 
