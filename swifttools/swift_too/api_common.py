@@ -8,6 +8,12 @@ from .version import version_tuple
 from tabulate import tabulate
 import textwrap
 from dateutil import parser
+import warnings
+
+# Make Warnings a little less weird
+formatwarning_orig = warnings.formatwarning
+warnings.formatwarning = lambda message, category, filename, lineno, line=None: \
+    formatwarning_orig(message, category, filename, lineno, line='')
 
 # Configure for IPV4 only due to issue
 requests.packages.urllib3.util.connection.HAS_IPV6 = False
@@ -88,7 +94,10 @@ def convert_to_dt(value, isutc=False, outfunc=datetime):
         elif re.match(_date_regex, value):
             dtvalue = outfunc.strptime(f"{value} 00:00:00", "%Y-%m-%d %H:%M:%S")
         elif re.match(_iso8601_regex, value):
-            dtvalue = parser.parse(value).astimezone(timezone.utc).replace(tzinfo=None)
+            dtvalue = parser.parse(value)
+            if dtvalue.tzinfo is None:
+                warnings.warn("ISO8601 formatted dates should be supplied with timezone. ISO8601 dates with no timezone will be assumed to be localtime and then converted to UTC.")
+            dtvalue = dtvalue.astimezone(timezone.utc).replace(tzinfo=None)
         else:
             raise ValueError(
                 "Date/time given as string should 'YYYY-MM-DD HH:MM:SS' or ISO8601 format."

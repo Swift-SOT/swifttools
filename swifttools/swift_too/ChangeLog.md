@@ -6,6 +6,13 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
+## `swifttools` 3.0.16 / `swift_too` 1.2.28
+
+**March 22, 2023**: Warning about incorrectly formatted ISO8601 dates
+
+* ISO8601 formatted dates without a timezone was assuming localtime, causing confusion. ISO8601 formatted dates should include a timezone specifier, e.g. '2022-01-01T00:00:00Z'. If no timezone is given, the code now issues a warning about this issue. Please use the "Z" for UTC times, as required for for the ISO8601 specification.
+
+
 ## `swifttools` 3.0.15 / `swift_too` 1.2.27
 
 **March 17, 2023**: `TOORequests` fix

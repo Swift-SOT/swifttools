@@ -1,2 +1,2 @@
-version = "1.2.27"
-version_tuple = (1, 2, 27)
+version = "1.2.28"
+version_tuple = (1, 2, 28)
