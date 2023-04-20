@@ -2348,7 +2348,7 @@ rlist[30].getLightCurvePars()
 
 ---
 
-<a id='fullcat'></a>
+<a id='fulltab'></a>
 ### Getting the full table
 
 One last thing which is really a kind of appendix to this module as it sort of goes against the point of it. I showed in the [`ukssdc.data.SXPS` documentation](../data/SXPS.md), how you can get the entire table in one go, storing it in a `DataFrame`. I cannot see why you would want to do this for the query module, and you could always just submit an empty query I guess (although this would be slow), so being nice, I provided a quick wrapper. You literally just do: `q.getFullTable()`; the catlaogue, table and subset are properties of your `SXPSQuery` object, so you don't set them. You can provide an `epoch`, for LSXPS tables, although if you want to know what epochs are available you'll need to use the `data` module.
