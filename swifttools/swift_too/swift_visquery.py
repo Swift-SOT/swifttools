@@ -1,5 +1,5 @@
 from .swift_clock import TOOAPI_ClockCorrect
-from .api_status import Swift_TOO_Status
+from .api_status import TOOStatus
 from .api_common import TOOAPI_Baseclass
 from .api_resolve import TOOAPI_AutoResolve
 from .api_daterange import TOOAPI_Daterange
@@ -94,7 +94,7 @@ class Swift_VisQuery(
         shared secret for TOO API (default 'anonymous')
     entries : list
         List of visibility windows (`Swift_VisWindow`)
-    status : Swift_TOO_Status
+    status : TOOStatus
         Status of API request
     """
 
@@ -105,7 +105,7 @@ class Swift_VisQuery(
     # Attributes returned by API Server
     _attributes = ["status", "windows"]
     # Subclasses
-    _subclasses = [Swift_TOO_Status, Swift_VisWindow]
+    _subclasses = [TOOStatus, Swift_VisWindow]
     # API Name
     api_name = "Swift_VisQuery"
     # Returned data
@@ -146,7 +146,7 @@ class Swift_VisQuery(
         # Visibility windows go here
         self.windows = list()
         # Status of request
-        self.status = Swift_TOO_Status()
+        self.status = TOOStatus()
         # Parse argument keywords
         self._parseargs(*args, **kwargs)
 

@@ -1,6 +1,6 @@
 from .swift_clock import TOOAPI_ClockCorrect
 from .api_common import TOOAPI_Baseclass
-from .api_status import Swift_TOO_Status
+from .api_status import TOOStatus
 from .swift_obsquery import Swift_Observation, Swift_Observations
 from datetime import timedelta
 from .api_resolve import TOOAPI_AutoResolve
@@ -11,7 +11,7 @@ from .api_daterange import TOOAPI_Daterange
 from .api_skycoord import TOOAPI_SkyCoord
 
 
-class Swift_PPST_Entry(
+class Swift_PPSTEntry(
     TOOAPI_Baseclass,
     TOOAPI_SkyCoord,
     TOOAPI_ObsID,
@@ -85,7 +85,7 @@ class Swift_PPST_Entry(
         "slewtime": "Slewtime (s)",
     }
     _attributes = []
-    _subclasses = [Swift_TOO_Status]
+    _subclasses = [TOOStatus]
     # API name
     api_name = "Swift_PPST_Entry"
 
@@ -151,8 +151,8 @@ class Swift_PPST(
     shared_secret: str
         TOO API shared secret (default 'anonymous')
     entries : list
-        List of observations (`Swift_AFST_Entry`)
-    status : Swift_TOO_Status
+        List of observations (`Swift_AFSTEntry`)
+    status : TOOStatus
         Status of API request
     ppstmax: datetime
         When is the PPST valid up to
@@ -171,7 +171,7 @@ class Swift_PPST(
     ]
     _attributes = ["status", "ppstmax", "entries"]
     _local = ["obsid", "name", "skycoord", "length", "target_id", "shared_secret"]
-    _subclasses = [Swift_PPST_Entry, Swift_TOO_Status]
+    _subclasses = [Swift_PPSTEntry, TOOStatus]
     api_name = "Swift_PPST"
 
     def __init__(self, *args, **kwargs):
@@ -218,7 +218,7 @@ class Swift_PPST(
         # PPST entries go here
         self.entries = list()
         # Status of request
-        self.status = Swift_TOO_Status()
+        self.status = TOOStatus()
         # Latest PPST
         self.ppstmax = None
         # Observations
@@ -295,5 +295,5 @@ class Swift_PPST(
 Swift_PlanQuery = Swift_PPST
 PlanQuery = Swift_PPST
 PPST = Swift_PPST
-PPSTEntry = Swift_PPST_Entry
-Swift_PPSTEntry = Swift_PPST_Entry
+PPSTEntry = Swift_PPSTEntry
+Swift_PPST_Entry = Swift_PPSTEntry

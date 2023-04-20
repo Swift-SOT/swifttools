@@ -113,6 +113,7 @@ class Swift_TOO_Status(TOOAPI_Baseclass):
         """Reset status"""
         self.__init__()
 
+
 # Aliases for better PEP8 compliance, and future API updates
-Swift_TOOStatus= Swift_TOO_Status
+Swift_TOOStatus = Swift_TOO_Status
 TOOStatus = Swift_TOOStatus

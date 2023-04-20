@@ -58,7 +58,7 @@ of a job. Typically a job will have 4 status values, `Queued`, `Processing`,
 completed. `Queued` means that the job has been accepted, but not yet processed.
 `Processing` means that the server is working on the results, but has not yet
 completed. `Rejected` means that the server rejected the job for any number of
-reasons, that are reported by in `Swift_TOO_Status` class.
+reasons, that are reported by in `Swift_TOOStatus` class.
 
 6. UVOT_mode
 
@@ -67,7 +67,7 @@ up the meaning of a given hex code, which is typically a table of UVOT filters
 associated with that mode, along with any configuration parameters, such as the
 size of the field of view, whether the data will be taken in event mode, etc.
 
-7. Swift_TOO_Requests
+7. Swift_TOORequests
 
 This class allows querying of TOO Requests submitted to Swift. By default this
 will give detail on the most recent 10 TOO requests submitted to Swift.
@@ -76,7 +76,7 @@ set time period. In addition if the `detail` parameter is set to `True`, then
 this retrieves all information about a TOO request, including non-public
 information, for TOO requests that you submitted, if you supply your `username`
 and `shared_secret`. The class essentially is a container for a number of
-`Swift_TOO_Request` objects. In the case where targets are scheduled in the
+`Swift_TOORequest` objects. In the case where targets are scheduled in the
 Swift planning calendar, a `Swift_Calendar` object will be attached which lists
 the scheduled windows, and shows how much exposure was obtained during those
 windows.

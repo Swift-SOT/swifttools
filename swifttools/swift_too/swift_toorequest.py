@@ -1,10 +1,10 @@
 from .swift_calendar import Swift_Calendar
 from .api_common import TOOAPI_Baseclass
 from .swift_instruments import TOOAPI_Instruments
-from .api_status import Swift_TOO_Status
+from .api_status import TOOStatus
 from .swift_obsid import TOOAPI_ObsID
 from .api_skycoord import TOOAPI_SkyCoord
-from .api_daterange import TOOAPI_Daterange
+from .api_daterange import TOOAPI_Daterange, TOOAPI_TriggerTime
 from .api_resolve import TOOAPI_AutoResolve
 
 HAS_ASTROPY = False
@@ -16,20 +16,21 @@ except ImportError:
     pass
 
 
-class Swift_TOO_Request(
+class Swift_TOORequest(
     TOOAPI_Baseclass,
     TOOAPI_SkyCoord,
     TOOAPI_ObsID,
     TOOAPI_Instruments,
     TOOAPI_Daterange,
-    TOOAPI_AutoResolve
+    TOOAPI_AutoResolve,
+    TOOAPI_TriggerTime,
 ):
     """Class to construct a TOO for submission to Swift MOC. Class provides
     internal validation of TOO, based on simple criteria. Submission is handled
     by creating an signed JSON file, using "shared secret" to ensure that the
     TOO is from the registered party, and uploading via a HTTP POST to the Swift
     website. Verification of the success or failure of submission is reported
-    into the Swift_TOO_Status class, which is populated using parameters
+    into the TOOStatus class, which is populated using parameters
     reported by the  Swift TOO website upon submission.
 
     Attributes
@@ -56,7 +57,7 @@ class Swift_TOO_Request(
         Target ID (default None)
     done : boolean
         Is the TOO considered to be complete (default None)
-    status : Swift_TOO_Status
+    status : TOOStatus
         status of request
     """
 
@@ -429,7 +430,7 @@ class Swift_TOO_Request(
         self.quiet = False
 
         # Status of request
-        self.status = Swift_TOO_Status()
+        self.status = TOOStatus()
 
         # Do a server side validation instead of submit?
         self.validate_only = None
@@ -488,6 +489,9 @@ class Swift_TOO_Request(
             "obs_type",
         ]
 
+        # Clear the status
+        self.status.clear()
+
         # Check that the minimum requirements are met
         for req in requirements:
             if self.__getattribute__(req) is None:
@@ -526,9 +530,13 @@ class Swift_TOO_Request(
         if self.monitoring_freq is not None:
             if HAS_ASTROPY and type(self.monitoring_freq) is u.quantity.Quantity:
                 if self.monitoring_freq.to(u.day).value >= (1 * u.day).value:
-                    self.monitoring_freq = f"{self.monitoring_freq.to(u.day).value} days"
+                    self.monitoring_freq = (
+                        f"{self.monitoring_freq.to(u.day).value} days"
+                    )
                 else:
-                    self.monitoring_freq = f"{self.monitoring_freq.to(u.hour).value} hours"
+                    self.monitoring_freq = (
+                        f"{self.monitoring_freq.to(u.hour).value} hours"
+                    )
 
             _, unit = self.monitoring_freq.strip().split()
             if unit[-1] == "s":
@@ -626,7 +634,7 @@ class Swift_TOO_Request(
 
 
 # Aliases for class
-Swift_TOO = Swift_TOO_Request
-TOO = Swift_TOO_Request
-TOORequest = Swift_TOO_Request
-Swift_TOORequest = Swift_TOO_Request
+Swift_TOO = Swift_TOORequest
+TOO = Swift_TOORequest
+TOORequest = Swift_TOORequest
+Swift_TOO_Request = Swift_TOORequest

@@ -1,6 +1,6 @@
 from .api_common import TOOAPI_Baseclass
 from .swift_obsid import TOOAPI_ObsID
-from .api_status import Swift_TOO_Status
+from .api_status import TOOStatus
 import requests
 import os
 from fnmatch import fnmatch
@@ -16,7 +16,7 @@ except ImportError:
         return args[0]
 
 
-class Swift_Data_File(TOOAPI_Baseclass):
+class Swift_DataFile(TOOAPI_Baseclass):
     """Class containing information about a swift data file that can be
     downloaded from the Swift Science Data Center
 
@@ -122,14 +122,14 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
         username for TOO API (default 'anonymous')
     shared_secret : str
         shared secret for TOO API (default 'anonymous')
-    status : Swift_TOO_Status
+    status : TOOStatus
         Status of API request
     """
 
     # Core API definitions
     api_name = "Swift_Data"
     # Classes used by this class
-    _subclasses = [Swift_Data_File, Swift_TOO_Status]
+    _subclasses = [Swift_DataFile, TOOStatus]
     # Values to send and return through the API
     _parameters = [
         "username",
@@ -244,7 +244,7 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
 
         # The resultant data
         self.entries = list()
-        self.status = Swift_TOO_Status()
+        self.status = TOOStatus()
 
         # See if we pass validation from the constructor, but don't record
         # errors if we don't
@@ -386,8 +386,9 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
 
 # Shorthand Aliases for better PEP8 compliant and future compat
 Data = Swift_Data
-DataFile = Swift_Data_File
-Swift_DataFile = Swift_Data_File
+DataFile = Swift_DataFile
+Swift_Data_File = Swift_DataFile
+
 
 class TOOAPI_DownloadData:
     """Mixin to add add download method to any class that has an associated obsid."""

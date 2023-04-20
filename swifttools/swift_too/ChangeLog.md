@@ -2,9 +2,56 @@
 
 ## Change history for `swift_too` module
 
-### API version = 1.2, `swifttools` version 2.4
+### API version = 1.2, `swifttools` version 3.0
 
 #### Author: Jamie A. Kennea (Penn State)
+
+## `swifttools` 3.0.16 / `swift_too` 1.2.28
+
+**March 22, 2023**: Warning about incorrectly formatted ISO8601 dates
+
+* ISO8601 formatted dates without a timezone was assuming localtime, causing confusion. ISO8601 formatted dates should include a timezone specifier, e.g. '2022-01-01T00:00:00Z'. If no timezone is given, the code now issues a warning about this issue. Please use the "Z" for UTC times, as required for for the ISO8601 specification.
+
+
+## `swifttools` 3.0.15 / `swift_too` 1.2.27
+
+**March 17, 2023**: `TOORequests` fix
+
+* Remove a print rogue print statement. Make sure status is cleared on `TOO` submission validation.
+
+## `swifttools` 3.0.14 / `swift_too` 1.2.26
+
+**March 17, 2023**: `TOORequests` fix
+
+* Fixed a bug related to the last update, where `source_name` wasn't being set correctly.
+
+## `swifttools` 3.0.13 / `swift_too` 1.2.25
+
+**March 16, 2023**: `TOORequests` fix
+
+* In a recent update, `TOORequests` was not correctly assigning the name of the TOO target name into `source_name`, this has been corrected.
+
+## `swifttools` 3.0.12 / `swift_too` 1.2.24
+
+**February 27, 2023**: GUANO update
+
+* Each `GUANO_Entry` now has `uplinked` and `executed` flag, which indicate if the GUANO command has been uplinked to Swift, and executed onboard. If you set `successful=False` when executing a `GUANO` API call, it will load GUANO entries that have no data associated with them yet. This way, you can fetch recent GUANO commands that have not yet been fully processed by the Swift SDC.
+
+## `swifttools` 3.0.11 / `swift_too` 1.2.23
+
+**December 2, 2022**: Bug fix release
+
+* Fix issue where trigger time in `GUANOEntry` did not get clock corrected.
+* Fix issue where running `clock_correct()` on a zero length entry or an already corrected entry could cause a hang.
+
+## `swifttools` 3.0.10 / `swift_too` 1.2.22
+
+**November 30, 2022**: Update class names to new style. Add better support for date formats.
+
+* Class names and aliases have been updated to be better PEP8 compliant across the board.
+* Added support for accepting dates in ISO8601 format.
+* Added support for accepting timezone aware `datetime`, they are converted to naive UTC `datetime` values internally.
+* Extended `Swift_Calendar` to support searching for scheduling information. The Swift Scheduling Calendar is the long-term plan for Swift observations. Note that an entry into the Calendar does not guarantee that an observation will be scheduled, however it does mean that it is in the calendar to be scheduled for that day. You can now use `Calendar` class to query upcoming plans, by date range, coordinate, TOO ID and target ID.
 
 ## `swifttools` 3.0.8 / `swift_too` 1.2.21
 
