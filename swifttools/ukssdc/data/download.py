@@ -885,7 +885,7 @@ def _getLightCurve(
             incbad="yes"
         else:
             incbad="no"
-    
+
     if isinstance(nosys, bool):
         if nosys:
             nosys="yes"
