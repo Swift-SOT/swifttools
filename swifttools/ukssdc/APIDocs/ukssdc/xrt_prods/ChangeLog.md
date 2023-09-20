@@ -1,8 +1,11 @@
-# Change history for the xrt_prods module
+# Change history for the `swifttools.ukssdc.xrt_prods` module {#change-history-for-the-swifttoolsukssdcxrt_prods-module}
 
 Changes made to this module after its original release will be documented here.
 
-* 2022 DATE TBC. xrt_prods v1.10 released, with swifttools 3.0.
+* 2023 September 20. A change was made to the way the targetIDs are selected if you do not supply them but do set `getTargs=True`. This now
+uses a cone search where possible and only falls back to getting the targets based on the observation name in the database, if you supplied no position
+and the input name cannot be resolved.
+* 2022 August 31. xrt_prods v1.10 released, with swifttools 3.0.
   * This release contains many changes **including deprecating some old behaviour**. Full details
   are given in the [release notes](ReleaseNotes_v110.md).
 * 2022 February 10, xrt_prods v 1.9 released, as part of swifttools 2.3.2 **users are encouraged to update ASAP**
