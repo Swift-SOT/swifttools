@@ -6,12 +6,17 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
+## `swifttools` 3.0.17 / `swift_too` 1.2.29
+
+**Oct 31, 2023**: Add AWS download support to `Data` class.
+
+* Added option to download data from AWS instead of HEASARC. Add argument `aws=True` to `Data` class arguments to default to AWS downlink. For details of AWS data hosting, see [here](https://heasarc.gsfc.nasa.gov/docs/archive/cloud.html).
+
 ## `swifttools` 3.0.16 / `swift_too` 1.2.28
 
 **March 22, 2023**: Warning about incorrectly formatted ISO8601 dates
 
 * ISO8601 formatted dates without a timezone was assuming localtime, causing confusion. ISO8601 formatted dates should include a timezone specifier, e.g. '2022-01-01T00:00:00Z'. If no timezone is given, the code now issues a warning about this issue. Please use the "Z" for UTC times, as required for for the ISO8601 specification.
-
 
 ## `swifttools` 3.0.15 / `swift_too` 1.2.27
 
