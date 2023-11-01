@@ -6,6 +6,12 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
+## `swifttools` 3.0.18 / `swift_too` 1.2.30
+
+**Oct 31, 2023**: Resolve issue with noisy warnings in `Data` even if `quiet=True`
+
+* When downloading files using `Data` module, if those files already exist on disk a `warning` is now issued, instead of a printed warning. If `quiet=True` no warnings are issued.
+
 ## `swifttools` 3.0.17 / `swift_too` 1.2.29
 
 **Oct 31, 2023**: Add AWS download support to `Data` class.
