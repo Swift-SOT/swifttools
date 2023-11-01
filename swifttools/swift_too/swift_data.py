@@ -4,6 +4,7 @@ from .api_status import TOOStatus
 import requests
 import os
 from fnmatch import fnmatch
+import warnings
 import boto3
 from botocore import UNSIGNED
 from botocore.client import Config
@@ -398,9 +399,9 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
         for dfile in dfiles:
             # Don't re-download a file unless clobber=True
             localfile = f"{self.outdir}/{dfile.path}/{dfile.filename}"
-            if not self.clobber and os.path.exists(localfile):
-                print(
-                    f"WARNING: {dfile.filename} exists and not overwritten (set clobber=True to override this)."
+            if not self.clobber and os.path.exists(localfile) and not self.quiet:
+                warnings.warn(
+                    f"{dfile.filename} exists and not overwritten (set clobber=True to override this)."
                 )
             elif not dfile.download(outdir=self.outdir):
                 self.status.error(f"Error downloading {dfile.filename}")
