@@ -1,6 +1,6 @@
 # The `xrt_prods` Python module
 
-**This documentation is for `xrt_prods` v1.10, in `swifttools` v3.0** ([Release notes](../ReleaseNotes_v110.md))
+**This documentation is for `xrt_prods` v1.10, in `swifttools` v3.0** ([Release notes](ReleaseNotes_v110.md))
 
 The `swifttools.ukssdc/xrt_prods` Python module provides an interface to the [tools to build Swift-XRT data products for
 point sources](https://www.swift.ac.uk/user_objects).
@@ -19,6 +19,7 @@ The documentation is organised as follows.
  * [How to retrieve the completed products](RetrieveProducts.md).
  * [A simple end-to-end tutorial](tutorial.md).
  * [Miscellaneous methods and advanced usage](advanced.md).
+ * [Change log](ChangeLog.md)
  
  
 ## Registration

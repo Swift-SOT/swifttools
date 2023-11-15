@@ -4,6 +4,10 @@ from .api_status import TOOStatus
 import requests
 import os
 from fnmatch import fnmatch
+import warnings
+import boto3
+from botocore import UNSIGNED
+from botocore.client import Config
 
 try:
     from tqdm.auto import tqdm
@@ -47,6 +51,7 @@ class Swift_DataFile(TOOAPI_Baseclass):
     quicklook = None
     type = None
     localpath = None
+    s3 = None
     outdir = "."
     # Core API definitions
     _parameters = ["filename", "path", "url", "quicklook", "type"]
@@ -70,14 +75,20 @@ class Swift_DataFile(TOOAPI_Baseclass):
 
         # Download the data
         fullfilepath = os.path.join(self.outdir, self.path, self.filename)
-        r = requests.get(self.url, stream=True, allow_redirects=True)
-        if r.ok:
-            filedata = r.raw.read()
-            with open(fullfilepath, "wb") as outfile:
-                outfile.write(filedata)
-            self.localpath = fullfilepath
+
+        if "heasarc" in self.url and self.quicklook is False and self.s3 is not None:
+            # Download HEASARC hosted data from AWS
+            key_name = self.url.replace("https://heasarc.gsfc.nasa.gov/FTP/", "")
+            self.s3.download_file("nasa-heasarc", key_name, fullfilepath)
         else:
-            return False
+            r = requests.get(self.url, stream=True, allow_redirects=True)
+            if r.ok:
+                filedata = r.raw.read()
+                with open(fullfilepath, "wb") as outfile:
+                    outfile.write(filedata)
+                self.localpath = fullfilepath
+            else:
+                return False
 
         return True
 
@@ -158,6 +169,7 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
         "fetch",
         "match",
         "quiet",
+        "aws",
     ]
     _attributes = ["entries", "status"]
 
@@ -211,12 +223,17 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
             username for TOO API (default 'anonymous')
         shared_secret : str
             shared secret for TOO API (default 'anonymous')
+        aws : boolean
+            Download data from AWS instead of HEASARC (note only if uksdc and itsdc
+            are False). (default 'False').
         """
         # Parameters
         self.username = "anonymous"
         self.obsid = None
         # Only look in quicklook
         self.quicklook = False
+        # Download data from AWS instead of HEASARC
+        self.aws = False
         # Download from UK SDC
         self.uksdc = None
         # Download from the Italian SDC
@@ -294,6 +311,16 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
     def _post_process(self):
         """A place to do things to API results after they have been fetched."""
         # Filter out files that don't match `match` expression
+        if not self.uksdc and not self.itsdc and self.aws is True:
+            # Set up S3 stuff
+            config = Config(
+                connect_timeout=5,
+                retries={"max_attempts": 0},
+                signature_version=UNSIGNED,
+            )
+            s3 = boto3.client("s3", config=config)
+            for file in self.entries:
+                file.s3 = s3
         if self.match is not None:
             if type(self.match) is str:
                 self.match = [self.match]
@@ -372,9 +399,9 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
         for dfile in dfiles:
             # Don't re-download a file unless clobber=True
             localfile = f"{self.outdir}/{dfile.path}/{dfile.filename}"
-            if not self.clobber and os.path.exists(localfile):
-                print(
-                    f"WARNING: {dfile.filename} exists and not overwritten (set clobber=True to override this)."
+            if not self.clobber and os.path.exists(localfile) and not self.quiet:
+                warnings.warn(
+                    f"{dfile.filename} exists and not overwritten (set clobber=True to override this)."
                 )
             elif not dfile.download(outdir=self.outdir):
                 self.status.error(f"Error downloading {dfile.filename}")

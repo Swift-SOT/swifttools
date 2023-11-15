@@ -12,8 +12,11 @@ import warnings
 
 # Make Warnings a little less weird
 formatwarning_orig = warnings.formatwarning
-warnings.formatwarning = lambda message, category, filename, lineno, line=None: \
-    formatwarning_orig(message, category, filename, lineno, line='')
+warnings.formatwarning = (
+    lambda message, category, filename, lineno, line=None: formatwarning_orig(
+        message, category, filename, lineno, line=""
+    )
+)
 
 # Configure for IPV4 only due to issue
 requests.packages.urllib3.util.connection.HAS_IPV6 = False
@@ -96,7 +99,9 @@ def convert_to_dt(value, isutc=False, outfunc=datetime):
         elif re.match(_iso8601_regex, value):
             dtvalue = parser.parse(value)
             if dtvalue.tzinfo is None:
-                warnings.warn("ISO8601 formatted dates should be supplied with timezone. ISO8601 dates with no timezone will be assumed to be localtime and then converted to UTC.")
+                warnings.warn(
+                    "ISO8601 formatted dates should be supplied with timezone. ISO8601 dates with no timezone will be assumed to be localtime and then converted to UTC."
+                )
             dtvalue = dtvalue.astimezone(timezone.utc).replace(tzinfo=None)
         else:
             raise ValueError(
