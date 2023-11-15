@@ -332,8 +332,12 @@ Global parameters are set/retrieved with the `setGlobalPars()` and `getGlobalPar
 | getT0  | No** | bool | Whether to ask the server to complete the `T0` field automatically | False |
 | getCoords  | No*** | bool | Whether to ask the server to complete the `RA` and `Dec` fields automatically | False |
 
-*: The targetID(s) must be supplied; these tell the server which sets of data to include in your products, and it can be a comma-separated list if more than one targetID corresponds to your object. You can either supply the targetIDs in the `targ` field, or set `getTargs=True`. In the latter case, the server will select all targetIDs in the database where the object name matches that in the `name` field, **and**  targets in the database where the XRT field of view will overlap the position in the (`RA`, `Dec`) fields. If `getCoords=True` then the targetID determination is carried out **after** the name has been resolved
-into a position.
+*: The targetID(s) must be supplied; these tell the server which sets of data to include in your products, and it can be
+a comma-separated list if more than one targetID corresponds to your object. You can either supply the targetIDs in the
+`targ` field, or set `getTargs=True`. In the latter case, the server will do a cone search around the position
+you supplied in the `RA` and `Dec` fields and select all targets within 12&prime; of the position. If you did
+not supply a position it will attempt to determine it by resolving the supplied name. If the name cannot be resolved,
+than instead all targetIDs in the database where the object name matches that in the `name` field, will be selected.
 
 **: A start time is not mandatory, but is helpful, particularly to zero the time axis on light curve, but it can also be used as a reference point for all other input times. You can either supply it in the `T0` field, or set `getT0=True`. In the latter case the server will try to work it out, either as the trigger time (if the object is a GRB), or as the start time of the first observation of the object. In this case `T0` will be set in the [data returned by the server](ReturnData.md)
 
