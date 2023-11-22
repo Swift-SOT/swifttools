@@ -1,10 +1,10 @@
 from .api_common import TOOAPI_Baseclass
-from .swift_instruments import TOOAPI_Instruments
-from .swift_clock import TOOAPI_ClockCorrect
-from .api_status import TOOStatus
 from .api_daterange import TOOAPI_Daterange
-from .api_skycoord import TOOAPI_SkyCoord
 from .api_resolve import TOOAPI_AutoResolve
+from .api_skycoord import TOOAPI_SkyCoord
+from .api_status import TOOStatus
+from .swift_clock import TOOAPI_ClockCorrect
+from .swift_instruments import TOOAPI_Instruments
 from .swift_obsid import TOOAPI_ObsID
 
 

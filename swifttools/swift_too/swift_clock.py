@@ -1,6 +1,7 @@
-from .api_common import TOOAPI_Baseclass, swiftdatetime, convert_to_dt
-from .api_status import TOOStatus
 from datetime import datetime
+
+from .api_common import TOOAPI_Baseclass, convert_to_dt, swiftdatetime
+from .api_status import TOOStatus
 
 
 class Swift_Clock(TOOAPI_Baseclass):

@@ -1,6 +1,6 @@
 from .api_common import TOOAPI_Baseclass
-from .api_status import Swift_TOO_Status
 from .api_skycoord import TOOAPI_SkyCoord
+from .api_status import Swift_TOO_Status
 
 
 class Swift_Resolve(TOOAPI_Baseclass, TOOAPI_SkyCoord):

@@ -6,6 +6,12 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
+## `swifttools` 3.0.19 / `swift_too` 1.2.31
+
+** Nov 22, 2023**: Remove `requests` config that conflicted with another module.
+
+* Configuration to use IPV4 only, required due to a networking issue at the server end, conflicts with some other Python module. This has now been removed.
+
 ## `swifttools` 3.0.18 / `swift_too` 1.2.30
 
 **Oct 31, 2023**: Resolve issue with noisy warnings in `Data` even if `quiet=True`

@@ -1,10 +1,10 @@
 from .api_common import TOOAPI_Baseclass
-from .swift_toorequest import Swift_TOO_Request
+from .api_daterange import TOOAPI_Daterange
+from .api_resolve import TOOAPI_AutoResolve
+from .api_skycoord import TOOAPI_SkyCoord
 from .api_status import TOOStatus
 from .swift_calendar import Swift_Calendar, Swift_Calendar_Entry
-from .api_resolve import TOOAPI_AutoResolve
-from .api_daterange import TOOAPI_Daterange
-from .api_skycoord import TOOAPI_SkyCoord
+from .swift_toorequest import Swift_TOO_Request
 
 
 class Swift_TOO_Requests(

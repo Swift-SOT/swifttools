@@ -1,13 +1,15 @@
-from .api_common import TOOAPI_Baseclass
-from .swift_obsid import TOOAPI_ObsID
-from .api_status import TOOStatus
-import requests
 import os
-from fnmatch import fnmatch
 import warnings
+from fnmatch import fnmatch
+
 import boto3
+import requests
 from botocore import UNSIGNED
 from botocore.client import Config
+
+from .api_common import TOOAPI_Baseclass
+from .api_status import TOOStatus
+from .swift_obsid import TOOAPI_ObsID
 
 try:
     from tqdm.auto import tqdm

@@ -1,14 +1,16 @@
 import json
-from datetime import datetime, timedelta, date, timezone
 import re
-from jose import jwt
-import requests
-from time import sleep
-from .version import version_tuple
-from tabulate import tabulate
 import textwrap
-from dateutil import parser
 import warnings
+from datetime import date, datetime, timedelta, timezone
+from time import sleep
+
+import requests
+from dateutil import parser
+from jose import jwt
+from tabulate import tabulate
+
+from .version import version_tuple
 
 # Make Warnings a little less weird
 formatwarning_orig = warnings.formatwarning
@@ -17,9 +19,6 @@ warnings.formatwarning = (
         message, category, filename, lineno, line=""
     )
 )
-
-# Configure for IPV4 only due to issue
-requests.packages.urllib3.util.connection.HAS_IPV6 = False
 
 # Define the API version
 api_version = f"{version_tuple[0]}.{version_tuple[1]}"
@@ -40,8 +39,8 @@ except ImportError:
 # Check if we have astropy support
 HAS_ASTROPY = False
 try:
-    from astropy.time import Time
     import astropy.units as u
+    from astropy.time import Time
 
     HAS_ASTROPY = True
 except ImportError:
