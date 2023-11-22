@@ -6,7 +6,7 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
-## `swifttools` 3.0.19 / `swift_too` 1.2.31
+## `swifttools` 3.0.20 / `swift_too` 1.2.31
 
 ** Nov 22, 2023**: Remove `requests` config that conflicted with another module.
 
