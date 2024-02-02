@@ -1,11 +1,11 @@
-from .swift_calendar import Swift_Calendar
 from .api_common import TOOAPI_Baseclass
-from .swift_instruments import TOOAPI_Instruments
-from .api_status import TOOStatus
-from .swift_obsid import TOOAPI_ObsID
-from .api_skycoord import TOOAPI_SkyCoord
 from .api_daterange import TOOAPI_Daterange, TOOAPI_TriggerTime
 from .api_resolve import TOOAPI_AutoResolve
+from .api_skycoord import TOOAPI_SkyCoord
+from .api_status import TOOStatus
+from .swift_calendar import Swift_Calendar
+from .swift_instruments import TOOAPI_Instruments
+from .swift_obsid import TOOAPI_ObsID
 
 HAS_ASTROPY = False
 try:

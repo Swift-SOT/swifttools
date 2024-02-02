@@ -1,8 +1,8 @@
 HAS_ASTROPY = False
 try:
-    from astropy.coordinates import SkyCoord
-    from astropy.coordinates.angles import Longitude, Latitude
     import astropy.units as u
+    from astropy.coordinates import SkyCoord
+    from astropy.coordinates.angles import Latitude, Longitude
 
     HAS_ASTROPY = True
 except ImportError:
