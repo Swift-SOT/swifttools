@@ -1,6 +1,10 @@
 import os
 import warnings
 from fnmatch import fnmatch
+import warnings
+import boto3
+from botocore import UNSIGNED
+from botocore.client import Config
 
 import boto3
 import requests
