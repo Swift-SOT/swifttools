@@ -260,6 +260,8 @@ class Swift_GUANO(
         shared secret for TOO API (default 'anonymous')
     triggertime : datetime
         triggertime to search around
+    triggertype : str
+        trigger type (typically what mission triggered the GUANO dump)
     begin : datetime
         start of time period to search
     end : datetime
@@ -284,6 +286,7 @@ class Swift_GUANO(
     _parameters = [
         "username",
         "triggertime",
+        "triggertype",
         "begin",
         "end",
         "limit",
@@ -307,6 +310,8 @@ class Swift_GUANO(
             shared secret for TOO API (default 'anonymous')
         triggertime : datetime
             triggertime to search around
+        triggertype : str
+            trigger type (typically what mission triggered the GUANO dump)
         begin : datetime
             start of time period to search
         end : datetime
@@ -329,6 +334,7 @@ class Swift_GUANO(
         self.end = None
         self.length = None
         self.limit = None
+        self.triggertype = None
         # Results
         self.entries = []
 
@@ -365,6 +371,7 @@ class Swift_GUANO(
             or self.end is not None
             or self.length is not None
             or self.triggertime is not None
+            or self.triggertype is not None
         ):
             if self.subthreshold is True and self.username == "anonymous":
                 self.status.error(

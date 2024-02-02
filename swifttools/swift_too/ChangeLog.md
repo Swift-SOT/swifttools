@@ -6,6 +6,15 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
+## `swifttools` 3.0.21` / `swift_too` 1.2.32
+
+** Feb 2, 2024 **: Add `triggertype` filter in `GUANO`
+
+* Now with `GUANO` you can pass `triggertype` as an argument to filter on the
+  type of trigger that you want. E.g. passing `triggertype = 'GBM GRB'` will
+  return only triggers from Fermi/GBM. If you want to see examples of valid
+  `triggertype` values, please visit here: https://www.swift.psu.edu/guano
+
 ## `swifttools` 3.0.20 / `swift_too` 1.2.31
 
 ** Nov 22, 2023**: Remove `requests` config that conflicted with another module.
