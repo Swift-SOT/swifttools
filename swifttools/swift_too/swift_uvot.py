@@ -1,9 +1,10 @@
-from .api_common import TOOAPI_Baseclass
-from .api_skycoord import TOOAPI_SkyCoord
-from .swift_instruments import TOOAPI_Instruments
-from .api_resolve import TOOAPI_AutoResolve
-from .api_status import TOOStatus
 from tabulate import tabulate
+
+from .api_common import TOOAPI_Baseclass
+from .api_resolve import TOOAPI_AutoResolve
+from .api_skycoord import TOOAPI_SkyCoord
+from .api_status import TOOStatus
+from .swift_instruments import TOOAPI_Instruments
 
 
 class Swift_UVOTModeEntry(TOOAPI_Baseclass):

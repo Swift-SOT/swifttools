@@ -143,17 +143,17 @@ submitted to a queue system in which they are processed in a first come, first
 served basis. Typically processing requests takes a 10-20 seconds. Status of
 requests can be queried, and errors are reported back.
 """
-from .version import version as __version__
-from .swift_toorequest import Swift_TOO, TOO, TOORequest, Swift_TOO_Request
-from .swift_obsquery import Swift_ObsQuery, ObsQuery
-from .swift_visquery import Swift_VisQuery, VisQuery
+from .api_resolve import Resolve, Swift_Resolve
 from .query_job import QueryJob
-from .swift_planquery import Swift_PlanQuery, PlanQuery
-from .swift_uvot import UVOT_mode, UVOTMode, Swift_UVOTMode
-from .swift_requests import Swift_TOO_Requests, TOORequests, Swift_TOORequests
-from .swift_calendar import Swift_Calendar, Calendar
-from .swift_guano import Swift_GUANO, GUANO
-from .swift_data import Swift_Data, Data
-from .api_resolve import Swift_Resolve, Resolve
-from .swift_clock import Swift_Clock, Clock
-from .swift_saa import Swift_SAA, SAA
+from .swift_calendar import Calendar, Swift_Calendar
+from .swift_clock import Clock, Swift_Clock
+from .swift_data import Data, Swift_Data
+from .swift_guano import GUANO, Swift_GUANO
+from .swift_obsquery import ObsQuery, Swift_ObsQuery
+from .swift_planquery import PlanQuery, Swift_PlanQuery
+from .swift_requests import Swift_TOO_Requests, Swift_TOORequests, TOORequests
+from .swift_saa import SAA, Swift_SAA
+from .swift_toorequest import TOO, Swift_TOO, Swift_TOO_Request, TOORequest
+from .swift_uvot import Swift_UVOTMode, UVOT_mode, UVOTMode
+from .swift_visquery import Swift_VisQuery, VisQuery
+from .version import version as __version__
