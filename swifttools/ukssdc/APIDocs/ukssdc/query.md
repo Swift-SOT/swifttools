@@ -934,17 +934,10 @@ myTargs = (81445, 45767, 81637)
 subset=q.results['target_id'].isin(myTargs)
 q.results.loc[q.results['target_id'].isin(myTargs)]
 # q.downloadObsData(destDir='/tmp/APIDemo_download4',
-
-[Jupyter notebook version of this page](query.ipynb)
 #                   subset=q.results['target_id'].isin(myTargs),
-
-[Jupyter notebook version of this page](query.ipynb)
 #                   instruments=('XRT',),
-
-[Jupyter notebook version of this page](query.ipynb)
 #                   getAuxil=False)
 
-[Jupyter notebook version of this page](query.ipynb)
 ```
 
 
