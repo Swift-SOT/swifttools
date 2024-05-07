@@ -679,10 +679,10 @@ class GRBQuery(dataQuery):
         found when this query was executed. Of course, this means you
         have to have executed the query first!
 
-        The light curve data will be stored in the ``lightCurves``
+        The burst analyser data will be stored in the ``burstAnalyser``
         variable of this object, and optionally returned as well. The
-        light curves files can also be downloaded directly from the
-        website to disk.
+        data files can also be downloaded directly from the website to
+        disk.
 
         Parameters
         ----------
@@ -699,12 +699,12 @@ class GRBQuery(dataQuery):
             Requires that column to have been retrieved by your query.
 
         returnData : bool, optional
-            Whether the light curve data should be returned by this
-            function, as well as saved in the "lightCurves"
+            Whether the burst analyser data should be returned by this
+            function, as well as saved in the "burstAnalyser"
             variable.
 
         **kwargs : dict, optional
-            Parameters to pass to ukssdc.data.GRB.getSpectra()
+            Parameters to pass to ukssdc.data.GRB.getBurstAnalyser()
 
         """
         if not self.haveResults:
