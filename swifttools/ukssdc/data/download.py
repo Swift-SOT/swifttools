@@ -882,15 +882,15 @@ def _getLightCurve(
 
     if isinstance(incbad, bool):
         if incbad:
-            incbad="yes"
+            incbad = "yes"
         else:
-            incbad="no"
+            incbad = "no"
 
     if isinstance(nosys, bool):
         if nosys:
-            nosys="yes"
+            nosys = "yes"
         else:
-            nosys="no"
+            nosys = "no"
 
     sendData = {"type": type, "objectID": objectID, "incbad": incbad, "nosys": nosys}
 
@@ -1041,9 +1041,9 @@ def _saveLightCurveFromDict(
 
     if suff is None:
         if asQDP:
-            suff='qdp'
+            suff = "qdp"
         else:
-            suff='dat'
+            suff = "dat"
 
     for c in theseCurves:
         fname = f"{destDir}/{prefix}{c}"
