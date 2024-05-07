@@ -1,6 +1,6 @@
 # swifttools.ukssdc.xrt_prods v1.10 Release Notes
 
-Version 1.10 of the `xrt_prods` module was released as part of `swifttools v3.0` on XXXXXX
+Version 1.10 of the `xrt_prods` module was released as part of `swifttools v3.0` on 2022 August 31.
 
 This release features a number of important changes mainly relating to the way in which data products
 are returned and formatted. We have made significant efforts to support backwards compatibility, so **all of your

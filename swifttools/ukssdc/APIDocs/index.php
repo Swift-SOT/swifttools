@@ -24,7 +24,7 @@
   <h1>The swifttools API</h1>
 
   <p style='width: 74%; margin: 10px auto; text-align:center; background-color: yellow; border-radius: 15px; border: 1px solid #CC0;'>Version 3.0 of <code>swifttools</code>
-  was released on XXXX. This major release introduces the <code>swifttools.ukssdc</code> module.</p>
+  was released on 2022 August 31. This major release introduces the <code>swifttools.ukssdc</code> module.</p>
   
   <p>Various aspects of working with Swift can now be done via the <code>swifttools</code> Python module. This is available through pip:</p>
   
