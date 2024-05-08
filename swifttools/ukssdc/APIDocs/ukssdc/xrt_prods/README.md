@@ -35,7 +35,7 @@ The `xrt_prods` module is part of the `swifttools` package. The easiest way to i
 > pip3 install swifttools
 ```
 
-Alternatively, you can [download the sourcecode from Gitlab](https://gitlab.com/DrPhilEvans/swifttools) and install it manually if you prefer.
+Alternatively, you can [download the sourcecode from GitHub](https://github.com/Swift-SOT/swifttools) and install it manually if you prefer.
 
 This requires Python 3.6 or higher.
 
