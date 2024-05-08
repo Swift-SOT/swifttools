@@ -1,6 +1,6 @@
 # The `swifttools.ukssdc` module.
 
-Quick links: [`xrt_prods`](xrt_prods.md) | [`data`](data.md) | [`query`](query.md) | [Set of Jupyter notebooks](ukssdc.zip)
+Quick links: [Usage policy](#usage) | [`xrt_prods`](xrt_prods.md) | [`data`](data.md) | [`query`](query.md) | [ChangeLog](ChangeLog.md) | [Set of Jupyter notebooks](ukssdc.zip)
 
 ## Quick start
 
@@ -55,20 +55,29 @@ lots of output. The demarcation between non-silent, and verbose output is somewh
 
 ## Usage
 
-This Python module is provided free to use, but please do remember that in any publication you should cite the source of any data obtained.
-References are given in the various product documentation pages, and please always include, in the acknowledgements:
+This Python module is provided free to use, but if you use it for work leading to a publication,
+please do acknowledge this with a footnote pointing to (https://www.swift.ac.uk/API). The standard usage
+policy for any of the tools accessed via the API remains in force as well. That is, please incude this
+in your acknowledgements:
 
+
+<blockquote>
     This work made use of data supplied by the UK Swift Science Data Centre at the University of Leicester.
+</blockquote>
 
-The most common references to use are
+and cite the appropriate paper(s) relating to the data source or algorithms you accessed through the API.
+Details for each of these can be found on their relevant pages; below are links to those pages and
+the citations requested.
 
-* GRB light curves: [Evans et al., (2007)](https://ui.adsabs.harvard.edu/abs/2007A%26A...469..379E/abstract),
+
+* [GRB light curves](/xrt_curves/docs.php#usage): [Evans et al., (2007)](https://ui.adsabs.harvard.edu/abs/2007A%26A...469..379E/abstract),
 [Evans et al., (2009)](https://ui.adsabs.harvard.edu/abs/2009MNRAS.397.1177E/abstract)
-* GRB enhanced positions: [Goad et al., (2007)](https://ui.adsabs.harvard.edu/abs/2007A%26A...476.1401G/abstract), [Evans et al., (2009)](https://ui.adsabs.harvard.edu/abs/2009MNRAS.397.1177E/abstract)
-* GRB spectra: [Evans et al., (2009)](https://ui.adsabs.harvard.edu/abs/2009MNRAS.397.1177E/abstract)
-* The burst analyser: [Evans et al., (2010)](https://ui.adsabs.harvard.edu/abs/2010A%26A...519A.102E/abstract)
-* On-demand products: [Evans et al., (2009)](https://ui.adsabs.harvard.edu/abs/2009MNRAS.397.1177E/abstract)
-* LSXPS: Evans et al., (2022)
+* [GRB enhanced positions](/xrt_positions/docs.php#usage): [Goad et al., (2007)](https://ui.adsabs.harvard.edu/abs/2007A%26A...476.1401G/abstract), [Evans et al., (2009)](https://ui.adsabs.harvard.edu/abs/2009MNRAS.397.1177E/abstract)
+* [GRB spectra](/xrt_spectra/docs.php#usage): [Evans et al., (2009)](https://ui.adsabs.harvard.edu/abs/2009MNRAS.397.1177E/abstract)
+* [The burst analyser](/burst_analyser/docs.php#usage): [Evans et al., (2010)](https://ui.adsabs.harvard.edu/abs/2010A%26A...519A.102E/abstract)
+* [On-demand products](/user_objects/docs.php#usage): [Evans et al., (2009)](https://ui.adsabs.harvard.edu/abs/2009MNRAS.397.1177E/abstract): **please see the [documentation](/user_objects/docs.php#usage) for citations for the different products**.
+* [2SXPS](/2SXPS/docs.php#access): [Evans et al., (2020)](https://ui.adsabs.harvard.edu/abs/2020ApJS..247...54E/abstract)
+* [LSXPS](/LSXPS/docs.php#access): [Evans et al., (2023)](https://ui.adsabs.harvard.edu/abs/2023MNRAS.518..174E/abstract)
 
 ## About this documentation
 
