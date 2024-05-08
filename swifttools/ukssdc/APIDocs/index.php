@@ -54,7 +54,7 @@
   <br style='clear:both;'/>
    
   <p>Although we recommend installing via <code>pip</code> the source code is also available via
-  a <a href='https://gitlab.com/DrPhilEvans/swifttools'>public GitLab repository</a>, which is also where you
+  a <a href='https://github.com/Swift-SOT/swifttools'>public GitHub repository</a>, which is also where you
   can report issues / bugs.</p>
    
    
