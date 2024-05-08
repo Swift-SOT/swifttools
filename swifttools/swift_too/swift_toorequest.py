@@ -327,9 +327,7 @@ class Swift_TOORequest(
         self.too_id = None  # TOO ID assigned by server on acceptance (int)
         self.timestamp = None  # Timestamp that TOO was accepted (datetime)
         # Source name, type, location, position_error
-        self.source_name = (
-            None  # Name of the object we're requesting a TOO for (string)
-        )
+        self.source_name = None  # Name of the object we're requesting a TOO for (string)
         # Type of object (e.g. "Supernova", "LMXB", "BL Lac")  (string)
         self.source_type = None
         self.ra = None  # RA(J2000) Degrees decimal (float)
@@ -499,9 +497,7 @@ class Swift_TOORequest(
                 return False
 
         if self.obs_type not in self.obs_types:
-            self.status.error(
-                f"Observation Type needs to be one of the following: {self.obs_types}"
-            )
+            self.status.error(f"Observation Type needs to be one of the following: {self.obs_types}")
             return False
 
         if self.instrument not in self.instruments:
@@ -518,9 +514,7 @@ class Swift_TOORequest(
                 self.exp_time_per_visit = int(self.exposure / self.num_of_visits)
             else:
                 if self.exp_time_per_visit * self.num_of_visits != self.exposure:
-                    self.status.warning(
-                        "INFO: Total exposure time does not match total of individuals. Corrected."
-                    )
+                    self.status.warning("INFO: Total exposure time does not match total of individuals. Corrected.")
                     self.exposure = self.exp_time_per_visit * self.num_of_visits
         else:
             if not self.exposure:
@@ -530,13 +524,9 @@ class Swift_TOORequest(
         if self.monitoring_freq is not None:
             if HAS_ASTROPY and type(self.monitoring_freq) is u.quantity.Quantity:
                 if self.monitoring_freq.to(u.day).value >= (1 * u.day).value:
-                    self.monitoring_freq = (
-                        f"{self.monitoring_freq.to(u.day).value} days"
-                    )
+                    self.monitoring_freq = f"{self.monitoring_freq.to(u.day).value} days"
                 else:
-                    self.monitoring_freq = (
-                        f"{self.monitoring_freq.to(u.hour).value} hours"
-                    )
+                    self.monitoring_freq = f"{self.monitoring_freq.to(u.hour).value} hours"
 
             _, unit = self.monitoring_freq.strip().split()
             if unit[-1] == "s":

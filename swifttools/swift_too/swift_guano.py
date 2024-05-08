@@ -240,15 +240,11 @@ class Swift_GUANOEntry(
         return ["Parameter", "Value"], table
 
     def _calc_begin_end(self):
-        self.begin = self.triggertime + timedelta(
-            seconds=self.offset - self.duration / 2
-        )
+        self.begin = self.triggertime + timedelta(seconds=self.offset - self.duration / 2)
         self.end = self.triggertime + timedelta(seconds=self.offset + self.duration / 2)
 
 
-class Swift_GUANO(
-    TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_ClockCorrect, TOOAPI_TriggerTime
-):
+class Swift_GUANO(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_ClockCorrect, TOOAPI_TriggerTime):
     """Query BAT ring buffer dumps of event data associated with the Gamma-Ray
     Burst Urgent Archiver for Novel Opportunities (GUANO).
 
@@ -374,9 +370,7 @@ class Swift_GUANO(
             or self.triggertype is not None
         ):
             if self.subthreshold is True and self.username == "anonymous":
-                self.status.error(
-                    "For subthreshold triggers, username cannot be anonymous."
-                )
+                self.status.error("For subthreshold triggers, username cannot be anonymous.")
                 return False
             return True
 
@@ -407,9 +401,7 @@ class Swift_GUANO(
                     obsnum = "Pending Data"
                 elif ent.uplinked:
                     obsnum = "Pending Execution"
-            table.append(
-                [ent.triggertype, ent.triggertime, ent.offset, exposure, obsnum]
-            )
+            table.append([ent.triggertype, ent.triggertime, ent.offset, exposure, obsnum])
 
         return header, table
 

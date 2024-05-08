@@ -42,9 +42,7 @@ class Swift_VisWindow(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
 
     @property
     def _table(self):
-        header = [
-            self._header_title(row) for row in self._parameters + self._attributes
-        ]
+        header = [self._header_title(row) for row in self._parameters + self._attributes]
         return header, [[self.begin, self.end, self.length]]
 
     def __str__(self):
