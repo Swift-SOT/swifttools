@@ -932,7 +932,7 @@ class dataQuery:
         if not isinstance(ix, int):
             raise ValueError("ix must be an int")
         if (ix < 0) or (ix >= len(self._filters)):
-            raise ValueError(f"ix must be between 0 and {len(self._filters)-1}")
+            raise ValueError(f"ix must be between 0 and {len(self._filters) - 1}")
         del self._filters[ix]
         if not self._silent:
             self.showFilters()
@@ -1019,7 +1019,7 @@ class dataQuery:
             sendData["firstRow"] = fR
 
             if not self._silent:
-                print(f"Calling DB look-up for rows {fR} -- {sendData['numRows']+fR}")
+                print(f"Calling DB look-up for rows {fR} -- {sendData['numRows'] + fR}")
 
             ret = base.submitAPICall(
                 "queryDB",
