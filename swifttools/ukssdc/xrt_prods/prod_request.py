@@ -3216,7 +3216,7 @@ class XRTProductRequest:
             # Is it a actually a global? parList may contain product-specific pars
             if par in XRTProductRequest._globalTypes:
                 # If the parameter was a bool then it has come back as an int
-                if (bool in XRTProductRequest._globalTypes[par]) and not isinstance (val, bool):
+                if (bool in XRTProductRequest._globalTypes[par]) and not isinstance(val, bool):
                     val = val == 1 or val == "yes" or val == "1"
 
                 # Otherwise, check the type and try to cast it:
