@@ -346,7 +346,7 @@ def _getObsList(targetID, silent=True, verbose=False):
 
     """
     if verbose:
-        silent = False
+        silent = False # noqa
 
     sendData = {"targetID": targetID}
     ret = base.submitAPICall("getObsByTarg", sendData, minKeys=["obsList"], verbose=verbose)
@@ -447,7 +447,7 @@ def _getFileList(obs, dirs, source, silent=True, verbose=False):
 
     """
     if verbose:
-        silent = False
+        silent = False # noqa
 
     #
     sendData = {"obsid": obs, "source": source, "dirs": dirs}
@@ -488,7 +488,7 @@ def _handleLightCurve(data, oldCols=False, silent=True, verbose=False):
 
     """
     if verbose:
-        silent = False
+        silent = False # noqa
 
     ret = {}
     url = {}
@@ -1122,7 +1122,7 @@ def _rebinLightCurve(type, objectID, binMeth=None, silent=True, verbose=False, *
 
     """
     if verbose:
-        silent = False
+        silent = False # noqa
 
     sendData = {"type": type, "objectID": objectID, "binMeth": binMeth}
     sendData.update(kwargs)
@@ -1166,7 +1166,7 @@ def _checkRebinStatus(JobID, silent=True, verbose=False):
 
     """
     if verbose:
-        silent = False
+        silent = False # noqa
 
     if not isinstance(JobID, int):
         raise ValueError("JobID must be an int")

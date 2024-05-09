@@ -897,7 +897,7 @@ def checkTimesliceStatus(JobID, silent=True, verbose=False):
 
     """
     if verbose:
-        silent = False
+        silent = False # noqa
 
     if not isinstance(JobID, int):
         raise ValueError("JobID must be an int")

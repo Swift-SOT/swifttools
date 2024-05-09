@@ -6,7 +6,6 @@ from .productVars import skipGlobals, globalParTriggers
 import os
 import re
 import warnings
-import numpy as np
 import pandas as pd
 from distutils.version import StrictVersion
 from .version import _apiVersion
@@ -810,7 +809,7 @@ class XRTProductRequest:
         status = True
         report = ""
 
-        if type(what) == str:
+        if type(what) is str:
             if what == "all":
                 what = self._productList.keys()
             else:
@@ -1775,7 +1774,7 @@ class XRTProductRequest:
         for gPar in self.globalPars:
             val = self.globalPars[gPar]
             # Bools need converting to 0/1
-            if type(val) == bool:
+            if type(val) is bool:
                 if val:
                     val = 1
                 else:
@@ -2047,7 +2046,7 @@ class XRTProductRequest:
             A list of the products with the internal keys.
 
         """
-        if type(what) == str:
+        if type(what) is str:
             if what == "all":
                 what = self._productList.keys()
             else:
@@ -2397,7 +2396,7 @@ class XRTProductRequest:
             If the product requested is not complete.
 
         """
-        if stem is not None and type(stem) != str:
+        if (stem is not None) and (type(stem) is not str):
             raise TypeError(f"Stem must be str or None, cannot be {type(stem)}")
 
         if format not in downloadFormats:
@@ -2412,7 +2411,7 @@ class XRTProductRequest:
         retDict = dict()
         for prod in reqWhat:
             if not (self._productList[prod].complete):
-                if what == "all":  #  OK, just skip:
+                if what == "all":  # OK, just skip:
                     retDict[shortToLong[prod]] = None
                 else:
                     raise ValueError(f"The {longProdName[prod]} is not complete, so can't be downloaded")
@@ -2900,17 +2899,19 @@ class XRTProductRequest:
                     raise RuntimeError(f"`{key}` contains no column information.")
                 c = returnedData[tmpKey]["columns"]
                 c = [
-                    "T_+ve"
-                    if x == "TimePos"
-                    else "T_-ve"
-                    if x == "TimeNeg"
-                    else "Ratepos"
-                    if x == "RatePos"
-                    else "Rateneg"
-                    if x == "RateNeg"
-                    else "Rate"
-                    if x == "UpperLimit"
-                    else x
+                    (
+                        "T_+ve"
+                        if x == "TimePos"
+                        else (
+                            "T_-ve"
+                            if x == "TimeNeg"
+                            else (
+                                "Ratepos"
+                                if x == "RatePos"
+                                else "Rateneg" if x == "RateNeg" else "Rate" if x == "UpperLimit" else x
+                            )
+                        )
+                    )
                     for x in c
                 ]
                 returnedData[tmpKey]["columns"] = c
@@ -3211,7 +3212,7 @@ class XRTProductRequest:
             # Is it a actually a global? parList may contain product-specific pars
             if par in XRTProductRequest._globalTypes:
                 # If the parameter was a bool then it has come back as an int
-                if (bool in XRTProductRequest._globalTypes[par]) and (type(val) != bool):
+                if (bool in XRTProductRequest._globalTypes[par]) and (type(val) is not bool):
                     val = val == 1 or val == "yes" or val == "1"
 
                 # Otherwise, check the type and try to cast it:
@@ -3275,10 +3276,10 @@ class XRTProductRequest:
             If 'JSONVals' is not a string or dictionary.
 
         """
-        if type(JSONVals) == str:  # It's literally a json string
+        if type(JSONVals) is str:  # It's literally a json string
             JSONVals = json.loads(JSONVals)
 
-        if type(JSONVals) != dict:  # Oh oh
+        if type(JSONVals) is not dict:  # Oh oh
             raise ValueError("JSON should be a JSON string or a dict; it is not.")
 
         # Reset almost everything
@@ -3307,7 +3308,7 @@ class XRTProductRequest:
         for par, prod in parProd.items():
             if par in JSONVals:
                 val = JSONVals[par]  # Just for ease
-                if ((type(val) == bool) and val) or (type(val) == int and (val == 1)):
+                if ((type(val) is bool) and val) or (type(val) is int and (val == 1)):
                     # We do want this product
                     self.addProduct(prod)
 

@@ -93,7 +93,7 @@ class ProductRequest:
     # Setter
     @complete.setter
     def complete(self, isComplete):
-        if type(isComplete) != bool:
+        if type(isComplete) is not bool:
             raise ValueError(f"complete must be a bool, not {type(isComplete)}")
         self._complete = isComplete
 
@@ -190,7 +190,10 @@ class ProductRequest:
                 val = val.lower()
                 if val.lower() not in self._specificParValues[ppar]:
                     raise ValueError(
-                        f"'{val}' is not a valid value for {ppar}. Options are: {','.join(self._specificParValues[ppar])}."
+                        (
+                            f"'{val}' is not a valid value for {ppar}. "
+                            "Options are: {','.join(self._specificParValues[ppar])}."
+                        )
                     )
             # OK if we got here then we can set it:
             if not self.silent:
@@ -275,7 +278,7 @@ class ProductRequest:
             # Is it a actually a parameter in this product?
             if par in self._parTypes:
                 # If the parameter was a bool then it has come back as an int
-                if (bool in self._parTypes[par]) and (type(val) != bool):
+                if (bool in self._parTypes[par]) and (type(val) is not bool):
                     val = val == 1 or val == "yes" or val == "1"
 
                 # Otherwise, check the type and try to cast it:
@@ -527,7 +530,7 @@ class ProductRequest:
         for par in self._pars:
             val = self._pars[par]
             # Bools need converting to 0/1
-            if type(val) == bool:
+            if type(val) is bool:
                 if val:
                     val = 1
                 else:

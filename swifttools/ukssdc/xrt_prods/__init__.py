@@ -46,6 +46,6 @@ Brief example
 
 """
 
-from .prod_request import XRTProductRequest
-from .prod_request import listOldJobs, countActiveJobs
-from .version import __version__, _apiVersion
+from .prod_request import XRTProductRequest  # noqa
+from .prod_request import listOldJobs, countActiveJobs  # noqa
+from .version import __version__, _apiVersion  # noqa
