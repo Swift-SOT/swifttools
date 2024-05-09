@@ -240,7 +240,7 @@ def getSourceDetails(sourceID=None, sourceName=None, cat="LSXPS", silent=True, v
 
     """
     if verbose:
-        silent = False # noqa
+        silent = False  # noqa
     varName, varVal, single = _handleSourceArgs(sourceID, sourceName)
 
     if forceSingle:
@@ -1630,7 +1630,7 @@ def getDatasetDetails(DatasetID=None, ObsID=None, cat="LSXPS", silent=True, verb
 
     """
     if verbose:
-        silent = False # noqa
+        silent = False  # noqa
 
     varName, varVal, single = _handleDSArgs(DatasetID, ObsID)
 
@@ -1834,7 +1834,7 @@ def listOldTables(silent=True, verbose=False):
 
     """
     if verbose:
-        silent = False # noqa
+        silent = False  # noqa
     sendData = {}
     tmp = base.submitAPICall("getOldSXPSTables", sendData, verbose=verbose, minKeys=("hourly", "daily"))
     return tmp
