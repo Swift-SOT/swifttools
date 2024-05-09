@@ -2908,7 +2908,11 @@ class XRTProductRequest:
                             else (
                                 "Ratepos"
                                 if x == "RatePos"
-                                else "Rateneg" if x == "RateNeg" else "Rate" if x == "UpperLimit" else x
+                                else "Rateneg"
+                                if x == "RateNeg"
+                                else "Rate"
+                                if x == "UpperLimit"
+                                else x
                             )
                         )
                     )
