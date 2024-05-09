@@ -4,6 +4,7 @@ indent-width = 4
 
 [lint]
 # Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)  codes by default.
+select = ["F", "E"]
 ignore = ["F405", "F401", "E721", "F403", "F841"]
 
 [format]
