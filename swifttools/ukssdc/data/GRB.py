@@ -7,6 +7,7 @@ having to carry out a query first.
 This documentation will be updated when I've written the code
 
 """
+
 __docformat__ = "restructedtext en"
 
 
@@ -1176,7 +1177,6 @@ def getBurstAnalyser(
                 raise RuntimeError(f"Failed getting tar for {key}")
 
         if saveData or returnData:
-
             sendData = {
                 "targetID": t,
                 "instruments": instruments,
@@ -1471,7 +1471,7 @@ def saveSingleBurstAn(
                 # If we don't want the bad data, filter them:
                 if not badBATBins:
                     # flake is wrong, is False crashes!
-                    tmp = data["BAT"][b][d][data["BAT"][b][d]["BadBin"] == False]  # noqa;
+                    tmp = data["BAT"][b][d][data["BAT"][b][d]["BadBin"] == False]  # noqa: E712
 
                 # For QDP, this gets more complicated, we need to filter the columns to get rid of the unwanted errors
                 if asQDP:

@@ -1770,7 +1770,7 @@ def saveDatasetImages(
         # We can just accept this result, as the only key we have to have is "OK", and
         # if that wasn't set we will already have hit an error.
         tmp = base.submitAPICall("getSXPSDatasetImages", sendData, verbose=verbose)
-        if 'SupersededBy' in tmp:
+        if "SupersededBy" in tmp:
             print("\n ** WARNING: This dataset is an obsolete stack ** \n")
         path = destDir
         if subDirs:

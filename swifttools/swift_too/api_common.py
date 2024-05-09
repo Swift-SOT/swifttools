@@ -14,10 +14,8 @@ from .version import version_tuple
 
 # Make Warnings a little less weird
 formatwarning_orig = warnings.formatwarning
-warnings.formatwarning = (
-    lambda message, category, filename, lineno, line=None: formatwarning_orig(
-        message, category, filename, lineno, line=""
-    )
+warnings.formatwarning = lambda message, category, filename, lineno, line=None: formatwarning_orig(
+    message, category, filename, lineno, line=""
 )
 
 # Define the API version
@@ -103,9 +101,7 @@ def convert_to_dt(value, isutc=False, outfunc=datetime):
                 )
             dtvalue = dtvalue.astimezone(timezone.utc).replace(tzinfo=None)
         else:
-            raise ValueError(
-                "Date/time given as string should 'YYYY-MM-DD HH:MM:SS' or ISO8601 format."
-            )
+            raise ValueError("Date/time given as string should 'YYYY-MM-DD HH:MM:SS' or ISO8601 format.")
     elif type(value) == date:
         dtvalue = outfunc.strptime(f"{value} 00:00:00", "%Y-%m-%d %H:%M:%S")
     elif type(value) == outfunc:
@@ -113,12 +109,7 @@ def convert_to_dt(value, isutc=False, outfunc=datetime):
             # Strip out timezone info and convert to UTC
             value = value.astimezone(timezone.utc).replace(tzinfo=None)
         dtvalue = value  # Just pass through un molested
-    elif (
-        type(value) == swiftdatetime
-        and outfunc == datetime
-        or type(value) == datetime
-        and outfunc == swiftdatetime
-    ):
+    elif type(value) == swiftdatetime and outfunc == datetime or type(value) == datetime and outfunc == swiftdatetime:
         if type(value) == datetime and value.tzinfo is not None:
             # Strip out timezone info and convert to UTC
             value = value.astimezone(timezone.utc).replace(tzinfo=None)
@@ -155,9 +146,7 @@ def _tablefy(table, header=None):
     tab = "<table>"
     if header is not None:
         tab += "<thead>"
-        tab += "".join(
-            [f"<th style='text-align: left;'>{head}</th>" for head in header]
-        )
+        tab += "".join([f"<th style='text-align: left;'>{head}</th>" for head in header])
         tab += "</thead>"
 
     for row in table:
@@ -197,22 +186,16 @@ class TOOAPI_Baseclass:
         if self._shared_secret is None and self.username != "anonymous":
             # Try to fetch password using keyring, if available
             if keyring_support:
-                self._shared_secret = keyring.get_password(
-                    "swifttools.swift_too", self.username
-                )
+                self._shared_secret = keyring.get_password("swifttools.swift_too", self.username)
             else:
-                raise Exception(
-                    "Warning: keyring support not available. Please set shared_secret manually."
-                )
+                raise Exception("Warning: keyring support not available. Please set shared_secret manually.")
         elif self.username == "anonymous":
             return "anonymous"
         return self._shared_secret
 
     @shared_secret.setter
     def shared_secret(self, secret):
-        if self.username != "anonymous" and (
-            self.username is not None or self.username == ""
-        ):
+        if self.username != "anonymous" and (self.username is not None or self.username == ""):
             # Try to remember the password using keyring if available
             if keyring_support:
                 try:
@@ -250,9 +233,7 @@ class TOOAPI_Baseclass:
             and self.status == "Rejected"
             and self.status.__class__.__name__ == "Swift_TOO_Status"
         ):
-            return "<b>Rejected with the following error(s): </b>" + " ".join(
-                self.status.errors
-            )
+            return "<b>Rejected with the following error(s): </b>" + " ".join(self.status.errors)
         else:
             header, table = self._table
             if len(table) > 0:
@@ -266,9 +247,7 @@ class TOOAPI_Baseclass:
             and self.status == "Rejected"
             and self.status.__class__.__name__ == "Swift_TOO_Status"
         ):
-            return "Rejected with the following error(s): " + " ".join(
-                self.status.errors
-            )
+            return "Rejected with the following error(s): " + " ".join(self.status.errors)
         else:
             header, table = self._table
             if len(table) > 0:
@@ -297,9 +276,7 @@ class TOOAPI_Baseclass:
             if key in self._parameters + self._local:
                 setattr(self, key, kwargs[key])
             else:
-                raise TypeError(
-                    f"{self.api_name} got an unexpected keyword argument '{key}'"
-                )
+                raise TypeError(f"{self.api_name} got an unexpected keyword argument '{key}'")
 
     @property
     def too_api_dict(self):
@@ -323,9 +300,7 @@ class TOOAPI_Baseclass:
                 elif type(value) == list or type(value) == tuple:
 
                     def conv(x):
-                        return (
-                            f"{x}" if not hasattr(x, "too_api_dict") else x.too_api_dict
-                        )
+                        return f"{x}" if not hasattr(x, "too_api_dict") else x.too_api_dict
 
                     data[param] = [conv(entry) for entry in value]
                 elif (
@@ -387,9 +362,7 @@ class TOOAPI_Baseclass:
                     mins = int(mins)
                     secs = int(float(secs))
                     millisecs = int(1000.0 * secs % 1)
-                    val = timedelta(
-                        hours=hours, minutes=mins, seconds=secs, milliseconds=millisecs
-                    )
+                    val = timedelta(hours=hours, minutes=mins, seconds=secs, milliseconds=millisecs)
 
                 # Parse dates into a datetime.date
                 match = re.match(_date_regex, str(entry))
@@ -442,17 +415,13 @@ class TOOAPI_Baseclass:
         for key in data_dict.keys():
             if key in self._parameters or key in self._attributes:
                 val = self.__convert_dict_entry(data_dict[key])
-                if (
-                    val is not None
-                ):  # If value is set to None, then don't change the value
+                if val is not None:  # If value is set to None, then don't change the value
                     if hasattr(self, f"_{key}"):
                         setattr(self, f"_{key}", val)
                     else:
                         setattr(self, key, val)
             else:
-                if (
-                    not self.ignorekeys
-                ):  # If keys exist in JSON we don't understand, fail out
+                if not self.ignorekeys:  # If keys exist in JSON we don't understand, fail out
                     self.__set_error(f"Unknown key in JSON file: {key}")
                     return False
         return True  # No errors
@@ -471,9 +440,7 @@ class TOOAPI_Baseclass:
             return False
         # Make sure it passes validation checks
         if not self.validate():
-            self.__set_error(
-                "Swift TOO API submission did not pass internal validation checks."
-            )
+            self.__set_error("Swift TOO API submission did not pass internal validation checks.")
             return False
 
         return self.__submit_jwt(post=post)
@@ -508,9 +475,7 @@ class TOOAPI_Baseclass:
             try:
                 too_api_dict = json.loads(r.text)
             except json.decoder.JSONDecodeError:
-                self.__set_error(
-                    "Failed to decode JSON. Please check that your shared secret is correct."
-                )
+                self.__set_error("Failed to decode JSON. Please check that your shared secret is correct.")
                 self.__set_status("Rejected")
                 return False
 
@@ -606,19 +571,12 @@ class swiftdatetime(datetime, TOOAPI_Baseclass):
     def __sub__(self, other):
         """Redefined __sub__ to handle mismatched time bases"""
         if isinstance(other, swiftdatetime):
-            if self.isutc != other.isutc and (
-                self.utctime is None or other.utctime is None
-            ):
+            if self.isutc != other.isutc and (self.utctime is None or other.utctime is None):
                 raise ArithmeticError(
                     "Cannot subtract mismatched time zones with no UTCF"
                 )  # FIXME - correct exception?
 
-            if (
-                self.isutc is True
-                and other.isutc is True
-                or self.isutc is False
-                and other.isutc is False
-            ):
+            if self.isutc is True and other.isutc is True or self.isutc is False and other.isutc is False:
                 return super().__sub__(other)
             else:
                 if self.isutc:
@@ -730,9 +688,7 @@ class swiftdatetime(datetime, TOOAPI_Baseclass):
         dt = datetime(2001, 1, 1) + timedelta(seconds=met)
         if isutc and utcf is not None:
             dt += timedelta(seconds=utcf)
-        ret = cls(
-            dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.microsecond
-        )
+        ret = cls(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.microsecond)
         ret.utcf = utcf
         ret.isutc = isutc
         return ret

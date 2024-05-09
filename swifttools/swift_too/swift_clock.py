@@ -177,30 +177,20 @@ class Swift_Clock(TOOAPI_Baseclass):
         else:
             self._isutc = True
         # Basic check that anything is set
-        if (
-            self.met is not None
-            or self.swifttime is not None
-            or self.utctime is not None
-        ):
+        if self.met is not None or self.swifttime is not None or self.utctime is not None:
             return True
 
     def to_utctime(self):
         """Convert all entries to a UTC time base"""
         mets = [entry.met for entry in self.entries]
         utcfs = [entry.utcf for entry in self.entries]
-        self.entries = [
-            swiftdatetime.frommet(mets[i], utcf=utcfs[i], isutc=True)
-            for i in range(len(mets))
-        ]
+        self.entries = [swiftdatetime.frommet(mets[i], utcf=utcfs[i], isutc=True) for i in range(len(mets))]
 
     def to_swifttime(self):
         """Convert all entries to a Swift Time base"""
         mets = [entry.met for entry in self.entries]
         utcfs = [entry.utcf for entry in self.entries]
-        self.entries = [
-            swiftdatetime.frommet(mets[i], utcf=utcfs[i], isutc=False)
-            for i in range(len(mets))
-        ]
+        self.entries = [swiftdatetime.frommet(mets[i], utcf=utcfs[i], isutc=False) for i in range(len(mets))]
 
     # Aliases
     mettime = met
@@ -229,9 +219,7 @@ def index_datetimes(dictionary, i=0, values=[], setvals=None):
         # If value is a list, recurse one by one
         elif isinstance(value, (list, tuple)):
             for j in range(len(value)):
-                i, values = index_datetimes(
-                    {f"value{j}": value[j]}, i, values, setvals=setvals
-                )
+                i, values = index_datetimes({f"value{j}": value[j]}, i, values, setvals=setvals)
 
         # If value is a datetime, record and/or update to the result from
         # Swift_Clock, increment the counter

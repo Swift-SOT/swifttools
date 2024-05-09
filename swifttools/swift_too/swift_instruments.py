@@ -65,9 +65,7 @@ class TOOAPI_Instruments:
             if mode in XRTMODES.keys():
                 setattr(self, f"_{attr}", mode)
             else:
-                raise ValueError(
-                    f"Unknown mode ({mode}), should be PC (7), WT (6) or Auto (0)"
-                )
+                raise ValueError(f"Unknown mode ({mode}), should be PC (7), WT (6) or Auto (0)")
 
     @property
     def xrt(self):

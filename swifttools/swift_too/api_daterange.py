@@ -26,11 +26,7 @@ class TOOAPI_Daterange:
 
     @property
     def begin(self):
-        if (
-            hasattr(self._begin, "utcf")
-            and self._begin.utcf is None
-            and self.utcf is not None
-        ):
+        if hasattr(self._begin, "utcf") and self._begin.utcf is None and self.utcf is not None:
             self._begin.utcf = self.utcf
         return self._begin
 
@@ -38,11 +34,7 @@ class TOOAPI_Daterange:
     def end(self):
         if self._begin is not None and self._length is not None and self._end is None:
             self._end = self.begin + timedelta(days=self._length)
-        if (
-            hasattr(self._end, "utcf")
-            and self._end.utcf is None
-            and self.utcf is not None
-        ):
+        if hasattr(self._end, "utcf") and self._end.utcf is None and self.utcf is not None:
             self._end.utcf = self.utcf
         return self._end
 

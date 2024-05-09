@@ -15,4 +15,3 @@ The following functions are provided:
 """
 
 from .download import downloadObsData, downloadObsDataByTarget  # noqa
-

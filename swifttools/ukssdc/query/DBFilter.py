@@ -5,6 +5,7 @@ filters for database queries -- essentially the building blocks of
 SQL 'WHERE' statements.
 
 """
+
 __docformat__ = "restructedtext en"
 
 
@@ -151,7 +152,6 @@ class filter:
         # May have to do this twice, if combiner is set.
         suffs = ("", "2")
         for s in suffs:
-
             # -------
             # filter
             numArgs = 0
@@ -201,7 +201,7 @@ class filter:
 
         # Last thing is to check that we are valid, if metadata was supplied
         if (metadata is not None) and (not self.isValid(metadata)):
-            tmp = self._data['colName']
+            tmp = self._data["colName"]
             self._data = None
 
             raise RuntimeError(f"Cannot create filter, {tmp} is not a valid column.")
