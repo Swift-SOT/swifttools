@@ -809,7 +809,7 @@ class XRTProductRequest:
         status = True
         report = ""
 
-        if type(what) is str:
+        if isinstance(what, str):
             if what == "all":
                 what = self._productList.keys()
             else:
@@ -1774,7 +1774,7 @@ class XRTProductRequest:
         for gPar in self.globalPars:
             val = self.globalPars[gPar]
             # Bools need converting to 0/1
-            if type(val) is bool:
+            if isinstance(val, bool):
                 if val:
                     val = 1
                 else:
@@ -2046,7 +2046,7 @@ class XRTProductRequest:
             A list of the products with the internal keys.
 
         """
-        if type(what) is str:
+        if isinstance(what, str):
             if what == "all":
                 what = self._productList.keys()
             else:
@@ -2396,7 +2396,7 @@ class XRTProductRequest:
             If the product requested is not complete.
 
         """
-        if (stem is not None) and (type(stem) is not str):
+        if (stem is not None) and (not isinstance(stem, str)):
             raise TypeError(f"Stem must be str or None, cannot be {type(stem)}")
 
         if format not in downloadFormats:
@@ -3216,7 +3216,7 @@ class XRTProductRequest:
             # Is it a actually a global? parList may contain product-specific pars
             if par in XRTProductRequest._globalTypes:
                 # If the parameter was a bool then it has come back as an int
-                if (bool in XRTProductRequest._globalTypes[par]) and (type(val) is not bool):
+                if (bool in XRTProductRequest._globalTypes[par]) and not isinstance (val, bool):
                     val = val == 1 or val == "yes" or val == "1"
 
                 # Otherwise, check the type and try to cast it:
@@ -3280,10 +3280,10 @@ class XRTProductRequest:
             If 'JSONVals' is not a string or dictionary.
 
         """
-        if type(JSONVals) is str:  # It's literally a json string
+        if isinstance(JSONVals, str):  # It's literally a json string
             JSONVals = json.loads(JSONVals)
 
-        if type(JSONVals) is not dict:  # Oh oh
+        if not isinstance(JSONVals, dict):  # Oh oh
             raise ValueError("JSON should be a JSON string or a dict; it is not.")
 
         # Reset almost everything
@@ -3312,7 +3312,7 @@ class XRTProductRequest:
         for par, prod in parProd.items():
             if par in JSONVals:
                 val = JSONVals[par]  # Just for ease
-                if ((type(val) is bool) and val) or (type(val) is int and (val == 1)):
+                if (isinstance(val, bool) and val) or (isinstance(val, int) and (val == 1)):
                     # We do want this product
                     self.addProduct(prod)
 

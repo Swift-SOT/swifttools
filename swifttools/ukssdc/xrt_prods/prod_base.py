@@ -93,7 +93,7 @@ class ProductRequest:
     # Setter
     @complete.setter
     def complete(self, isComplete):
-        if type(isComplete) is not bool:
+        if not isinstance(isComplete, bool):
             raise ValueError(f"complete must be a bool, not {type(isComplete)}")
         self._complete = isComplete
 
@@ -278,7 +278,7 @@ class ProductRequest:
             # Is it a actually a parameter in this product?
             if par in self._parTypes:
                 # If the parameter was a bool then it has come back as an int
-                if (bool in self._parTypes[par]) and (type(val) is not bool):
+                if (bool in self._parTypes[par]) and (not isinstance(val, bool)):
                     val = val == 1 or val == "yes" or val == "1"
 
                 # Otherwise, check the type and try to cast it:
@@ -530,7 +530,7 @@ class ProductRequest:
         for par in self._pars:
             val = self._pars[par]
             # Bools need converting to 0/1
-            if type(val) is bool:
+            if isinstance(val, bool):
                 if val:
                     val = 1
                 else:
