@@ -39,7 +39,7 @@ prodPythonParsToJSONPars = {
         "grades": "specgrades",
         "incHours": "specobstime",
         "specStem": "specstem",
-        "deltaFitStat": "dchi"
+        "deltaFitStat": "dchi",
     },
     "psf": {
         "whichData": "posobs",
@@ -63,34 +63,20 @@ prodPythonParsToJSONPars = {
         "detOrCent": "detornot",
         "centMeth": "detMeth",
     },
-    "image": {
-        "energies": "imen",
-        "useObs": "useimobs",
-        "whichData": "imobs"
-    },
-    "sourceDet": {
-        "whichData": "detobs",
-        "useObs": "usedetobs",
-        "whichBands": "detbands"
-    }
+    "image": {"energies": "imen", "useObs": "useimobs", "whichData": "imobs"},
+    "sourceDet": {"whichData": "detobs", "useObs": "usedetobs", "whichBands": "detbands"},
 }
 
 deprecatedPars = {
     "lc": {
         "timeType": "timeFormat",
     },
-    "spec": {
-    },
-    "psf": {
-    },
-    "enh": {
-    },
-    "xastrom": {
-    },
-    "image": {
-    },
-    "sourceDet": {
-    }
+    "spec": {},
+    "psf": {},
+    "enh": {},
+    "xastrom": {},
+    "image": {},
+    "sourceDet": {},
 }
 
 # prodNeedGlobals lists any global parameters which are required by a
@@ -102,7 +88,7 @@ prodNeedGlobals = {
     "enh": (),
     "xastrom": (),
     "image": (),
-    "sourceDet": ()
+    "sourceDet": (),
 }
 # prodUseGlobals shows any parameters that are shared between products,
 # so will be handled as globals by this API, even though the user sets
@@ -121,7 +107,7 @@ prodUseGlobals = {
         "centMeth",
     ),
     "image": (),
-    "sourceDet": ()
+    "sourceDet": (),
 }
 
 # prodNeedPars lists any parameters which are mandatory for the specific
@@ -133,17 +119,19 @@ prodNeedPars = {
     "enh": (),
     "xastrom": (),
     "image": (),
-    "sourceDet": ("whichData",)
+    "sourceDet": ("whichData",),
 }
 
 prodDefaults = {
     "lc": {},
-    "spec": {"deltaFitStat": 2.706,},
+    "spec": {
+        "deltaFitStat": 2.706,
+    },
     "psf": {},
     "enh": {},
     "xastrom": {},
     "image": {},
-    "sourceDet": {}
+    "sourceDet": {},
 }
 
 # prodParTypes lists all possible parameters for each product, along
@@ -189,7 +177,10 @@ prodParTypes = {
         "redshift": (float,),
         "whichData": (str,),
         "useObs": (str,),
-        "incHours": (float, int,),
+        "incHours": (
+            float,
+            int,
+        ),
         "timeslice": (str,),
         "grades": (str,),
         "rname1": (str,),
@@ -204,24 +195,13 @@ prodParTypes = {
         "doNotFit": (bool,),
         "galactic": (bool,),
         "models": (list, tuple),
-        "deltaFitStat": (float,)
+        "deltaFitStat": (float,),
     },
     "psf": {},
     "enh": {},
-    "xastrom": {
-        "useAllObs": (bool,)
-    },
-    "image": {
-        "energies": (str,),
-        "whichData": (str,),
-        "useObs": (str,)
-    },
-    "sourceDet": {
-        "useObs": (str,),
-        "whichData": (str,),
-        "whichBands": (str,),
-        "fitStrayLight": (bool,)
-    }
+    "xastrom": {"useAllObs": (bool,)},
+    "image": {"energies": (str,), "whichData": (str,), "useObs": (str,)},
+    "sourceDet": {"useObs": (str,), "whichData": (str,), "whichBands": (str,), "fitStrayLight": (bool,)},
 }
 
 
@@ -235,23 +215,18 @@ prodSpecificParValues = {
         "timeType": ("m", "s", "mjd", "sec"),
         "timeFormat": ("m", "s", "mjd", "sec"),
         "whichData": ("all", "user"),
-        "grades": ("0", "all", "4")
+        "grades": ("0", "all", "4"),
     },
     "spec": {
         "whichData": ("all", "user", "hours"),
         "timeslice": ("single", "user", "snapshot", "obsid"),
-        "grades": ("0", "all", "4")
+        "grades": ("0", "all", "4"),
     },
     "psf": {},
     "enh": {},
     "xastrom": {},
-    "image": {
-        "whichData": ("all", "user")
-    },
-    "sourceDet": {
-        "whichData": ("all", "user"),
-        "whichBands": ("total", "all")
-    },
+    "image": {"whichData": ("all", "user")},
+    "sourceDet": {"whichData": ("all", "user"), "whichBands": ("total", "all")},
 }
 
 # prodParDeps lists any parameter dependencies, i.e. where parameter b
@@ -272,17 +247,15 @@ prodParDeps = {
     },
     "spec": {
         "whichData": {"user": ("useObs",), "hours": ("incHours",)},
-        "hasRedshift": {"True": ("redshift",), },
+        "hasRedshift": {
+            "True": ("redshift",),
+        },
     },
     "psf": {},
     "enh": {},
     "xastrom": {},
-    "image": {
-        "whichData": {"user": ("useObs",)}
-    },
-    "sourceDet": {
-        "whichData": {"user": ("useObs",)}
-    },
+    "image": {"whichData": {"user": ("useObs",)}},
+    "sourceDet": {"whichData": {"user": ("useObs",)}},
 }
 
 # prodParTriggers lists cases where setting parameter a to some value
@@ -290,37 +263,19 @@ prodParDeps = {
 # the 'redshift' parmeter is given any value then hasRedshift gets set
 # to true
 prodParTriggers = {
-    "lc": {
-        "useObs": {"ANY": {"whichData": "user"}},
-        "whichData": {"all": {"useObs": None}}
-    },
+    "lc": {"useObs": {"ANY": {"whichData": "user"}}, "whichData": {"all": {"useObs": None}}},
     "spec": {
         "redshift": {"ANY": {"hasRedshift": True, "galactic": True}, "NONE": {"hasRedshift": False}},
         "hasRedshift": {True: {"galactic": True}},
         "useObs": {"ANY": {"whichData": "user"}},
         "whichData": {"all": {"useObs": None}},
-        "doNotFit": {True: {"hasRedshift": False}}
+        "doNotFit": {True: {"hasRedshift": False}},
     },
-    "psf": {
-        "useObs": {"ANY": {"whichData": "user"}},
-        "whichData": {"all": {"useObs": None}}
-    },
-    "enh": {
-        "useObs": {"ANY": {"whichData": "user"}},
-        "whichData": {"all": {"useObs": None}}
-    },
-    "xastrom": {
-        "useObs": {"ANY": {"whichData": "user"}},
-        "whichData": {"all": {"useObs": None}}
-    },
-    "image": {
-        "useObs": {"ANY": {"whichData": "user"}},
-        "whichData": {"all": {"useObs": None}}
-    },
-    "sourceDet": {
-        "useObs": {"ANY": {"whichData": "user"}},
-        "whichData": {"all": {"useObs": None}}
-    },
+    "psf": {"useObs": {"ANY": {"whichData": "user"}}, "whichData": {"all": {"useObs": None}}},
+    "enh": {"useObs": {"ANY": {"whichData": "user"}}, "whichData": {"all": {"useObs": None}}},
+    "xastrom": {"useObs": {"ANY": {"whichData": "user"}}, "whichData": {"all": {"useObs": None}}},
+    "image": {"useObs": {"ANY": {"whichData": "user"}}, "whichData": {"all": {"useObs": None}}},
+    "sourceDet": {"useObs": {"ANY": {"whichData": "user"}}, "whichData": {"all": {"useObs": None}}},
 }
 
 # globalParTriggers lists cases where setting a global parameter to some
@@ -339,7 +294,7 @@ prodDownloadStem = {
     "enh": "enh",
     "xastrom": "xastrom",
     "image": "image",
-    "sourceDet": "sourceDet"
+    "sourceDet": "sourceDet",
 }
 
 skipGlobals = {

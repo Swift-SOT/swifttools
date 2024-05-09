@@ -66,9 +66,7 @@ class Swift_UVOTModeEntry(TOOAPI_Baseclass):
         return self.filter_name
 
 
-class Swift_UVOTMode(
-    TOOAPI_Baseclass, TOOAPI_Instruments, TOOAPI_SkyCoord, TOOAPI_AutoResolve
-):
+class Swift_UVOTMode(TOOAPI_Baseclass, TOOAPI_Instruments, TOOAPI_SkyCoord, TOOAPI_AutoResolve):
     """Class to fetch information about a given UVOT mode. Specifically this is
     useful for understanding for a given UVOT hex mode (e.g. 0x30ed), which
     filters and configuration are used by UVOT.
@@ -139,14 +137,8 @@ class Swift_UVOTMode(
 
     def __str__(self):
         """Display UVOT mode table"""
-        if (
-            hasattr(self, "status")
-            and self.status == "Rejected"
-            and self.status.__class__.__name__ == "TOOStatus"
-        ):
-            return "Rejected with the following error(s): " + " ".join(
-                self.status.errors
-            )
+        if hasattr(self, "status") and self.status == "Rejected" and self.status.__class__.__name__ == "TOOStatus":
+            return "Rejected with the following error(s): " + " ".join(self.status.errors)
         elif self.entries is not None:
             table_cols = [
                 "filter_name",
@@ -176,12 +168,8 @@ class Swift_UVOTMode(
             table += "The following table summarizes this mode, ordered by the filter sequence:\n"
             table += tabulate(table_columns, tablefmt="pretty")
             table += "\nFilter: The particular filter in the sequence.\n"
-            table += (
-                "Event FOV: The size of the FOV (in arc-minutes) for UVOT event data.\n"
-            )
-            table += (
-                "Image FOV: The size of the FOV (in arc-minutes) for UVOT image data.\n"
-            )
+            table += "Event FOV: The size of the FOV (in arc-minutes) for UVOT event data.\n"
+            table += "Image FOV: The size of the FOV (in arc-minutes) for UVOT image data.\n"
             table += "Max. Exp. Time: The maximum amount of time the snapshot will spend on the particular filter in the sequence.\n"
             table += "Weighting: Ratio of time spent on the particular filter in the sequence.\n"
             table += "Comments: Additional notes that may be useful to know.\n"
@@ -191,14 +179,8 @@ class Swift_UVOTMode(
 
     def _repr_html_(self):
         """Jupyter Notebook friendly display of UVOT mode table"""
-        if (
-            hasattr(self, "status")
-            and self.status == "Rejected"
-            and self.status.__class__.__name__ == "TOOStatus"
-        ):
-            return "<b>Rejected with the following error(s): </b>" + " ".join(
-                self.status.errors
-            )
+        if hasattr(self, "status") and self.status == "Rejected" and self.status.__class__.__name__ == "TOOStatus":
+            return "<b>Rejected with the following error(s): </b>" + " ".join(self.status.errors)
         elif self.entries is not None:
             html = f"<h2>UVOT Mode: {self.uvotmode}</h2>"
             html += "<p>The following table summarizes this mode, ordered by the filter sequence:</p>"
@@ -260,9 +242,7 @@ class Swift_UVOTMode(
         if self.uvotmode is None:
             return False
         if not self.username or not self.shared_secret:
-            self.status.error(
-                "username and shared_secret parameters need to be supplied."
-            )
+            self.status.error("username and shared_secret parameters need to be supplied.")
             return False
 
         if type(self._uvot) != int:

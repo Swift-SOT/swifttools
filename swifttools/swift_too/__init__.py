@@ -4,7 +4,7 @@ the Neil Gehrels Swift Observatory (hereafter *Swift*).
 
 The module is split into the following main classes:
 
-1. Swift_TOO 
+1. Swift_TOO
 
 This allows Target of Opportunity requests to be constructed and submitted. This
 includes basic validation before submission, and querying of the status of the
@@ -104,7 +104,7 @@ and gives you metadata about the dump.
 10. Swift_Data
 
 `Swift_Data` provides an easy interface to download archival or quick-look data
-from the Swift Science Data Centers in the USA or UK. 
+from the Swift Science Data Centers in the USA or UK.
 
 11. Swift_Resolve
 
@@ -143,6 +143,7 @@ submitted to a queue system in which they are processed in a first come, first
 served basis. Typically processing requests takes a 10-20 seconds. Status of
 requests can be queried, and errors are reported back.
 """
+
 from .api_resolve import Resolve, Swift_Resolve
 from .query_job import QueryJob
 from .swift_calendar import Calendar, Swift_Calendar

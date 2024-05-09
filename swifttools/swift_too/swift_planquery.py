@@ -113,9 +113,7 @@ class Swift_PPSTEntry(
     def _table(self):
         _parameters = ["begin", "end", "targname", "obsnum", "exposure"]
         header = [self._header_title(row) for row in _parameters]
-        return header, [
-            [self.begin, self.end, self.targname, self.obsnum, self.exposure.seconds]
-        ]
+        return header, [[self.begin, self.end, self.targname, self.obsnum, self.exposure.seconds]]
 
 
 class Swift_PPST(

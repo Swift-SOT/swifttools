@@ -48,10 +48,7 @@ class TOOAPI_ObsID:
         if self._target_id is None or self._seg is None:
             return None
         elif type(self._target_id) == list:
-            return [
-                f"{self.target_id[i]:08d}{self.seg[i]:03d}"
-                for i in range(len(self._target_id))
-            ]
+            return [f"{self.target_id[i]:08d}{self.seg[i]:03d}" for i in range(len(self._target_id))]
         else:
             return f"{self.target_id:08d}{self.seg:03d}"
 
@@ -76,10 +73,7 @@ class TOOAPI_ObsID:
     def obsnumsc(self):
         """Return the obsnum in spacecraft format"""
         if type(self._target_id) == list:
-            return [
-                self._target_id[i] + (self._seg[i] << 24)
-                for i in range(len(self._target_id))
-            ]
+            return [self._target_id[i] + (self._seg[i] << 24) for i in range(len(self._target_id))]
         return self._target_id + (self._seg << 24)
 
     # Aliases

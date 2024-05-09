@@ -1,15 +1,11 @@
 import os
 import warnings
 from fnmatch import fnmatch
-import warnings
 import boto3
 from botocore import UNSIGNED
 from botocore.client import Config
 
-import boto3
 import requests
-from botocore import UNSIGNED
-from botocore.client import Config
 
 from .api_common import TOOAPI_Baseclass
 from .api_status import TOOStatus
@@ -298,14 +294,7 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
 
     @property
     def all(self):
-        if (
-            self.xrt
-            and self.uvot
-            and self.bat
-            and self.log
-            and self.auxil
-            and self.tdrss
-        ):
+        if self.xrt and self.uvot and self.bat and self.log and self.auxil and self.tdrss:
             return True
         return False
 
@@ -334,9 +323,7 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
             while i < len(self.entries):
                 keep = False
                 for match in self.match:
-                    if fnmatch(
-                        f"{self.entries[i].path}/{self.entries[i].filename}", match
-                    ):
+                    if fnmatch(f"{self.entries[i].path}/{self.entries[i].filename}", match):
                         keep = True
                 if not keep:
                     del self.entries[i]
@@ -391,9 +378,7 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
 
         # Index any existing files
         for i in range(len(self.entries)):
-            fullfilepath = os.path.join(
-                self.outdir, self.entries[i].path, self.entries[i].filename
-            )
+            fullfilepath = os.path.join(self.outdir, self.entries[i].path, self.entries[i].filename)
             if os.path.exists(fullfilepath):
                 self.entries[i].localpath = fullfilepath
 
@@ -406,9 +391,7 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
             # Don't re-download a file unless clobber=True
             localfile = f"{self.outdir}/{dfile.path}/{dfile.filename}"
             if not self.clobber and os.path.exists(localfile) and not self.quiet:
-                warnings.warn(
-                    f"{dfile.filename} exists and not overwritten (set clobber=True to override this)."
-                )
+                warnings.warn(f"{dfile.filename} exists and not overwritten (set clobber=True to override this).")
             elif not dfile.download(outdir=self.outdir):
                 self.status.error(f"Error downloading {dfile.filename}")
                 return False
@@ -439,9 +422,7 @@ class TOOAPI_DownloadData:
             if key in params + self._local:
                 setattr(data, key, kwargs[key])
             else:
-                raise TypeError(
-                    f"{self.api_name} got an unexpected keyword argument '{key}'"
-                )
+                raise TypeError(f"{self.api_name} got an unexpected keyword argument '{key}'")
         # Set up and download data
         data.obsid = self.obsid
         data.username = self.username

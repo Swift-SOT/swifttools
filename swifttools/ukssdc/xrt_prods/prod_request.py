@@ -3455,7 +3455,7 @@ class XRTProductRequest:
 
     def saveSpectralData(
         self,
-        **kwargs
+        **kwargs,
         # destDir="spec",
         # saveImages=True,
         # saveData=True,

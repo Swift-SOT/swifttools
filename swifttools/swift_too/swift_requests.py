@@ -7,9 +7,7 @@ from .swift_calendar import Swift_Calendar, Swift_Calendar_Entry
 from .swift_toorequest import Swift_TOO_Request
 
 
-class Swift_TOO_Requests(
-    TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI_AutoResolve
-):
+class Swift_TOO_Requests(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_SkyCoord, TOOAPI_AutoResolve):
     """Class used to obtain details about previous TOO requests.
 
     Attributes

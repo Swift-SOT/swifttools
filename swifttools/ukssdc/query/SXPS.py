@@ -1,6 +1,5 @@
-"""File with the for the SXPSQuery class.
+"""File with the for the SXPSQuery class."""
 
-"""
 __docformat__ = "restructedtext en"
 
 import pandas as pd

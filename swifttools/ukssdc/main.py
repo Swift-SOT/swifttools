@@ -1097,7 +1097,6 @@ def mergeUpperLimits(
         # First, do we have all of the columns?
         gotAll = True
         for c in needCols:
-
             if f"{b}_{c}" not in tmp.columns:
                 gotAll = False
                 break

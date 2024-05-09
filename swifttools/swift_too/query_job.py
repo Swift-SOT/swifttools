@@ -74,9 +74,7 @@ class QueryJob(TOOStatus):
             shared secret for TOO API (default 'anonymous')
         """
         # Call the TOOStatus constructor with fetchresult=True to that make this a QueryJob
-        TOOStatus.__init__(
-            self, *args, fetchresult=True, api_name=self.api_name, **kwargs
-        )
+        TOOStatus.__init__(self, *args, fetchresult=True, api_name=self.api_name, **kwargs)
 
     @property
     def _table(self):
@@ -85,9 +83,7 @@ class QueryJob(TOOStatus):
         table = [
             [row, getattr(self, row)]
             for row in _parameters
-            if getattr(self, row) is not None
-            and getattr(self, row) != ""
-            and row != "result"
+            if getattr(self, row) is not None and getattr(self, row) != "" and row != "result"
         ]
         table.append(["result", self.result.__class__.__name__ + " object"])
         return ["Parameter", "Value"], table
