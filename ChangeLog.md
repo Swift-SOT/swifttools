@@ -1,8 +1,11 @@
 # Change history for the swifttools package.
 
-Changes to this package will be summarised here, with links to the
-change log for the specific modules modified.
+Changes to the main `swifttools` package:
 
-[xrt_prods changes](swifttools/xrt_prods/ChangeLog.md)
+* 2024 May 09. Migrated the sourcecode from GitLab to GitHub.
 
-[swift_too changes](swifttools/swift_too/ChangeLog.md)
+Package-specific changes:
+
+* [ukssdc](swifttools/ukssdc/APIDocs/ukssdc/ChangeLog.md)
+* [ukssdc.xrt_prods](swifttools/ukssdc/APIDocs/ukssdc/xrt_prods/ChangeLog.md)
+* [swift_too](swifttools/swift_too/ChangeLog.md)
