@@ -70,14 +70,14 @@ Details for each of these can be found on their relevant pages; below are links 
 the citations requested.
 
 
-* [GRB light curves](/xrt_curves/docs.php#usage): [Evans et al., (2007)](https://ui.adsabs.harvard.edu/abs/2007A%26A...469..379E/abstract),
+* [GRB light curves](https://www.swift.ac.uk/xrt_curves/docs.php#usage): [Evans et al., (2007)](https://ui.adsabs.harvard.edu/abs/2007A%26A...469..379E/abstract),
 [Evans et al., (2009)](https://ui.adsabs.harvard.edu/abs/2009MNRAS.397.1177E/abstract)
-* [GRB enhanced positions](/xrt_positions/docs.php#usage): [Goad et al., (2007)](https://ui.adsabs.harvard.edu/abs/2007A%26A...476.1401G/abstract), [Evans et al., (2009)](https://ui.adsabs.harvard.edu/abs/2009MNRAS.397.1177E/abstract)
-* [GRB spectra](/xrt_spectra/docs.php#usage): [Evans et al., (2009)](https://ui.adsabs.harvard.edu/abs/2009MNRAS.397.1177E/abstract)
-* [The burst analyser](/burst_analyser/docs.php#usage): [Evans et al., (2010)](https://ui.adsabs.harvard.edu/abs/2010A%26A...519A.102E/abstract)
-* [On-demand products](/user_objects/docs.php#usage): [Evans et al., (2009)](https://ui.adsabs.harvard.edu/abs/2009MNRAS.397.1177E/abstract): **please see the [documentation](/user_objects/docs.php#usage) for citations for the different products**.
-* [2SXPS](/2SXPS/docs.php#access): [Evans et al., (2020)](https://ui.adsabs.harvard.edu/abs/2020ApJS..247...54E/abstract)
-* [LSXPS](/LSXPS/docs.php#access): [Evans et al., (2023)](https://ui.adsabs.harvard.edu/abs/2023MNRAS.518..174E/abstract)
+* [GRB enhanced positions](https://www.swift.ac.uk/xrt_positions/docs.php#usage): [Goad et al., (2007)](https://ui.adsabs.harvard.edu/abs/2007A%26A...476.1401G/abstract), [Evans et al., (2009)](https://ui.adsabs.harvard.edu/abs/2009MNRAS.397.1177E/abstract)
+* [GRB spectra](https://www.swift.ac.uk/xrt_spectra/docs.php#usage): [Evans et al., (2009)](https://ui.adsabs.harvard.edu/abs/2009MNRAS.397.1177E/abstract)
+* [The burst analyser](https://www.swift.ac.uk/burst_analyser/docs.php#usage): [Evans et al., (2010)](https://ui.adsabs.harvard.edu/abs/2010A%26A...519A.102E/abstract)
+* [On-demand products](https://www.swift.ac.uk/user_objects/docs.php#usage): [Evans et al., (2009)](https://ui.adsabs.harvard.edu/abs/2009MNRAS.397.1177E/abstract): **please see the [documentation](/user_objects/docs.php#usage) for citations for the different products**.
+* [2SXPS](https://www.swift.ac.uk/2SXPS/docs.php#access): [Evans et al., (2020)](https://ui.adsabs.harvard.edu/abs/2020ApJS..247...54E/abstract)
+* [LSXPS](https://www.swift.ac.uk/LSXPS/docs.php#access): [Evans et al., (2023)](https://ui.adsabs.harvard.edu/abs/2023MNRAS.518..174E/abstract)
 
 ## About this documentation
 
