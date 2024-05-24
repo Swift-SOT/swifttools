@@ -26,7 +26,7 @@ True
 
 ## Querying the product status
 
-To query the product status, use the `checkProductStatus()` method. This takes a single, optional argument detailing which product(s) to cancel. This can either be the string 'all' (to cancel all requested products) or a tuple/list of the product names. e.g.
+To query the product status, use the `checkProductStatus()` method. This takes a single, optional argument detailing which product(s) to query. This can either be the string 'all' (to query all requested products) or a tuple/list of the product names. e.g.
 
 ```python
 In [2]: prodStatus = myReq.checkProductStatus(('LightCurve', 'StandardPos')) # Poll only the light curve and standard position
