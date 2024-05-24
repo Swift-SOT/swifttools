@@ -83,7 +83,7 @@ the citations requested.
 
 The documentation for this Python module is organised by package and sub-package as given in the contents list below.
 Many of the documentation pages can also be downloaded as Jupyter notebooks, so you can actually execute the example code
-and experiment with it. Links to the notebooks appear at the top of each page, and a [zip archive of all of them is available](ukssdc.zip).
+and experiment with it. Links to the notebooks appear at the top of each page, and a [zip archive of all of them is available](https://www.swift.ac.uk/API/ukssdc/ukssdc.zip).
 
 **Documentation contents:**
 
