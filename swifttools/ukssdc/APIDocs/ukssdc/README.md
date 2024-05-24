@@ -101,7 +101,7 @@ and experiment with it. Links to the notebooks appear at the top of each page, a
 
 All functions should be fully documented via PEP 257-compliant docstrings, so the `help` command can be used to obtain
 full details. If you find something missing or inaccurate, you can [open an issue on our GitHub
-page](https://github.com/Swift-SOT/swifttools/-/issues) or just email me (swifthelp@leicester.ac.uk).
+page](https://github.com/Swift-SOT/swifttools/issues/new) or just email me (swifthelp@leicester.ac.uk).
 
 While efforts have been made to ensure that the code is PEP8 compliant, eagle-eyed users will notice that
 function names in this module are of the form `someFunction()`, rather than the `some_function()` preferred
