@@ -70,20 +70,20 @@ Details for each of these can be found on their relevant pages; below are links 
 the citations requested.
 
 
-* [GRB light curves](/xrt_curves/docs.php#usage): [Evans et al., (2007)](https://ui.adsabs.harvard.edu/abs/2007A%26A...469..379E/abstract),
+* [GRB light curves](https://www.swift.ac.uk/xrt_curves/docs.php#usage): [Evans et al., (2007)](https://ui.adsabs.harvard.edu/abs/2007A%26A...469..379E/abstract),
 [Evans et al., (2009)](https://ui.adsabs.harvard.edu/abs/2009MNRAS.397.1177E/abstract)
-* [GRB enhanced positions](/xrt_positions/docs.php#usage): [Goad et al., (2007)](https://ui.adsabs.harvard.edu/abs/2007A%26A...476.1401G/abstract), [Evans et al., (2009)](https://ui.adsabs.harvard.edu/abs/2009MNRAS.397.1177E/abstract)
-* [GRB spectra](/xrt_spectra/docs.php#usage): [Evans et al., (2009)](https://ui.adsabs.harvard.edu/abs/2009MNRAS.397.1177E/abstract)
-* [The burst analyser](/burst_analyser/docs.php#usage): [Evans et al., (2010)](https://ui.adsabs.harvard.edu/abs/2010A%26A...519A.102E/abstract)
-* [On-demand products](/user_objects/docs.php#usage): [Evans et al., (2009)](https://ui.adsabs.harvard.edu/abs/2009MNRAS.397.1177E/abstract): **please see the [documentation](/user_objects/docs.php#usage) for citations for the different products**.
-* [2SXPS](/2SXPS/docs.php#access): [Evans et al., (2020)](https://ui.adsabs.harvard.edu/abs/2020ApJS..247...54E/abstract)
-* [LSXPS](/LSXPS/docs.php#access): [Evans et al., (2023)](https://ui.adsabs.harvard.edu/abs/2023MNRAS.518..174E/abstract)
+* [GRB enhanced positions](https://www.swift.ac.uk/xrt_positions/docs.php#usage): [Goad et al., (2007)](https://ui.adsabs.harvard.edu/abs/2007A%26A...476.1401G/abstract), [Evans et al., (2009)](https://ui.adsabs.harvard.edu/abs/2009MNRAS.397.1177E/abstract)
+* [GRB spectra](https://www.swift.ac.uk/xrt_spectra/docs.php#usage): [Evans et al., (2009)](https://ui.adsabs.harvard.edu/abs/2009MNRAS.397.1177E/abstract)
+* [The burst analyser](https://www.swift.ac.uk/burst_analyser/docs.php#usage): [Evans et al., (2010)](https://ui.adsabs.harvard.edu/abs/2010A%26A...519A.102E/abstract)
+* [On-demand products](https://www.swift.ac.uk/user_objects/docs.php#usage): [Evans et al., (2009)](https://ui.adsabs.harvard.edu/abs/2009MNRAS.397.1177E/abstract): **please see the [documentation](/user_objects/docs.php#usage) for citations for the different products**.
+* [2SXPS](https://www.swift.ac.uk/2SXPS/docs.php#access): [Evans et al., (2020)](https://ui.adsabs.harvard.edu/abs/2020ApJS..247...54E/abstract)
+* [LSXPS](https://www.swift.ac.uk/LSXPS/docs.php#access): [Evans et al., (2023)](https://ui.adsabs.harvard.edu/abs/2023MNRAS.518..174E/abstract)
 
 ## About this documentation
 
 The documentation for this Python module is organised by package and sub-package as given in the contents list below.
 Many of the documentation pages can also be downloaded as Jupyter notebooks, so you can actually execute the example code
-and experiment with it. Links to the notebooks appear at the top of each page, and a [zip archive of all of them is available](ukssdc.zip).
+and experiment with it. Links to the notebooks appear at the top of each page, and a [zip archive of all of them is available](https://www.swift.ac.uk/API/ukssdc/ukssdc.zip).
 
 **Documentation contents:**
 
@@ -101,7 +101,7 @@ and experiment with it. Links to the notebooks appear at the top of each page, a
 
 All functions should be fully documented via PEP 257-compliant docstrings, so the `help` command can be used to obtain
 full details. If you find something missing or inaccurate, you can [open an issue on our GitHub
-page](https://github.com/Swift-SOT/swifttools/-/issues) or just email me (swifthelp@leicester.ac.uk).
+page](https://github.com/Swift-SOT/swifttools/issues/new) or just email me (swifthelp@leicester.ac.uk).
 
 While efforts have been made to ensure that the code is PEP8 compliant, eagle-eyed users will notice that
 function names in this module are of the form `someFunction()`, rather than the `some_function()` preferred
