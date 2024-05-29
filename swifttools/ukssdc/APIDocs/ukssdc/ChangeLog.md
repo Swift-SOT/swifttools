@@ -2,6 +2,8 @@
 
 Changes made to this module after its original release will be documented here.
 
+* 2024 May 29: v1.0.5 released as part of `swifttools` v3.0.22
+  * `swifttools.ukssdc.xrt_prods` v1.12 released: adds a `srcrad` parameter for light curves and spectra.
 * 2023 May 24: Modification to the back end, light curve `dict` now includes an "Exposure" column in the hard/soft/ratio datasets.
 * 2022 September 06. v1.0.3 relased as part of `swifttools` v3.0.5
   * Further minor bugfixes in `mergeUpperLimits()`.
