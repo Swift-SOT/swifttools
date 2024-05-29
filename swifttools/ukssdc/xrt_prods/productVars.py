@@ -171,6 +171,7 @@ prodParTypes = {
         "pcHRBinTime": (float, int),
         "minFracExp": (float, int),
         "whichData": (str,),
+        "srcrad": (int,),
     },
     "spec": {
         "hasRedshift": (bool,),
@@ -196,6 +197,7 @@ prodParTypes = {
         "galactic": (bool,),
         "models": (list, tuple),
         "deltaFitStat": (float,),
+        "srcrad": (int,),
     },
     "psf": {},
     "enh": {},

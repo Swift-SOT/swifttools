@@ -2,6 +2,10 @@
 
 Changes made to this module after its original release will be documented here.
 
+* 2024 May 29: xrt_prods v1.12 with `swifttools` v3.0.22
+  * This release adds a new `srcrad` parameter to light curves and spectra, which sets the maximum size the source
+  radius can extend to. This is only useful for rare, exteremly piled up sources where the annulus to exclude
+  needs to be larger than the default 30-pixel maximum radius.
 * 2022 August 31. xrt_prods v1.10 released, with swifttools 3.0.
   * This release contains many changes **including deprecating some old behaviour**. Full details
   are given in the [release notes](ReleaseNotes_v110.md).

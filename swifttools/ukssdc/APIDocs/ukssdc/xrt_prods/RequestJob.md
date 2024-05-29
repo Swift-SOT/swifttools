@@ -3,7 +3,7 @@
 The main part of requesting products be built is, well, requesting that products be built(!). This is relatively
 straightforward in concept and can be done with a very small number of commands; however, it does require you to know
 what parameters can be set, and which ones are mandatory. Fortunately, this page gives you all of that information.
-**Note**: This documentation is not designed to introduce the XRT Product Generator. If you are not familiar with this 
+**Note**: This documentation is not designed to introduce the XRT Product Generator. If you are not familiar with this
 facility we strongly advise you to read [that facility's documentation](https://www.swift.ac.uk/user_objects/docs.php) first, and we also recommend
 that you build a few products via [the web interface](https://www.swift.ac.uk/user_objects/) web interface to familiarise yourself
 with the system before trying to use the Python module.
@@ -68,8 +68,8 @@ Out[5]: None
 In [6]: myReq.getGlobalPars() # same as getGlobalPars('all')
 Out[6]: {'centroid': True, 'posErr': 1.5}
 
-In [7]: myReq.getGlobalPars(showUnset=True) 
-Out[7]: 
+In [7]: myReq.getGlobalPars(showUnset=True)
+Out[7]:
 {'name': None,
  'targ': None,
  'T0': None,
@@ -208,7 +208,7 @@ The following problems were found:
 * Global parameter `targ` is not set, and nor is the alternative: `getTargs`.
 ```
 
-Ah, yes, that would explain it. I forgot to set a bunch of parameters. In this particular case the request submission failed before python even tried to submit it to the server, because some internal checks are done before submission. You can do these checks yourself before running `submit()` if you want, via the `isValid()` function. This takes one (optional) argument, which is either 'all' (the default) or a list/tuple of products to check. It returns a list with two entries: first a `bool` indicating whether the product/request is valid or not, and second a text string saying what's wrong (if it's not ready). 
+Ah, yes, that would explain it. I forgot to set a bunch of parameters. In this particular case the request submission failed before python even tried to submit it to the server, because some internal checks are done before submission. You can do these checks yourself before running `submit()` if you want, via the `isValid()` function. This takes one (optional) argument, which is either 'all' (the default) or a list/tuple of products to check. It returns a list with two entries: first a `bool` indicating whether the product/request is valid or not, and second a text string saying what's wrong (if it's not ready).
 
 ```python
 In [18]: status = myReq.isValid( ['LightCurve', 'Spectrum'])
@@ -252,7 +252,7 @@ spectrum problems:
 When you submit a request, you don't have to supply every possible parameter, many of them have default values. And some parameters ask the server to calculate
 other values: for example if `getCoords` is `True` then the server will try to resolve the supplied name, to get the position. You may want to know what values the server actually used, either for sanity checking (is the resolved position what you were expecting?) or so that you can submit a later job with the same set of parameters.
 
-Of course, you can find this out by looking at [the data returned by the server](ReturnData.md), but you then have to manage those data yourself. On the other hand, as discussed in [Advanced usage](advanced.md), we provide a simple mechanism to dump the parameters and values from one request and paste them into another: this is useful if you want to create a similar / identical request (for example, to update a product every time it is re-observed, without changing any of the parameters). For this case, it is helpful to have your request parameters updated to include those set by the server, so that if you dump or copy those parameters you know that you are copying the exact parameters. Since changing the product parameters after submission has no effect on the running jobs (and indeed, you can't manually change parameters after submission), this option is `True` by default, For more infomration see [Advanced usage](advanced.md).  
+Of course, you can find this out by looking at [the data returned by the server](ReturnData.md), but you then have to manage those data yourself. On the other hand, as discussed in [Advanced usage](advanced.md), we provide a simple mechanism to dump the parameters and values from one request and paste them into another: this is useful if you want to create a similar / identical request (for example, to update a product every time it is re-observed, without changing any of the parameters). For this case, it is helpful to have your request parameters updated to include those set by the server, so that if you dump or copy those parameters you know that you are copying the exact parameters. Since changing the product parameters after submission has no effect on the running jobs (and indeed, you can't manually change parameters after submission), this option is `True` by default, For more infomration see [Advanced usage](advanced.md).
 
 ---
 
@@ -272,7 +272,7 @@ parameters are not tied to any specific product but affect all products.
 The product-specific parameters are, as the name implies, tied to
 specific parameters.
 
-Most fields are self-explanatory. Times can be entered in any of the [formats specified in the XRT Products documentation](https://www.swift.ac.uk/user_objects/docs.php#timeformat). the `useObs` fields can contain either a list of Swift obsIDs, or a comma-separated list of *start-stop* values, where start/stop are times in the formats just described. 
+Most fields are self-explanatory. Times can be entered in any of the [formats specified in the XRT Products documentation](https://www.swift.ac.uk/user_objects/docs.php#timeformat). the `useObs` fields can contain either a list of Swift obsIDs, or a comma-separated list of *start-stop* values, where start/stop are times in the formats just described.
 
 ---
 
@@ -373,6 +373,8 @@ Some of the light curve parameters are relevant for all binning methods, some on
 | timeFormat | No | str | The units to use on the time axis. Must be one of {'s'(=seconds), 'm'(=MJD)} | 's' |
 | whichData | No | str | Which observations to use for the light curve. Must be one of {'all', 'user'} | 'all' |
 | useObs | If `whichData='user'` | str | The specific observations to use to create the light curve [[Details](https://www.swift.ac.uk/user_objects/docs.php#useobs)] |  -- |
+| srcrad | No | int | The maximum radius the source extraction region can be (pixels). |  -- |
+
 
 
 
@@ -432,9 +434,10 @@ Some parameters are relevant all the time, some are only needed if you are defin
 | galactic | No | bool | Whether to include an absorber fixed at the Galactic value, as well as a free absorber. | False |
 | models | No | list/tuple | A list of emission models to fit (options are 'apec', 'powerlaw' and 'blackbody'). | ('powerlaw') |
 | deltaFitStat | No | float | The change in fit statistic used to calculate the parameter errors on the spectral fit. | 2.706 |
+| srcrad | No | int | The maximum radius the source extraction region can be (pixels). |  -- |
 
 The last 3 parameters were newly introduced in v1.10 of the module (part of `swifttools` v3.0) and represent
-functionality recently added to the service and also available via the website. If `galactic` is `True`, the value 
+functionality recently added to the service and also available via the website. If `galactic` is `True`, the value
 of the Galactic component is taken from [Willingale et al., (2013)](https://ui.adsabs.harvard.edu/abs/2013MNRAS.431..394W/abstract).
 The `models` parameter is case-insensitive and if it contains multiple elements then multiple models will be fitted.
 **Note** Specifying multiple models will give separate fits with the different emisssion models. i.e. If you supply
@@ -492,7 +495,7 @@ The following parameters can be set for creating an image.
 
 | Parameter | Mandatory? | Type  | Description | Default |
 | :----     |  :----:    | :---: | :-----      | :----:  |
-| energies  | No | str | A string comprising a comma-separated list of energy bands for your images. | '0.3-10,0.3-1.5,1.51-10' | 
+| energies  | No | str | A string comprising a comma-separated list of energy bands for your images. | '0.3-10,0.3-1.5,1.51-10' |
 | whichData | No | str | Which datasets to use in the image. Must be one of {'all', 'user'} | 'all' |
 | useObs   | If `whichData='user'` | str | The specific observations to use to create the image [[Details](https://www.swift.ac.uk/user_objects/docs.php#useobs)] | -- |
 
