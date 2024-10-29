@@ -267,7 +267,7 @@ I could now define a subset of only those with no BAT_T90_warning value set, so 
 subset=q.results['BAT_T90_warn'] == False
 ```
 
-(Pythonic note, you must use `== False` here, `is False` will not give the correct result).
+(Quick Python note: to build the subset on a boolean column we don't need a comparison, so `q.results['some_col']` returns the indices where `some_col` is `True`, the `~` above returns instead where it is `False`. The 'boolean' columns in the database are actually integers with values 1 or 0 (blame MariaDB) hence the `astype()` call).
 
 I could pass this subset to any of the product functions that we will come to later, or just take a look at it:
 
@@ -286,7 +286,7 @@ This only has one fewer row than the original query. It may be more informative 
 
 
 ```python
-subset=q.results['BAT_T90_warn'] == True
+subset=q.results['BAT_T90_warn'].astype(bool)
 myFrame = q.results.loc[subset]
 myRow = myFrame.iloc[0]
 print(myRow['Name'])
