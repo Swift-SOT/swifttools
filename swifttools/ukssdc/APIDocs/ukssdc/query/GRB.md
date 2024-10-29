@@ -64,7 +64,7 @@ There are also a couple of warnings and caveats related to these tables.
 
 The Swift Data Table is curated by JD Myers at GSFC, and is essentially manually compiled from information contained in GCN circulars. This has presented the occasional challenge ingesting everything into a form that can be queried by this API. For example, how will a T90 value of "~2" fare with a ">" operator? To resolve this, I strip out the non-numeric characters from columns like this, and set some warning columns [which we will look at presently](#dtcaveat).
 
-The BAT GRB catalogue is a machine-readable catalogue without these issues and so is just ingested directly, but again there a couple of warnings. First and most importantly, at the time of writing the catalogue only includes GRBs up to mid-2020. I understand that this is due to a known technical issue and will be rectified in the coming months. Secondly, when I ingested that table I found a couple of GRBs with duplicate rows; only the first row is ingested ('name' is required as a unique column for combining catalogues).
+The BAT GRB catalogue is a machine-readable catalogue without these issues and so is just ingested directly, but again there a couple of warnings. First and most importantly, at the time of writing the catalogue only includes GRBs up to the end of 2023. Secondly, when I ingested that table I found a couple of GRBs with duplicate rows; only the first row is ingested ('name' is required as a unique column for combining catalogues).
 
 Right, with those preliminaries out of the way, let's get to business.
 
@@ -299,7 +299,7 @@ print(myRow['BAT_T90_orig'])
     ~1.3 to ~3
 
 
-Here you can see the problem: GRB 161004A has a T90 value in the SDC_GRB table of "~1.3 to ~3". Since I want T90 to be a number, my ingestion code took "1.3" but set the warning flag. 
+Here you can see the problem: GRB 161004A has a T90 value in the SDC_GRB table of "~1.3 to ~3". Since I want T90 to be a number, my ingestion code took "1.3" but set the warning flag.
 
 How you choose to handle such cases is entirely up to you, and depends on your specific needs; all I'm trying to do here is to show you the tools I have provided to help you in this.
 
@@ -337,7 +337,7 @@ q.setAuxCat('UK_XRT')
 
 The auxilliary catalogue is literally just another `GRBQuery` object, and we can access it via `q.auxCat` so anything we can do to the primary catalogue we can also do to the auxilliary catalogue. This is handy because we need to add filters to both.
 
-**Important note** filters must be added to the correct catalogue; I have not made a mechanism to infer from the column name which catalogue you meant, because it is possible for both catalogues to share column names. So it is your reponsibility to get the right filters in the right place. 
+**Important note** filters must be added to the correct catalogue; I have not made a mechanism to infer from the column name which catalogue you meant, because it is possible for both catalogues to share column names. So it is your reponsibility to get the right filters in the right place.
 
 So, let's do that. FIrst we want a T90 filter, which applies to our primary catalogue:
 
@@ -484,7 +484,7 @@ Lastly, since the `auxCat` is itself just a `GRBQuery` object, it too can have a
 <a id='prods'></a>
 ## GRB Products
 
-Having identified a sample of GRBs, we may want to actually get at some of the data - recall my example above where I've been asked for the ability to *download all XRT light curves* for GRB with T90&lt;2 s. 
+Having identified a sample of GRBs, we may want to actually get at some of the data - recall my example above where I've been asked for the ability to *download all XRT light curves* for GRB with T90&lt;2 s.
 
 This is easy to do, because the `GRBQuery` class provides wrappers to all of the [`swifttools.ukssdc.data.GRB` functions](../data/GRB.md). As [already explained for `ObsQuery`](../query.md#prods), the syntactic difference is just that we don't provide the list of objects to retrieve, that is automatically taken from `q.results`, but we can provide [a subset](../query.md#subsets) of rows.
 
@@ -519,8 +519,8 @@ print(f"\n\nI have {len(q.results)} rows in the merged table")
     Received 146 rows.
     Calling DB look-up for rows 0 -- 1000
     Received 808 rows.
-    
-    
+
+
     I have 16 rows in the merged table
 
 
@@ -750,7 +750,7 @@ q.saveLightCurves(whichGRBs=['GRB 051221A', 'GRB 100117A'],
 
 #### Plotting light curves
 
-You can also plot light curves, using the [module-level `plotLightCurve()` function](https://www.swift.ac.uk/API/ukssdc/commonFunc.md#plotlightcurve), but because I'm really nice, and you really want to buy me a drink, I've added a `plotLightCurves()` function into this module to wrap around it - although it still only plots one LC at a time. 
+You can also plot light curves, using the [module-level `plotLightCurve()` function](https://www.swift.ac.uk/API/ukssdc/commonFunc.md#plotlightcurve), but because I'm really nice, and you really want to buy me a drink, I've added a `plotLightCurves()` function into this module to wrap around it - although it still only plots one LC at a time.
 
 
 If we don't try to specify the datasets to plot, we may end up in a mess (or at least, with a really messy plot), so let's pick a GRB and check what we have:
@@ -791,9 +791,9 @@ q.plotLightCurves('GRB 060313',
 
 
 
-    
+
 ![png](GRB_1.png)
-    
+
 
 
 
@@ -821,9 +821,9 @@ f,a = q.plotLightCurves('GRB 060313',
 
 
 
-    
+
 ![png](GRB_2.png)
-    
+
 
 
 
@@ -847,13 +847,13 @@ f
 
 
 
-    
+
 ![png](GRB_3.png)
-    
 
 
 
-For reasons I don't entirely follow, if the above cell doesn't end with the `f` (i.e. just the `matplotlib.figure` object, Jupyter doesn't plot it. 
+
+For reasons I don't entirely follow, if the above cell doesn't end with the `f` (i.e. just the `matplotlib.figure` object, Jupyter doesn't plot it.
 
 Notice above I made use of the `cols` argument to make the second GRB use difference colours to the first.
 
@@ -901,7 +901,7 @@ q.getSpectra(subset=q.results['Err90']<1.9,
 
 This function has done a few things. Firstly, it only got spectra for rows where the "Err90" column was less than 1.9&dagger;.
 
-Secondly, it saved the spectral data for those objects, in the form of `tar` files and images, to '/tmp/APIDemo_GRB_Spec2', but it neither extracted the `tar` files nor deleted them. And lastly, it saved the spectral data to the internal variable `q.spectra` (this last point was not requested explicitly, it *always* happens). 
+Secondly, it saved the spectral data for those objects, in the form of `tar` files and images, to '/tmp/APIDemo_GRB_Spec2', but it neither extracted the `tar` files nor deleted them. And lastly, it saved the spectral data to the internal variable `q.spectra` (this last point was not requested explicitly, it *always* happens).
 
 (&dagger; To find out what Err90 is, you'd have to read the metadata, or in this case, the auxCat metadata. To save you the bother: it's the XRT 90% confidence radial position error, in arcsec.)
 
