@@ -4,7 +4,7 @@ indent-width = 4
 
 [lint]
 # Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)  codes by default.
-ignore = ["F405", "F401", "E721", "F403"]
+ignore = ["F405", "F401", "E721", "F403", "E402"]
 
 [format]
 # Like Black, use double quotes for strings.
