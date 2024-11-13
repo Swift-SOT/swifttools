@@ -1,4 +1,7 @@
 # Lookup table for XRT modes
+import re
+
+
 XRTMODES = {
     0: "Auto",
     1: "Null",
@@ -42,6 +45,11 @@ class TOOAPI_Instruments:
     def uvot_mode_setter(self, attr, mode):
         if type(mode) == str and "0x" in mode:
             """Convert hex string to int"""
+            uvot_mode = re.match(r"0x([0-9a-fA-F]+)", mode)
+            if uvot_mode is not None:
+                setattr(self, f"_{attr}", int(uvot_mode.group(0), 16))
+            else:
+                setattr(self, f"_{attr}", mode)
             setattr(self, f"_{attr}", int(mode.split(":")[0], 16))
         elif type(mode) == str:
             """Convert decimal string to int"""
