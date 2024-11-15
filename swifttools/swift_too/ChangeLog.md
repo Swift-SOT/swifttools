@@ -6,6 +6,10 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
+## `swifttools` 3.0.23` / `swift_too` 1.2.33
+
+** Nov 13, 2024 **: Fix bug that caused crash when reading in UVOT modes in
+`TOORequests` when `detail = True`.
 
 ## `swifttools` 3.0.21` / `swift_too` 1.2.32
 
