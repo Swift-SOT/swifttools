@@ -7,7 +7,7 @@ from .swift_obsid import TOOAPI_ObsID
 
 HAS_ASTROPY = False
 try:
-    import astropy.units as u
+    import astropy.units as u  # type: ignore[import-untyped]
 
     HAS_ASTROPY = True
 except ImportError:
