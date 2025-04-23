@@ -5,61 +5,60 @@ from .api_resolve import TOOAPIAutoResolve
 from .swift_clock import TOOAPI_ClockCorrect
 from .swift_instruments import TOOAPI_Instruments
 
+# class Swift_CalendarEntry(TOOAPI_Baseclass, TOOAPI_Instruments, TOOAPI_ClockCorrect, SwiftCalendarEntrySchema):
+#     """Class for a single entry in the Swift TOO calendar.
 
-class Swift_CalendarEntry(TOOAPI_Baseclass, TOOAPI_Instruments, TOOAPI_ClockCorrect, SwiftCalendarEntrySchema):
-    """Class for a single entry in the Swift TOO calendar.
+#     Attributes
+#     ----------
+#     start : datetime
+#         start time of calendar entry
+#     stop : datetime
+#         stop time of calendar entry
+#     xrt_mode : str
+#         XRT mode of calendar entry
+#     uvot_mode : str
+#         UVOT mode of calendar entry
+#     bat_mode : str
+#         BAT mode of calendar entry
+#     duration : int
+#         exposure time of calendar entry in seconds
+#     asflown: float
+#         estimated exposure time in seconds
+#     merit: float
+#         figure of merit of calendar entry
+#     targetid : int
+#         target ID  of the observation
+#     ra : float
+#         Right Ascension of pointing in J2000 (decimal degrees)
+#     dec : float
+#         Declination of pointing in J2000 (decimal degrees)
+#     """
 
-    Attributes
-    ----------
-    start : datetime
-        start time of calendar entry
-    stop : datetime
-        stop time of calendar entry
-    xrt_mode : str
-        XRT mode of calendar entry
-    uvot_mode : str
-        UVOT mode of calendar entry
-    bat_mode : str
-        BAT mode of calendar entry
-    duration : int
-        exposure time of calendar entry in seconds
-    asflown: float
-        estimated exposure time in seconds
-    merit: float
-        figure of merit of calendar entry
-    targetid : int
-        target ID  of the observation
-    ra : float
-        Right Ascension of pointing in J2000 (decimal degrees)
-    dec : float
-        Declination of pointing in J2000 (decimal degrees)
-    """
+#     # Variable names
+#     _varnames = {
+#         "start": "Start",
+#         "stop": "Stop",
+#         "xrt_mode": "XRT Mode",
+#         "bat_mode": "BAT Mode",
+#         "uvot_mode": "UVOT Mode",
+#         "duration": "Exposure (s)",
+#         "asflown": "AFST (s)",
+#         "merit": "Merit",
+#         "ra": "Right Ascension (deg)",
+#         "dec": "Declination (deg)",
+#         "targetid": "Target ID",
+#     }
+#     api_name: str = "Swift_Calendar_Entry"
 
-    # Variable names
-    _varnames = {
-        "start": "Start",
-        "stop": "Stop",
-        "xrt_mode": "XRT Mode",
-        "bat_mode": "BAT Mode",
-        "uvot_mode": "UVOT Mode",
-        "duration": "Exposure (s)",
-        "asflown": "AFST (s)",
-        "merit": "Merit",
-        "ra": "Right Ascension (deg)",
-        "dec": "Declination (deg)",
-        "targetid": "Target ID",
-    }
-    api_name: str = "Swift_Calendar_Entry"
+#     def __getitem__(self, key):
+#         if key in self._parameters:
+#             return getattr(self, key)
 
-    def __getitem__(self, key):
-        if key in self._parameters:
-            return getattr(self, key)
-
-    @property
-    def _table(self):
-        parameters = ["start", "stop", "xrt_mode", "uvot_mode", "duration", "asflown"]
-        header = [self._varnames[row] for row in parameters]
-        return header, [[getattr(self, row) for row in parameters]]
+#     @property
+#     def _table(self):
+#         parameters = ["start", "stop", "xrt_mode", "uvot_mode", "duration", "asflown"]
+#         header = [self._varnames[row] for row in parameters]
+#         return header, [[getattr(self, row) for row in parameters]]
 
 
 class Swift_Calendar(
@@ -130,6 +129,6 @@ class Swift_Calendar(
 
 # Shorthand alias
 Calendar = Swift_Calendar
-CalendarEntry = Swift_CalendarEntry
+# CalendarEntry = Swift_CalendarEntry
 # Back compat
-Swift_Calendar_Entry = Swift_CalendarEntry
+# Swift_Calendar_Entry = Swift_CalendarEntry

@@ -2,16 +2,16 @@ import os
 import warnings
 from fnmatch import fnmatch
 
-import boto3
+import boto3  # type: ignore[import-untyped]
 import requests
-from botocore import UNSIGNED
-from botocore.client import Config
+from botocore import UNSIGNED  # type: ignore[import-untyped]
+from botocore.client import Config  # type: ignore[import-untyped]
 
 from .api_common import TOOAPI_Baseclass
 from .swift_schemas import SwiftDataFileGetSchema, SwiftDataFileSchema, SwiftDataSchema
 
 try:
-    from tqdm.auto import tqdm
+    from tqdm.auto import tqdm  # type: ignore[import-untyped]
 except ImportError:
 
     def tqdm(*args, **kwargs):

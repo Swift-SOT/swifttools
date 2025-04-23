@@ -210,6 +210,31 @@ class SwiftCalendarEntrySchema(BaseSchema):
     bat_mode: int = 0
     uvot_mode: int = 39321
 
+    # Variable names
+    _varnames: dict[str, str] = {
+        "start": "Start",
+        "stop": "Stop",
+        "xrt_mode": "XRT Mode",
+        "bat_mode": "BAT Mode",
+        "uvot_mode": "UVOT Mode",
+        "duration": "Exposure (s)",
+        "asflown": "AFST (s)",
+        "merit": "Merit",
+        "ra": "Right Ascension (deg)",
+        "dec": "Declination (deg)",
+        "targetid": "Target ID",
+    }
+
+    def __getitem__(self, key):
+        if key in self._parameters:
+            return getattr(self, key)
+
+    @property
+    def _table(self):
+        parameters = ["start", "stop", "xrt_mode", "uvot_mode", "duration", "asflown"]
+        header = [self._varnames[row] for row in parameters]
+        return header, [[getattr(self, row) for row in parameters]]
+
 
 class SwiftTOOStatusGetSchema(BaseSchema):
     jobnumber: Optional[int] = None
