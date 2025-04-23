@@ -1,14 +1,18 @@
 import json
 import re
 import textwrap
+
+from typing import Any
 import warnings
 from datetime import date, datetime, timedelta, timezone
-from time import sleep
 
+
+from pydantic import TypeAdapter
 import requests
 from dateutil import parser
-import jwt
 from tabulate import tabulate
+
+from swifttools.swift_too.swift_schemas import BaseSchema
 
 from .version import version_tuple
 
@@ -37,8 +41,8 @@ except ImportError:
 # Check if we have astropy support
 HAS_ASTROPY = False
 try:
-    import astropy.units as u
-    from astropy.time import Time
+    import astropy.units as u  # type: ignore[import-untyped]
+    from astropy.time import Time  # type: ignore[import-untyped]
 
     HAS_ASTROPY = True
 except ImportError:
@@ -48,83 +52,15 @@ except ImportError:
 # Convert degrees to radians
 dtor = 0.017453292519943295
 
-# Regex for matching date, time and datetime strings
-_date_regex = r"^[0-2]\d{3}-(0?[1-9]|1[012])-([0][1-9]|[1-2][0-9]|3[0-1])?$"
-_time_regex = r"^([0-9]:|[0-1][0-9]:|2[0-3]:)[0-5][0-9]:[0-5][0-9]+(\.\d+)?$"
-_iso8601_regex = r"^([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]\d|0[1-9]|3[01]))?|W([0-4]\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\d|[12]\d{2}|3([0-5]\d|6[1-6])))([T\s]((([01]\d|2[0-3])((:?)[0-5]\d)?|24\:?00)([\.,]\d+(?!:))?)?(\17[0-5]\d([\.,]\d+)?)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)?)?)?$"
-_datetime_regex = r"^[0-2]\d{3}-(0?[1-9]|1[012])-([0][1-9]|[1-2][0-9]|3[0-1]) ([0-9]:|[0-1][0-9]:|2[0-3]:)[0-5][0-9]:[0-5][0-9]+(\.\d+)?$"
-_float_regex = r"^[+-]?(?=\d*[.eE])(?=\.?\d)\d*\.?\d*(?:[eE][+-]?\d+)?$"
-_int_regex = r"^(0|[1-9][0-9]+)$"
-
 # Submission URL
-API_URL = "https://www.swift.psu.edu/toop/submit_json.php"
+API_URL = "https://www.swift.psu.edu/api/v1.2"
+API_URL = "http://localhost:8000/api/v1.2"
 
 
-def convert_to_dt(value, isutc=False, outfunc=datetime):
-    """Convert various date formats to swiftdatetime or datetime
-
-    Parameters
-    ----------
-    value : varies
-        Value to be converted.
-    isutc : bool, optional
-        Is the value in UTC, by default False
-    outfunc : datetime / swiftdatetime, optional
-        What format should the output be? By default datetime, can be
-        swiftdatetime
-
-    Returns
-    -------
-    datetime / swiftdatetime
-        Returned datetime / swiftdatetime object
-
-    Raises
-    ------
-    TypeError
-        Raised if incorrect format is given for conversion.
-    """
-
-    if type(value) == str:
-        if re.match(_datetime_regex, value):
-            if "." in value:
-                # Do this because "fromisoformat" is restricted to 0, 3 or 6 decimal plaaces
-                dtvalue = outfunc.strptime(value, "%Y-%m-%d %H:%M:%S.%f")
-            else:
-                dtvalue = outfunc.strptime(value, "%Y-%m-%d %H:%M:%S")
-        elif re.match(_date_regex, value):
-            dtvalue = outfunc.strptime(f"{value} 00:00:00", "%Y-%m-%d %H:%M:%S")
-        elif re.match(_iso8601_regex, value):
-            dtvalue = parser.parse(value)
-            if dtvalue.tzinfo is None:
-                warnings.warn(
-                    "ISO8601 formatted dates should be supplied with timezone. ISO8601 dates with no timezone will be assumed to be localtime and then converted to UTC."
-                )
-            dtvalue = dtvalue.astimezone(timezone.utc).replace(tzinfo=None)
-        else:
-            raise ValueError("Date/time given as string should 'YYYY-MM-DD HH:MM:SS' or ISO8601 format.")
-    elif type(value) == date:
-        dtvalue = outfunc.strptime(f"{value} 00:00:00", "%Y-%m-%d %H:%M:%S")
-    elif type(value) == outfunc:
-        if value.tzinfo is not None:
-            # Strip out timezone info and convert to UTC
-            value = value.astimezone(timezone.utc).replace(tzinfo=None)
-        dtvalue = value  # Just pass through un molested
-    elif type(value) == swiftdatetime and outfunc == datetime or type(value) == datetime and outfunc == swiftdatetime:
-        if type(value) == datetime and value.tzinfo is not None:
-            # Strip out timezone info and convert to UTC
-            value = value.astimezone(timezone.utc).replace(tzinfo=None)
-        dtvalue = outfunc.fromtimestamp(value.timestamp())
-    elif value is None:
-        dtvalue = None
-    elif HAS_ASTROPY and type(value) is Time:
-        dtvalue = value.datetime
-    else:
-        raise TypeError(
-            'Date should be given as a datetime, astropy Time, or as string of format "YYYY-MM-DD HH:MM:SS"'
-        )
-    if outfunc is swiftdatetime and dtvalue.isutc != isutc:
-        dtvalue.isutc = isutc
-    return dtvalue
+def convert_to_dt(self, dt: Any) -> datetime:
+    """Convert any datetime-like object to a datetime object."""
+    tdt = TypeAdapter(datetime)
+    return tdt.validate_python(dt).replace(tzinfo=None)
 
 
 def _tablefy(table, header=None):
@@ -164,22 +100,13 @@ class TOOAPI_Baseclass:
     writing classes out as JSON/dicts."""
 
     # Set api_version for all classes
-    api_version = api_version
-    # Ignore any keys you don't understand
-    ignorekeys = False
-    username = "anonymous"
-    _shared_secret = None
+    api_version: str = api_version
+    username: str = "anonymous"
+    _shared_secret: str = "anonymous"
     # Submission timeout
-    timeout = 120  # 2 mins
+    _timeout: int = 120  # 2 mins
     # By default all API dates are in Swift Time
-    _isutc = False
-
-    # Parameters that are _local
-    _local = []
-    # Parameters that get sent in API submission
-    _parameters = []
-    # Attributes that get send back by API
-    _attributes = []
+    _isutc: bool = False
 
     @property
     def shared_secret(self):
@@ -266,132 +193,6 @@ class TOOAPI_Baseclass:
         )
         return f"{name}({args})"
 
-    def _parseargs(self, *args, **kwargs):
-        """Parse arguements given in __init__ to API classes"""
-        # Parse arguments. Assume they're the same order as `_parameters` except not `username`
-        for i in range(len(args)):
-            setattr(self, self._parameters[i + 1], args[i])
-        # Parse argument keywords
-        for key in kwargs.keys():
-            if key in self._parameters + self._local:
-                setattr(self, key, kwargs[key])
-            else:
-                raise TypeError(f"{self.api_name} got an unexpected keyword argument '{key}'")
-
-    @property
-    def too_api_dict(self):
-        """Dictionary version of TOO API object"""
-        too_api_dict = dict()
-        too_api_dict["api_name"] = self.api_name
-        too_api_dict["api_version"] = self.api_version
-        too_api_dict["api_data"] = self.api_data
-        return too_api_dict
-
-    @property
-    def api_data(self):
-        """Convert class parameters and data into a dictionary"""
-        data = dict()
-        for param in self._parameters:
-            value = getattr(self, param)
-            if value is not None:
-                # Note just convert swiftdatetime into isoformat strings for now
-                if "api_data" in dir(value) and value.api_name != "swiftdatetime":
-                    data[param] = value.too_api_dict
-                elif type(value) == list or type(value) == tuple:
-
-                    def conv(x):
-                        return f"{x}" if not hasattr(x, "too_api_dict") else x.too_api_dict
-
-                    data[param] = [conv(entry) for entry in value]
-                elif (
-                    type(value) == datetime
-                    or type(value) == date
-                    or type(value) == timedelta
-                    or type(value) == swiftdatetime
-                ):
-                    data[param] = f"{value}"
-                # Detect and convert astropy Time
-                elif HAS_ASTROPY and type(value) == Time:
-                    data[param] = f"{value.datetime}"
-                elif HAS_ASTROPY and type(value) == u.quantity.Quantity:
-                    # For any astropy units not handled explicitly, pass as string
-                    data[param] = f"{value}"
-                else:
-                    data[param] = value
-        return data
-
-    @property
-    def jwt(self):
-        """JWT version of TOO API Object"""
-        return jwt.encode(self.too_api_dict, self.shared_secret, algorithm="HS256")
-
-    def __convert_dict_entry(self, entry):
-        """Parse data entry from a dictionary (usually originating as a JSON) to
-        convert into Python data types. Danger! Danger Will Robinson! Recursion!
-        Recursion!"""
-        # Parse a JSON entry
-        if type(entry) == dict and "api_name" in entry.keys():
-            index = [s.api_name for s in self._subclasses].index(entry["api_name"])
-            if self._subclasses[index] == swiftdatetime:
-                # Handle swiftdatetime as it cannot be created with no arguments
-                val = swiftdatetime.frommet(
-                    entry["api_data"]["met"],
-                    utcf=entry["api_data"]["utcf"],
-                    isutc=entry["api_data"]["isutc"],
-                )
-            else:
-                # Handle everything else
-                val = self._subclasses[index]()
-                val.__read_dict(entry["api_data"])
-        # Parse a list of items
-        elif type(entry) == list:
-            # Parse a list of jsons
-            val = list()
-            for subvalue in entry:
-                # Hey, we must have some handy function for parsing values, right?
-                val.append(self.__convert_dict_entry(subvalue))
-        # Parse all other values
-        else:
-            val = False
-            if entry:
-                # Check if these are dates, datetimes or times by regex matching
-                match = re.match(_time_regex, str(entry))
-                if match is not None:
-                    hours, mins, secs = match[0].split(":")
-                    hours = int(hours)
-                    mins = int(mins)
-                    secs = int(float(secs))
-                    millisecs = int(1000.0 * secs % 1)
-                    val = timedelta(hours=hours, minutes=mins, seconds=secs, milliseconds=millisecs)
-
-                # Parse dates into a datetime.date
-                match = re.match(_date_regex, str(entry))
-                if match is not None:
-                    val = datetime.strptime(match[0], "%Y-%m-%d").date()
-
-                # Parse a date/time into a datetime.datetime
-                match = re.match(_datetime_regex, str(entry))
-                if match is not None:
-                    val = convert_to_dt(match[0], self._isutc)
-
-                # If it's a float, convert it
-                if type(entry) == str:
-                    match = re.match(_float_regex, entry)
-                    if match is not None:
-                        val = float(entry)
-
-                # If it's an int, convert it
-                if type(entry) == str:
-                    match = re.match(_int_regex, entry)
-                    if match is not None:
-                        val = int(entry)
-
-            # None of the above? It is what it is.
-            if val is False:
-                val = entry
-
-        return val
-
     def __set_status(self, newstatus):
         if hasattr(self, "status"):
             if type(self.status) == str:
@@ -410,40 +211,11 @@ class TOOAPI_Baseclass:
         else:
             print(f"ERROR: {newerror}")
 
-    def __read_dict(self, data_dict):
-        """Read from a dictionary values for the class"""
-        for key in data_dict.keys():
-            if key in self._parameters or key in self._attributes:
-                val = self.__convert_dict_entry(data_dict[key])
-                if val is not None:  # If value is set to None, then don't change the value
-                    if hasattr(self, f"_{key}"):
-                        setattr(self, f"_{key}", val)
-                    else:
-                        setattr(self, key, val)
-            else:
-                if not self.ignorekeys:  # If keys exist in JSON we don't understand, fail out
-                    self.__set_error(f"Unknown key in JSON file: {key}")
-                    return False
-        return True  # No errors
-
     @property
     def submit_url(self):
         """Generate a URL that submits the TOO API request"""
-        url = f"{API_URL}?jwt={self.jwt}"
+        url = f"{API_URL}{self._endpoint}"
         return url
-
-    def queue(self, post=True):
-        """Validate and submit a TOO API job to the queue for processing."""
-        # Make sure a shared secret is set
-        if self.shared_secret is None:
-            self.__set_error("shared_secret not set, cannot submit job.")
-            return False
-        # Make sure it passes validation checks
-        if not self.validate():
-            self.__set_error("Swift TOO API submission did not pass internal validation checks.")
-            return False
-
-        return self.__submit_jwt(post=post)
 
     @property
     def complete(self, post=True):
@@ -455,100 +227,37 @@ class TOOAPI_Baseclass:
             return True
         return False
 
-    def __submit_jwt(self, post=True):
-        """Submit JWT request to the TOO API server, read in the reply and parse it."""
-        # Don't submit an accepted or rejected request more than once
-        if self.status == "Accepted":
-            return True
-        elif self.status == "Rejected":
-            return False
-
-        # Which way will we fetch the data?
-        if post:
-            r = self.__submit_post()
-        else:
-            r = self.__submit_get()
-
-        # See how sucessful we were
-        if r.status_code == 200:
-            # True to decode the returned JSON. Return an error if it doesn't work.
-            try:
-                too_api_dict = json.loads(r.text)
-            except json.decoder.JSONDecodeError:
-                self.__set_error("Failed to decode JSON. Please check that your shared secret is correct.")
-                self.__set_status("Rejected")
-                return False
-
-            # Determine that we are running the correct API version
-            if too_api_dict["api_version"] != self.api_version:
-                self.__set_error(
-                    f"API version mismatch. Remote version {too_api_dict['api_version']} vs"
-                    f"local version {self.api_version}. Ensure you're running the latest API code."
-                )
-                self.__set_status("Rejected")
-                return False
-
-            # Determine if the returned JSON is the full result or just a status message
-            if too_api_dict["api_name"] == self.api_name:
-                self.__read_dict(too_api_dict["api_data"])
-            elif too_api_dict["api_name"] == "Swift_TOO_Status":
-                self.status.__read_dict(too_api_dict["api_data"])
-        else:
-            self.__set_error(f"HTTP Submit failed with error code {r.status_code}")
-            self.__set_status("Rejected")
-            return False
-        return True
-
-    def submit(self, timeout=None, post=True):
-        """Queue up a TOO API job, then wait for it to complete. Default behaviour is to keep
-        checking if the submission has been processed by the TOO_API server every 1 seconds
-        until the timeout (default 120s) has been reached."""
-        # Update timeout value from default if passed
-        if timeout is not None:
-            self.timeout = timeout
-
-        # Submit the job to the queue
-        ustart = datetime.now().timestamp()
-        if not self.queue(post=post):
-            self.__set_error("Failed to queue job.")
-            self.__set_status("Rejected")
-            return False
-
-        # Check if the Queued job is complete for up to *timeout* seconds (120s default)
-        while datetime.now().timestamp() - ustart < self.timeout and not self.complete:
-            sleep(1)
-
-        # If the job is still Queued, report that it has timed out as an error
-        if self.status == "Queued" or self.status == "Processing":
-            self.__set_error("Queued job timed out.")
-            return False
-        # Or else return True or False if it has been Accepted or Rejected
-        else:
-            if self.status == "Accepted":
-                # Run post processing script to do things
-                self._post_process()
-                return True
-            else:
-                return False
-
     def _post_process(self):
         """Placeholder method. Things to do after values are returned from API."""
         pass
 
-    def __submit_get(self):
-        """Submit the request through the web based API, as a JWT through GET (essentially a URL)"""
-        return requests.get(self.submit_url)
+    def get(self):
+        """Perform an API GET request to the server."""
+        args = self._get_schema.model_validate(self).model_dump(exclude_none=True)
+        response = requests.get(
+            self.submit_url, params=args, timeout=self._timeout, auth=(self.username, self.shared_secret)
+        )
+        print(response.url)
+        if response.status_code == 200:
+            try:
+                data = self._schema.model_validate(response.json())
+                for key, value in data:
+                    setattr(self, key, value)
 
-    def __submit_post(self):
-        """Submit the request through the web based API, as a JWT through POST (recommended)"""
-        return requests.post(url=API_URL, verify=True, data={"jwt": self.jwt})
+            except Exception as e:
+                self.__set_error(f"Error validating response: {e}")
+                return False
+        else:
+            print("Sad trombone: ", response.status_code)
+            return False
+        return True
 
 
-class swiftdatetime(datetime, TOOAPI_Baseclass):
+class swiftdatetime(datetime):
     """Extend datetime to store met, utcf and swifttime. Default value is UTC"""
 
-    api_name = "swiftdatetime"
-    _parameters = ["met", "utcf", "swifttime", "utctime", "isutc"]
+    api_name: str = "swiftdatetime"
+    _parameters: list[str] = ["met", "utcf", "swifttime", "utctime", "isutc"]
 
     def __new__(self, *args, **kwargs):
         return super(swiftdatetime, self).__new__(self, *args)

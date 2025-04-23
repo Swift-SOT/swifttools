@@ -1,9 +1,47 @@
-[build-system]
-requires = [
-    "setuptools>=42",
-    "setuptools_scm[toml]>=3.4",
-    "wheel"
+
+[project]
+name = "swifttools"
+description = "Tools for users of the Swift satellite"
+dynamic = ["version"]
+readme = "README.md"
+authors = [
+    { name = "Phil A. Evans", email = "pae9@leicester.ac.uk" },
+    { name = "Jamie A. Kennea", email = "jak51@psu.edu" },
 ]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Scientific/Engineering :: Astronomy",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Natural Language :: English",
+]
+
+requires-python = ">=3.9"
+dependencies = [
+    "requests",
+    "python-jose",
+    "pandas",
+    "tabulate",
+    "numpy",
+    "boto3",
+    "pydantic",
+]
+
+[tool.setuptools]
+zip-safe = false
+packages = ["swifttools"]
+platforms = ["any"]
+include-package-data = true
+
+
+[build-system]
+requires = ["setuptools>=42", "setuptools_scm[toml]>=3.4", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]

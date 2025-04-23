@@ -1,9 +1,29 @@
+from typing import Any, Optional
+
+
+from .swift_schemas import BaseSchema, SwiftResolveGetSchema, SwiftResolveSchema
 from .api_common import TOOAPI_Baseclass
-from .api_skycoord import TOOAPI_SkyCoord
-from .api_status import Swift_TOO_Status
 
 
-class Swift_Resolve(TOOAPI_Baseclass, TOOAPI_SkyCoord):
+class SwiftTOOStatusSchema(BaseSchema):
+    status: str = "Pending"
+    too_id: Optional[int] = None
+    jobnumber: Optional[int] = None
+    errors: list = []
+    warnings: list = []
+
+    def error(self, error):
+        """Add an error to the list of errors"""
+        if error not in self.errors:
+            self.errors.append(error)
+
+    def warning(self, warning):
+        """Add a warning to the list of warnings"""
+        if warning not in self.warnings:
+            self.warnings.append(warning)
+
+
+class SwiftResolve(TOOAPI_Baseclass, SwiftResolveSchema):
     """Swift_Resolve class
 
     Performs name resolution using Simbad, TNS or MARS. Simply give the name of
@@ -30,45 +50,17 @@ class Swift_Resolve(TOOAPI_Baseclass, TOOAPI_SkyCoord):
         status of API request
     """
 
-    # API input and return values definition
-    _parameters = ["username", "name"]
-    _attributes = ["ra", "dec", "resolver", "status"]
-    # Other API classes that may be used by this class
-    _subclasses = [Swift_TOO_Status]
-    # Local parameters
-    _local = ["shared_secret"]
-    # API name
-    api_name = "Swift_Resolve"
+    api_name: str = "Swift_Resolve"
+    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
+    _endpoint: str = "/resolve"
+    _schema = SwiftResolveSchema
+    _get_schema = SwiftResolveGetSchema
 
-    def __init__(self, *args, **kwargs):
-        """
-        Parameters
-        ----------
-        name : str
-            name of the object to have coordinates resolved.
-        username: str
-            Swift TOO API username (default 'anonymous')
-        shared_secret: str
-            TOO API shared secret (default 'anonymous')
-        """
-        # Input parameters
-        self.name = None
-        self.username = "anonymous"
-        # Returned parameters
-        self.ra = None
-        self.dec = None
-        self.resolver = None
-        # Initiate status class
-        self.status = Swift_TOO_Status()
-        # Parse argument keywords
-        self._parseargs(*args, **kwargs)
-
-        # See if we pass validation from the constructor, but don't record
-        # errors if we don't
+    def model_post_init(self, context: Any) -> None:
         if self.validate():
-            self.submit()
+            self.get()
         else:
-            self.status.clear()
+            print("Error: Validation failed, please check parameters.")
 
     def validate(self):
         """Validate API submission before submit
@@ -78,10 +70,10 @@ class Swift_Resolve(TOOAPI_Baseclass, TOOAPI_SkyCoord):
         bool
             Was validation successful?
         """
-        if self.name is not None and self.shared_secret is not None:
-            return True
-        else:
+        if not self._get_schema.model_validate(self):
+            self.status.error("Validation failed.")
             return False
+        return True
 
     @property
     def _table(self):
@@ -102,14 +94,6 @@ class TOOAPI_AutoResolve:
     _source_name = None
     resolve = None
 
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def source_name(self):
-        return self._source_name
-
     def __name_setter(self, sourcename):
         """If you set a name, use `Swift_Resolve` to retrieve it's `ra` and `dec`."""
         if self._name != sourcename:
@@ -122,9 +106,17 @@ class TOOAPI_AutoResolve:
             else:
                 self.status.error("Could not resolve name.")
 
+    @property
+    def name(self):
+        return self._name
+
     @name.setter
     def name(self, sourcename):
         self.__name_setter(sourcename)
+
+    @property
+    def source_name(self):
+        return self._source_name
 
     @source_name.setter
     def source_name(self, sourcename):
@@ -132,4 +124,5 @@ class TOOAPI_AutoResolve:
 
 
 # Shorthand alias for class
-Resolve = Swift_Resolve
+Swift_Resolve = SwiftResolve
+Resolve = SwiftResolve
