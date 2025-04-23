@@ -28,6 +28,14 @@ class BaseSchema(BaseModel):
     )
 
 
+class SwiftTOOStatusSchema(BaseSchema):
+    status: str = "Pending"
+    too_id: Optional[int] = None
+    jobnumber: Optional[int] = None
+    errors: list = []
+    warnings: list = []
+
+
 class BeginEndLengthSchema(BaseSchema):
     """
     A schema to validate the begin, end, and length of an observation.
@@ -165,7 +173,7 @@ class SwiftCalendarSchema(BaseSchema):
     radius: Optional[float] = None
     targetid: Optional[int] = None
     entries: list[SwiftCalendarEntrySchema] = []
-    status: SwiftTOOStatusSchema
+    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
 
 
 class SwiftCalendarEntrySchema(BaseSchema):
@@ -207,14 +215,6 @@ class SwiftTOOStatusGetSchema(BaseSchema):
     jobnumber: Optional[int] = None
 
 
-class SwiftTOOStatusSchema(BaseSchema):
-    status: str = "Pending"
-    too_id: Optional[int] = None
-    jobnumber: Optional[int] = None
-    errors: list = []
-    warnings: list = []
-
-
 class SwiftResolveGetSchema(BaseSchema):
     name: str
 
@@ -222,7 +222,7 @@ class SwiftResolveGetSchema(BaseSchema):
 class SwiftResolveSchema(OptionalCoordinateSchema):
     name: Optional[str] = None
     resolver: Optional[str] = None
-    status: SwiftTOOStatusSchema
+    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
 
 
 class SwiftVisQueryGetSchema(BeginEndLengthSchema, CoordinateSchema):
@@ -236,7 +236,7 @@ class SwiftVisQuerySchema(BaseSchema):
     dec: Optional[float] = None
     hires: bool = False
     windows: list[SwiftVisWindowSchema] = []
-    status: SwiftTOOStatusSchema
+    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
 
 
 class SwiftVisWindowSchema(BaseSchema):
@@ -255,7 +255,7 @@ class SwiftAFSTSchema(OptionalCoordinateSchema, OptionalBeginEndLengthSchema):
     targetid: Union[int, list[int], None] = None
     obsnum: Optional[int] = None
     afstmax: Optional[datetime] = None
-    status: SwiftTOOStatusSchema
+    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
     entries: list[SwiftAFSTEntrySchema] = []
 
 
@@ -369,7 +369,7 @@ class SwiftPPSTSchema(BaseSchema):
     targetid: Union[int, list[int], None] = None
     obsnum: Optional[int] = None
     ppstmax: Optional[datetime] = None
-    status: SwiftTOOStatusSchema
+    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
     entries: list[SwiftPPSTEntrySchema] = []
 
 
@@ -414,13 +414,12 @@ class SwiftGUANOGetSchema(OptionalBeginEndLengthSchema):
 class SwiftGUANOSchema(BaseSchema):
     begin: Optional[datetime] = None
     end: Optional[datetime] = None
-    username: Optional[str] = "anonymous"
     subthreshold: bool = False
     successful: bool = True
     triggertime: Optional[datetime] = None
     limit: Optional[int] = None
     triggertype: Optional[str] = None
-    status: SwiftTOOStatusSchema
+    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
     lastcommand: Optional[datetime] = None
     guanostatus: Optional[bool] = None
     entries: list[SwiftGUANOEntrySchema] = []
@@ -431,11 +430,28 @@ class SwiftGUANODataSchema(BaseSchema):
     triggertime: Optional[datetime] = None
     all_gtis: list[SwiftGUANOGTISchema]
     filenames: Union[list[str], None] = None
-    acs: Optional[str]
-    begin: Optional[datetime]
-    end: Optional[datetime]
-    gti: Optional[SwiftGUANOGTISchema]
-    exposure: Optional[float]
+    acs: Optional[str] = None
+    begin: Optional[datetime] = None
+    end: Optional[datetime] = None
+    gti: Optional[SwiftGUANOGTISchema] = None
+    exposure: Optional[float] = None
+
+    @property
+    def utcf(self):
+        if self.gti is not None:
+            return self.gti.utcf
+
+    @property
+    def subthresh(self):
+        """Is this data subthreshold? I.e. located in the 'BAT Data for
+        Subthreshold Triggers' directory of SDC, as opposed to being associated
+        with the target ID."""
+        if self.filenames is None:
+            return None
+        if len(self.filenames) == 1 and "ms" in self.filenames[0]:
+            return True
+        else:
+            return False
 
 
 class SwiftGUANOGTISchema(BaseSchema):
@@ -445,6 +461,9 @@ class SwiftGUANOGTISchema(BaseSchema):
     end: Optional[datetime] = None
     utcf: Optional[float] = None
     exposure: timedelta = timedelta(0)
+
+    def __str__(self):
+        return f"{self.begin} - {self.end} ({self.exposure})"
 
 
 class SwiftGUANOEntrySchema(BaseSchema):
@@ -459,6 +478,30 @@ class SwiftGUANOEntrySchema(BaseSchema):
     data: Optional[SwiftGUANODataSchema] = None
     quadsaway: Optional[int] = None
 
+    @property
+    def executed(self):
+        """Has the GUANO command been executed on board Swift?"""
+        if self.quadsaway == 2 or self.quadsaway == 3:
+            return False
+        return True
+
+    @property
+    def _table(self):
+        table = []
+        for row in self._parameters + self._attributes:
+            value = getattr(self, row)
+            if row == "data" and self.data.exposure is not None:
+                table += [[row, f"{value.exposure:.1f}s of BAT event data"]]
+            elif row == "data" and self.data.exposure is None:
+                table += [[row, "No BAT event data found"]]
+            elif value is not None:
+                table += [[row, f"{value}"]]
+        return ["Parameter", "Value"], table
+
+    def _calc_begin_end(self):
+        self.begin = self.triggertime + timedelta(seconds=self.offset - self.duration / 2)
+        self.end = self.triggertime + timedelta(seconds=self.offset + self.duration / 2)
+
 
 class SwiftUVOTModeGetSchema(OptionalCoordinateSchema):
     uvotmode: int
@@ -469,7 +512,7 @@ class SwiftUVOTModeSchema(BaseSchema):
     ra: Optional[float] = None
     dec: Optional[float] = None
     entries: list[SwiftUVOTModeEntrySchema] = []
-    status: SwiftTOOStatusSchema
+    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
 
 
 class SwiftUVOTModeEntrySchema(BaseSchema):
@@ -513,7 +556,7 @@ class SwiftTOOCommandSchema(BaseSchema):
     transferred: Optional[bool] = False
     groupname: Optional[str] = None
     sc_slew: Optional[datetime] = None
-    status: SwiftTOOStatusSchema
+    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
     source_name: Optional[str]
 
 
@@ -526,7 +569,7 @@ class SwiftTOOCommandsSchema(BaseSchema):
     end: Optional[datetime] = None
     limit: Optional[int] = None
     entries: list[SwiftTOOCommandSchema] = []
-    status: SwiftTOOStatusSchema
+    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
 
 
 class SwiftManyPointSchema(BaseSchema):
@@ -538,7 +581,7 @@ class SwiftManyPointSchema(BaseSchema):
     number: Optional[int] = None
     transferred: Optional[bool] = False
     entries: list[SwiftManyPointCommandSchema] = []
-    status: SwiftTOOStatusSchema
+    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
 
 
 class SwiftManyPointCommandSchema(BaseSchema):
@@ -569,7 +612,7 @@ class SwiftCommandsSchema(BaseSchema):
     end: Optional[datetime] = None
     limit: Optional[int] = None
     entries: list[SwiftTOOCommandSchema] = []
-    status: SwiftTOOStatusSchema
+    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
 
 
 class SwiftTOOGroupSchema(BaseSchema):
@@ -586,7 +629,7 @@ class SwiftTOOGroupsSchema(BaseSchema):
     end: Optional[datetime] = None
     limit: Optional[int] = None
     entries: list[SwiftTOOGroupSchema] = []
-    status: SwiftTOOStatusSchema
+    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
 
 
 class SwiftManyPointsGetSchema(OptionalBeginEndLengthSchema):
@@ -598,7 +641,7 @@ class SwiftManyPointsSchema(BaseSchema):
     end: Optional[datetime] = None
     limit: Optional[int] = None
     entries: list[SwiftManyPointSchema] = []
-    status: SwiftTOOStatusSchema
+    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
 
 
 class SwiftTOORequestsGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
@@ -622,7 +665,7 @@ class SwiftTOORequestsSchema(BaseSchema):
     dec: Optional[float] = None
     radius: Optional[float] = None
     debug: bool = False
-    status: SwiftTOOStatusSchema
+    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
     entries: list[SwiftTOORequestSchema] = []
 
 
@@ -677,7 +720,7 @@ class SwiftTOORequestSchema(BaseSchema):
 
 class SwiftSOTStatsSchema(BaseSchema):
     statstring: Optional[str] = None
-    status: SwiftTOOStatusSchema
+    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
 
 
 class SwiftClockGetSchema(BaseSchema):
@@ -697,7 +740,7 @@ class SwiftClockSchema(BaseSchema):
     utctime: Optional[datetime] = None
     swifttime: Optional[datetime] = None
     entries: list[SwiftDateTimeSchema] = []
-    status: SwiftTOOStatusSchema
+    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
 
 
 class SwiftGIPIGetSchema(BaseSchema):
@@ -721,7 +764,7 @@ class SwiftGIProgramSchema(BaseSchema):
     proposal_type: Optional[str] = None
     pi: Optional[SwiftGIPISchema] = None
     targets: Optional[SwiftGITargetsSchema] = None
-    status: SwiftTOOStatusSchema
+    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
     exposure: Optional[int]
     too: Optional[bool] = False
     number_targets: Optional[int]
@@ -734,7 +777,7 @@ class SwiftGIProgramsGetSchema(BaseSchema):
 class SwiftGIProgramsSchema(BaseSchema):
     cycle: Optional[int] = None
     entries: list[SwiftGIProgramSchema] = []
-    status: SwiftTOOStatusSchema
+    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
 
 
 class SwiftGITargetGetSchema(BaseSchema):
@@ -750,7 +793,7 @@ class SwiftGITargetSchema(BaseSchema):
     monitor_criteria: Optional[str] = None
     constraints_desc: Optional[str] = None
     target_id: Optional[int] = None
-    status: SwiftTOOStatusSchema
+    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
     too: Optional[bool]
     fill_in: Optional[bool]
     large_program: Optional[bool]
@@ -779,7 +822,7 @@ class SwiftGITargetsSchema(BaseSchema):
     ra: Optional[float] = None
     dec: Optional[float] = None
     targetid: Optional[int] = None
-    status: SwiftTOOStatusSchema
+    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
 
 
 class SwiftSAAGetSchema(BeginEndLengthSchema):
@@ -791,7 +834,7 @@ class SwiftSAASchema(BaseSchema):
     end: Optional[datetime] = None
     bat: bool = False
     entries: list[SwiftSAAEntrySchema] = []
-    status: SwiftTOOStatusSchema
+    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
 
 
 class SwiftSAAEntrySchema(BaseSchema):
@@ -800,7 +843,6 @@ class SwiftSAAEntrySchema(BaseSchema):
 
 
 class SwiftDataSchema(BaseSchema):
-    username: str = "anonymous"
     obsid: Optional[str] = None
     auxil: bool = True
     bat: Optional[bool] = None
@@ -813,7 +855,7 @@ class SwiftDataSchema(BaseSchema):
     itsdc: Optional[bool] = None
     subthresh: Optional[bool] = None
     entries: list[SwiftDataFileSchema] = []
-    status: SwiftTOOStatusSchema
+    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
 
 
 class SwiftDataFileGetSchema(BaseSchema):
