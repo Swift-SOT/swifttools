@@ -291,25 +291,52 @@ class SwiftAFSTEntrySchema(CoordinateSchema):
     def slewtime(self):
         return self.settle - self.begin
 
-    # The following provides compatibility as we changed ra/dec_point to
-    # ra/dec_object. These will go away with a future API update. FIXME API 1.3
-    # @property
-    # def ra_point(self):
-    #    return self.ra_object
+    @property
+    def _table(self):
+        parameters = ["begin", "end", "targname", "obsnum", "exposure", "slewtime"]
+        header = [row for row in parameters]
+        return header, [
+            [
+                self.begin,
+                self.end,
+                self.targname,
+                self.obsnum,
+                self.exposure.seconds,
+                self.slewtime.seconds,
+            ]
+        ]
 
-    # @ra_point.setter
-    # def ra_point(self, ra):
-    #    self.ra_object = ra
 
-    # @property
-    # def dec_point(self):
-    #    return self.dec_object
+class SwiftObservationSchema(BaseSchema):
+    begin: Optional[datetime] = None
+    end: Optional[datetime] = None
+    obstype: Optional[str] = None
+    targname: Optional[str] = None
+    roll: Optional[float] = None
+    targetid: Optional[int] = None
+    seg: Optional[int] = None
+    obsnum: Optional[int] = None
+    bat: Optional[int] = None
+    xrt: Optional[int] = None
+    uvot: Optional[int] = None
+    fom: Optional[int] = None
+    comment: Optional[str] = None
+    timetarget: Optional[int] = None
+    timeobs: Optional[int] = None
+    flag: Optional[int] = None
+    mvdfwpos: Optional[int] = None
+    targettype: Optional[str] = None
+    sunha: Optional[float] = None
+    ra_point: Optional[float] = None
+    dec_point: Optional[float] = None
 
-    # dec_point.setter
-    # def dec_point(self, dec):
-    #    self.dec_object = dec
+    @property
+    def exposure(self):
+        return self.end - self.settle
 
-    # Compat end
+    @property
+    def slewtime(self):
+        return self.settle - self.begin
 
     @property
     def _table(self):

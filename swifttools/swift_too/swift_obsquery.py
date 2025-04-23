@@ -1,6 +1,12 @@
 from datetime import timedelta
 
-from .swift_schemas import SwiftAFSTEntrySchema, SwiftAFSTGetSchema, SwiftAFSTSchema, SwiftTOOStatusSchema
+from .swift_schemas import (
+    SwiftAFSTEntrySchema,
+    SwiftAFSTGetSchema,
+    SwiftAFSTSchema,
+    SwiftObservationSchema,
+    SwiftTOOStatusSchema,
+)
 from .api_common import TOOAPI_Baseclass
 from .api_daterange import TOOAPI_Daterange
 from .api_resolve import TOOAPI_AutoResolve, TOOAPIAutoResolve
@@ -108,7 +114,7 @@ class SwiftAFSTEntry(
         ]
 
 
-class SwiftObservation(TOOAPI_Baseclass, TOOAPI_DownloadData, SwiftAFSTEntrySchema):
+class SwiftObservation(TOOAPI_Baseclass, TOOAPI_DownloadData, SwiftObservationSchema):
     """Class to summarize observations taken for given observation ID (obsnum).
     Whereas observations are typically one or more individual snapshot, in TOO
     API speak a `SwiftAFSTEntry`, this class summarizes all snapshots into a
@@ -280,9 +286,6 @@ class SwiftObservations(dict, TOOAPI_Baseclass):
 
 class SwiftAFST(
     TOOAPI_Baseclass,
-    #    TOOAPI_Daterange,
-    #    TOOAPI_SkyCoord,
-    #    TOOAPI_ObsID,
     TOOAPIAutoResolve,
     #    TOOAPI_ClockCorrect,
     SwiftAFSTSchema,
@@ -332,6 +335,9 @@ class SwiftAFST(
     _get_schema = SwiftAFSTGetSchema
 
     status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
+
+    # Observations
+    _observations = SwiftObservations()
 
     # Local variables
     _local = ["obsid", "name", "skycoord", "length", "target_id", "shared_secret"]
