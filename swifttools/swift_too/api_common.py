@@ -12,7 +12,7 @@ import requests
 from dateutil import parser
 from tabulate import tabulate
 
-from swifttools.swift_too.swift_schemas import BaseSchema
+from .swift_schemas import BaseSchema, SwiftTOOStatusSchema
 
 from .version import version_tuple
 
@@ -107,6 +107,9 @@ class TOOAPI_Baseclass:
     _timeout: int = 120  # 2 mins
     # By default all API dates are in Swift Time
     _isutc: bool = False
+
+    # Every request gets a status
+    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
 
     @property
     def shared_secret(self):
@@ -231,6 +234,12 @@ class TOOAPI_Baseclass:
         """Placeholder method. Things to do after values are returned from API."""
         pass
 
+    def model_post_init(self, context: Any) -> None:
+        if self.validate_get():
+            self.get()
+        else:
+            print("Error: Validation failed, please check parameters.")
+
     def get(self):
         """Perform an API GET request to the server."""
         args = self._get_schema.model_validate(self).model_dump(exclude_none=True)
@@ -249,6 +258,19 @@ class TOOAPI_Baseclass:
                 return False
         else:
             print("Sad trombone: ", response.status_code)
+            return False
+        return True
+
+    def validate_get(self):
+        """Validate API submission before submit
+
+        Returns
+        -------
+        bool
+            Was validation successful?
+        """
+        if not self._get_schema.model_validate(self):
+            self.status.error("Validation failed.")
             return False
         return True
 

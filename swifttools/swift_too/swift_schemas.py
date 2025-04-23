@@ -370,7 +370,6 @@ class SwiftPPSTSchema(BaseSchema):
     obsnum: Optional[int] = None
     ppstmax: Optional[datetime] = None
     status: SwiftTOOStatusSchema
-    username: Optional[str] = "anonymous"
     entries: list[SwiftPPSTEntrySchema] = []
 
 
@@ -391,6 +390,16 @@ class SwiftPPSTEntrySchema(BaseSchema):
     comment: Optional[str] = None
     timetarg: Optional[int] = None
     takodb: Optional[str] = None
+
+    @property
+    def exposure(self):
+        return self.end - self.begin
+
+    @property
+    def _table(self):
+        _parameters = ["begin", "end", "targname", "obsnum", "exposure"]
+        header = [row for row in _parameters]
+        return header, [[self.begin, self.end, self.targname, self.obsnum, self.exposure.seconds]]
 
 
 class SwiftGUANOGetSchema(OptionalBeginEndLengthSchema):

@@ -18,100 +18,100 @@ from .swift_instruments import TOOAPI_Instruments
 from .swift_obsid import TOOAPI_ObsID
 
 
-class SwiftAFSTEntry(
-    SwiftAFSTEntrySchema
-    #    TOOAPI_Baseclass,
-    #    TOOAPI_SkyCoord,
-    #    TOOAPI_ObsID,
-    #    TOOAPI_Instruments,
-    #    TOOAPI_ClockCorrect,
-    #    TOOAPI_DownloadData,
-):
-    """Class that defines an individual entry in the Swift As-Flown Timeline
+# class SwiftAFSTEntry(
+#     SwiftAFSTEntrySchema
+#     #    TOOAPI_Baseclass,
+#     #    TOOAPI_SkyCoord,
+#     #    TOOAPI_ObsID,
+#     #    TOOAPI_Instruments,
+#     #    TOOAPI_ClockCorrect,
+#     #    TOOAPI_DownloadData,
+# ):
+#     """Class that defines an individual entry in the Swift As-Flown Timeline
 
-    Attributes
-    ----------
-    begin : datetime
-        begin time of observation
-    settle : datetime
-        settle time of the observation
-    end : datetime
-        end time of observation
-    slewtime : timedelta
-        slew time of the observation
-    targetid : int
-        target ID  of the observation
-    seg : int
-        segment number of the observation
-    xrt : str
-        XRT mode of the observation
-    uvot : str
-        Hex string UVOT mode of the observation
-    bat : int
-        BAT mode of the observation
-    exposure : timedelta
-        exposure time of the observation
-    ra : float
-        Right Ascension of pointing in J2000 (decimal degrees)
-    dec : float
-        Declination of pointing in J2000 (decimal degrees)
-    roll : float
-        roll angle of the observation (decimal degrees)
-    skycoord : SkyCoord
-        SkyCoord version of RA/Dec if astropy is installed
-    ra_object : float
-        RA of the object that is the target of the pointing
-    dec_object : float
-        dec of the object that is the target of the pointing
-    targname : str
-        Target name of the primary target of the observation
-    """
+#     Attributes
+#     ----------
+#     begin : datetime
+#         begin time of observation
+#     settle : datetime
+#         settle time of the observation
+#     end : datetime
+#         end time of observation
+#     slewtime : timedelta
+#         slew time of the observation
+#     targetid : int
+#         target ID  of the observation
+#     seg : int
+#         segment number of the observation
+#     xrt : str
+#         XRT mode of the observation
+#     uvot : str
+#         Hex string UVOT mode of the observation
+#     bat : int
+#         BAT mode of the observation
+#     exposure : timedelta
+#         exposure time of the observation
+#     ra : float
+#         Right Ascension of pointing in J2000 (decimal degrees)
+#     dec : float
+#         Declination of pointing in J2000 (decimal degrees)
+#     roll : float
+#         roll angle of the observation (decimal degrees)
+#     skycoord : SkyCoord
+#         SkyCoord version of RA/Dec if astropy is installed
+#     ra_object : float
+#         RA of the object that is the target of the pointing
+#     dec_object : float
+#         dec of the object that is the target of the pointing
+#     targname : str
+#         Target name of the primary target of the observation
+#     """
 
-    # API name
-    api_name: str = "Swift_AFST_Entry"
+#     # API name
+#     api_name: str = "Swift_AFST_Entry"
 
-    @property
-    def exposure(self):
-        return self.end - self.settle
+#     @property
+#     def exposure(self):
+#         return self.end - self.settle
 
-    @property
-    def slewtime(self):
-        return self.settle - self.begin
+#     @property
+#     def slewtime(self):
+#         return self.settle - self.begin
 
-    # The following provides compatibility as we changed ra/dec_point to
-    # ra/dec_object. These will go away with a future API update. FIXME API 1.3
-    @property
-    def ra_point(self):
-        return self.ra_object
+#     # The following provides compatibility as we changed ra/dec_point to
+#     # ra/dec_object. These will go away with a future API update. FIXME API 1.3
+#     @property
+#     def ra_point(self):
+#         return self.ra_object
 
-    @ra_point.setter
-    def ra_point(self, ra):
-        self.ra_object = ra
+#     @ra_point.setter
+#     def ra_point(self, ra):
+#         self.ra_object = ra
 
-    @property
-    def dec_point(self):
-        return self.dec_object
+#     @property
+#     def dec_point(self):
+#         return self.dec_object
 
-    @dec_point.setter
-    def dec_point(self, dec):
-        self.dec_object = dec
+#     @dec_point.setter
+#     def dec_point(self, dec):
+#         self.dec_object = dec
 
-    # Compat end
+#     # Compat end
 
-    @property
-    def _table(self):
-        parameters = ["begin", "end", "targname", "obsnum", "exposure", "slewtime"]
-        header = [self._header_title(row) for row in parameters]
-        return header, [
-            [
-                self.begin,
-                self.end,
-                self.targname,
-                self.obsnum,
-                self.exposure.seconds,
-                self.slewtime.seconds,
-            ]
-        ]
+#     @property
+#     def _table(self):
+#         parameters = ["begin", "end", "targname", "obsnum", "exposure", "slewtime"]
+#         header = [self._header_title(row) for row in parameters]
+#         return header, [
+#             [
+#                 self.begin,
+#                 self.end,
+#                 self.targname,
+#                 self.obsnum,
+#                 self.exposure.seconds,
+#                 self.slewtime.seconds,
+#             ]
+#         ]
 
 
 class SwiftObservation(TOOAPI_Baseclass, TOOAPI_DownloadData, SwiftObservationSchema):
@@ -367,29 +367,16 @@ class SwiftAFST(
     def append(self, value):
         self.entries.append(value)
 
-    def validate(self):
-        """Validate API submission before submit
-
-        Returns
-        -------
-        bool
-            Was validation successful?
-        """
-        if not self._get_schema.model_validate(self):
-            self.status.error("Validation failed.")
-            return False
-        return True
-
 
 # Alias names for class for better PEP8 and future compat
 Swift_ObsQuery = SwiftAFST
 ObsQuery = SwiftAFST
 AFST = SwiftAFST
 Swift_AFST = SwiftAFST
-Swift_AFST_Entry = SwiftAFSTEntry
-ObsEntry = SwiftAFSTEntry
-Swift_ObsEntry = SwiftAFSTEntry
-AFSTEntry = SwiftAFSTEntry
-Swift_AFSTEntry = SwiftAFSTEntry
+Swift_AFST_Entry = SwiftAFSTEntrySchema
+ObsEntry = SwiftAFSTEntrySchema
+Swift_ObsEntry = SwiftAFSTEntrySchema
+AFSTEntry = SwiftAFSTEntrySchema
+Swift_AFSTEntry = SwiftAFSTEntrySchema
 Swift_Observation = SwiftObservation
 Swift_Observations = SwiftObservations

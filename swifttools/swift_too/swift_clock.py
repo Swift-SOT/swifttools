@@ -80,7 +80,7 @@ class Swift_Clock(TOOAPI_Baseclass):
     @property
     def met(self):
         if self._met is None and self.entries is not None:
-            self._met = [e.met for e in self]
+            self._met = [e.met for e in self.entries]
             if len(self._met) == 1:
                 self._met = self._met[0]
         return self._met
@@ -92,7 +92,7 @@ class Swift_Clock(TOOAPI_Baseclass):
     @property
     def utcf(self):
         if self._utcf is None and self.entries is not None:
-            self._utcf = [e.utcf for e in self]
+            self._utcf = [e.utcf for e in self.entries]
             if len(self._utcf) == 1:
                 self._utcf = self._utcf[0]
         return self._utcf
@@ -122,7 +122,7 @@ class Swift_Clock(TOOAPI_Baseclass):
     @property
     def swifttime(self):
         if self._swifttime is None and self.entries is not None:
-            self._swifttime = [e.swifttime for e in self]
+            self._swifttime = [e.swifttime for e in self.entries]
             if len(self._swifttime) == 1:
                 self._swifttime = self._swifttime[0]
         return self._swifttime
