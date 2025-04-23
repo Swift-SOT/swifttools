@@ -1,7 +1,5 @@
 from .api_common import TOOAPI_Baseclass
-from .api_daterange import TOOAPI_Daterange, TOOAPI_TriggerTime
 from .api_resolve import TOOAPI_AutoResolve
-from .api_skycoord import TOOAPI_SkyCoord
 from .api_status import TOOStatus
 from .swift_calendar import Swift_Calendar
 from .swift_instruments import TOOAPI_Instruments
@@ -18,12 +16,12 @@ except ImportError:
 
 class Swift_TOORequest(
     TOOAPI_Baseclass,
-    TOOAPI_SkyCoord,
+    #    TOOAPI_SkyCoord,
     TOOAPI_ObsID,
     TOOAPI_Instruments,
-    TOOAPI_Daterange,
+    #    TOOAPI_Daterange,
     TOOAPI_AutoResolve,
-    TOOAPI_TriggerTime,
+    #    TOOAPI_TriggerTime,
 ):
     """Class to construct a TOO for submission to Swift MOC. Class provides
     internal validation of TOO, based on simple criteria. Submission is handled

@@ -1,20 +1,12 @@
-from datetime import timedelta
-
-from swifttools.swift_too.api_resolve import SwiftTOOStatusSchema
-from swifttools.swift_too.swift_schemas import (
+from .api_common import TOOAPI_Baseclass
+from .swift_clock import TOOAPI_ClockCorrect
+from .swift_schemas import (
     SwiftGUANODataSchema,
     SwiftGUANOEntrySchema,
     SwiftGUANOGetSchema,
     SwiftGUANOGTISchema,
     SwiftGUANOSchema,
 )
-
-from .api_common import TOOAPI_Baseclass
-from .api_daterange import TOOAPI_Daterange, TOOAPI_TriggerTime
-from .api_status import TOOStatus
-from .swift_clock import TOOAPI_ClockCorrect
-from .swift_data import TOOAPI_DownloadData
-from .swift_obsid import TOOAPI_ObsID
 
 # class SwiftGUANOGTI(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
 #     """Define GUANO event data Good Time Intervals (GTI)

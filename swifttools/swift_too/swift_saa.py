@@ -1,10 +1,10 @@
+from swifttools.swift_too.swift_schemas import SwiftSAAGetSchema, SwiftSAASchema
+
 from .api_common import TOOAPI_Baseclass
-from .api_daterange import TOOAPI_Daterange
-from .api_status import TOOStatus
 from .swift_clock import TOOAPI_ClockCorrect
 
 
-class Swift_SAAEntry(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
+class SwiftSAAEntry(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
     """Simple class describing the start and end time of a Swift SAA passage.
      Attributes
     ----------
@@ -15,7 +15,7 @@ class Swift_SAAEntry(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
     """
 
     # API details
-    api_name = "Swift_SAA_Entry"
+    api_name: str = "Swift_SAA_Entry"
     # Returned values
     _attributes = ["begin", "end"]
     # Display names of columns
@@ -39,7 +39,7 @@ class Swift_SAAEntry(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
         return ["begin", "end"], [[self.begin, self.end]]
 
 
-class Swift_SAA(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_ClockCorrect):
+class SwiftSAA(TOOAPI_Baseclass, TOOAPI_ClockCorrect, SwiftSAASchema):
     """Class to obtain Swift SAA passage times. Two versions are available: The
     Spacecraft definition (default) or an estimate of when the BAT SAA flag is
     up. Note that the BAT SAA flag is dynamically set based on count rate, so
@@ -54,52 +54,10 @@ class Swift_SAA(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_ClockCorrect):
     """
 
     # API details
-    api_name = "Swift_SAA"
-    # Arguments
-    _parameters = ["username", "begin", "end", "bat"]
-    # Local parameters
-    _local = ["shared_secret", "length"]
-    # Returned Values
-    _attributes = ["entries", "status"]
-    # Returned classes
-    _subclasses = [Swift_SAAEntry, TOOStatus]
-
-    def __init__(self, *args, **kwargs):
-        """
-        Parameters
-        ----------
-        begin : datetime
-            Start of the period for which to fetch SAA passages
-        end : datetime (optional)
-            End of the period for which to fetch SAA passages
-        length : int (default: 1)
-            Number of days to calculate for
-        bat : boolean
-            If set to `True`, use BAT calculation for SAA passages, otherwise,
-            use spacecraft.
-        username : str (default 'anonymous')
-            TOO API username.
-        shared_secret : str (default 'anonymous')
-            TOO API shared secret
-        """
-        # Attributes
-        self.begin = None
-        self.end = None
-        self.length = 1
-        self.bat = False
-        # parse arguments
-        self._parseargs(*args, **kwargs)
-        self.status = TOOStatus()
-        # Returned values
-        self.entries = None
-        # Internal values
-        self._isutc = True
-
-        # Submit if enough parameters are passed to the constructor
-        if self.validate():
-            self.submit()
-        else:
-            self.status.clear()
+    api_name: str = "Swift_SAA"
+    _schema = SwiftSAASchema
+    _get_schema = SwiftSAAGetSchema
+    _endpoint = "/swift/saa"
 
     def __getitem__(self, index):
         return self.entries[index]
@@ -118,20 +76,9 @@ class Swift_SAA(TOOAPI_Baseclass, TOOAPI_Daterange, TOOAPI_ClockCorrect):
                 vals.append([i] + values[0])
             return ["#"] + header, vals
 
-    def validate(self):
-        """Validate API submission before submit
-
-        Returns
-        -------
-        bool
-            Was validation successful?
-        """
-        if self.begin is not None and self.end is not None:
-            return True
-        return False
-
 
 # Alias
-SAA = Swift_SAA
-Swift_SAA_Entry = Swift_SAAEntry
-SAAEntry = Swift_SAAEntry
+SAA = SwiftSAA
+Swift_SAA_Entry = SwiftSAAEntry
+SAAEntry = SwiftSAAEntry
+Swift_SAA = SwiftSAA

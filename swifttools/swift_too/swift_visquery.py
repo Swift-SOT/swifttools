@@ -1,12 +1,11 @@
 from .api_common import TOOAPI_Baseclass
-from .api_daterange import TOOAPI_Daterange
-from .api_resolve import TOOAPI_AutoResolve
-from .api_skycoord import TOOAPI_SkyCoord
+from .api_resolve import TOOAPIAutoResolve
 from .api_status import TOOStatus
 from .swift_clock import TOOAPI_ClockCorrect
+from .swift_schemas import SwiftVisQueryGetSchema, SwiftVisQuerySchema
 
 
-class Swift_VisWindow(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
+class SwiftVisWindow(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
     """Simple class to define a Visibility window. Begin and End of window can
     either be accessed as self.begin or self.end, or as self[0] or self[1].
 
@@ -20,12 +19,7 @@ class Swift_VisWindow(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
         length of window
     """
 
-    # API parameter definition
-    _attributes = ["begin", "end", "length"]
-    # Names for parameters
-    _varnames = {"begin": "Begin Time", "end": "End Time", "length": "Window length"}
-    # API name
-    api_name = "Swift_VisWindow"
+    api_name: str = "Swift_VisWindow"
 
     def __init__(self):
         # Set all times in this class to UTC
@@ -57,13 +51,7 @@ class Swift_VisWindow(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
             raise IndexError("list index out of range")
 
 
-class Swift_VisQuery(
-    TOOAPI_Baseclass,
-    TOOAPI_Daterange,
-    TOOAPI_SkyCoord,
-    TOOAPI_AutoResolve,
-    TOOAPI_ClockCorrect,
-):
+class SwiftVisQuery(TOOAPI_Baseclass, TOOAPI_ClockCorrect, TOOAPIAutoResolve, SwiftVisQuerySchema):
     """Request Swift Target visibility windows. These results are low-fidelity,
     so do not give orbit-to-orbit visibility, but instead long term windows
     indicates when a target is observable by Swift and not in a Sun/Moon/Pole
@@ -96,62 +84,11 @@ class Swift_VisQuery(
         Status of API request
     """
 
-    # Parameters that are passed to the API for this request
-    _parameters = ["username", "ra", "dec", "length", "begin", "hires"]
-    # Local and alias parameter names
-    _local = ["name", "skycoord", "end", "shared_secret"]
-    # Attributes returned by API Server
-    _attributes = ["status", "windows"]
-    # Subclasses
-    _subclasses = [TOOStatus, Swift_VisWindow]
     # API Name
-    api_name = "Swift_VisQuery"
-    # Returned data
-    windows = list()
-
-    def __init__(self, *args, **kwargs):
-        """
-        Parameters
-        ----------
-        begin : datetime
-            begin time of visibility window
-        end : datetime
-            end time of visibility window
-        length : timedelta
-            length of visibility window
-        ra : float
-            Right Ascension of target in J2000 (decimal degrees)
-        dec : float
-            Declination of target in J2000 (decimal degrees)
-        skycoord : SkyCoord
-            SkyCoord version of RA/Dec if astropy is installed
-        hires : boolean
-            Calculate visibility with high resolution, including Earth
-            constraints
-        username : str
-            username for TOO API (default 'anonymous')
-        shared_secret : str
-            shared secret for TOO API (default 'anonymous')
-        """
-        # Set all times in this class to UTC
-        self._isutc = True
-        # User arguments
-        self.username = "anonymous"
-        self.ra = None
-        self.dec = None
-        self.hires = None
-        self.length = None
-        # Visibility windows go here
-        self.windows = list()
-        # Status of request
-        self.status = TOOStatus()
-        # Parse argument keywords
-        self._parseargs(*args, **kwargs)
-
-        if self.validate():
-            self.submit()
-        else:
-            self.status.clear()
+    api_name: str = "Swift_VisQuery"
+    _schema = SwiftVisQuerySchema
+    _get_schema = SwiftVisQueryGetSchema
+    _endpoint = "/swift/visquery"
 
     @property
     def _table(self):
@@ -172,32 +109,9 @@ class Swift_VisQuery(
     def __len__(self):
         return len(self.windows)
 
-    def validate(self):
-        """Validate API submission before submit
-
-        Returns
-        -------
-        bool
-            Was validation successful?
-        """
-        # If length is not set, set to default of 7 days, or 1 day for hires
-        if self.length is None:
-            if self.hires:
-                self.length = 1
-            else:
-                self.length = 7
-        # Check RA/Dec are set correctly
-        if self.ra is not None and self.dec is not None:
-            if self.ra >= 0 and self.ra <= 360 and self.dec >= -90 and self.dec <= 90:
-                return True
-            else:
-                self.status.error("RA/Dec not in valid range.")
-                return False
-        else:
-            self.status.error("RA/Dec not set.")
-            return False
-
 
 # Shorthand alias for class
-VisQuery = Swift_VisQuery
-VisWindow = Swift_VisWindow
+VisQuery = SwiftVisQuery
+VisWindow = SwiftVisWindow
+Swift_VisQuery = SwiftVisQuery
+Swift_VisWindow = SwiftVisWindow

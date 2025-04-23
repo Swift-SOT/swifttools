@@ -60,7 +60,7 @@ class QueryJob(TOOStatus):
     ]
     # API name
     # This is really just a Swift_TOOStatus request with a twist
-    api_name = "Swift_TOO_Status"
+    api_name: str = "Swift_TOO_Status"
 
     def __init__(self, *args, **kwargs):
         """

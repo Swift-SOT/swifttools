@@ -1,13 +1,9 @@
 from swifttools.swift_too.swift_schemas import SwiftCalendarEntrySchema, SwiftCalendarGetSchema, SwiftCalendarSchema
 
 from .api_common import TOOAPI_Baseclass
-from .api_daterange import TOOAPI_Daterange
-from .api_resolve import TOOAPI_AutoResolve, TOOAPIAutoResolve
-from .api_skycoord import TOOAPI_SkyCoord
-from .api_status import TOOStatus
+from .api_resolve import TOOAPIAutoResolve
 from .swift_clock import TOOAPI_ClockCorrect
 from .swift_instruments import TOOAPI_Instruments
-from .swift_obsid import TOOAPI_ObsID
 
 
 class Swift_CalendarEntry(TOOAPI_Baseclass, TOOAPI_Instruments, TOOAPI_ClockCorrect, SwiftCalendarEntrySchema):

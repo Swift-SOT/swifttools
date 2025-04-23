@@ -1,12 +1,6 @@
-from swifttools.swift_too.swift_schemas import SwiftTOORequestsGetSchema, SwiftTOORequestsSchema
-
 from .api_common import TOOAPI_Baseclass
-from .api_daterange import TOOAPI_Daterange
-from .api_resolve import TOOAPI_AutoResolve, TOOAPIAutoResolve
-from .api_skycoord import TOOAPI_SkyCoord
-from .api_status import TOOStatus
-from .swift_calendar import Swift_Calendar, Swift_Calendar_Entry
-from .swift_toorequest import Swift_TOO_Request
+from .api_resolve import TOOAPIAutoResolve
+from .swift_schemas import SwiftTOORequestsGetSchema, SwiftTOORequestsSchema
 
 
 class SwiftTOORequests(TOOAPI_Baseclass, TOOAPIAutoResolve, SwiftTOORequestsSchema):

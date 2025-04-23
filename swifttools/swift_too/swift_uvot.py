@@ -1,13 +1,12 @@
 from tabulate import tabulate
 
 from .api_common import TOOAPI_Baseclass
-from .api_resolve import TOOAPI_AutoResolve
-from .api_skycoord import TOOAPI_SkyCoord
-from .api_status import TOOStatus
+from .api_resolve import TOOAPIAutoResolve
 from .swift_instruments import TOOAPI_Instruments
+from .swift_schemas import SwiftUVOTModeSchema
 
 
-class Swift_UVOTModeEntry(TOOAPI_Baseclass):
+class SwiftUVOTModeEntry(TOOAPI_Baseclass):
     """Class describing a single entry in the UVOT Mode table
 
     Attributes
@@ -38,24 +37,7 @@ class Swift_UVOTModeEntry(TOOAPI_Baseclass):
         comment on special modes
     """
 
-    # Core API definitions
-    _parameters = [
-        "uvotmode",
-        "filter_num",
-        "min_exposure",
-        "filter_name",
-        "filter_pos",
-        "filter_seqid",
-        "eventmode",
-        "field_of_view",
-        "binning",
-        "max_exposure",
-        "weight",
-        "special",
-        "comment",
-    ]
-    _attributes = []
-    api_name = "UVOT_mode_entry"
+    api_name: str = "UVOT_mode_entry"
 
     def __init__(self):
         # Lazy variable init
@@ -66,7 +48,7 @@ class Swift_UVOTModeEntry(TOOAPI_Baseclass):
         return self.filter_name
 
 
-class Swift_UVOTMode(TOOAPI_Baseclass, TOOAPI_Instruments, TOOAPI_SkyCoord, TOOAPI_AutoResolve):
+class SwiftUVOTMode(TOOAPI_Baseclass, TOOAPI_Instruments, SwiftUVOTModeSchema, TOOAPIAutoResolve):
     """Class to fetch information about a given UVOT mode. Specifically this is
     useful for understanding for a given UVOT hex mode (e.g. 0x30ed), which
     filters and configuration are used by UVOT.
@@ -86,48 +68,10 @@ class Swift_UVOTMode(TOOAPI_Baseclass, TOOAPI_Instruments, TOOAPI_SkyCoord, TOOA
     """
 
     # Core API definitions
-    _parameters = ["username", "uvotmode", "ra", "dec"]
-    _attributes = ["status", "entries"]
-    # Local parameters
-    _local = ["shared_secret", "name"]
-    _subclasses = [Swift_UVOTModeEntry, TOOStatus]
-    api_name = "UVOT_mode"
-    # Alias for uvotmode
-    uvotmode = TOOAPI_Instruments.uvot
-
-    def __init__(self, *args, **kwargs):
-        """
-        Parameters
-        ----------
-        uvotmode : int / str
-            UVOT mode to fetch information about (can be hex string or integer)
-        username : str
-            username for TOO API (default 'anonymous')
-        shared_secret : str
-            shared secret for TOO API (default 'anonymous')
-        """
-        TOOAPI_SkyCoord.__init__(self)
-        TOOAPI_AutoResolve.__init__(self)
-        # Set up username
-        self.username = "anonymous"
-        # Set up uvotmode
-        self.uvotmode = None
-        # Set up coordinates
-        self.ra = None
-        self.dec = None
-        # Here is where the data go
-        self.entries = None
-        # TOO API status
-        self.status = TOOStatus()
-        # Parse argument keywords
-        self._parseargs(*args, **kwargs)
-
-        # See if we pass validation from the constructor, but don't record
-        # errors if we don't
-        if self.validate():
-            self.submit()
-        else:
-            self.status.clear()
+    api_name: str = "UVOT_mode"
+    _schema = SwiftUVOTModeSchema
+    _get_schema = SwiftUVOTModeSchema
+    _endpoint = "/swift/uvotmode"
 
     def __getitem__(self, index):
         return self.entries[index]
@@ -230,34 +174,12 @@ class Swift_UVOTMode(TOOAPI_Baseclass, TOOAPI_Instruments, TOOAPI_SkyCoord, TOOA
         else:
             return "No data"
 
-    def validate(self):
-        """Validate API submission before submit
-
-        Returns
-        -------
-        bool
-            Was validation successful?
-        """
-        # Check username and shared_secret are set
-        if self.uvotmode is None:
-            return False
-        if not self.username or not self.shared_secret:
-            self.status.error("username and shared_secret parameters need to be supplied.")
-            return False
-
-        if type(self._uvot) != int:
-            try:
-                # See if it's a hex string
-                self.uvotmode = int(self.uvotmode, 16)
-            except ValueError:
-                self.status.error(f"Invalid UVOT mode: {self.uvotmode}.")
-                return False
-        return True
-
 
 # Aliases that are more PEP8 compliant
-UVOTMode = Swift_UVOTMode
-UVOTModeEntry = Swift_UVOTModeEntry
+UVOTMode = SwiftUVOTMode
+UVOTModeEntry = SwiftUVOTModeEntry
 # Backwards compatibility names
-UVOT_mode_entry = Swift_UVOTModeEntry
-UVOT_mode = Swift_UVOTMode
+UVOT_mode_entry = SwiftUVOTModeEntry
+UVOT_mode = SwiftUVOTMode
+Swift_UVOTMode = SwiftUVOTMode
+Swift_UVOTModeEntry = SwiftUVOTModeEntry

@@ -8,8 +8,6 @@ from botocore import UNSIGNED
 from botocore.client import Config
 
 from .api_common import TOOAPI_Baseclass
-from .api_status import TOOStatus
-from .swift_obsid import TOOAPI_ObsID
 from .swift_schemas import SwiftDataFileGetSchema, SwiftDataFileSchema, SwiftDataSchema
 
 try:
