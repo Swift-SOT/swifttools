@@ -47,6 +47,7 @@ class BeginEndLengthSchema(BaseSchema):
     length: Optional[float] = Field(
         default=None,
         description="Length of requested time period (days)",
+        exclude=True,  # We don't want to include length in the output
     )
 
     @model_validator(mode="after")
@@ -98,6 +99,7 @@ class OptionalBeginEndLengthSchema(BaseSchema):
             return self
         if end and length:
             if end != begin + timedelta(days=length):
+                print(begin, end, length, begin + timedelta(days=length))
                 raise ValueError("Only one of 'end', or 'length' should be provided.")
         if not (begin or end or length):
             raise ValueError("At least 'begin' and 'end' or 'length' must be provided.")
@@ -120,7 +122,7 @@ class OptionalCoordinateSchema(BaseSchema):
 
     @model_validator(mode="after")
     def check_coordinates(self) -> "OptionalCoordinateSchema":
-        # Check that RA and Dec are both the same typeß
+        # Check that RA and Dec are both the same type
         if (self.ra is None) != (self.dec is None):
             raise ValueError("Both RA and Dec must be provided or neither.")
         if self.ra is not None and self.dec is not None and self.skycoord is None:
@@ -143,6 +145,8 @@ class CoordinateSchema(BaseSchema):
     @model_validator(mode="before")
     @classmethod
     def check_coordinates(cls, values: dict[str, Union[float, SkyCoord]]) -> dict[str, float]:
+        if not isinstance(values, dict):
+            values = values.__dict__
         ra = values.get("ra")
         dec = values.get("dec")
         skycoord = values.get("skycoord")
@@ -226,7 +230,7 @@ class SwiftCalendarEntrySchema(BaseSchema):
     }
 
     def __getitem__(self, key):
-        if key in self._parameters:
+        if key in self._varnames:
             return getattr(self, key)
 
     @property
@@ -254,19 +258,28 @@ class SwiftVisQueryGetSchema(BeginEndLengthSchema, CoordinateSchema):
     hires: bool = False
 
 
-class SwiftVisQuerySchema(BaseSchema):
-    begin: Optional[datetime] = None
-    length: Optional[float] = None
-    ra: Optional[float] = None
-    dec: Optional[float] = None
+class SwiftVisQuerySchema(BeginEndLengthSchema, CoordinateSchema):
     hires: bool = False
     windows: list[SwiftVisWindowSchema] = []
     status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
 
 
-class SwiftVisWindowSchema(BaseSchema):
-    begin: datetime
-    end: datetime
+class SwiftVisWindowSchema(BeginEndLengthSchema):
+    @property
+    def _table(self):
+        header = [row for row in self.__class__.model_fields]
+        return header, [[self.begin, self.end, self.length]]
+
+    def __str__(self):
+        return f"{self.begin} - {self.end} ({self.length})"
+
+    def __getitem__(self, index):
+        if index == 0:
+            return self.begin
+        elif index == 1:
+            return self.end
+        else:
+            raise IndexError("list index out of range")
 
 
 class SwiftAFSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):

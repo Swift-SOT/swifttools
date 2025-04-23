@@ -1,9 +1,12 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
+
+from pydantic import computed_field
 
 from .api_common import TOOAPI_Baseclass
 from .api_resolve import TOOAPIAutoResolve
 from .swift_data import TOOAPI_DownloadData
 from .swift_schemas import (
+    BaseSchema,
     SwiftAFSTEntrySchema,
     SwiftAFSTGetSchema,
     SwiftAFSTSchema,
@@ -107,7 +110,7 @@ from .swift_schemas import (
 #         ]
 
 
-class SwiftObservation(TOOAPI_Baseclass, TOOAPI_DownloadData, SwiftObservationSchema):
+class SwiftObservation(TOOAPI_Baseclass, TOOAPI_DownloadData, BaseSchema):
     """Class to summarize observations taken for given observation ID (obsnum).
     Whereas observations are typically one or more individual snapshot, in TOO
     API speak a `SwiftAFSTEntry`, this class summarizes all snapshots into a
@@ -144,11 +147,9 @@ class SwiftObservation(TOOAPI_Baseclass, TOOAPI_DownloadData, SwiftObservationSc
         Target name of the primary target of the observation
     """
 
-    _schema = SwiftAFSTSchema
-    _get_schema = SwiftAFSTGetSchema
-
     # Core API definitions
     api_name: str = "Swift_Observation"
+    entries: list[SwiftAFSTEntrySchema] = []
 
     def __getitem__(self, index):
         return self.entries[index]
@@ -162,80 +163,96 @@ class SwiftObservation(TOOAPI_Baseclass, TOOAPI_DownloadData, SwiftObservationSc
     def extend(self, value):
         self.entries.extend(value)
 
+    @computed_field
     @property
-    def targetid(self):
+    def targetid(self) -> int:
         return self.entries[0].targetid
 
+    @computed_field
     @property
-    def seg(self):
+    def seg(self) -> int:
         return self.entries[0].seg
 
+    @computed_field
     @property
-    def obsnum(self):
+    def obsnum(self) -> int:
         return self.entries[0].obsnum
 
+    @computed_field
     @property
-    def targname(self):
+    def targname(self) -> str:
         return self.entries[0].targname
 
+    @computed_field
     @property
-    def ra_object(self):
+    def ra_object(self) -> float:
         if hasattr(self.entries[0], "ra_object"):
             return self.entries[0].ra_object
 
+    @computed_field
     @property
-    def dec_object(self):
+    def dec_object(self) -> float:
         if hasattr(self.entries[0], "dec_object"):
             return self.entries[0].dec_object
 
+    @computed_field
     @property
-    def exposure(self):
+    def exposure(self) -> timedelta:
         return timedelta(seconds=sum([e.exposure.seconds for e in self.entries]))
 
+    @computed_field
     @property
-    def slewtime(self):
+    def slewtime(self) -> timedelta:
         return timedelta(seconds=sum([e.slewtime.seconds for e in self.entries]))
 
+    @computed_field
     @property
-    def begin(self):
+    def begin(self) -> datetime:
         return min([q.begin for q in self.entries])
 
+    @computed_field
     @property
-    def end(self):
+    def end(self) -> datetime:
         return max([q.end for q in self.entries])
 
+    @computed_field
     @property
-    def xrt(self):
+    def xrt(self) -> int:
         return self.entries[0].xrt
 
+    @computed_field
     @property
-    def uvot(self):
+    def uvot(self) -> int:
         return self.entries[0].uvot
 
+    @computed_field
     @property
-    def bat(self):
+    def bat(self) -> int:
         return self.entries[0].bat
 
+    @computed_field
     @property
-    def snapshots(self):
+    def snapshots(self) -> int:
         return self.entries
 
     # The following provides compatibility as we changed ra/dec_point to
     # ra/dec_object. These will go away in the next version of the API (1.3).
+    @computed_field
     @property
-    def ra_point(self):
+    def ra_point(self) -> float:
         return self.ra_object
 
     @ra_point.setter
-    def ra_point(self, ra):
+    def ra_point(self, ra) -> float:
         self.ra_object = ra
 
+    @computed_field
     @property
-    def dec_point(self):
+    def dec_point(self) -> float:
         return self.dec_object
 
     @dec_point.setter
-    def dec_point(self, dec):
+    def dec_point(self, dec) -> float:
         self.dec_object = dec
 
     # Compat end

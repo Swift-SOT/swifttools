@@ -233,11 +233,11 @@ class TOOAPI_Baseclass:
 
     def model_post_init(self, context: Any) -> None:
         if self.validate_get():
-            self.get()
+            self.submit()
         else:
             print("Error: Validation failed, please check parameters.")
 
-    def get(self):
+    def submit(self):
         """Perform an API GET request to the server."""
         args = self._get_schema.model_validate(self).model_dump(exclude_none=True)
         response = requests.get(
