@@ -14,7 +14,6 @@ from .swift_instruments import TOOAPI_Instruments
 from .swift_obsid import TOOAPI_ObsID
 from .swift_obsquery import Swift_Observation, Swift_Observations, SwiftObservation
 
-
 # class Swift_PPSTEntry(
 #     TOOAPI_Baseclass,
 #     TOOAPIAutoResolve,

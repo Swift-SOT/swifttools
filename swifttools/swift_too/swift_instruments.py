@@ -1,7 +1,6 @@
 # Lookup table for XRT modes
 import re
 
-
 XRTMODES = {
     0: "Auto",
     1: "Null",

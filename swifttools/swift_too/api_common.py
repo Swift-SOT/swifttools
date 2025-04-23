@@ -1,19 +1,16 @@
 import json
 import re
 import textwrap
-
-from typing import Any
 import warnings
 from datetime import date, datetime, timedelta, timezone
+from typing import Any
 
-
-from pydantic import TypeAdapter
 import requests
 from dateutil import parser
+from pydantic import TypeAdapter
 from tabulate import tabulate
 
 from .swift_schemas import BaseSchema, SwiftTOOStatusSchema
-
 from .version import version_tuple
 
 # Make Warnings a little less weird

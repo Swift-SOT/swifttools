@@ -1,12 +1,5 @@
 from datetime import timedelta
 
-from .swift_schemas import (
-    SwiftAFSTEntrySchema,
-    SwiftAFSTGetSchema,
-    SwiftAFSTSchema,
-    SwiftObservationSchema,
-    SwiftTOOStatusSchema,
-)
 from .api_common import TOOAPI_Baseclass
 from .api_daterange import TOOAPI_Daterange
 from .api_resolve import TOOAPI_AutoResolve, TOOAPIAutoResolve
@@ -16,7 +9,13 @@ from .swift_clock import TOOAPI_ClockCorrect
 from .swift_data import TOOAPI_DownloadData
 from .swift_instruments import TOOAPI_Instruments
 from .swift_obsid import TOOAPI_ObsID
-
+from .swift_schemas import (
+    SwiftAFSTEntrySchema,
+    SwiftAFSTGetSchema,
+    SwiftAFSTSchema,
+    SwiftObservationSchema,
+    SwiftTOOStatusSchema,
+)
 
 # class SwiftAFSTEntry(
 #     SwiftAFSTEntrySchema

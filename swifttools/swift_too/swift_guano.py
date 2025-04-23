@@ -4,8 +4,8 @@ from swifttools.swift_too.api_resolve import SwiftTOOStatusSchema
 from swifttools.swift_too.swift_schemas import (
     SwiftGUANODataSchema,
     SwiftGUANOEntrySchema,
-    SwiftGUANOGTISchema,
     SwiftGUANOGetSchema,
+    SwiftGUANOGTISchema,
     SwiftGUANOSchema,
 )
 
@@ -15,7 +15,6 @@ from .api_status import TOOStatus
 from .swift_clock import TOOAPI_ClockCorrect
 from .swift_data import TOOAPI_DownloadData
 from .swift_obsid import TOOAPI_ObsID
-
 
 # class SwiftGUANOGTI(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
 #     """Define GUANO event data Good Time Intervals (GTI)

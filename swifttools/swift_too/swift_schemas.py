@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta
+from enum import Enum
 from typing import Optional, Union
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
-from enum import Enum
 from astropy.coordinates import SkyCoord  # type: ignore[import-untyped]
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class ObsType(str, Enum):

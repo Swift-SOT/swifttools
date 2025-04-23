@@ -1,11 +1,9 @@
 from typing import Any, Optional
 
-
 from pydantic import model_validator
 
-
-from .swift_schemas import BaseSchema, OptionalCoordinateSchema, SwiftResolveGetSchema, SwiftResolveSchema
 from .api_common import TOOAPI_Baseclass
+from .swift_schemas import BaseSchema, OptionalCoordinateSchema, SwiftResolveGetSchema, SwiftResolveSchema
 
 
 class SwiftTOOStatusSchema(BaseSchema):
