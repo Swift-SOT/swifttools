@@ -298,9 +298,6 @@ class SwiftGUANO(
 
     _local = ["length", "shared_secret"]
 
-    # Attributes
-    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
-
     def __getitem__(self, index):
         return self.entries[index]
 

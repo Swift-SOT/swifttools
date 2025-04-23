@@ -1,7 +1,8 @@
+from swifttools.swift_too.api_resolve import SwiftTOOStatusSchema
 from .api_common import TOOAPI_Baseclass
 
 
-class Swift_TOO_Status(TOOAPI_Baseclass):
+class SwiftTOOStatus(TOOAPI_Baseclass, SwiftTOOStatusSchema):
     """Simple class to describe the status of a submitted TOO API request
 
     Attributes
@@ -29,72 +30,16 @@ class Swift_TOO_Status(TOOAPI_Baseclass):
     """
 
     # Core API definitions
-    _parameters = ["username", "jobnumber", "too_id", "fetchresult"]
-    _attributes = [
-        "status",
-        "errors",
-        "warnings",
-        "timestamp",
-        "began",
-        "completed",
-        "result",
-    ]
-    _local = ["api_name", "shared_secret"]
-    api_name = "Swift_TOO_Status"
-
-    def __init__(self, *args, **kwargs):
-        """
-        Parameters
-        ----------
-        username : str
-            username for TOO API (default 'anonymous')
-        shared_secret : str
-            shared secret for TOO API (default 'anonymous')
-        jobnumber : int
-            TOO API job number
-        """
-        # Required arguments
-        self.jobnumber = None
-        self.username = "anonymous"
-        # Optional arguments
-        self.fetchresult = None  # This is only to be used with QueryJob
-
-        # Returned parameters
-        self.status = "Unknown"
-        self.timestamp = None
-        self.began = None
-        self.completed = None
-        self.errors = list()
-        self.warnings = list()
-        self.too_id = None
-        # Result of QueryJob
-        self.result = None
-
-        # Parse argument keywords
-        self._parseargs(*args, **kwargs)
-
-        # If all arguments are passed, then submit
-        if self.validate():
-            self.submit()
+    api_name: str = "Swift_TOO_Status"
+    _schema = SwiftTOOStatusSchema
+    _get_schema = SwiftTOOStatusSchema
+    _endpoint = "status"
 
     def __eq__(self, value):
         return value == self.status
 
     def __bool__(self):
         if self.status == "Accepted":
-            return True
-        else:
-            return False
-
-    def validate(self):
-        """Validate API submission before submit
-
-        Returns
-        -------
-        bool
-            Was validation successful?
-        """
-        if self.username and self.jobnumber and self.shared_secret:
             return True
         else:
             return False
@@ -115,5 +60,6 @@ class Swift_TOO_Status(TOOAPI_Baseclass):
 
 
 # Aliases for better PEP8 compliance, and future API updates
-Swift_TOOStatus = Swift_TOO_Status
+Swift_TOOStatus = SwiftTOOStatus
+Swift_TOO_Status = SwiftTOOStatus
 TOOStatus = Swift_TOOStatus

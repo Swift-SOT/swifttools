@@ -7,6 +7,8 @@ from botocore.client import Config
 
 import requests
 
+from .swift_schemas import SwiftDataFileGetSchema, SwiftDataFileSchema, SwiftDataSchema
+
 from .api_common import TOOAPI_Baseclass
 from .api_status import TOOStatus
 from .swift_obsid import TOOAPI_ObsID
@@ -22,7 +24,7 @@ except ImportError:
         return args[0]
 
 
-class Swift_DataFile(TOOAPI_Baseclass):
+class SwiftDataFile(TOOAPI_Baseclass, SwiftDataFileSchema):
     """Class containing information about a swift data file that can be
     downloaded from the Swift Science Data Center
 
@@ -45,19 +47,7 @@ class Swift_DataFile(TOOAPI_Baseclass):
     """
 
     # API name
-    api_name = "Swift_Data_File"
-    # Attributes
-    filename = None
-    path = None
-    url = None
-    quicklook = None
-    type = None
-    localpath = None
-    s3 = None
-    outdir = "."
-    # Core API definitions
-    _parameters = ["filename", "path", "url", "quicklook", "type"]
-    _attributes = ["size", "localpath"]
+    api_name: str = "Swift_Data_File"
 
     @property
     def size(self):
@@ -95,7 +85,7 @@ class Swift_DataFile(TOOAPI_Baseclass):
         return True
 
 
-class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
+class SwiftData(TOOAPI_Baseclass, SwiftDataSchema):
     """
     Class to download Swift data from the UK or US SDC for a given observation
     ID.
@@ -140,25 +130,11 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
     """
 
     # Core API definitions
-    api_name = "Swift_Data"
-    # Classes used by this class
-    _subclasses = [Swift_DataFile, TOOStatus]
-    # Values to send and return through the API
-    _parameters = [
-        "username",
-        "obsid",
-        "quicklook",
-        "auxil",
-        "bat",
-        "xrt",
-        "uvot",
-        "subthresh",
-        "log",
-        "tdrss",
-        "uksdc",
-        "itsdc",
-    ]
-    # Local and alias parameters
+    api_name: str = "Swift_Data"
+    _schema = SwiftDataSchema
+    _get_schema = SwiftDataFileGetSchema
+    _endpoint = "/swift/data"
+
     _local = [
         "outdir",
         "clobber",
@@ -173,107 +149,6 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
         "quiet",
         "aws",
     ]
-    _attributes = ["entries", "status"]
-
-    def __init__(self, *args, **kwargs):
-        """
-        Construct the Swift_Data class, and download data if required parameters
-        are supplied.
-
-        Parameters
-        ----------
-        obsid : str / int
-            the observation ID of the data to download. Can be in SDC or
-            spacecraft format. Note: can also use target_id and segment, but
-            must supply both.
-        auxil : boolean
-            Set to True to download Auxillary data (default = True)
-        bat : boolean
-            Set to True to download BAT data.
-        xrt : boolean
-            Set to True to download XRT data.
-        uvot : boolean
-            Set to True to download UVOT data.
-        subthresh : boolean
-            Set to True to download BAT Subthreshold trigger data
-        log : boolean
-            Set to True to download SDC processing logs.
-        all : boolean
-            Set to True to download all data products.
-        uksdc : boolean
-            Set to True to download from the UK Swift SDC
-        itsdc : boolean
-            Set to True to download from the Italian Swift SDC
-        quicklook : boolean
-            Set to True to only search Quicklook data. Default searches archive,
-            then quicklook if the data are not there. If data are known to be
-            recent this may speed up result.
-        clobber : boolean
-            overwrite existing data on disk (default: False)
-        outdir : str
-            Directory where data should be downloaded to.
-        fetch : boolean
-            Download the data straight away (default: True).
-        quiet : boolean
-            When downloading, don't print anything out. (default: False)
-        match : str / list
-            Only download files matching this filename pattern (e.g.
-            "*xrt*pc*"). If multiple templates are given as a list, files
-            matching any of filename patterns will be downloaded. Uses standard
-            UNIX style filename pattern matching with Python `fnmatch` module.
-        username : str
-            username for TOO API (default 'anonymous')
-        shared_secret : str
-            shared secret for TOO API (default 'anonymous')
-        aws : boolean
-            Download data from AWS instead of HEASARC (note only if uksdc and itsdc
-            are False). (default 'False').
-        """
-        # Parameters
-        self.username = "anonymous"
-        self.obsid = None
-        # Only look in quicklook
-        self.quicklook = False
-        # Download data from AWS instead of HEASARC
-        self.aws = False
-        # Download from UK SDC
-        self.uksdc = None
-        # Download from the Italian SDC
-        self.itsdc = None
-        # Data types to download. Always download auxil as default
-        self.auxil = True
-        self.bat = None
-        self.uvot = None
-        self.xrt = None
-        self.tdrss = None
-        self.subthresh = None
-        self.log = None
-        # Should we display anything when downloading
-        self.quiet = False
-        # Download data straight away
-        self.fetch = True
-        # Only download files matching this expression
-        self.match = None
-        # Default to not overwrite existing data
-        self.clobber = False
-        # Directory to save data
-        self.outdir = "."
-        # Parse argument keywords
-        self._parseargs(*args, **kwargs)
-
-        # The resultant data
-        self.entries = list()
-        self.status = TOOStatus()
-
-        # See if we pass validation from the constructor, but don't record
-        # errors if we don't
-        if self.validate():
-            self.submit()
-            # ...and if requested, download the data
-            if self.fetch:
-                self.download()
-        else:
-            self.status.clear()
 
     def __getitem__(self, i):
         return self.entries[i]
@@ -330,33 +205,6 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
                 else:
                     i += 1
 
-    def validate(self):
-        """Validate API submission before submit
-
-        Returns
-        -------
-        bool
-            Was validation successful?
-        """
-        if self.uksdc is True and self.itsdc is True:
-            self.status.error("Cannot download from UK and Italian SDC")
-        if self.obsid is None:
-            self.status.error("Must supply Observation ID")
-        if (
-            self.auxil is not True
-            and self.xrt is not True
-            and self.log is not True
-            and self.bat is not True
-            and self.uvot is not True
-            and self.subthresh is not True
-        ):
-            self.status.error("No data products selected")
-            self.status.status = "Rejected"
-        if len(self.status.errors) > 0:
-            return False
-        else:
-            return True
-
     def download(self, outdir=None):
         """Download Swift data for selected instruments to `outdir`"""
         # If outdir is passed as an argument, update the value
@@ -401,9 +249,11 @@ class Swift_Data(TOOAPI_Baseclass, TOOAPI_ObsID):
 
 
 # Shorthand Aliases for better PEP8 compliant and future compat
-Data = Swift_Data
-DataFile = Swift_DataFile
-Swift_Data_File = Swift_DataFile
+Data = SwiftData
+DataFile = SwiftDataFile
+Swift_Data_File = SwiftDataFile
+Swift_DataFile = SwiftDataFile
+Swift_Data = SwiftData
 
 
 class TOOAPI_DownloadData:
@@ -412,8 +262,8 @@ class TOOAPI_DownloadData:
     def download(self, *args, **kwargs):
         """Download data from SDC"""
         # Set up the Data class
-        data = Swift_Data()
-        params = Swift_Data._parameters + Swift_Data._local
+        data = SwiftData()
+        params = SwiftData._parameters + SwiftData._local
         # Read in arguments
         for i in range(len(args)):
             setattr(data, params[i + 1], args[i])

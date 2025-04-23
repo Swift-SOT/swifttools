@@ -1,6 +1,7 @@
+from swifttools.swift_too.swift_schemas import SwiftCalendarEntrySchema, SwiftCalendarGetSchema, SwiftCalendarSchema
 from .api_common import TOOAPI_Baseclass
 from .api_daterange import TOOAPI_Daterange
-from .api_resolve import TOOAPI_AutoResolve
+from .api_resolve import TOOAPI_AutoResolve, TOOAPIAutoResolve
 from .api_skycoord import TOOAPI_SkyCoord
 from .api_status import TOOStatus
 from .swift_clock import TOOAPI_ClockCorrect
@@ -8,13 +9,7 @@ from .swift_instruments import TOOAPI_Instruments
 from .swift_obsid import TOOAPI_ObsID
 
 
-class Swift_CalendarEntry(
-    TOOAPI_Baseclass,
-    TOOAPI_Instruments,
-    TOOAPI_ClockCorrect,
-    TOOAPI_Daterange,
-    TOOAPI_SkyCoord,
-):
+class Swift_CalendarEntry(TOOAPI_Baseclass, TOOAPI_Instruments, TOOAPI_ClockCorrect, SwiftCalendarEntrySchema):
     """Class for a single entry in the Swift TOO calendar.
 
     Attributes
@@ -43,20 +38,6 @@ class Swift_CalendarEntry(
         Declination of pointing in J2000 (decimal degrees)
     """
 
-    # Set up Core API values
-    _attributes = [
-        "start",
-        "stop",
-        "xrt_mode",
-        "bat_mode",
-        "uvot_mode",
-        "duration",
-        "asflown",
-        "merit",
-        "targetid",
-        "ra",
-        "dec",
-    ]
     # Variable names
     _varnames = {
         "start": "Start",
@@ -71,20 +52,7 @@ class Swift_CalendarEntry(
         "dec": "Declination (deg)",
         "targetid": "Target ID",
     }
-    api_name = "Swift_Calendar_Entry"
-
-    def __init__(self):
-        # Parameters
-        # Start and end times of the observing window. Use datetime for coordinated window
-        self.start = None
-        # and timedelta for relative offsets, where the start time can be
-        # variable, but the monitoring cadence isn't even.
-        self.stop = None
-        self.merit = None
-        self.targetid = None
-        self.duration = None  # Exposure time in seconds
-        self.asflown = None  # Amount of exposure taken
-        self.ignorekeys = True
+    api_name: str = "Swift_Calendar_Entry"
 
     def __getitem__(self, key):
         if key in self._parameters:
@@ -100,10 +68,9 @@ class Swift_CalendarEntry(
 class Swift_Calendar(
     TOOAPI_Baseclass,
     TOOAPI_ClockCorrect,
-    TOOAPI_Daterange,
-    TOOAPI_SkyCoord,
-    TOOAPI_AutoResolve,
-    TOOAPI_ObsID,
+    TOOAPIAutoResolve,
+    # TOOAPI_ObsID,
+    SwiftCalendarSchema,
 ):
     """Class that fetches entries in the Swift Planning Calendar, which
     are scheduled as part of a TOO request.
@@ -137,73 +104,19 @@ class Swift_Calendar(
     """
 
     # Core API definitions
-    api_name = "Swift_Calendar"
-    _parameters = [
-        "username",
-        "too_id",
-        "begin",
-        "end",
-        "ra",
-        "dec",
-        "begin",
-        "end",
-        "radius",
-        "targetid",
-    ]
-    _attributes = ["status", "entries"]
+    api_name: str = "Swift_Calendar"
+    _schema = SwiftCalendarSchema
+    _get_schema = SwiftCalendarGetSchema
+    _endpoint = "/swift/calendar"
+
     # Local parameters
     _local = ["shared_secret", "length", "name"]
-    # Subclasses used by class
-    _subclasses = [Swift_CalendarEntry, TOOStatus]
-
-    def __init__(self, *args, **kwargs):
-        """
-        Parameters
-        ----------
-        username : str
-            username for TOO API (default 'anonymous')
-        shared_secret : str
-            shared secret for TOO API (default 'anonymous')
-        too_id : int
-            Unique TOO identifying number
-        """
-        # Parameters
-        self.entries = list()
-        self.username = "anonymous"
-        self.too_id = None
-        self.status = TOOStatus()
-        self.length = None
-        self.ra = None
-        self.dec = None
-        self.targetid = None
-
-        # Read in arguements
-        self._parseargs(*args, **kwargs)
-
-        # See if we pass validation from the constructor, but don't record
-        # errors if we don't
-        if self.validate():
-            self.submit()
-        else:
-            self.status.clear()
 
     def __getitem__(self, number):
         return self.entries[number]
 
     def __len__(self):
         return len(self.entries)
-
-    def validate(self):
-        if (
-            self.too_id is not None
-            or self.length is not None
-            or (self.ra is not None and self.dec is not None)
-            or self.targetid is not None
-        ):
-            return True
-        else:
-            self.status.error("TOO ID is not set.")
-            return False
 
     @property
     def _table(self):
