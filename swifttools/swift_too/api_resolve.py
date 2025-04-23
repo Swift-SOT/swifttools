@@ -1,7 +1,10 @@
 from typing import Any, Optional
 
 
-from .swift_schemas import BaseSchema, SwiftResolveGetSchema, SwiftResolveSchema
+from pydantic import model_validator
+
+
+from .swift_schemas import BaseSchema, OptionalCoordinateSchema, SwiftResolveGetSchema, SwiftResolveSchema
 from .api_common import TOOAPI_Baseclass
 
 
@@ -84,6 +87,20 @@ class SwiftResolve(TOOAPI_Baseclass, SwiftResolveSchema):
             return header, table
         else:
             return [], []
+
+
+class TOOAPIAutoResolve(OptionalCoordinateSchema):
+    name: Optional[str] = None
+
+    @model_validator(mode="after")
+    def validate_name(self) -> "TOOAPIAutoResolve":
+        """If you set a name, use `SwiftResolve` to retrieve it's `ra` and `dec`."""
+        if self.name is not None and isinstance(self.name, str):
+            r = SwiftResolve(name=self.name)
+            if r.status.status == "Accepted":
+                self.ra = r.ra
+                self.dec = r.dec
+        return self
 
 
 class TOOAPI_AutoResolve:

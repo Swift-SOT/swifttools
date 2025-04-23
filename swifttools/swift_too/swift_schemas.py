@@ -50,7 +50,8 @@ class BeginEndLengthSchema(BaseSchema):
         if not begin:
             raise ValueError("Begin time must be provided.")
         if end and length:
-            raise ValueError("Only one of 'end', or 'length' should be provided.")
+            if end != begin + timedelta(days=length):
+                raise ValueError("Only one of 'end', or 'length' should be provided.")
         if not (begin or end or length):
             raise ValueError("At least 'begin' and 'end' or 'length' must be provided.")
         if begin and length:
@@ -76,6 +77,7 @@ class OptionalBeginEndLengthSchema(BaseSchema):
     length: Optional[float] = Field(
         default=None,
         description="Length of requested time period (days)",
+        exclude=True,  # We don't want to include length in the output
     )
 
     @model_validator(mode="after")
@@ -87,7 +89,8 @@ class OptionalBeginEndLengthSchema(BaseSchema):
         if not begin:
             return self
         if end and length:
-            raise ValueError("Only one of 'end', or 'length' should be provided.")
+            if end != begin + timedelta(days=length):
+                raise ValueError("Only one of 'end', or 'length' should be provided.")
         if not (begin or end or length):
             raise ValueError("At least 'begin' and 'end' or 'length' must be provided.")
         if begin and length:
@@ -247,11 +250,7 @@ class SwiftAFSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema)
     obsnum: Optional[int] = None
 
 
-class SwiftAFSTSchema(BaseSchema):
-    begin: Optional[datetime] = None
-    end: Optional[datetime] = None
-    ra: Optional[float] = None
-    dec: Optional[float] = None
+class SwiftAFSTSchema(OptionalCoordinateSchema, OptionalBeginEndLengthSchema):
     radius: float = 0.19666666666666668
     targetid: Union[int, list[int], None] = None
     obsnum: Optional[int] = None
@@ -260,14 +259,12 @@ class SwiftAFSTSchema(BaseSchema):
     entries: list[SwiftAFSTEntrySchema] = []
 
 
-class SwiftAFSTEntrySchema(BaseSchema):
+class SwiftAFSTEntrySchema(CoordinateSchema):
     begin: Optional[datetime] = None
     settle: Optional[datetime] = None
     end: Optional[datetime] = None
     obstype: Optional[str] = None
     targname: Optional[str] = None
-    ra: Optional[float] = None
-    dec: Optional[float] = None
     roll: Optional[float] = None
     targetid: Optional[int] = None
     seg: Optional[int] = None
@@ -285,6 +282,49 @@ class SwiftAFSTEntrySchema(BaseSchema):
     sunha: Optional[float] = None
     ra_point: Optional[float] = None
     dec_point: Optional[float] = None
+
+    @property
+    def exposure(self):
+        return self.end - self.settle
+
+    @property
+    def slewtime(self):
+        return self.settle - self.begin
+
+    # The following provides compatibility as we changed ra/dec_point to
+    # ra/dec_object. These will go away with a future API update. FIXME API 1.3
+    # @property
+    # def ra_point(self):
+    #    return self.ra_object
+
+    # @ra_point.setter
+    # def ra_point(self, ra):
+    #    self.ra_object = ra
+
+    # @property
+    # def dec_point(self):
+    #    return self.dec_object
+
+    # dec_point.setter
+    # def dec_point(self, dec):
+    #    self.dec_object = dec
+
+    # Compat end
+
+    @property
+    def _table(self):
+        parameters = ["begin", "end", "targname", "obsnum", "exposure", "slewtime"]
+        header = [row for row in parameters]
+        return header, [
+            [
+                self.begin,
+                self.end,
+                self.targname,
+                self.obsnum,
+                self.exposure.seconds,
+                self.slewtime.seconds,
+            ]
+        ]
 
 
 class SwiftPPSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
