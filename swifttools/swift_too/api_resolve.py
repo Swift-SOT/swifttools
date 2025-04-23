@@ -59,12 +59,6 @@ class SwiftResolve(TOOAPI_Baseclass, SwiftResolveSchema):
     _schema = SwiftResolveSchema
     _get_schema = SwiftResolveGetSchema
 
-    def model_post_init(self, context: Any) -> None:
-        if self.validate():
-            self.get()
-        else:
-            print("Error: Validation failed, please check parameters.")
-
     def validate(self):
         """Validate API submission before submit
 
