@@ -77,7 +77,12 @@ class TOOAPIAutoResolve(OptionalCoordinateSchema):
 
     @model_validator(mode="after")
     def validate_name(self) -> "TOOAPIAutoResolve":
-        """If you set a name, use `SwiftResolve` to retrieve it's `ra` and `dec`."""
+        """If you set a name, use `SwiftResolve` to retrieve it's `ra` and
+        `dec`."""
+
+        if hasattr(self, "source_name"):
+            self.name = self.source_name
+
         if self.name is not None and isinstance(self.name, str):
             r = SwiftResolve(name=self.name)
             if r.status.status == "Accepted":

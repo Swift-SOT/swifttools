@@ -3,6 +3,8 @@ from typing import Optional, Union
 
 from pydantic import computed_field
 
+from swifttools.swift_too.swift_clock import TOOAPI_ClockCorrect
+
 from .api_common import TOOAPIBaseclass
 from .api_resolve import TOOAPIAutoResolve
 from .swift_data import TOOAPI_DownloadData
@@ -291,7 +293,7 @@ class SwiftObservations(dict, TOOAPIBaseclass):
 class SwiftAFST(
     TOOAPIBaseclass,
     TOOAPIAutoResolve,
-    #    TOOAPI_ClockCorrect,
+    TOOAPI_ClockCorrect,
     SwiftAFSTSchema,
 ):
     """Class to fetch Swift As-Flown Science Timeline (AFST) for given

@@ -1,4 +1,4 @@
-from .api_status import TOOStatus
+from .api_status import SwiftTOOStatus
 from .swift_calendar import Calendar
 from .swift_clock import Clock
 from .swift_data import Data
@@ -11,7 +11,7 @@ from .swift_uvot import UVOTMode
 from .swift_visquery import VisQuery
 
 
-class QueryJob(TOOStatus):
+class QueryJob(SwiftTOOStatus):
     """Class that enables fetching the results of already submitted jobs.
     Essentially the same as TOOStatus other than if the process has
     been completed the result of the job will be attached as `result`.
@@ -46,7 +46,7 @@ class QueryJob(TOOStatus):
 
     # These are the kinds of results that can be returned from a QueryJob
     _subclasses = [
-        TOOStatus,
+        SwiftTOOStatus,
         VisQuery,
         AFST,
         UVOTMode,
@@ -74,7 +74,7 @@ class QueryJob(TOOStatus):
             shared secret for TOO API (default 'anonymous')
         """
         # Call the TOOStatus constructor with fetchresult=True to that make this a QueryJob
-        TOOStatus.__init__(self, *args, fetchresult=True, api_name=self.api_name, **kwargs)
+        SwiftTOOStatus.__init__(self, *args, fetchresult=True, api_name=self.api_name, **kwargs)
 
     @property
     def _table(self):

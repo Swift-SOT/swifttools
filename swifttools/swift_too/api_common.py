@@ -7,7 +7,7 @@ import requests
 from pydantic import TypeAdapter
 from tabulate import tabulate
 
-from .api_status import SwiftTOOStatusSchema
+from .api_status import SwiftTOOStatus
 from .version import version_tuple
 
 # Make Warnings a little less weird
@@ -92,7 +92,7 @@ class TOOAPIBaseclass:
     _isutc: bool = False
 
     # Every request gets a status
-    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
+    status: SwiftTOOStatus = SwiftTOOStatus()
 
     @property
     def shared_secret(self):

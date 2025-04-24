@@ -3,7 +3,7 @@ from typing import Optional
 from .swift_schemas import BaseSchema
 
 
-class SwiftTOOStatusSchema(BaseSchema):
+class SwiftTOOStatus(BaseSchema):
     """Simple class to describe the status of a submitted TOO API request
 
     Attributes
@@ -48,3 +48,6 @@ class SwiftTOOStatusSchema(BaseSchema):
     def clear(self):
         """Reset status"""
         self.__init__()
+
+
+TOOStatus = SwiftTOOStatus
