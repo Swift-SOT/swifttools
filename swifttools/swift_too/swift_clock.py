@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from .api_common import TOOAPI_Baseclass, convert_to_dt
+from .api_common import TOOAPI_Baseclass
 from .swift_datetime import swiftdatetime
 from .swift_schemas import SwiftClockGetSchema, SwiftClockSchema
 
@@ -39,88 +39,10 @@ class SwiftClock(TOOAPI_Baseclass, SwiftClockSchema):
     _endpoint = "/swift/clock"
 
     def _post_process(self) -> None:
+        self.entries = [swiftdatetime.frommet(e.met, utcf=e.utcf, isutc=e.isutc) for e in self.entries]
         self.met = [entry.met for entry in self.entries]
-        self.swifttime = [
-            swiftdatetime.frommet(e.met, utcf=e.utcf, isutc=e.isutc).swifttime for i, e in enumerate(self.entries)
-        ]
-
-        self.utctime = [
-            swiftdatetime.frommet(e.met, utcf=e.utcf, isutc=e.isutc).utctime for i, e in enumerate(self.entries)
-        ]
-
-    # # Internal storage
-    # _met: float | list[float] | None = None
-    # _swifttime: datetime | list[datetime] | None = None
-    # _utctime: datetime | list[datetime] | None = None
-
-    # @computed_field
-    # @property
-    # def met(self) -> float | list[float] | None:
-    #     if self._met is None and self.entries is not None:
-    #         self._met = [e.met for e in self.entries]
-    #         if len(self._met) == 1:
-    #             self._met = self._met[0]
-    #     return self._met
-
-    # @met.setter
-    # def met(self, mettime):
-    #     self._met = mettime
-
-    # @property
-    # def utcf(self):
-    #     if self._utcf is None and self.entries is not None:
-    #         self._utcf = [e.utcf for e in self.entries]
-    #         if len(self._utcf) == 1:
-    #             self._utcf = self._utcf[0]
-    #     return self._utcf
-
-    # @utcf.setter
-    # def utcf(self, utcftime):
-    #     self._utcf = utcftime
-
-    # @property
-    # def utctime(self):
-    #     if self._utctime is None and self.entries is not None:
-    #         self._utctime = [entry.utctime for entry in self.entries]
-    #         if len(self._utctime) == 1:
-    #             self._utctime = self._utctime[0]
-    #     return self._utctime
-
-    # @utctime.setter
-    # def utctime(self, utct):
-    #     if type(utct) == swiftdatetime:
-    #         if utct.utctime is None:
-    #             raise TypeError("swiftdatetime does not have utctime set")
-    #         else:
-    #             self._utctime = utct.utctime
-    #     else:
-    #         self._utctime = self.__todt(utct)
-
-    # @property
-    # def swifttime(self):
-    #     if self._swifttime is None and self.entries is not None:
-    #         self._swifttime = [e.swifttime for e in self.entries]
-    #         if len(self._swifttime) == 1:
-    #             self._swifttime = self._swifttime[0]
-    #     return self._swifttime
-
-    # @swifttime.setter
-    # def swifttime(self, swiftt):
-    #     if type(swiftt) == swiftdatetime:
-    #         if swiftt.swifttime is None:
-    #             raise TypeError("swiftdatetime does not have swifttime set")
-    #         else:
-    #             self._swifttime = swiftt.swifttime
-    #     else:
-    #         self._swifttime = self.__todt(swiftt)
-    #     self._swifttime = self.__todt(swiftt)
-
-    def __todt(self, dt):
-        """Simple method to revert a swiftdatetime back to a datetime"""
-        if isinstance(dt, (list, tuple)):
-            return [convert_to_dt(d) for d in dt]
-        else:
-            return convert_to_dt(dt)
+        self.swifttime = [entry.swifttime for entry in self.entries]
+        self.utctime = [entry.utctime for entry in self.entries]
 
     def __getitem__(self, index):
         return self.entries[index]
@@ -151,11 +73,6 @@ class SwiftClock(TOOAPI_Baseclass, SwiftClockSchema):
         mets = [entry.met for entry in self.entries]
         utcfs = [entry.utcf for entry in self.entries]
         self.entries = [swiftdatetime.frommet(mets[i], utcf=utcfs[i], isutc=False) for i in range(len(mets))]
-
-    # Aliases
-    # mettime = met
-    # swift = swifttime
-    # utc = utctime
 
 
 Swift_Clock = SwiftClock

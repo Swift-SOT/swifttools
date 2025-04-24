@@ -5,7 +5,10 @@ from enum import Enum
 from typing import Optional, Union
 
 from astropy.coordinates import SkyCoord  # type: ignore[import-untyped]
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
+from pytz import utc
+
+from .swift_datetime import swiftdatetime
 
 
 class ObsType(str, Enum):
@@ -772,6 +775,16 @@ class SwiftDateTimeSchema(BaseSchema):
     met: float
     utcf: float
     isutc: bool
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def swifttime(self) -> swiftdatetime:
+        return swiftdatetime.frommet(self.met, utcf=self.utcf, isutc=self.isutc).swifttime
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def utctime(self) -> swiftdatetime:
+        return swiftdatetime.frommet(self.met, utcf=self.utcf, isutc=self.isutc).utctime
 
 
 class SwiftClockSchema(BaseSchema):
