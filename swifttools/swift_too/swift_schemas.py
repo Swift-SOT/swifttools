@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
-from astropy.coordinates import SkyCoord  # type: ignore[import-untyped]
+import astropy.units as u  # type: ignore[import-untyped]
+from astropy.coordinates import Latitude, Longitude, SkyCoord  # type: ignore[import-untyped]
+from astropy.time import Time, TimeDelta  # type: ignore[import-untyped]
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
@@ -47,8 +49,7 @@ class BeginEndLengthSchema(BaseSchema):
         begin = self.begin
         end = self.end
         length = self.length
-        if isinstance(length, (int, float)):
-            length = timedelta(days=length)
+
         if not begin:
             raise ValueError("Begin time must be provided.")
         if end and length:
@@ -66,6 +67,33 @@ class BeginEndLengthSchema(BaseSchema):
         self.length = length
         self.end = end
         return self
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_length(cls, values: dict[str, Any]) -> dict[str, Any]:
+        if not isinstance(values, dict):
+            values = values.__dict__
+        begin = values.get("begin")
+        end = values.get("end")
+        length = values.get("length")
+
+        # Support for astropy TimeDelta and Quantity objects
+        if isinstance(length, (TimeDelta, u.Quantity)):
+            length = timedelta(days=length.to_value("day"))
+
+        # Support for astropy Time objects
+        if isinstance(begin, Time):
+            begin = begin.utc.datetime
+        if isinstance(end, Time):
+            end = end.utc.datetime
+
+        if isinstance(length, (int, float)):
+            length = timedelta(days=length)
+        values["length"] = length
+        values["end"] = end
+        values["begin"] = begin
+
+        return values
 
 
 class OptionalBeginEndLengthSchema(BaseSchema):
@@ -92,7 +120,6 @@ class OptionalBeginEndLengthSchema(BaseSchema):
             return self
         if end and length:
             if end != begin + timedelta(days=length):
-                print(begin, end, length, begin + timedelta(days=length))
                 raise ValueError("Only one of 'end', or 'length' should be provided.")
         if not (begin or end or length):
             raise ValueError("At least 'begin' and 'end' or 'length' must be provided.")
@@ -107,14 +134,79 @@ class OptionalBeginEndLengthSchema(BaseSchema):
         self.end = end
         return self
 
+    @model_validator(mode="before")
+    @classmethod
+    def check_length(cls, values: dict[str, Any]) -> dict[str, Any]:
+        if not isinstance(values, dict):
+            values = values.__dict__
+        begin = values.get("begin")
+        end = values.get("end")
+        length = values.get("length")
+
+        # Support for astropy TimeDelta and Quantity objects
+        if isinstance(length, (TimeDelta, u.Quantity)):
+            length = length.to_value("day")
+
+        # Support for astropy Time objects
+        if isinstance(begin, Time):
+            begin = begin.utc.datetime
+
+        if isinstance(end, Time):
+            end = end.utc.datetime
+
+        if isinstance(length, timedelta):
+            length = length.total_seconds() / 86400.0
+
+        values["length"] = length
+        values["end"] = end
+        values["begin"] = begin
+
+        return values
+
 
 class OptionalCoordinateSchema(BaseSchema):
     ra: Optional[float] = Field(default=None, description="Right Ascension (degrees)", ge=0, lt=360)
     dec: Optional[float] = Field(default=None, description="Declination (degrees)", ge=-90, le=90)
     skycoord: Optional[SkyCoord] = Field(default=None, exclude=True)
 
+    @model_validator(mode="before")
+    @classmethod
+    def check_coordinates(cls, values: dict[str, Union[float, SkyCoord]]) -> dict[str, float]:
+        if not isinstance(values, dict):
+            values = values.__dict__
+
+        # Fetch values
+        ra = values.get("ra")
+        dec = values.get("dec")
+        skycoord = values.get("skycoord")
+
+        # Check if RA/Dec are quatities or Latitude/Longitude
+        if isinstance(ra, (u.Quantity, Longitude)):
+            ra = ra.to_value("deg")
+        if isinstance(dec, (u.Quantity, Latitude)):
+            dec = dec.to_value("deg")
+
+        # If only a SkyCoord is provided
+        if skycoord is not None and isinstance(skycoord, SkyCoord):
+            ra = skycoord.fk5.ra.deg
+            dec = skycoord.fk5.dec.deg
+
+        # Create the SkyCoord object from RA and Dec
+        if skycoord is None and ra is not None and dec is not None:
+            try:
+                skycoord = SkyCoord(ra=ra, dec=dec, unit="deg").fk5
+            except Exception as e:
+                raise ValueError(f"Invalid coordinates: {e}")
+
+        # Set values
+        values["skycoord"] = skycoord
+        values["ra"] = ra
+        values["dec"] = dec
+
+        return values
+
     @model_validator(mode="after")
-    def check_coordinates(self) -> "OptionalCoordinateSchema":
+    def check_coordinates_after(self) -> "OptionalCoordinateSchema":
         # Check that RA and Dec are both the same type
         if (self.ra is None) != (self.dec is None):
             raise ValueError("Both RA and Dec must be provided or neither.")
@@ -133,25 +225,46 @@ class OptionalCoordinateSchema(BaseSchema):
 class CoordinateSchema(BaseSchema):
     ra: float = Field(description="Right Ascension (degrees)", ge=0, lt=360)
     dec: float = Field(description="Declination (degrees)", ge=-90, le=90)
-    skycoord: Optional[SkyCoord] = Field(default=None, exclude=True)
+    skycoord: SkyCoord = Field(..., exclude=True)
 
     @model_validator(mode="before")
     @classmethod
     def check_coordinates(cls, values: dict[str, Union[float, SkyCoord]]) -> dict[str, float]:
         if not isinstance(values, dict):
             values = values.__dict__
+
+        # Fetch values
         ra = values.get("ra")
         dec = values.get("dec")
         skycoord = values.get("skycoord")
-        if ra is None or dec is None and skycoord is None:
-            raise ValueError("Both RA and Dec must be provided.")
+
+        # Check if RA/Dec are quatities or Latitude/Longitude
+        if isinstance(ra, (u.Quantity, Longitude)):
+            ra = ra.to_value("deg")
+        if isinstance(dec, (u.Quantity, Latitude)):
+            dec = dec.to_value("deg")
+
+        # If only a SkyCoord is provided
         if skycoord is not None and isinstance(skycoord, SkyCoord):
-            values["ra"] = skycoord.fk5.ra.deg
-            values["dec"] = skycoord.fk5.dec.deg
-        try:
-            values["skycoord"] = SkyCoord(ra=ra, dec=dec, unit="deg").fk5
-        except Exception as e:
-            raise ValueError(f"Invalid coordinates: {e}")
+            ra = skycoord.fk5.ra.deg
+            dec = skycoord.fk5.dec.deg
+
+        # Check if both RA and Dec or SkyCoord are provided
+        if (ra is None or dec is None) and skycoord is None:
+            raise ValueError("Both RA and Dec or SkyCoord must be provided.")
+
+        # Create the SkyCoord object from RA and Dec
+        if skycoord is None:
+            try:
+                skycoord = SkyCoord(ra=ra, dec=dec, unit="deg").fk5
+            except Exception as e:
+                raise ValueError(f"Invalid coordinates: {e}")
+
+        # Set values
+        values["skycoord"] = skycoord
+        values["ra"] = ra
+        values["dec"] = dec
+
         return values
 
 

@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Any
 
 import requests
-from pydantic import TypeAdapter
+from pydantic import TypeAdapter, ValidationError
 from tabulate import tabulate
 
 from .api_status import SwiftTOOStatus
@@ -210,8 +210,6 @@ class TOOAPIBaseclass:
     def model_post_init(self, context: Any) -> None:
         if self.validate_get():
             self.submit()
-        else:
-            print("Error: Validation failed, please check parameters.")
 
     def submit(self):
         """Perform an API GET request to the server."""
@@ -248,7 +246,10 @@ class TOOAPIBaseclass:
         bool
             Was validation successful?
         """
-        if not self._get_schema.model_validate(self):
-            self.status.error("Validation failed.")
+
+        try:
+            self._get_schema.model_validate(self)
+        except ValidationError as e:
+            self.__set_error(f"Validation failed: {e}")
             return False
         return True

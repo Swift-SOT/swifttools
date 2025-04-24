@@ -113,7 +113,7 @@ class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect):
     @property
     def _table(self):
         parameters = ["begin", "end", "targname", "obsnum", "exposure", "slewtime"]
-        header = [self._header_row(row) for row in parameters]
+        header = [self._header_title(row) for row in parameters]
         return header, [
             [
                 self.begin,

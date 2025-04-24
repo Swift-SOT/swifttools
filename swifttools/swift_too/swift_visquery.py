@@ -1,7 +1,12 @@
 from .api_common import TOOAPIBaseclass
 from .api_resolve import TOOAPIAutoResolve
 from .swift_clock import TOOAPIClockCorrect
-from .swift_schemas import BeginEndLengthSchema, CoordinateSchema, OptionalCoordinateSchema
+from .swift_schemas import (
+    BeginEndLengthSchema,
+    CoordinateSchema,
+    OptionalBeginEndLengthSchema,
+    OptionalCoordinateSchema,
+)
 
 
 class SwiftVisWindow(BeginEndLengthSchema, TOOAPIClockCorrect):
@@ -18,6 +23,8 @@ class SwiftVisWindow(BeginEndLengthSchema, TOOAPIClockCorrect):
     length : timedelta
         length of window
     """
+
+    _varnames = {"begin": "Begin Time", "end": "End Time", "length": "Window length"}
 
     @property
     def _table(self):
@@ -36,7 +43,7 @@ class SwiftVisWindow(BeginEndLengthSchema, TOOAPIClockCorrect):
             raise IndexError("list index out of range")
 
 
-class SwiftVisQuerySchema(BeginEndLengthSchema, OptionalCoordinateSchema):
+class SwiftVisQuerySchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
     hires: bool = False
     windows: list[SwiftVisWindow] = []
 
