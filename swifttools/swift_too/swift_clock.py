@@ -1,10 +1,11 @@
 from datetime import datetime
 
-from .api_common import TOOAPI_Baseclass, convert_to_dt, swiftdatetime
-from .api_status import TOOStatus
+from .api_common import TOOAPI_Baseclass, convert_to_dt
+from .swift_datetime import swiftdatetime
+from .swift_schemas import SwiftClockGetSchema, SwiftClockSchema
 
 
-class Swift_Clock(TOOAPI_Baseclass):
+class SwiftClock(TOOAPI_Baseclass, SwiftClockSchema):
     """Class to obtain clock corrections, MET values and corrected UTC times for
     Swift. Typical use of the class is to pass a MET value, Swift Time
     (essentially MET in datetime format), or a UTC datetime. The API returns
@@ -32,111 +33,87 @@ class Swift_Clock(TOOAPI_Baseclass):
     """
 
     # API details
-    api_name = "Swift_Clock"
-    # Arguments
-    _parameters = ["username", "met", "swifttime", "utctime"]
-    # Returned values
-    _attributes = ["status", "entries"]
-    # Returned classes
-    _subclasses = [TOOStatus, swiftdatetime]
-    # Local parameters
-    _local = ["shared_secret"]
+    api_name: str = "Swift_Clock"
+    _schema = SwiftClockSchema
+    _get_schema = SwiftClockGetSchema
+    _endpoint = "/swift/clock"
 
-    def __init__(self, *args, **kwargs):
-        """
-        Parameters
-        ----------
-        met : int
-            Mission Elapsed Time (seconds). Amount of seconds since 2001-01-01
-            00:00:00 UT. Note that MET is measured using Swift's internal clock, and
-            are not corrected for clock drift.
-        swifttime : datetime
-            Spacecraft time converted to datetime units. Note that dates are note
-            corrected for leap seconds or clock drift.
-        utctime : datetime
-            Universal Time value, corrected for Swift's clock drift and leap
-            seconds.
-        username : str (default 'anonymous')
-            TOO API username.
-        shared_secret : str (default 'anonymous')
-            TOO API shared secret
-        """
-        # attributes
-        self._met = None
-        self._swifttime = None
-        self._utctime = None
-        self._utcf = None
-        # parse arguments
-        self._parseargs(*args, **kwargs)
-        self.status = TOOStatus()
-        self.entries = None
+    def _post_process(self) -> None:
+        self.met = [entry.met for entry in self.entries]
+        self.swifttime = [
+            swiftdatetime.frommet(e.met, utcf=e.utcf, isutc=e.isutc).swifttime for i, e in enumerate(self.entries)
+        ]
 
-        # Submit if enough parameters are passed to the constructor
-        if self.validate():
-            self.submit()
-        else:
-            self.status.clear()
+        self.utctime = [
+            swiftdatetime.frommet(e.met, utcf=e.utcf, isutc=e.isutc).utctime for i, e in enumerate(self.entries)
+        ]
 
-    @property
-    def met(self):
-        if self._met is None and self.entries is not None:
-            self._met = [e.met for e in self.entries]
-            if len(self._met) == 1:
-                self._met = self._met[0]
-        return self._met
+    # # Internal storage
+    # _met: float | list[float] | None = None
+    # _swifttime: datetime | list[datetime] | None = None
+    # _utctime: datetime | list[datetime] | None = None
 
-    @met.setter
-    def met(self, mettime):
-        self._met = mettime
+    # @computed_field
+    # @property
+    # def met(self) -> float | list[float] | None:
+    #     if self._met is None and self.entries is not None:
+    #         self._met = [e.met for e in self.entries]
+    #         if len(self._met) == 1:
+    #             self._met = self._met[0]
+    #     return self._met
 
-    @property
-    def utcf(self):
-        if self._utcf is None and self.entries is not None:
-            self._utcf = [e.utcf for e in self.entries]
-            if len(self._utcf) == 1:
-                self._utcf = self._utcf[0]
-        return self._utcf
+    # @met.setter
+    # def met(self, mettime):
+    #     self._met = mettime
 
-    @utcf.setter
-    def utcf(self, utcftime):
-        self._utcf = utcftime
+    # @property
+    # def utcf(self):
+    #     if self._utcf is None and self.entries is not None:
+    #         self._utcf = [e.utcf for e in self.entries]
+    #         if len(self._utcf) == 1:
+    #             self._utcf = self._utcf[0]
+    #     return self._utcf
 
-    @property
-    def utctime(self):
-        if self._utctime is None and self.entries is not None:
-            self._utctime = [entry.utctime for entry in self.entries]
-            if len(self._utctime) == 1:
-                self._utctime = self._utctime[0]
-        return self._utctime
+    # @utcf.setter
+    # def utcf(self, utcftime):
+    #     self._utcf = utcftime
 
-    @utctime.setter
-    def utctime(self, utct):
-        if type(utct) == swiftdatetime:
-            if utct.utctime is None:
-                raise TypeError("swiftdatetime does not have utctime set")
-            else:
-                self._utctime = utct.utctime
-        else:
-            self._utctime = self.__todt(utct)
+    # @property
+    # def utctime(self):
+    #     if self._utctime is None and self.entries is not None:
+    #         self._utctime = [entry.utctime for entry in self.entries]
+    #         if len(self._utctime) == 1:
+    #             self._utctime = self._utctime[0]
+    #     return self._utctime
 
-    @property
-    def swifttime(self):
-        if self._swifttime is None and self.entries is not None:
-            self._swifttime = [e.swifttime for e in self.entries]
-            if len(self._swifttime) == 1:
-                self._swifttime = self._swifttime[0]
-        return self._swifttime
+    # @utctime.setter
+    # def utctime(self, utct):
+    #     if type(utct) == swiftdatetime:
+    #         if utct.utctime is None:
+    #             raise TypeError("swiftdatetime does not have utctime set")
+    #         else:
+    #             self._utctime = utct.utctime
+    #     else:
+    #         self._utctime = self.__todt(utct)
 
-    @swifttime.setter
-    def swifttime(self, swiftt):
-        if type(swiftt) == swiftdatetime:
-            if swiftt.swifttime is None:
-                raise TypeError("swiftdatetime does not have swifttime set")
-            else:
-                self._swifttime = swiftt.swifttime
-        else:
-            self._swifttime = self.__todt(swiftt)
-        self._swifttime = self.__todt(swiftt)
+    # @property
+    # def swifttime(self):
+    #     if self._swifttime is None and self.entries is not None:
+    #         self._swifttime = [e.swifttime for e in self.entries]
+    #         if len(self._swifttime) == 1:
+    #             self._swifttime = self._swifttime[0]
+    #     return self._swifttime
+
+    # @swifttime.setter
+    # def swifttime(self, swiftt):
+    #     if type(swiftt) == swiftdatetime:
+    #         if swiftt.swifttime is None:
+    #             raise TypeError("swiftdatetime does not have swifttime set")
+    #         else:
+    #             self._swifttime = swiftt.swifttime
+    #     else:
+    #         self._swifttime = self.__todt(swiftt)
+    #     self._swifttime = self.__todt(swiftt)
 
     def __todt(self, dt):
         """Simple method to revert a swiftdatetime back to a datetime"""
@@ -163,23 +140,6 @@ class Swift_Clock(TOOAPI_Baseclass):
             header, values = [], []
         return header, values
 
-    def validate(self):
-        """Validate API submission before submit
-
-        Returns
-        -------
-        bool
-            Was validation successful?
-        """
-        # Check what the source is, and set _isutc appropriately
-        if self.swifttime is not None or self.met is not None:
-            self._isutc = False
-        else:
-            self._isutc = True
-        # Basic check that anything is set
-        if self.met is not None or self.swifttime is not None or self.utctime is not None:
-            return True
-
     def to_utctime(self):
         """Convert all entries to a UTC time base"""
         mets = [entry.met for entry in self.entries]
@@ -193,12 +153,13 @@ class Swift_Clock(TOOAPI_Baseclass):
         self.entries = [swiftdatetime.frommet(mets[i], utcf=utcfs[i], isutc=False) for i in range(len(mets))]
 
     # Aliases
-    mettime = met
-    swift = swifttime
-    utc = utctime
+    # mettime = met
+    # swift = swifttime
+    # utc = utctime
 
 
-Clock = Swift_Clock
+Swift_Clock = SwiftClock
+Clock = SwiftClock
 
 
 def index_datetimes(dictionary, i=0, values=[], setvals=None):

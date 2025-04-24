@@ -776,8 +776,8 @@ class SwiftDateTimeSchema(BaseSchema):
 
 class SwiftClockSchema(BaseSchema):
     met: Union[float, list[float], None] = None
-    utctime: Optional[datetime] = None
-    swifttime: Optional[datetime] = None
+    utctime: Union[datetime, list[datetime], None] = None
+    swifttime: Union[datetime, list[datetime], None] = None
     entries: list[SwiftDateTimeSchema] = []
     status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
 

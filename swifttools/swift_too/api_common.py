@@ -1,12 +1,9 @@
-import json
-import re
 import textwrap
 import warnings
-from datetime import date, datetime, timedelta, timezone
+from datetime import datetime
 from typing import Any
 
 import requests
-from dateutil import parser
 from pydantic import TypeAdapter
 from tabulate import tabulate
 
@@ -217,16 +214,6 @@ class TOOAPI_Baseclass:
         url = f"{API_URL}{self._endpoint}"
         return url
 
-    @property
-    def complete(self, post=True):
-        """Check if a queued job is completed"""
-        # Send request to TOO API server
-        self.__submit_jwt(post=post)
-        # Check the status of the request
-        if self.status != "Queued" and self.status != "Processing":
-            return True
-        return False
-
     def _post_process(self):
         """Placeholder method. Things to do after values are returned from API."""
         pass
@@ -244,6 +231,7 @@ class TOOAPI_Baseclass:
             self.submit_url, params=args, timeout=self._timeout, auth=(self.username, self.shared_secret)
         )
         print(response.url)
+        # If the request was successful, parse the response
         if response.status_code == 200:
             try:
                 data = self._schema.model_validate(response.json())
@@ -255,7 +243,12 @@ class TOOAPI_Baseclass:
                 return False
         else:
             print("Sad trombone: ", response.status_code)
+            self.__set_error(f"Error: {response.status_code} - {response.text}")
             return False
+
+        # Perform processing of the response
+        self._post_process()
+
         return True
 
     def validate_get(self):
@@ -270,157 +263,3 @@ class TOOAPI_Baseclass:
             self.status.error("Validation failed.")
             return False
         return True
-
-
-class swiftdatetime(datetime):
-    """Extend datetime to store met, utcf and swifttime. Default value is UTC"""
-
-    api_name: str = "swiftdatetime"
-    _parameters: list[str] = ["met", "utcf", "swifttime", "utctime", "isutc"]
-
-    def __new__(self, *args, **kwargs):
-        return super(swiftdatetime, self).__new__(self, *args)
-
-    def __init__(self, *args, **kwargs):
-        self._met = None
-        self.utcf = None
-        self._swifttime = None
-        self._utctime = None
-        self._isutc = False
-        self._isutc_set = False
-        if "tzinfo" in kwargs.keys():
-            raise TypeError("swiftdatetime does not support timezone information.")
-        for key in kwargs.keys():
-            setattr(self, key, kwargs[key])
-
-    def __repr__(self):
-        return f"swiftdatetime({self.year}, {self.month}, {self.day}, {self.hour}, {self.minute}, {self.second}, {self.microsecond}, isutc={self.isutc}, utcf={self.utcf})"
-
-    def __sub__(self, other):
-        """Redefined __sub__ to handle mismatched time bases"""
-        if isinstance(other, swiftdatetime):
-            if self.isutc != other.isutc and (self.utctime is None or other.utctime is None):
-                raise ArithmeticError(
-                    "Cannot subtract mismatched time zones with no UTCF"
-                )  # FIXME - correct exception?
-
-            if self.isutc is True and other.isutc is True or self.isutc is False and other.isutc is False:
-                return super().__sub__(other)
-            else:
-                if self.isutc:
-                    return super().__sub__(other.utctime)
-                else:
-                    return self.utctime.__sub__(other.utctime)
-        else:
-            value = super().__sub__(other)
-            if hasattr(value, "isutc"):
-                value.isutc = self.isutc
-            return value
-
-    def __add__(self, other):
-        """Custom add for swiftdatetime. Note that UTCF is not preserved, on purpose."""
-        value = super().__add__(other)
-        if hasattr(value, "isutc"):
-            value.isutc = self.isutc
-        return value
-
-    @property
-    def isutc(self):
-        return self._isutc
-
-    @isutc.setter
-    def isutc(self, utc):
-        """Is this swiftdatetime based on UTC or Swift Time"""
-        if self._isutc_set is not True:
-            # If we change the time base for this, reset the values of swifttime and utctime
-            self._isutc = utc
-            self.swifttime = None
-            self.utctime = None
-            self._isutc_set = True
-        else:
-            raise AttributeError("Cannot set attribute isutc when previously set.")
-
-    @property
-    def met(self):
-        if self.swifttime is not None:
-            return (self.swifttime - datetime(2001, 1, 1)).total_seconds()
-
-    @met.setter
-    def met(self, met):
-        self._met = met
-
-    @property
-    def utctime(self):
-        if self._utctime is None:
-            if self.isutc:
-                self._utctime = datetime(
-                    self.year,
-                    self.month,
-                    self.day,
-                    self.hour,
-                    self.minute,
-                    self.second,
-                    self.microsecond,
-                )
-            elif self.utcf is not None:
-                self._utctime = self.swifttime + timedelta(seconds=self.utcf)
-        return self._utctime
-
-    @utctime.setter
-    def utctime(self, utc):
-        if isinstance(utc, datetime):
-            # Ensure that utctime set to a pure datetime
-            if utc.tzinfo is not None:
-                utc = utc.astimezone(timezone.utc).replace(tzinfo=None)
-        else:
-            self._utctime = utc
-
-    @property
-    def swifttime(self):
-        if self._swifttime is None:
-            if not self.isutc:
-                self._swifttime = datetime(
-                    self.year,
-                    self.month,
-                    self.day,
-                    self.hour,
-                    self.minute,
-                    self.second,
-                    self.microsecond,
-                )
-            elif self.utcf is not None:
-                self._swifttime = self.utctime - timedelta(seconds=self.utcf)
-        return self._swifttime
-
-    @swifttime.setter
-    def swifttime(self, st):
-        if isinstance(st, datetime):
-            # Ensure that swifttime set to a pure datetime
-            if st.tzinfo is not None:
-                st = st.astimezone(timezone.utc).replace(tzinfo=None)
-            self._swifttime = st
-        else:
-            self._swifttime = convert_to_dt(st)
-
-    @property
-    def _table(self):
-        if self._isutc:
-            header = ["MET (s)", "Swift Time", "UTC Time (default)", "UTCF (s)"]
-        else:
-            header = ["MET (s)", "Swift Time (default)", "UTC Time", "UTCF (s)"]
-        return header, [[self.met, self.swifttime, self.utctime, self.utcf]]
-
-    @classmethod
-    def frommet(cls, met, utcf=None, isutc=False):
-        """Construct a swiftdatetime from a given MET and (optional) UTCF."""
-        dt = datetime(2001, 1, 1) + timedelta(seconds=met)
-        if isutc and utcf is not None:
-            dt += timedelta(seconds=utcf)
-        ret = cls(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.microsecond)
-        ret.utcf = utcf
-        ret.isutc = isutc
-        return ret
-
-    # Attribute aliases
-    swift = swifttime
-    utc = utctime
