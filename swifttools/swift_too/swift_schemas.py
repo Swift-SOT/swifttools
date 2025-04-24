@@ -283,7 +283,7 @@ class SwiftVisQueryGetSchema(BeginEndLengthSchema, CoordinateSchema):
     hires: bool = False
 
 
-class SwiftVisQuerySchema(BeginEndLengthSchema, CoordinateSchema):
+class SwiftVisQuerySchema(BeginEndLengthSchema, OptionalCoordinateSchema):
     hires: bool = False
     windows: list[SwiftVisWindowSchema] = []
     status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()

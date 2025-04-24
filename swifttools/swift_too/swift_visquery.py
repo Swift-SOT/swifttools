@@ -3,51 +3,6 @@ from .api_resolve import TOOAPIAutoResolve
 from .swift_clock import TOOAPI_ClockCorrect
 from .swift_schemas import SwiftVisQueryGetSchema, SwiftVisQuerySchema, SwiftVisWindowSchema
 
-# class SwiftVisWindow(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
-#     """Simple class to define a Visibility window. Begin and End of window can
-#     either be accessed as self.begin or self.end, or as self[0] or self[1].
-
-#     Attributes
-#     ----------
-#     begin : datetime
-#         begin time of window
-#     end : datetime
-#         end time of window
-#     length : timedelta
-#         length of window
-#     """
-
-#     api_name: str = "Swift_VisWindow"
-
-#     def __init__(self):
-#         # Set all times in this class to UTC
-#         self._isutc = True
-#         # Attributes
-#         self.begin = None
-#         self.end = None
-
-#     @property
-#     def length(self):
-#         if self.end is None or self.begin is None:
-#             return None
-#         return self.end - self.begin
-
-#     @property
-#     def _table(self):
-#         header = [self._header_title(row) for row in self._parameters + self._attributes]
-#         return header, [[self.begin, self.end, self.length]]
-
-#     def __str__(self):
-#         return f"{self.begin} - {self.end} ({self.length})"
-
-#     def __getitem__(self, index):
-#         if index == 0:
-#             return self.begin
-#         elif index == 1:
-#             return self.end
-#         else:
-#             raise IndexError("list index out of range")
-
 
 class SwiftVisQuery(TOOAPI_Baseclass, TOOAPI_ClockCorrect, TOOAPIAutoResolve, SwiftVisQuerySchema):
     """Request Swift Target visibility windows. These results are low-fidelity,
