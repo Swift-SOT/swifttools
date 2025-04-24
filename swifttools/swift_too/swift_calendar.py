@@ -3,7 +3,7 @@ from typing import Optional
 
 from .api_common import TOOAPIBaseclass
 from .api_resolve import TOOAPIAutoResolve
-from .swift_clock import TOOAPI_ClockCorrect
+from .swift_clock import TOOAPIClockCorrect
 from .swift_schemas import BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
 
 
@@ -114,7 +114,7 @@ class SwiftCalendarSchema(BaseSchema):
 
 class Swift_Calendar(
     TOOAPIBaseclass,
-    TOOAPI_ClockCorrect,
+    TOOAPIClockCorrect,
     TOOAPIAutoResolve,
     # TOOAPI_ObsID,
     SwiftCalendarSchema,

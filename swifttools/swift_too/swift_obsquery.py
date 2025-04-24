@@ -3,7 +3,7 @@ from typing import Optional, Union
 
 from pydantic import computed_field
 
-from swifttools.swift_too.swift_clock import TOOAPI_ClockCorrect
+from swifttools.swift_too.swift_clock import TOOAPIClockCorrect
 
 from .api_common import TOOAPIBaseclass
 from .api_resolve import TOOAPIAutoResolve
@@ -16,7 +16,47 @@ from .swift_schemas import (
 )
 
 
-class SwiftAFSTEntry(CoordinateSchema):
+class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect):
+    """Class that defines an individual entry in the Swift As-Flown Timeline
+
+    Attributes
+    ----------
+    begin : datetime
+        begin time of observation
+    settle : datetime
+        settle time of the observation
+    end : datetime
+        end time of observation
+    slewtime : timedelta
+        slew time of the observation
+    targetid : int
+        target ID  of the observation
+    seg : int
+        segment number of the observation
+    xrt : str
+        XRT mode of the observation
+    uvot : str
+        Hex string UVOT mode of the observation
+    bat : int
+        BAT mode of the observation
+    exposure : timedelta
+        exposure time of the observation
+    ra : float
+        Right Ascension of pointing in J2000 (decimal degrees)
+    dec : float
+        Declination of pointing in J2000 (decimal degrees)
+    roll : float
+        roll angle of the observation (decimal degrees)
+    skycoord : SkyCoord
+        SkyCoord version of RA/Dec if astropy is installed
+    ra_object : float
+        RA of the object that is the target of the pointing
+    dec_object : float
+        dec of the object that is the target of the pointing
+    targname : str
+        Target name of the primary target of the observation
+    """
+
     begin: Optional[datetime] = None
     settle: Optional[datetime] = None
     end: Optional[datetime] = None
@@ -40,6 +80,28 @@ class SwiftAFSTEntry(CoordinateSchema):
     ra_point: Optional[float] = None
     dec_point: Optional[float] = None
 
+    _varnames = {
+        "begin": "Begin Time",
+        "settle": "Settle Time",
+        "end": "End Time",
+        "ra": "RA(J2000)",
+        "dec": "Dec(J200)",
+        "roll": "Roll (deg)",
+        "targname": "Target Name",
+        "targetid": "Target ID",
+        "seg": "Segment",
+        "ra_object": "Object RA(J2000)",
+        "dec_object": "Object Dec(J2000)",
+        "xrt": "XRT Mode",
+        "uvot": "UVOT Mode",
+        "bat": "BAT Mode",
+        "fom": "Figure of Merit",
+        "obstype": "Observation Type",
+        "obsnum": "Observation Number",
+        "exposure": "Exposure (s)",
+        "slewtime": "Slewtime (s)",
+    }
+
     @property
     def exposure(self):
         return self.end - self.settle
@@ -51,7 +113,7 @@ class SwiftAFSTEntry(CoordinateSchema):
     @property
     def _table(self):
         parameters = ["begin", "end", "targname", "obsnum", "exposure", "slewtime"]
-        header = [row for row in parameters]
+        header = [self._header_row(row) for row in parameters]
         return header, [
             [
                 self.begin,
@@ -293,7 +355,7 @@ class SwiftObservations(dict, TOOAPIBaseclass):
 class SwiftAFST(
     TOOAPIBaseclass,
     TOOAPIAutoResolve,
-    TOOAPI_ClockCorrect,
+    TOOAPIClockCorrect,
     SwiftAFSTSchema,
 ):
     """Class to fetch Swift As-Flown Science Timeline (AFST) for given

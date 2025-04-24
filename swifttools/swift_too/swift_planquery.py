@@ -3,7 +3,7 @@ from typing import Optional, Union
 
 from .api_common import TOOAPIBaseclass
 from .api_resolve import TOOAPIAutoResolve
-from .swift_clock import TOOAPI_ClockCorrect
+from .swift_clock import TOOAPIClockCorrect
 from .swift_data import TOOAPI_DownloadData
 from .swift_obsquery import SwiftObservation
 from .swift_schemas import BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
@@ -15,7 +15,41 @@ class SwiftPPSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema)
     obsnum: Optional[int] = None
 
 
-class SwiftPPSTEntry(BaseSchema):
+class SwiftPPSTEntry(BaseSchema, TOOAPIClockCorrect):
+    """
+    Class that defines an individual entry in the Swift Pre-Planned Science
+    Timeline
+
+    Attributes
+    ----------
+    begin : datetime
+        begin time of observation
+    end : datetime
+        end time of observation
+    targetid : int
+        target ID  of the observation
+    seg : int
+        segment number of the observation
+    xrt : str
+        XRT mode of the observation
+    uvot : str
+        Hex string UVOT mode of the observation
+    bat : int
+        BAT mode of the observation
+    exposure : timedelta
+        exposure time of the observation
+    ra : float
+        Right Ascension of pointing in J2000 (decimal degrees)
+    dec : float
+        Declination of pointing in J2000 (decimal degrees)
+    roll : float
+        roll angle of the observation (decimal degrees)
+    skycoord : SkyCoord
+        SkyCoord version of RA/Dec if astropy is installed
+    targname : str
+        Target name of the primary target of the observation
+    """
+
     targname: Optional[str] = None
     ra: Optional[float] = None
     dec: Optional[float] = None
@@ -33,6 +67,24 @@ class SwiftPPSTEntry(BaseSchema):
     timetarg: Optional[int] = None
     takodb: Optional[str] = None
 
+    _varnames = {
+        "begin": "Begin Time",
+        "end": "End Time",
+        "targname": "Target Name",
+        "ra": "RA(J2000)",
+        "dec": "Dec(J200)",
+        "roll": "Roll (deg)",
+        "targetid": "Target ID",
+        "seg": "Segment",
+        "xrt": "XRT Mode",
+        "uvot": "UVOT Mode",
+        "bat": "BAT Mode",
+        "fom": "Figure of Merit",
+        "obsnum": "Observation Number",
+        "exposure": "Exposure (s)",
+        "slewtime": "Slewtime (s)",
+    }
+
     @property
     def exposure(self):
         return self.end - self.begin
@@ -40,15 +92,13 @@ class SwiftPPSTEntry(BaseSchema):
     @property
     def _table(self):
         _parameters = ["begin", "end", "targname", "obsnum", "exposure"]
-        header = [row for row in _parameters]
+        header = [self._header_title(row) for row in _parameters]
         return header, [[self.begin, self.end, self.targname, self.obsnum, self.exposure.seconds]]
 
 
-class SwiftPPSTSchema(BaseSchema):
-    begin: Optional[datetime] = None
-    end: Optional[datetime] = None
-    ra: Optional[float] = None
-    dec: Optional[float] = None
+class SwiftPPSTSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
+    """Schema for Swift Pre-Planned Science Timeline (PPST) API."""
+
     radius: Optional[float] = None
     targetid: Union[int, list[int], None] = None
     obsnum: Optional[int] = None
@@ -56,7 +106,7 @@ class SwiftPPSTSchema(BaseSchema):
     entries: list[SwiftPPSTEntry] = []
 
 
-class SwiftPPST(TOOAPIBaseclass, TOOAPI_DownloadData, TOOAPIAutoResolve, TOOAPI_ClockCorrect, SwiftPPSTSchema):
+class SwiftPPST(TOOAPIBaseclass, TOOAPI_DownloadData, TOOAPIAutoResolve, TOOAPIClockCorrect, SwiftPPSTSchema):
     """Class to fetch Swift Pre-Planned Science Timeline (PPST) for given
     constraints. Essentially this will return what Swift was planned to observe
     and when, for given constraints. Constraints can be for give coordinate

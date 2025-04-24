@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from typing import Optional, Union
 
 from .api_common import TOOAPIBaseclass
-from .swift_clock import TOOAPI_ClockCorrect
+from .swift_clock import TOOAPIClockCorrect
 from .swift_schemas import (
     BaseSchema,
     OptionalBeginEndLengthSchema,
@@ -209,7 +209,7 @@ class SwiftGUANOSchema(BaseSchema):
 
 class SwiftGUANO(
     TOOAPIBaseclass,
-    TOOAPI_ClockCorrect,  # TOOAPI_TriggerTime,
+    TOOAPIClockCorrect,  # TOOAPI_TriggerTime,
     SwiftGUANOSchema,
 ):
     """Query BAT ring buffer dumps of event data associated with the Gamma-Ray

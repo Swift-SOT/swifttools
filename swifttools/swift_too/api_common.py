@@ -40,7 +40,7 @@ API_URL = "https://www.swift.psu.edu/api/v1.2"
 API_URL = "http://localhost:8000/api/v1.2"
 
 
-def convert_to_dt(self, dt: Any) -> datetime:
+def convert_to_dt(dt: Any) -> datetime:
     """Convert any datetime-like object to a datetime object."""
     tdt = TypeAdapter(datetime)
     return tdt.validate_python(dt).replace(tzinfo=None)

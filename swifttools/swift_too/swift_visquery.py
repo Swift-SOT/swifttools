@@ -1,6 +1,6 @@
 from .api_common import TOOAPIBaseclass
 from .api_resolve import TOOAPIAutoResolve
-from .swift_clock import TOOAPI_ClockCorrect
+from .swift_clock import TOOAPIClockCorrect
 from .swift_schemas import BeginEndLengthSchema, CoordinateSchema, OptionalCoordinateSchema
 
 
@@ -31,7 +31,7 @@ class SwiftVisQueryGetSchema(BeginEndLengthSchema, CoordinateSchema):
     hires: bool = False
 
 
-class SwiftVisQuery(TOOAPIBaseclass, TOOAPI_ClockCorrect, TOOAPIAutoResolve, SwiftVisQuerySchema):
+class SwiftVisQuery(TOOAPIBaseclass, TOOAPIClockCorrect, TOOAPIAutoResolve, SwiftVisQuerySchema):
     """Request Swift Target visibility windows. These results are low-fidelity,
     so do not give orbit-to-orbit visibility, but instead long term windows
     indicates when a target is observable by Swift and not in a Sun/Moon/Pole

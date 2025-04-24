@@ -174,7 +174,7 @@ class swiftdatetime(datetime):
             dt.microsecond,
         )
         ret.utcf = utcf
-        ret.isutc = isutc
+        ret._isutc = isutc
         return ret
 
     # Attribute aliases

@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from .api_common import TOOAPIBaseclass
-from .swift_clock import TOOAPI_ClockCorrect
+from .swift_clock import TOOAPIClockCorrect
 from .swift_schemas import BaseSchema, BeginEndLengthSchema, OptionalBeginEndLengthSchema
 
 
@@ -29,7 +29,7 @@ class SwiftSAASchema(OptionalBeginEndLengthSchema):
     entries: list[SwiftSAAEntry] = []
 
 
-class SwiftSAA(TOOAPIBaseclass, TOOAPI_ClockCorrect, SwiftSAASchema):
+class SwiftSAA(TOOAPIBaseclass, TOOAPIClockCorrect, SwiftSAASchema):
     """Class to obtain Swift SAA passage times. Two versions are available: The
     Spacecraft definition (default) or an estimate of when the BAT SAA flag is
     up. Note that the BAT SAA flag is dynamically set based on count rate, so
