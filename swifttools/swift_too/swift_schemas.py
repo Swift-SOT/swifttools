@@ -5,7 +5,7 @@ from datetime import date, datetime, timedelta
 from enum import Enum
 from typing import Optional, Union
 
-import botocore  # type: ignore[import-unsigned]
+import botocore  # type: ignore[import-untyped]
 import requests
 from astropy.coordinates import SkyCoord  # type: ignore[import-untyped]
 from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator

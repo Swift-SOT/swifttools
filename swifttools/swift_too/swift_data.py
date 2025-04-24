@@ -4,8 +4,7 @@ from fnmatch import fnmatch
 from typing import Optional
 
 import boto3  # type: ignore[import-untyped]
-import boto3.session
-import httpx  # type: ignore[import-untyped]
+import boto3.session  # type: ignore[import-untyped]
 from botocore import UNSIGNED  # type: ignore[import-untyped]
 from botocore.client import Config  # type: ignore[import-untyped]
 from tqdm.auto import tqdm  # type: ignore[import-untyped]
