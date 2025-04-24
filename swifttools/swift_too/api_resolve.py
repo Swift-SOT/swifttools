@@ -91,43 +91,6 @@ class TOOAPIAutoResolve(OptionalCoordinateSchema):
         return self
 
 
-class TOOAPI_AutoResolve:
-    """Mixin to automatically any given `name` into RA/Dec coordinates using
-    `Swift_Resolve`"""
-
-    _name = None
-    _source_name = None
-    resolve = None
-
-    def __name_setter(self, sourcename):
-        """If you set a name, use `Swift_Resolve` to retrieve it's `ra` and `dec`."""
-        if self._name != sourcename:
-            self._name = sourcename
-            self._source_name = sourcename
-            self.resolve = Swift_Resolve(name=sourcename)
-            if self.resolve.ra is not None:
-                self.ra = self.resolve.ra
-                self.dec = self.resolve.dec
-            else:
-                self.status.error("Could not resolve name.")
-
-    @property
-    def name(self):
-        return self._name
-
-    @name.setter
-    def name(self, sourcename):
-        self.__name_setter(sourcename)
-
-    @property
-    def source_name(self):
-        return self._source_name
-
-    @source_name.setter
-    def source_name(self, sourcename):
-        self.__name_setter(sourcename)
-
-
 # Shorthand alias for class
 Swift_Resolve = SwiftResolve
 Resolve = SwiftResolve
