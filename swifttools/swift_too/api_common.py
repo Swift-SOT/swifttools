@@ -7,7 +7,7 @@ import httpx
 from pydantic import TypeAdapter
 from tabulate import tabulate
 
-from .swift_schemas import BaseSchema, SwiftTOOStatusSchema
+from .swift_schemas import SwiftTOOStatusSchema
 from .version import version_tuple
 
 # Make Warnings a little less weird

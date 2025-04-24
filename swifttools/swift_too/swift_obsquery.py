@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from token import OP
 from typing import Optional
 
 from pydantic import computed_field

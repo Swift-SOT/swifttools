@@ -1,9 +1,8 @@
-from swifttools.swift_too.swift_schemas import SwiftCalendarEntrySchema, SwiftCalendarGetSchema, SwiftCalendarSchema
+from swifttools.swift_too.swift_schemas import SwiftCalendarGetSchema, SwiftCalendarSchema
 
 from .api_common import TOOAPI_Baseclass
 from .api_resolve import TOOAPIAutoResolve
 from .swift_clock import TOOAPI_ClockCorrect
-from .swift_instruments import TOOAPI_Instruments
 
 # class Swift_CalendarEntry(TOOAPI_Baseclass, TOOAPI_Instruments, TOOAPI_ClockCorrect, SwiftCalendarEntrySchema):
 #     """Class for a single entry in the Swift TOO calendar.

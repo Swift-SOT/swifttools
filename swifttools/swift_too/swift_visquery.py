@@ -1,6 +1,5 @@
 from .api_common import TOOAPI_Baseclass
 from .api_resolve import TOOAPIAutoResolve
-from .api_status import TOOStatus
 from .swift_clock import TOOAPI_ClockCorrect
 from .swift_schemas import SwiftVisQueryGetSchema, SwiftVisQuerySchema, SwiftVisWindowSchema
 
