@@ -1,9 +1,37 @@
-from .api_common import TOOAPI_Baseclass
+from datetime import datetime
+from typing import Optional
+
+from .api_common import TOOAPIBaseclass
 from .api_resolve import TOOAPIAutoResolve
-from .swift_schemas import SwiftTOORequestsGetSchema, SwiftTOORequestsSchema
+from .swift_schemas import BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
+from .swift_toorequest import SwiftTOORequestSchema
 
 
-class SwiftTOORequests(TOOAPI_Baseclass, TOOAPIAutoResolve, SwiftTOORequestsSchema):
+class SwiftTOORequestsGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
+    limit: Optional[int] = None
+    page: Optional[int] = None
+    year: Optional[int] = None
+    detail: bool = False
+    too_id: Optional[int] = None
+    radius: Optional[float] = None
+    debug: bool = False
+
+
+class SwiftTOORequestsSchema(BaseSchema):
+    begin: Optional[datetime] = None
+    length: Optional[float] = None
+    limit: Optional[int] = None
+    year: Optional[int] = None
+    detail: bool = False
+    too_id: Optional[int] = None
+    ra: Optional[float] = None
+    dec: Optional[float] = None
+    radius: Optional[float] = None
+    debug: bool = False
+    entries: list[SwiftTOORequestSchema] = []
+
+
+class SwiftTOORequests(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestsSchema):
     """Class used to obtain details about previous TOO requests.
 
     Attributes

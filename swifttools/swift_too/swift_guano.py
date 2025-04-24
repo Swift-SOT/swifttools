@@ -1,251 +1,214 @@
-from .api_common import TOOAPI_Baseclass
+from datetime import datetime, timedelta
+from typing import Optional, Union
+
+from .api_common import TOOAPIBaseclass
 from .swift_clock import TOOAPI_ClockCorrect
 from .swift_schemas import (
-    SwiftGUANODataSchema,
-    SwiftGUANOEntrySchema,
-    SwiftGUANOGetSchema,
-    SwiftGUANOGTISchema,
-    SwiftGUANOSchema,
+    BaseSchema,
+    OptionalBeginEndLengthSchema,
 )
 
-# class SwiftGUANOGTI(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
-#     """Define GUANO event data Good Time Intervals (GTI)
 
-#     Attributes
-#     ----------
-#     filename : str
-#         filename of BAT event data associated with GTI
-#     acs : str
-#         What was the status of the Swift Attitude Control System during this
-#         GTI. Options are 'slewing', 'pointing' and 'mixed'.
-#     began : datetime
-#         time request began processing
-#     completed : datetime
-#         time request finished processing
-#     exposure : float
-#         exposure time of GTI
-#     utcf : float
-#         UT Correction Factor - this encompasses correction for both the
-#         inaccuracies in the Swift clock and also any leap seconds
-#     """
+class SwiftGUANOGTI(BaseSchema):
+    """Define GUANO event data Good Time Intervals (GTI)
 
-#     api_name = "SwiftGUANO_GTI"
-#     _attributes = ["begin", "end", "exposure", "utcf", "acs", "filename"]
+    Attributes
+    ----------
+    filename : str
+        filename of BAT event data associated with GTI
+    acs : str
+        What was the status of the Swift Attitude Control System during this
+        GTI. Options are 'slewing', 'pointing' and 'mixed'.
+    began : datetime
+        time request began processing
+    completed : datetime
+        time request finished processing
+    exposure : float
+        exposure time of GTI
+    utcf : float
+        UT Correction Factor - this encompasses correction for both the
+        inaccuracies in the Swift clock and also any leap seconds
+    """
 
-#     def __init__(self):
-#         self.filename = None
-#         self.acs = None
-#         self.utcf = None
-#         self.exposure = None
-#         self.begin = None
-#         self.end = None
-#         # All times UTC
-#         self._isutc = True
+    filename: Union[str, list[str], None] = None
+    acs: Optional[str] = None
+    begin: Optional[datetime] = None
+    end: Optional[datetime] = None
+    utcf: Optional[float] = None
+    exposure: timedelta = timedelta(0)
 
-#     def __str__(self):
-#         return f"{self.begin} - {self.end} ({self.exposure})"
+    def __str__(self):
+        return f"{self.begin} - {self.end} ({self.exposure})"
 
 
-# class SwiftGUANOData(
-#     TOOAPI_Baseclass,
-#     TOOAPI_ObsID,
-#     TOOAPI_ClockCorrect,
-#     TOOAPI_DownloadData,
-#     TOOAPI_TriggerTime,
-# ):
-#     """Class to hold information about GUANO data based on analysis of the BAT
-#     event files that are downlinked.
+class SwiftGUANOData(BaseSchema):
+    """Class to hold information about GUANO data based on analysis of the BAT
+    event files that are downlinked.
 
-#     Attributes
-#     ----------
-#     filenames : list
-#         filenames of BAT event data associated with GUANO dump
-#     acs : str
-#         What was the status of the Swift Attitude Control System during this
-#         GTI. Options are 'slewing', 'pointing' and 'mixed'.
-#     begin : datetime
-#         start time of GUANO dump
-#     end : datetime
-#         end time of GUANO dump
-#     triggertime : datetime
-#         trigger time of event that generated GUANO dump
-#     gti : SwiftGUANOGTI
-#         Good Time Interval (GTI) for the combined event data
-#     all_gtis : list
-#         list of individual GTIs. More than one GTI can exist if data is split
-#         between multiple files, or if significant gaps appear in the event data
-#     obsid : str
-#         Observation ID associated with the GUANO data
-#     completed : datetime
-#         time request finished processing
-#     exposure : float
-#         exposure time of GTI
-#     utcf : float
-#         UT Correction Factor - this encompasses correction for both the
-#         inaccuracies in the Swift clock and also any leap seconds
-#     subthresh : boolean
-#         Indicates if the BAT event data associated with this trigger is
-#         located in the subthreshold triggers section of the SDC, rather
-#         than being associated with normal observation data. If this is
-#         true, the data can be fetched utilizing the 'subthresh = True'
-#         option of Swift_Data (AKA Data)
-#     """
+    Attributes
+    ----------
+    filenames : list
+        filenames of BAT event data associated with GUANO dump
+    acs : str
+        What was the status of the Swift Attitude Control System during this
+        GTI. Options are 'slewing', 'pointing' and 'mixed'.
+    begin : datetime
+        start time of GUANO dump
+    end : datetime
+        end time of GUANO dump
+    triggertime : datetime
+        trigger time of event that generated GUANO dump
+    gti : SwiftGUANOGTI
+        Good Time Interval (GTI) for the combined event data
+    all_gtis : list
+        list of individual GTIs. More than one GTI can exist if data is split
+        between multiple files, or if significant gaps appear in the event data
+    obsid : str
+        Observation ID associated with the GUANO data
+    completed : datetime
+        time request finished processing
+    exposure : float
+        exposure time of GTI
+    utcf : float
+        UT Correction Factor - this encompasses correction for both the
+        inaccuracies in the Swift clock and also any leap seconds
+    subthresh : boolean
+        Indicates if the BAT event data associated with this trigger is
+        located in the subthreshold triggers section of the SDC, rather
+        than being associated with normal observation data. If this is
+        true, the data can be fetched utilizing the 'subthresh = True'
+        option of Swift_Data (AKA Data)
+    """
 
-#     # API Name
-#     api_name = "SwiftGUANO_Data"
+    obsid: Optional[str] = None
+    triggertime: Optional[datetime] = None
+    all_gtis: list[SwiftGUANOGTI]
+    filenames: Union[list[str], None] = None
+    acs: Optional[str] = None
+    begin: Optional[datetime] = None
+    end: Optional[datetime] = None
+    gti: Optional[SwiftGUANOGTI] = None
+    exposure: Optional[float] = None
 
-#     # Core API definitions
-#     _parameters = ["obsid", "triggertime"]
-#     _attributes = [
-#         "begin",
-#         "end",
-#         "exposure",
-#         "filenames",
-#         "gti",
-#         "all_gtis",
-#         "acs",
-#         "utcf",
-#         "subthresh",
-#     ]
-#     _subclasses = [SwiftGUANOGTI]
+    @property
+    def utcf(self):
+        if self.gti is not None:
+            return self.gti.utcf
 
-#     def __init__(self):
-#         # All times UTC
-#         self._isutc = True
-#         # Attributes
-#         self.all_gtis = None
-#         self.gti = None
-#         self._utcf = None
-#         self.acs = None
-#         self.exposure = None
-#         self.filenames = None
-#         self.begin = None
-#         self.end = None
-
-#     @property
-#     def utcf(self):
-#         if self.gti is not None:
-#             return self.gti.utcf
-
-#     @property
-#     def subthresh(self):
-#         """Is this data subthreshold? I.e. located in the 'BAT Data for
-#         Subthreshold Triggers' directory of SDC, as opposed to being associated
-#         with the target ID."""
-#         if self.filenames is None:
-#             return None
-#         if len(self.filenames) == 1 and "ms" in self.filenames[0]:
-#             return True
-#         else:
-#             return False
+    @property
+    def subthresh(self):
+        """Is this data subthreshold? I.e. located in the 'BAT Data for
+        Subthreshold Triggers' directory of SDC, as opposed to being associated
+        with the target ID."""
+        if self.filenames is None:
+            return None
+        if len(self.filenames) == 1 and "ms" in self.filenames[0]:
+            return True
+        else:
+            return False
 
 
-# class SwiftGUANOEntry(
-#     TOOAPI_Baseclass,
-#     TOOAPI_ObsID,
-#     TOOAPI_ClockCorrect,
-#     TOOAPI_DownloadData,
-#     TOOAPI_TriggerTime,
-# ):
-#     """Entry for an individual BAT ring buffer dump (AKA GUANO) event.
+class SwiftGUANOEntry(BaseSchema):
+    """
+    Entry for an individual BAT ring buffer dump (AKA GUANO) event.
 
-#     Attributes
-#     ----------
-#     username : str
-#         username for TOO API (default 'anonymous')
-#     shared_secret : str
-#         shared secret for TOO API (default 'anonymous')
-#     triggertime : datetime
-#         triggertime associated with GUANO dump
-#     triggertype : str
-#         trigger type (typically what mission triggered the GUANO dump)
-#     offset : int
-#         Number of seconds the GUANO dump is offset from triggertime
-#     duration : int
-#         Number of seconds dumped
-#     status : str
-#         status of API request
-#     """
+    Attributes
+    ----------
+    username : str
+        username for TOO API (default 'anonymous')
+    shared_secret : str
+        shared secret for TOO API (default 'anonymous')
+    triggertime : datetime
+        triggertime associated with GUANO dump
+    triggertype : str
+        trigger type (typically what mission triggered the GUANO dump)
+    offset : int
+        Number of seconds the GUANO dump is offset from triggertime
+    duration : int
+        Number of seconds dumped
+    status : str
+        status of API request
+    """
 
-#     # API name
-#     api_name = "SwiftGUANO_Entry"
-#     # Core API definitions
-#     _subclasses = [SwiftGUANOData]
-#     _parameters = ["triggertime"]
-#     _local = ["begin", "end", "shared_secret"]
-#     _attributes = [
-#         "triggertype",
-#         "offset",
-#         "duration",
-#         "quadsaway",
-#         "obsnum",
-#         "ra",
-#         "dec",
-#         "data",
-#         "utcf",
-#     ]
+    triggertype: Optional[str] = None
+    triggertime: Optional[datetime] = None
+    offset: Optional[float] = None
+    duration: Optional[float] = None
+    obsnum: Optional[str] = None
+    exectime: Optional[datetime] = None
+    ra: Optional[float] = None
+    dec: Optional[float] = None
+    data: Optional[SwiftGUANOData] = None
+    quadsaway: Optional[int] = None
 
-#     def __init__(self):
-#         # All times UTC
-#         self._isutc = True
-#         # Attributes
-#         self.triggertype = None
-#         self.duration = None
-#         self._quadsaway = None
-#         self.offset = None
-#         self.ra = None
-#         self.dec = None
-#         self.data = None
-#         self.utcf = None
-#         self.begin = None
-#         self.end = None
+    @property
+    def executed(self):
+        """Has the GUANO command been executed on board Swift?"""
+        if self.quadsaway == 2 or self.quadsaway == 3:
+            return False
+        return True
 
-#     # Next part handles the use of "quadsaway" to determine if a GUANO command has been uplinked to the spacecraft,
-#     # and if it has been executed onboard.
-#     @property
-#     def quadsaway(self):
-#         if self._quadsaway > 0 and self._quadsaway < 4:
-#             return 0
-#         return self._quadsaway
+    @property
+    def _table(self):
+        table = []
+        for row in self._parameters + self._attributes:
+            value = getattr(self, row)
+            if row == "data" and self.data.exposure is not None:
+                table += [[row, f"{value.exposure:.1f}s of BAT event data"]]
+            elif row == "data" and self.data.exposure is None:
+                table += [[row, "No BAT event data found"]]
+            elif value is not None:
+                table += [[row, f"{value}"]]
+        return ["Parameter", "Value"], table
 
-#     @quadsaway.setter
-#     def quadsaway(self, qa):
-#         self._quadsaway = qa
+    def _calc_begin_end(self):
+        self.begin = self.triggertime + timedelta(seconds=self.offset - self.duration / 2)
+        self.end = self.triggertime + timedelta(seconds=self.offset + self.duration / 2)
 
-#     @property
-#     def uplinked(self):
-#         """Has the GUANO command been uplinked to Swift?"""
-#     if self._quadsaway == 1 or self._quadsaway == 3:
-#         return False
-#     return True
+    #     # Next part handles the use of "quadsaway" to determine if a GUANO command has been uplinked to the spacecraft,
+    #     # and if it has been executed onboard.
+    #     @property
+    #     def quadsaway(self):
+    #         if self._quadsaway > 0 and self._quadsaway < 4:
+    #             return 0
+    #         return self._quadsaway
 
-# @property
-# def executed(self):
-#     """Has the GUANO command been executed on board Swift?"""
-#     if self._quadsaway == 2 or self._quadsaway == 3:
-#         return False
-#     return True
+    #     @quadsaway.setter
+    #     def quadsaway(self, qa):
+    #         self._quadsaway = qa
 
-# @property
-# def _table(self):
-#     table = []
-#     for row in self._parameters + self._attributes:
-#         value = getattr(self, row)
-#         if row == "data" and self.data.exposure is not None:
-#             table += [[row, f"{value.exposure:.1f}s of BAT event data"]]
-#         elif row == "data" and self.data.exposure is None:
-#             table += [[row, "No BAT event data found"]]
-#         elif value is not None:
-#             table += [[row, f"{value}"]]
-#     return ["Parameter", "Value"], table
+    @property
+    def uplinked(self):
+        """Has the GUANO command been uplinked to Swift?"""
+        if self.quadsaway == 1 or self.quadsaway == 3:
+            return False
+        return True
 
-# def _calc_begin_end(self):
-#     self.begin = self.triggertime + timedelta(seconds=self.offset - self.duration / 2)
-#     self.end = self.triggertime + timedelta(seconds=self.offset + self.duration / 2)
+
+class SwiftGUANOGetSchema(OptionalBeginEndLengthSchema):
+    subthreshold: bool = False
+    successful: bool = True
+    triggertime: Optional[datetime] = None
+    limit: Optional[int] = None
+    page: Optional[int] = None
+    triggertype: Optional[str] = None
+
+
+class SwiftGUANOSchema(BaseSchema):
+    begin: Optional[datetime] = None
+    end: Optional[datetime] = None
+    subthreshold: bool = False
+    successful: bool = True
+    triggertime: Optional[datetime] = None
+    limit: Optional[int] = None
+    triggertype: Optional[str] = None
+    lastcommand: Optional[datetime] = None
+    guanostatus: Optional[bool] = None
+    entries: list[SwiftGUANOEntry] = []
 
 
 class SwiftGUANO(
-    TOOAPI_Baseclass,
+    TOOAPIBaseclass,
     TOOAPI_ClockCorrect,  # TOOAPI_TriggerTime,
     SwiftGUANOSchema,
 ):
@@ -357,9 +320,9 @@ class SwiftGUANO(
 
 # Shorthand alias names
 GUANO = SwiftGUANO
-GUANOData = SwiftGUANODataSchema
-GUANOEntry = SwiftGUANOEntrySchema
-GUANOGTI = SwiftGUANOGTISchema
+GUANOData = SwiftGUANOData
+GUANOEntry = SwiftGUANOEntry
+GUANOGTI = SwiftGUANOGTI
 # Backwards API compat
 Swift_GUANO = GUANO
 Swift_GUANO_Data = GUANOData

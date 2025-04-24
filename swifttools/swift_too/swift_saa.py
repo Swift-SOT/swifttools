@@ -1,32 +1,17 @@
-from swifttools.swift_too.swift_schemas import SwiftSAAGetSchema, SwiftSAASchema
+from datetime import datetime
 
-from .api_common import TOOAPI_Baseclass
+from .api_common import TOOAPIBaseclass
 from .swift_clock import TOOAPI_ClockCorrect
+from .swift_schemas import BaseSchema, BeginEndLengthSchema, OptionalBeginEndLengthSchema
 
 
-class SwiftSAAEntry(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
-    """Simple class describing the start and end time of a Swift SAA passage.
-     Attributes
-    ----------
-    begin : datetime
-        Start time of the SAA passage
-    end : datetime
-        End time of the SAA passages
-    """
+class SwiftSAAGetSchema(BeginEndLengthSchema):
+    bat: bool = False
 
-    # API details
-    api_name: str = "Swift_SAA_Entry"
-    # Returned values
-    _attributes = ["begin", "end"]
-    # Display names of columns
-    _varnames = {"begin": "Begin", "end": "End"}
 
-    def __init__(self):
-        # Attributes
-        self.begin = None
-        self.end = None
-        # Internal values
-        self._isutc = True
+class SwiftSAAEntry(BaseSchema):
+    begin: datetime
+    end: datetime
 
     @property
     def _table(self):
@@ -39,7 +24,12 @@ class SwiftSAAEntry(TOOAPI_Baseclass, TOOAPI_ClockCorrect):
         return ["begin", "end"], [[self.begin, self.end]]
 
 
-class SwiftSAA(TOOAPI_Baseclass, TOOAPI_ClockCorrect, SwiftSAASchema):
+class SwiftSAASchema(OptionalBeginEndLengthSchema):
+    bat: bool = False
+    entries: list[SwiftSAAEntry] = []
+
+
+class SwiftSAA(TOOAPIBaseclass, TOOAPI_ClockCorrect, SwiftSAASchema):
     """Class to obtain Swift SAA passage times. Two versions are available: The
     Spacecraft definition (default) or an estimate of when the BAT SAA flag is
     up. Note that the BAT SAA flag is dynamically set based on count rate, so
@@ -79,6 +69,7 @@ class SwiftSAA(TOOAPI_Baseclass, TOOAPI_ClockCorrect, SwiftSAASchema):
 
 # Alias
 SAA = SwiftSAA
+SwiftSAAEntry = SwiftSAAEntry
 Swift_SAA_Entry = SwiftSAAEntry
 SAAEntry = SwiftSAAEntry
 Swift_SAA = SwiftSAA

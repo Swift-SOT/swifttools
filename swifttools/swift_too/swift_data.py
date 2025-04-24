@@ -1,19 +1,99 @@
 import os
 import warnings
 from fnmatch import fnmatch
-from typing import Optional
+from typing import Any, Optional
 
 import boto3  # type: ignore[import-untyped]
 import boto3.session  # type: ignore[import-untyped]
+import requests
 from botocore import UNSIGNED  # type: ignore[import-untyped]
 from botocore.client import Config  # type: ignore[import-untyped]
+from pydantic import Field
 from tqdm.auto import tqdm  # type: ignore[import-untyped]
 
-from .api_common import TOOAPI_Baseclass
-from .swift_schemas import SwiftDataFileSchema, SwiftDataGetSchema, SwiftDataSchema
+from .api_common import TOOAPIBaseclass
+from .swift_schemas import BaseSchema
 
 
-class SwiftData(TOOAPI_Baseclass, SwiftDataSchema):
+class SwiftDataGetSchema(BaseSchema):
+    # username: str = "anonymous"
+    obsid: str
+    auxil: bool = True
+    bat: bool = False
+    xrt: bool = False
+    uvot: bool = False
+    log: bool = False
+    tdrss: bool = False
+    quicklook: bool = Field(default=False, description="If true, only quicklook data will be returned")
+    uksdc: bool = False
+    itsdc: bool = False
+    subthresh: bool = False
+
+
+class SwiftDataFile(BaseSchema):
+    filename: str
+    path: str
+    url: str
+    quicklook: bool = False
+    type: str
+    localpath: Optional[str] = None
+
+    @property
+    def size(self):
+        if self.localpath is not None:
+            return os.path.getsize(self.localpath)
+        else:
+            return None
+
+    def download(
+        self,
+        outdir: str = ".",
+        s3: Optional[Any] = None,
+    ):
+        """Download the file into a given `outdir`"""
+        #        if outdir is not None:
+        #            self.outdir = outdir
+        # Make the directories for the full path if they don't exist
+        fulldir = os.path.join(outdir, self.path)
+        if not os.path.exists(fulldir):
+            os.makedirs(fulldir)
+
+        # Download the data
+        fullfilepath = os.path.join(outdir, self.path, self.filename)
+
+        if "heasarc" in self.url and self.quicklook is False and s3 is not None and hasattr(s3, "download_file"):
+            # Download HEASARC hosted data from AWS
+            key_name = self.url.replace("https://heasarc.gsfc.nasa.gov/FTP/", "")
+            s3.download_file("nasa-heasarc", key_name, fullfilepath)
+        else:
+            r = requests.get(self.url, stream=True, allow_redirects=True)
+            if r.ok:
+                filedata = r.raw.read()
+                with open(fullfilepath, "wb") as outfile:
+                    outfile.write(filedata)
+                self.localpath = fullfilepath
+            else:
+                return False
+
+        return True
+
+
+class SwiftDataSchema(BaseSchema):
+    obsid: Optional[str] = None
+    auxil: bool = True
+    bat: bool = False
+    xrt: bool = False
+    uvot: bool = False
+    log: bool = False
+    tdrss: bool = False
+    quicklook: bool = Field(default=False, description="If true, only quicklook data will be returned")
+    uksdc: bool = False
+    itsdc: bool = False
+    subthresh: bool = False
+    entries: list[SwiftDataFile] = []
+
+
+class SwiftData(TOOAPIBaseclass, SwiftDataSchema):
     """
     Class to download Swift data from the UK or US SDC for a given observation
     ID.
@@ -169,14 +249,6 @@ class SwiftData(TOOAPI_Baseclass, SwiftDataSchema):
         return True
 
 
-# Shorthand Aliases for better PEP8 compliant and future compat
-Data = SwiftData
-DataFile = SwiftDataFileSchema
-Swift_Data_File = SwiftDataFileSchema
-Swift_DataFile = SwiftDataFileSchema
-Swift_Data = SwiftData
-
-
 class TOOAPI_DownloadData:
     """Mixin to add add download method to any class that has an associated obsid."""
 
@@ -205,4 +277,9 @@ class TOOAPI_DownloadData:
         return data
 
 
-SwiftDataFile = SwiftDataFileSchema
+# Shorthand Aliases for better PEP8 compliant and future compat
+Data = SwiftData
+DataFile = SwiftDataFile
+Swift_Data_File = SwiftDataFile
+Swift_DataFile = SwiftDataFile
+Swift_Data = SwiftData

@@ -2,30 +2,22 @@ from typing import Optional
 
 from pydantic import model_validator
 
-from .api_common import TOOAPI_Baseclass
-from .swift_schemas import BaseSchema, OptionalCoordinateSchema, SwiftResolveGetSchema, SwiftResolveSchema
+from .api_common import TOOAPIBaseclass
+from .swift_schemas import BaseSchema, OptionalCoordinateSchema
 
 
-class SwiftTOOStatusSchema(BaseSchema):
-    status: str = "Pending"
-    too_id: Optional[int] = None
-    jobnumber: Optional[int] = None
-    errors: list = []
-    warnings: list = []
-
-    def error(self, error):
-        """Add an error to the list of errors"""
-        if error not in self.errors:
-            self.errors.append(error)
-
-    def warning(self, warning):
-        """Add a warning to the list of warnings"""
-        if warning not in self.warnings:
-            self.warnings.append(warning)
+class SwiftResolveGetSchema(BaseSchema):
+    name: str
 
 
-class SwiftResolve(TOOAPI_Baseclass, SwiftResolveSchema):
-    """Swift_Resolve class
+class SwiftResolveSchema(OptionalCoordinateSchema):
+    name: Optional[str] = None
+    resolver: Optional[str] = None
+
+
+class SwiftResolve(TOOAPIBaseclass, SwiftResolveSchema):
+    """
+    SwiftResolve class
 
     Performs name resolution using Simbad, TNS or MARS. Simply give the name of
     the source, and it will return `ra` and `dec` in decimal degrees, or a

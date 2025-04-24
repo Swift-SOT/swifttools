@@ -1,11 +1,43 @@
 from datetime import datetime
+from typing import Union
 
-from .api_common import TOOAPI_Baseclass
+from pydantic import computed_field
+
+from .api_common import TOOAPIBaseclass
 from .swift_datetime import swiftdatetime
-from .swift_schemas import SwiftClockGetSchema, SwiftClockSchema
+from .swift_schemas import BaseSchema
 
 
-class SwiftClock(TOOAPI_Baseclass, SwiftClockSchema):
+class SwiftDateTimeSchema(BaseSchema):
+    met: float
+    utcf: float
+    isutc: bool
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def swifttime(self) -> swiftdatetime:
+        return swiftdatetime.frommet(self.met, utcf=self.utcf, isutc=self.isutc).swifttime
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def utctime(self) -> swiftdatetime:
+        return swiftdatetime.frommet(self.met, utcf=self.utcf, isutc=self.isutc).utctime
+
+
+class SwiftClockSchema(BaseSchema):
+    met: Union[float, list[float], None] = None
+    utctime: Union[datetime, list[datetime], None] = None
+    swifttime: Union[datetime, list[datetime], None] = None
+    entries: list[SwiftDateTimeSchema] = []
+
+
+class SwiftClockGetSchema(BaseSchema):
+    met: Union[float, list[float], None] = None
+    utctime: Union[datetime, list[datetime], None] = None
+    swifttime: Union[datetime, list[datetime], None] = None
+
+
+class SwiftClock(TOOAPIBaseclass, SwiftClockSchema):
     """Class to obtain clock corrections, MET values and corrected UTC times for
     Swift. Typical use of the class is to pass a MET value, Swift Time
     (essentially MET in datetime format), or a UTC datetime. The API returns

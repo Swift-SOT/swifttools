@@ -1,13 +1,62 @@
-from swifttools.swift_too.swift_schemas import SwiftPPSTEntrySchema, SwiftPPSTGetSchema, SwiftPPSTSchema
+from datetime import datetime
+from typing import Optional, Union
 
-from .api_common import TOOAPI_Baseclass
+from .api_common import TOOAPIBaseclass
 from .api_resolve import TOOAPIAutoResolve
 from .swift_clock import TOOAPI_ClockCorrect
 from .swift_data import TOOAPI_DownloadData
 from .swift_obsquery import SwiftObservation
+from .swift_schemas import BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
 
 
-class Swift_PPST(TOOAPI_Baseclass, TOOAPI_DownloadData, TOOAPIAutoResolve, TOOAPI_ClockCorrect, SwiftPPSTSchema):
+class SwiftPPSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
+    radius: Optional[float] = None
+    targetid: Union[int, list[int], None] = None
+    obsnum: Optional[int] = None
+
+
+class SwiftPPSTEntry(BaseSchema):
+    targname: Optional[str] = None
+    ra: Optional[float] = None
+    dec: Optional[float] = None
+    roll: Optional[float] = None
+    begin: Optional[datetime] = None
+    end: Optional[datetime] = None
+    targetid: Optional[int] = None
+    seg: Optional[int] = None
+    obsnum: Optional[int] = None
+    bat: Optional[int] = None
+    xrt: Optional[int] = None
+    uvot: Optional[int] = None
+    fom: Optional[float] = None
+    comment: Optional[str] = None
+    timetarg: Optional[int] = None
+    takodb: Optional[str] = None
+
+    @property
+    def exposure(self):
+        return self.end - self.begin
+
+    @property
+    def _table(self):
+        _parameters = ["begin", "end", "targname", "obsnum", "exposure"]
+        header = [row for row in _parameters]
+        return header, [[self.begin, self.end, self.targname, self.obsnum, self.exposure.seconds]]
+
+
+class SwiftPPSTSchema(BaseSchema):
+    begin: Optional[datetime] = None
+    end: Optional[datetime] = None
+    ra: Optional[float] = None
+    dec: Optional[float] = None
+    radius: Optional[float] = None
+    targetid: Union[int, list[int], None] = None
+    obsnum: Optional[int] = None
+    ppstmax: Optional[datetime] = None
+    entries: list[SwiftPPSTEntry] = []
+
+
+class SwiftPPST(TOOAPIBaseclass, TOOAPI_DownloadData, TOOAPIAutoResolve, TOOAPI_ClockCorrect, SwiftPPSTSchema):
     """Class to fetch Swift Pre-Planned Science Timeline (PPST) for given
     constraints. Essentially this will return what Swift was planned to observe
     and when, for given constraints. Constraints can be for give coordinate
@@ -72,8 +121,9 @@ class Swift_PPST(TOOAPI_Baseclass, TOOAPI_DownloadData, TOOAPIAutoResolve, TOOAP
 
 
 # Class aliases for better PEP8 compliant and future compat
-Swift_PlanQuery = Swift_PPST
-PlanQuery = Swift_PPST
-PPST = Swift_PPST
-PPSTEntry = SwiftPPSTEntrySchema
-Swift_PPST_Entry = SwiftPPSTEntrySchema
+Swift_PlanQuery = SwiftPPST
+PlanQuery = SwiftPPST
+PPST = SwiftPPST
+PPSTEntry = SwiftPPSTEntry
+Swift_PPST_Entry = SwiftPPSTEntry
+Swift_PPST = SwiftPPST

@@ -1,5 +1,8 @@
 # Lookup table for XRT modes
 import re
+from typing import Any, Optional
+
+from pydantic import BaseModel, Field, model_validator
 
 XRTMODES = {
     0: "Auto",
@@ -34,109 +37,92 @@ MODESXRT = {
 }
 
 
-class TOOAPI_Instruments:
-    """Mixin for XRT / UVOT / BAT mode display and capture"""
+class TOOAPIInstrumentsSchema(BaseModel):
+    """Pydantic schema for XRT / UVOT / BAT mode display and capture"""
 
-    _uvot = None
-    _xrt = None
-    _bat = None  # For now, bat mode is just an integer
+    uvot_mode: Optional[Any] = Field(default=None, description="UVOT mode, stored as int or str")
+    xrt_mode: Optional[Any] = Field(default=None, description="XRT mode, stored as int or str")
+    bat_mode: Optional[Any] = Field(default=None, description="BAT mode, stored as int or str")
+    uvot_mode_approved: Optional[Any] = Field(default=None, description="Approved UVOT mode")
+    xrt_mode_approved: Optional[Any] = Field(default=None, description="Approved XRT mode")
 
-    def uvot_mode_setter(self, attr, mode):
-        if type(mode) == str and "0x" in mode:
-            """Convert hex string to int"""
-            uvot_mode = re.match(r"0x([0-9a-fA-F]+)", mode)
-            if uvot_mode is not None:
-                setattr(self, f"_{attr}", int(uvot_mode.group(0), 16))
+    @model_validator(mode="before")
+    def convert_modes(cls, values):
+        def uvot_mode_convert(mode):
+            if isinstance(mode, str) and "0x" in mode:
+                uvot_mode = re.match(r"0x([0-9a-fA-F]+)", mode)
+                if uvot_mode is not None:
+                    return int(uvot_mode.group(0), 16)
+                try:
+                    return int(mode.split(":")[0], 16)
+                except Exception:
+                    return mode
+            elif isinstance(mode, str):
+                try:
+                    return int(mode)
+                except (TypeError, ValueError):
+                    return mode
             else:
-                setattr(self, f"_{attr}", mode)
-            setattr(self, f"_{attr}", int(mode.split(":")[0], 16))
-        elif type(mode) == str:
-            """Convert decimal string to int"""
-            try:
-                setattr(self, f"_{attr}", int(mode))
-            except (TypeError, ValueError):
-                setattr(self, f"_{attr}", mode)
-        else:
-            """Pass through anything else"""
-            setattr(self, f"_{attr}", mode)
+                return mode
 
-    def xrt_mode_setter(self, attr, mode):
-        if type(mode) == str:
-            if mode in MODESXRT.keys():
-                setattr(self, f"_{attr}", MODESXRT[mode])
+        def xrt_mode_convert(mode):
+            if isinstance(mode, str):
+                if mode in MODESXRT:
+                    return MODESXRT[mode]
+                else:
+                    raise ValueError(f"Unknown mode ({mode}), should be PC, WT or Auto")
+            elif mode is None:
+                return mode
             else:
-                raise NameError(f"Unknown mode ({mode}), should be PC, WT or Auto")
-        elif mode is None:
-            setattr(self, f"_{attr}", mode)
-        else:
-            if mode in XRTMODES.keys():
-                setattr(self, f"_{attr}", mode)
-            else:
-                raise ValueError(f"Unknown mode ({mode}), should be PC (7), WT (6) or Auto (0)")
+                if mode in XRTMODES:
+                    return mode
+                else:
+                    raise ValueError(f"Unknown mode ({mode}), should be PC (7), WT (6) or Auto (0)")
+
+        # Convert input values for each field
+        if "uvot_mode" in values:
+            values["uvot"] = uvot_mode_convert(values["uvot"])
+        if "bat_mode" in values:
+            values["bat"] = uvot_mode_convert(values["bat"])
+        if "uvot_mode_approved" in values:
+            values["uvot_mode_approved"] = uvot_mode_convert(values["uvot_mode_approved"])
+        if "xrt_mode" in values:
+            values["xrt"] = xrt_mode_convert(values["xrt"])
+        if "xrt_mode_approved" in values:
+            values["xrt_mode_approved"] = xrt_mode_convert(values["xrt_mode_approved"])
+        return values
 
     @property
     def xrt(self):
-        """Given a XRT mode number returns a string containing the name of the
-        mode"""
-        return XRTMODES[self._xrt]
-
-    @xrt.setter
-    def xrt(self, mode):
-        self.xrt_mode_setter("xrt", mode)
+        """Return XRT mode as abbreviation string."""
+        if self.xrt_mode is None:
+            return "Unset"
+        return XRTMODES[self.xrt_mode]
 
     @property
     def uvot(self):
-        """Given a UVOT mode number returns a string containing the name of the
-        mode"""
-        if type(self._uvot) == int:
-            return f"0x{self._uvot:04x}"
-        else:
-            return self._uvot
-
-    @uvot.setter
-    def uvot(self, mode):
-        self.uvot_mode_setter("uvot", mode)
+        """Return UVOT mode as hex string if int, else as is."""
+        if isinstance(self.uvot_mode, int):
+            return f"0x{self.uvot_mode:04x}"
+        return self.uvot_mode
 
     @property
     def bat(self):
-        """Given a BAT mode number returns a string containing the name of the
-        mode"""
-        if type(self._bat) == int:
-            return f"0x{self._bat:04x}"
-        else:
-            return self._bat
-
-    @bat.setter
-    def bat(self, mode):
-        self.uvot_mode_setter("bat", mode)
+        """Return BAT mode as hex string if int, else as is."""
+        if isinstance(self.bat_mode, int):
+            return f"0x{self.bat_mode:04x}"
+        return self.bat_mode
 
     @property
-    def uvot_mode_approved(self):
-        """Return UVOT as a hex string. Stored as a number internally"""
-        if type(self._uvot_mode_approved) == int:
-            return f"0x{self._uvot_mode_approved:04x}"
-        else:
-            return self._uvot_mode_approved
+    def uvot_mode_approved_str(self):
+        """Return approved UVOT mode as hex string if int, else as is."""
+        if isinstance(self.uvot_mode_approved, int):
+            return f"0x{self.uvot_mode_approved:04x}"
+        return self.uvot_mode_approved
 
-    @uvot_mode_approved.setter
-    def uvot_mode_approved(self, mode):
-        self.uvot_mode_setter("uvot_mode_approved", mode)
-
-    # Next for approved XRT / UVOT modes from TOORequests
     @property
-    def xrt_mode_approved(self):
-        """Return XRT mode as abbreviation string. Internally stored as a number."""
-        if self._xrt_mode_approved is None:
+    def xrt_mode_approved_str(self):
+        """Return approved XRT mode as abbreviation string."""
+        if self.xrt_mode_approved is None:
             return "Unset"
-        else:
-            return XRTMODES[self._xrt_mode_approved]
-
-    @xrt_mode_approved.setter
-    def xrt_mode_approved(self, mode):
-        """Allow XRT mode to be set either as a string (e.g. "WT") or as a number (0, 6 or 7)."""
-        self.xrt_mode_setter("xrt_mode_approved", mode)
-
-    # Aliases
-    xrt_mode = xrt
-    uvot_mode = uvot
-    bat_mode = bat
+        return XRTMODES[self.xrt_mode_approved]

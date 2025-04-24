@@ -1,10 +1,37 @@
-from .api_common import TOOAPI_Baseclass
+from .api_common import TOOAPIBaseclass
 from .api_resolve import TOOAPIAutoResolve
 from .swift_clock import TOOAPI_ClockCorrect
-from .swift_schemas import SwiftVisQueryGetSchema, SwiftVisQuerySchema, SwiftVisWindowSchema
+from .swift_schemas import BeginEndLengthSchema, CoordinateSchema, OptionalCoordinateSchema
 
 
-class SwiftVisQuery(TOOAPI_Baseclass, TOOAPI_ClockCorrect, TOOAPIAutoResolve, SwiftVisQuerySchema):
+class SwiftVisWindow(BeginEndLengthSchema):
+    @property
+    def _table(self):
+        header = [row for row in self.__class__.model_fields]
+        return header, [[self.begin, self.end, self.length]]
+
+    def __str__(self):
+        return f"{self.begin} - {self.end} ({self.length})"
+
+    def __getitem__(self, index):
+        if index == 0:
+            return self.begin
+        elif index == 1:
+            return self.end
+        else:
+            raise IndexError("list index out of range")
+
+
+class SwiftVisQuerySchema(BeginEndLengthSchema, OptionalCoordinateSchema):
+    hires: bool = False
+    windows: list[SwiftVisWindow] = []
+
+
+class SwiftVisQueryGetSchema(BeginEndLengthSchema, CoordinateSchema):
+    hires: bool = False
+
+
+class SwiftVisQuery(TOOAPIBaseclass, TOOAPI_ClockCorrect, TOOAPIAutoResolve, SwiftVisQuerySchema):
     """Request Swift Target visibility windows. These results are low-fidelity,
     so do not give orbit-to-orbit visibility, but instead long term windows
     indicates when a target is observable by Swift and not in a Sun/Moon/Pole
@@ -65,6 +92,6 @@ class SwiftVisQuery(TOOAPI_Baseclass, TOOAPI_ClockCorrect, TOOAPIAutoResolve, Sw
 
 # Shorthand alias for class
 VisQuery = SwiftVisQuery
-VisWindow = SwiftVisWindowSchema
+VisWindow = SwiftVisWindow
 Swift_VisQuery = SwiftVisQuery
-Swift_VisWindow = SwiftVisWindowSchema
+Swift_VisWindow = SwiftVisWindow

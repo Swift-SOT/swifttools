@@ -31,7 +31,6 @@ dependencies = [
     "numpy",
     "boto3",
     "pydantic",
-    "httpx",
     "tqdm"
 ]
 

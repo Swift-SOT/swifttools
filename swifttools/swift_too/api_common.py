@@ -3,11 +3,11 @@ import warnings
 from datetime import datetime
 from typing import Any
 
-import httpx
+import requests
 from pydantic import TypeAdapter
 from tabulate import tabulate
 
-from .swift_schemas import SwiftTOOStatusSchema
+from .api_status import SwiftTOOStatusSchema
 from .version import version_tuple
 
 # Make Warnings a little less weird
@@ -78,7 +78,7 @@ def _tablefy(table, header=None):
     return tab
 
 
-class TOOAPI_Baseclass:
+class TOOAPIBaseclass:
     """Mixin for TOO API Classes. Most of these are to do with reading and
     writing classes out as JSON/dicts."""
 
@@ -216,7 +216,7 @@ class TOOAPI_Baseclass:
     def submit(self):
         """Perform an API GET request to the server."""
         args = self._get_schema.model_validate(self).model_dump(exclude_none=True)
-        response = httpx.get(
+        response = requests.get(
             self.submit_url, params=args, timeout=self._timeout, auth=(self.username, self.shared_secret)
         )
         print(response.url)

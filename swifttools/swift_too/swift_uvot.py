@@ -1,12 +1,18 @@
+from typing import Optional
+
 from tabulate import tabulate
 
-from .api_common import TOOAPI_Baseclass
+from .api_common import TOOAPIBaseclass
 from .api_resolve import TOOAPIAutoResolve
-from .swift_instruments import TOOAPI_Instruments
-from .swift_schemas import SwiftUVOTModeSchema
+from .swift_instruments import TOOAPIInstrumentsSchema
+from .swift_schemas import BaseSchema, OptionalCoordinateSchema
 
 
-class SwiftUVOTModeEntry(TOOAPI_Baseclass):
+class SwiftUVOTModeGetSchema(OptionalCoordinateSchema):
+    uvotmode: int
+
+
+class SwiftUVOTModeEntry(BaseSchema):
     """Class describing a single entry in the UVOT Mode table
 
     Attributes
@@ -37,7 +43,19 @@ class SwiftUVOTModeEntry(TOOAPI_Baseclass):
         comment on special modes
     """
 
-    api_name: str = "UVOT_mode_entry"
+    uvotmode: int = 0
+    filter_num: Optional[int] = None
+    min_exposure: Optional[int] = None
+    filter_pos: Optional[int] = None
+    filter_seqid: Optional[int] = None
+    eventmode: Optional[int] = None
+    field_of_view: Optional[int] = None
+    binning: Optional[int] = None
+    max_exposure: Optional[int] = None
+    weight: Optional[int] = None
+    special: Optional[int] = None
+    comment: Optional[str] = None
+    filter_name: str
 
     def __init__(self):
         # Lazy variable init
@@ -48,7 +66,14 @@ class SwiftUVOTModeEntry(TOOAPI_Baseclass):
         return self.filter_name
 
 
-class SwiftUVOTMode(TOOAPI_Baseclass, TOOAPI_Instruments, SwiftUVOTModeSchema, TOOAPIAutoResolve):
+class SwiftUVOTModeSchema(BaseSchema):
+    uvotmode: Optional[int] = None
+    ra: Optional[float] = None
+    dec: Optional[float] = None
+    entries: list[SwiftUVOTModeEntry] = []
+
+
+class SwiftUVOTMode(TOOAPIBaseclass, TOOAPIInstrumentsSchema, SwiftUVOTModeSchema, TOOAPIAutoResolve):
     """Class to fetch information about a given UVOT mode. Specifically this is
     useful for understanding for a given UVOT hex mode (e.g. 0x30ed), which
     filters and configuration are used by UVOT.

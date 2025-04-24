@@ -1,9 +1,12 @@
-from .api_common import TOOAPI_Baseclass
+from datetime import date, datetime
+from typing import Optional, Union
+
+from .api_common import TOOAPIBaseclass
 from .api_resolve import TOOAPI_AutoResolve
 from .api_status import TOOStatus
-from .swift_calendar import Swift_Calendar
+from .swift_calendar import Swift_Calendar, SwiftCalendarSchema
 from .swift_instruments import TOOAPI_Instruments
-from .swift_obsid import TOOAPI_ObsID
+from .swift_schemas import BaseSchema, ObsType
 
 HAS_ASTROPY = False
 try:
@@ -14,10 +17,59 @@ except ImportError:
     pass
 
 
+class SwiftTOORequestSchema(BaseSchema):
+    too_id: Optional[int]
+    timestamp: Optional[datetime]
+    username: Optional[str]
+    source_name: Optional[str]
+    source_type: Optional[str]
+    ra: Optional[float]
+    dec: Optional[float]
+    poserr: Union[float, str, None]
+    instrument: Optional[str]
+    urgency: Optional[int]
+    opt_mag: Union[float, str, None]
+    opt_filt: Optional[str]
+    xrt_countrate: Union[float, str, None]
+    bat_countrate: Union[float, str, None]
+    other_brightness: Optional[str]
+    grb_detector: Optional[str]
+    immediate_objective: Optional[str]
+    science_just: Optional[str]
+    total_exp_time_approved: Optional[int]
+    exp_time_just: Optional[str]
+    exp_time_per_visit_approved: Optional[int]
+    num_of_visits_approved: Optional[int]
+    monitoring_freq: Optional[str]
+    proposal: Optional[bool]
+    proposal_id: Optional[str]
+    proposal_trigger_just: Optional[str]
+    proposal_pi: Optional[str]
+    xrt_mode: Optional[int]
+    uvot_mode: Optional[str]
+    uvot_just: Optional[str]
+    tiling: Optional[bool]
+    number_of_tiles: Optional[str]
+    exposure_time_per_tile: Optional[int]
+    tiling_justification: Optional[str]
+    obs_n: Union[int, str, None]
+    obs_type: Union[ObsType, str, None]
+    calendar: Optional[SwiftCalendarSchema]
+    grb_triggertime: Optional[datetime]
+    done: Optional[int]
+    decision: Optional[str]
+    target_id: Optional[int]
+    uvot_mode_approved: Optional[str]
+    xrt_mode_approved: Optional[int]
+    date_begin: Union[str, date, None]
+    date_end: Union[str, date, None]
+    l_name: Optional[str]
+
+
 class Swift_TOORequest(
-    TOOAPI_Baseclass,
+    TOOAPIBaseclass,
     #    TOOAPI_SkyCoord,
-    TOOAPI_ObsID,
+    #    TOOAPI_ObsID,
     TOOAPI_Instruments,
     #    TOOAPI_Daterange,
     TOOAPI_AutoResolve,

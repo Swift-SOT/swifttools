@@ -1,11 +1,41 @@
-from .swift_schemas import SwiftTOOStatusSchema
+from typing import Optional
+
+from .swift_schemas import BaseSchema
+
+
+class SwiftTOOStatusSchema(BaseSchema):
+    status: str = "Pending"
+    too_id: Optional[int] = None
+    jobnumber: Optional[int] = None
+    errors: list = []
+    warnings: list = []
+
+    def __eq__(self, value):
+        return value == self.status
+
+    def __bool__(self):
+        if self.status == "Accepted":
+            return True
+        else:
+            return False
+
+    def error(self, error):
+        """Add an error to the list of errors"""
+        if error not in self.errors:
+            self.errors.append(error)
+
+    def warning(self, warning):
+        """Add a warning to the list of warnings"""
+        if warning not in self.warnings:
+            self.warnings.append(warning)
+
 
 # from swifttools.swift_too.api_resolve import SwiftTOOStatusSchema
 
-# from .api_common import TOOAPI_Baseclass
+# from .api_common import TOOAPIBaseclass
 
 
-# class SwiftTOOStatus(TOOAPI_Baseclass, SwiftTOOStatusSchema):
+# class SwiftTOOStatus(TOOAPIBaseclass, SwiftTOOStatusSchema):
 #     """Simple class to describe the status of a submitted TOO API request
 
 #     Attributes

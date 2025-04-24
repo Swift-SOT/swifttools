@@ -1,20 +1,82 @@
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, Union
 
 from pydantic import computed_field
 
-from .api_common import TOOAPI_Baseclass
+from .api_common import TOOAPIBaseclass
 from .api_resolve import TOOAPIAutoResolve
 from .swift_data import TOOAPI_DownloadData
 from .swift_schemas import (
     BaseSchema,
-    SwiftAFSTEntrySchema,
-    SwiftAFSTGetSchema,
-    SwiftAFSTSchema,
+    CoordinateSchema,
+    OptionalBeginEndLengthSchema,
+    OptionalCoordinateSchema,
 )
 
 
-class SwiftObservation(TOOAPI_Baseclass, TOOAPI_DownloadData, BaseSchema):
+class SwiftAFSTEntry(CoordinateSchema):
+    begin: Optional[datetime] = None
+    settle: Optional[datetime] = None
+    end: Optional[datetime] = None
+    obstype: Optional[str] = None
+    targname: Optional[str] = None
+    roll: Optional[float] = None
+    targetid: Optional[int] = None
+    seg: Optional[int] = None
+    obsnum: Optional[int] = None
+    bat: Optional[int] = None
+    xrt: Optional[int] = None
+    uvot: Optional[int] = None
+    fom: Optional[int] = None
+    comment: Optional[str] = None
+    timetarget: Optional[int] = None
+    timeobs: Optional[int] = None
+    flag: Optional[int] = None
+    mvdfwpos: Optional[int] = None
+    targettype: Optional[str] = None
+    sunha: Optional[float] = None
+    ra_point: Optional[float] = None
+    dec_point: Optional[float] = None
+
+    @property
+    def exposure(self):
+        return self.end - self.settle
+
+    @property
+    def slewtime(self):
+        return self.settle - self.begin
+
+    @property
+    def _table(self):
+        parameters = ["begin", "end", "targname", "obsnum", "exposure", "slewtime"]
+        header = [row for row in parameters]
+        return header, [
+            [
+                self.begin,
+                self.end,
+                self.targname,
+                self.obsnum,
+                self.exposure.seconds,
+                self.slewtime.seconds,
+            ]
+        ]
+
+
+class SwiftAFSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
+    radius: float = 0.19666666666666668
+    targetid: Union[int, list[int], None] = None
+    obsnum: Optional[int] = None
+
+
+class SwiftAFSTSchema(OptionalCoordinateSchema, OptionalBeginEndLengthSchema):
+    radius: float = 0.19666666666666668
+    targetid: Union[int, list[int], None] = None
+    obsnum: Optional[int] = None
+    afstmax: Optional[datetime] = None
+    entries: list[SwiftAFSTEntry] = []
+
+
+class SwiftObservation(TOOAPIBaseclass, TOOAPI_DownloadData, BaseSchema):
     """Class to summarize observations taken for given observation ID (obsnum).
     Whereas observations are typically one or more individual snapshot, in TOO
     API speak a `SwiftAFSTEntry`, this class summarizes all snapshots into a
@@ -53,7 +115,7 @@ class SwiftObservation(TOOAPI_Baseclass, TOOAPI_DownloadData, BaseSchema):
 
     # Core API definitions
     api_name: str = "Swift_Observation"
-    entries: list[SwiftAFSTEntrySchema] = []
+    entries: list[SwiftAFSTEntry] = []
 
     def __getitem__(self, index):
         return self.entries[index]
@@ -164,7 +226,7 @@ class SwiftObservation(TOOAPI_Baseclass, TOOAPI_DownloadData, BaseSchema):
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def snapshots(self) -> list[SwiftAFSTEntrySchema]:
+    def snapshots(self) -> list[SwiftAFSTEntry]:
         return self.entries
 
     # The following provides compatibility as we changed ra/dec_point to
@@ -212,7 +274,7 @@ class SwiftObservation(TOOAPI_Baseclass, TOOAPI_DownloadData, BaseSchema):
     segment = seg
 
 
-class SwiftObservations(dict, TOOAPI_Baseclass):
+class SwiftObservations(dict, TOOAPIBaseclass):
     """Adapted dictionary class for containing observations that mostly is just
     to ensure that data can be displayed in a consistent format. Key is
     typically the Swift Observation ID in SDC format (e.g. '00012345012')."""
@@ -227,7 +289,7 @@ class SwiftObservations(dict, TOOAPI_Baseclass):
 
 
 class SwiftAFST(
-    TOOAPI_Baseclass,
+    TOOAPIBaseclass,
     TOOAPIAutoResolve,
     #    TOOAPI_ClockCorrect,
     SwiftAFSTSchema,
@@ -313,10 +375,10 @@ Swift_ObsQuery = SwiftAFST
 ObsQuery = SwiftAFST
 AFST = SwiftAFST
 Swift_AFST = SwiftAFST
-Swift_AFST_Entry = SwiftAFSTEntrySchema
-ObsEntry = SwiftAFSTEntrySchema
-Swift_ObsEntry = SwiftAFSTEntrySchema
-AFSTEntry = SwiftAFSTEntrySchema
-Swift_AFSTEntry = SwiftAFSTEntrySchema
+Swift_AFST_Entry = SwiftAFSTEntry
+ObsEntry = SwiftAFSTEntry
+Swift_ObsEntry = SwiftAFSTEntry
+AFSTEntry = SwiftAFSTEntry
+Swift_AFSTEntry = SwiftAFSTEntry
 Swift_Observation = SwiftObservation
 Swift_Observations = SwiftObservations
