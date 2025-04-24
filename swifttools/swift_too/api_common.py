@@ -32,17 +32,6 @@ try:
 except ImportError:
     keyring_support = False
 
-# Check if we have astropy support
-HAS_ASTROPY = False
-try:
-    import astropy.units as u  # type: ignore[import-untyped]
-    from astropy.time import Time  # type: ignore[import-untyped]
-
-    HAS_ASTROPY = True
-except ImportError:
-    pass
-
-
 # Convert degrees to radians
 dtor = 0.017453292519943295
 
