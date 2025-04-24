@@ -156,11 +156,8 @@ class TOOAPIClockCorrect:
         """Spider through the class dictionary recording datetimes, and then
         updating them using SwiftClock"""
         if not hasattr(self, "_clock"):
-            # Read in all datetime values into an array
-            model_in = self.model_dump()
             # Get the index of the first datetime value
-            _, datevalues = index_datetimes(model_in, 0, [])
-            print(datevalues)
+            _, datevalues = index_datetimes(self.__dict__, 0, [])
             # What is the base time format for this class? Send that to Clock for
             # clock correction
             dts = [dt for dt in datevalues]
@@ -171,8 +168,7 @@ class TOOAPIClockCorrect:
                     self._clock = SwiftClock(swifttime=dts)
 
                 # Replace existing datetime values with clock corrected swiftdatetimes
-                _, _ = index_datetimes(model_in, 0, [], setvals=self._clock)
-        self.__dict__.update(model_in)
+                _, _ = index_datetimes(self.__dict__, 0, [], setvals=self._clock)
 
         # After clock correction, make UTC the default time system
         self.to_utctime()
@@ -180,12 +176,12 @@ class TOOAPIClockCorrect:
     def to_utctime(self):
         """Convert times to a UTC base"""
         self._clock.to_utctime()
-        _, _ = index_datetimes(self.model_dump(), 0, [], setvals=self._clock)
+        _, _ = index_datetimes(self.__dict__, 0, [], setvals=self._clock)
 
     def to_swifttime(self):
         """Convert times to a Swift time base"""
         self._clock.to_swifttime()
-        _, _ = index_datetimes(self.model_dump(), 0, [], setvals=self._clock)
+        _, _ = index_datetimes(self.__dict__, 0, [], setvals=self._clock)
 
     def _header_title(self, parameter):
         """Add UTC or Swift to headers in table depending on the default"""
