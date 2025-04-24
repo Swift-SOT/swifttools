@@ -605,7 +605,7 @@ class Swift_TOORequest(
                 "target_id",
             ]
         else:
-            _parameters = self._parameters
+            _parameters = list(self.__class__.model_fields.keys())
         for row in _parameters:
             val = getattr(self, row)
             if val is not None and val != "":

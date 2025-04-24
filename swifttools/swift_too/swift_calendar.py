@@ -13,7 +13,7 @@ class SwiftCalendarGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSch
     targetid: Optional[int] = None
 
 
-class SwiftCalendarEntry(BaseSchema):
+class SwiftCalendarEntry(BaseSchema, TOOAPIClockCorrect):
     """Class for a single entry in the Swift TOO calendar.
 
     Attributes
@@ -116,7 +116,6 @@ class Swift_Calendar(
     TOOAPIBaseclass,
     TOOAPIClockCorrect,
     TOOAPIAutoResolve,
-    # TOOAPI_ObsID,
     SwiftCalendarSchema,
 ):
     """Class that fetches entries in the Swift Planning Calendar, which

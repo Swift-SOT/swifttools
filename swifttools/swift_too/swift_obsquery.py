@@ -7,7 +7,7 @@ from swifttools.swift_too.swift_clock import TOOAPIClockCorrect
 
 from .api_common import TOOAPIBaseclass
 from .api_resolve import TOOAPIAutoResolve
-from .swift_data import TOOAPI_DownloadData
+from .swift_data import TOOAPIDownloadData
 from .swift_schemas import (
     BaseSchema,
     CoordinateSchema,
@@ -140,7 +140,7 @@ class SwiftAFSTSchema(OptionalCoordinateSchema, OptionalBeginEndLengthSchema):
     entries: list[SwiftAFSTEntry] = []
 
 
-class SwiftObservation(TOOAPIBaseclass, TOOAPI_DownloadData, BaseSchema):
+class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, BaseSchema):
     """Class to summarize observations taken for given observation ID (obsnum).
     Whereas observations are typically one or more individual snapshot, in TOO
     API speak a `SwiftAFSTEntry`, this class summarizes all snapshots into a

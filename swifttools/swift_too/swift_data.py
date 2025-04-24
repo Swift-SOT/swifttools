@@ -249,7 +249,7 @@ class SwiftData(TOOAPIBaseclass, SwiftDataSchema):
         return True
 
 
-class TOOAPI_DownloadData:
+class TOOAPIDownloadData:
     """Mixin to add add download method to any class that has an associated obsid."""
 
     def download(self, *args, **kwargs):
@@ -273,7 +273,7 @@ class TOOAPI_DownloadData:
         data.submit()
         if data.fetch:
             data.download()
-        # Return the Swift_Data class on completion
+        # Return the SwiftData class on completion
         return data
 
 

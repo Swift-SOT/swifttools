@@ -4,7 +4,7 @@ from typing import Optional, Union
 from .api_common import TOOAPIBaseclass
 from .api_resolve import TOOAPIAutoResolve
 from .swift_clock import TOOAPIClockCorrect
-from .swift_data import TOOAPI_DownloadData
+from .swift_data import TOOAPIDownloadData
 from .swift_obsquery import SwiftObservation
 from .swift_schemas import BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
 
@@ -106,7 +106,7 @@ class SwiftPPSTSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
     entries: list[SwiftPPSTEntry] = []
 
 
-class SwiftPPST(TOOAPIBaseclass, TOOAPI_DownloadData, TOOAPIAutoResolve, TOOAPIClockCorrect, SwiftPPSTSchema):
+class SwiftPPST(TOOAPIBaseclass, TOOAPIDownloadData, TOOAPIAutoResolve, TOOAPIClockCorrect, SwiftPPSTSchema):
     """Class to fetch Swift Pre-Planned Science Timeline (PPST) for given
     constraints. Essentially this will return what Swift was planned to observe
     and when, for given constraints. Constraints can be for give coordinate

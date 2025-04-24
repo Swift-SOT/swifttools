@@ -4,10 +4,24 @@ from .swift_clock import TOOAPIClockCorrect
 from .swift_schemas import BeginEndLengthSchema, CoordinateSchema, OptionalCoordinateSchema
 
 
-class SwiftVisWindow(BeginEndLengthSchema):
+class SwiftVisWindow(BeginEndLengthSchema, TOOAPIClockCorrect):
+    """
+    Simple class to define a Visibility window. Begin and End of window can
+    either be accessed as self.begin or self.end, or as self[0] or self[1].
+
+    Attributes
+    ----------
+    begin : datetime
+        begin time of window
+    end : datetime
+        end time of window
+    length : timedelta
+        length of window
+    """
+
     @property
     def _table(self):
-        header = [row for row in self.__class__.model_fields]
+        header = [self._header_title(row) for row in self.__class__.model_fields]
         return header, [[self.begin, self.end, self.length]]
 
     def __str__(self):

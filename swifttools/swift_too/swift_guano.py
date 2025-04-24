@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 from typing import Optional, Union
 
+from swifttools.swift_too.swift_data import TOOAPIDownloadData
+
 from .api_common import TOOAPIBaseclass
 from .swift_clock import TOOAPIClockCorrect
 from .swift_schemas import (
@@ -9,8 +11,9 @@ from .swift_schemas import (
 )
 
 
-class SwiftGUANOGTI(BaseSchema):
-    """Define GUANO event data Good Time Intervals (GTI)
+class SwiftGUANOGTI(BaseSchema, TOOAPIClockCorrect):
+    """
+    Define GUANO event data Good Time Intervals (GTI)
 
     Attributes
     ----------
@@ -41,7 +44,7 @@ class SwiftGUANOGTI(BaseSchema):
         return f"{self.begin} - {self.end} ({self.exposure})"
 
 
-class SwiftGUANOData(BaseSchema):
+class SwiftGUANOData(BaseSchema, TOOAPIClockCorrect):
     """Class to hold information about GUANO data based on analysis of the BAT
     event files that are downlinked.
 
@@ -108,7 +111,7 @@ class SwiftGUANOData(BaseSchema):
             return False
 
 
-class SwiftGUANOEntry(BaseSchema):
+class SwiftGUANOEntry(BaseSchema, TOOAPIClockCorrect, TOOAPIDownloadData):
     """
     Entry for an individual BAT ring buffer dump (AKA GUANO) event.
 
@@ -151,7 +154,7 @@ class SwiftGUANOEntry(BaseSchema):
     @property
     def _table(self):
         table = []
-        for row in self._parameters + self._attributes:
+        for row in self.__class__.model_fields.keys():
             value = getattr(self, row)
             if row == "data" and self.data.exposure is not None:
                 table += [[row, f"{value.exposure:.1f}s of BAT event data"]]
@@ -209,7 +212,7 @@ class SwiftGUANOSchema(BaseSchema):
 
 class SwiftGUANO(
     TOOAPIBaseclass,
-    TOOAPIClockCorrect,  # TOOAPI_TriggerTime,
+    TOOAPIClockCorrect,
     SwiftGUANOSchema,
 ):
     """Query BAT ring buffer dumps of event data associated with the Gamma-Ray

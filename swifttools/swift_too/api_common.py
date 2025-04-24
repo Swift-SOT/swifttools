@@ -126,7 +126,7 @@ class TOOAPIBaseclass:
     @property
     def _table(self):
         """Table of details of the class"""
-        _parameters = self._parameters + self._attributes
+        _parameters = self.__class__.model_fields.keys()
         header = ["Parameter", "Value"]
         table = []
         for row in _parameters:

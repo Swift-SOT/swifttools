@@ -9,7 +9,7 @@ class SwiftSAAGetSchema(BeginEndLengthSchema):
     bat: bool = False
 
 
-class SwiftSAAEntry(BaseSchema):
+class SwiftSAAEntry(BaseSchema, TOOAPIClockCorrect):
     begin: datetime
     end: datetime
 
