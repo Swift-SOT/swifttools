@@ -1,4 +1,6 @@
 from datetime import datetime, timedelta
+from token import OP
+from typing import Optional
 
 from pydantic import computed_field
 
@@ -10,104 +12,7 @@ from .swift_schemas import (
     SwiftAFSTEntrySchema,
     SwiftAFSTGetSchema,
     SwiftAFSTSchema,
-    SwiftObservationSchema,
-    SwiftTOOStatusSchema,
 )
-
-# class SwiftAFSTEntry(
-#     SwiftAFSTEntrySchema
-#     #    TOOAPI_Baseclass,
-#     #    TOOAPI_SkyCoord,
-#     #    TOOAPI_ObsID,
-#     #    TOOAPI_Instruments,
-#     #    TOOAPI_ClockCorrect,
-#     #    TOOAPI_DownloadData,
-# ):
-#     """Class that defines an individual entry in the Swift As-Flown Timeline
-
-#     Attributes
-#     ----------
-#     begin : datetime
-#         begin time of observation
-#     settle : datetime
-#         settle time of the observation
-#     end : datetime
-#         end time of observation
-#     slewtime : timedelta
-#         slew time of the observation
-#     targetid : int
-#         target ID  of the observation
-#     seg : int
-#         segment number of the observation
-#     xrt : str
-#         XRT mode of the observation
-#     uvot : str
-#         Hex string UVOT mode of the observation
-#     bat : int
-#         BAT mode of the observation
-#     exposure : timedelta
-#         exposure time of the observation
-#     ra : float
-#         Right Ascension of pointing in J2000 (decimal degrees)
-#     dec : float
-#         Declination of pointing in J2000 (decimal degrees)
-#     roll : float
-#         roll angle of the observation (decimal degrees)
-#     skycoord : SkyCoord
-#         SkyCoord version of RA/Dec if astropy is installed
-#     ra_object : float
-#         RA of the object that is the target of the pointing
-#     dec_object : float
-#         dec of the object that is the target of the pointing
-#     targname : str
-#         Target name of the primary target of the observation
-#     """
-
-#     # API name
-#     api_name: str = "Swift_AFST_Entry"
-
-#     @property
-#     def exposure(self):
-#         return self.end - self.settle
-
-#     @property
-#     def slewtime(self):
-#         return self.settle - self.begin
-
-#     # The following provides compatibility as we changed ra/dec_point to
-#     # ra/dec_object. These will go away with a future API update. FIXME API 1.3
-#     @property
-#     def ra_point(self):
-#         return self.ra_object
-
-#     @ra_point.setter
-#     def ra_point(self, ra):
-#         self.ra_object = ra
-
-#     @property
-#     def dec_point(self):
-#         return self.dec_object
-
-#     @dec_point.setter
-#     def dec_point(self, dec):
-#         self.dec_object = dec
-
-#     # Compat end
-
-#     @property
-#     def _table(self):
-#         parameters = ["begin", "end", "targname", "obsnum", "exposure", "slewtime"]
-#         header = [self._header_title(row) for row in parameters]
-#         return header, [
-#             [
-#                 self.begin,
-#                 self.end,
-#                 self.targname,
-#                 self.obsnum,
-#                 self.exposure.seconds,
-#                 self.slewtime.seconds,
-#             ]
-#         ]
 
 
 class SwiftObservation(TOOAPI_Baseclass, TOOAPI_DownloadData, BaseSchema):
@@ -163,97 +68,125 @@ class SwiftObservation(TOOAPI_Baseclass, TOOAPI_DownloadData, BaseSchema):
     def extend(self, value):
         self.entries.extend(value)
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
-    def targetid(self) -> int:
+    def targetid(self) -> Optional[int]:
+        if len(self.entries) == 0:
+            return None
         return self.entries[0].targetid
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
-    def seg(self) -> int:
+    def seg(self) -> Optional[int]:
+        if len(self.entries) == 0:
+            return None
         return self.entries[0].seg
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
-    def obsnum(self) -> int:
+    def obsnum(self) -> Optional[int]:
+        if len(self.entries) == 0:
+            return None
         return self.entries[0].obsnum
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
-    def targname(self) -> str:
+    def targname(self) -> Optional[str]:  # Updated return type to Optional[str]
+        if len(self.entries) == 0:
+            return None
         return self.entries[0].targname
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
-    def ra_object(self) -> float:
+    def ra_object(self) -> Optional[float]:  # Updated return type to Optional[float]
+        if len(self.entries) == 0:
+            return None
         if hasattr(self.entries[0], "ra_object"):
             return self.entries[0].ra_object
+        return None
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
-    def dec_object(self) -> float:
+    def dec_object(self) -> Optional[float]:  # Updated return type to Optional[float]
+        if len(self.entries) == 0:
+            return None
         if hasattr(self.entries[0], "dec_object"):
             return self.entries[0].dec_object
+        return None
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
-    def exposure(self) -> timedelta:
+    def exposure(self) -> Optional[timedelta]:  # Updated return type to Optional[timedelta]
+        if len(self.entries) == 0:
+            return None
         return timedelta(seconds=sum([e.exposure.seconds for e in self.entries]))
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
-    def slewtime(self) -> timedelta:
+    def slewtime(self) -> Optional[timedelta]:  # Updated return type to Optional[timedelta>
+        if len(self.entries) == 0:
+            return None
         return timedelta(seconds=sum([e.slewtime.seconds for e in self.entries]))
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
-    def begin(self) -> datetime:
-        return min([q.begin for q in self.entries])
+    def begin(self) -> Optional[datetime]:  # Updated return type to Optional[datetime]
+        if len(self.entries) == 0:
+            return None
+        return min([q.begin for q in self.entries if q.begin is not None])
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
-    def end(self) -> datetime:
-        return max([q.end for q in self.entries])
+    def end(self) -> Optional[datetime]:  # Updated return type to Optional[datetime]
+        if len(self.entries) == 0:
+            return None
+        return max([q.end for q in self.entries if q.end is not None])
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
-    def xrt(self) -> int:
+    def xrt(self) -> Optional[int]:  # Updated return type to Optional[int]
+        if len(self.entries) == 0:
+            return None
         return self.entries[0].xrt
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
-    def uvot(self) -> int:
+    def uvot(self) -> Optional[int]:  # Updated return type to Optional[int]
+        if len(self.entries) == 0:
+            return None
         return self.entries[0].uvot
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
-    def bat(self) -> int:
+    def bat(self) -> Optional[int]:  # Updated return type to Optional[int]
+        if len(self.entries) == 0:
+            return None
         return self.entries[0].bat
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
-    def snapshots(self) -> int:
+    def snapshots(self) -> list[SwiftAFSTEntrySchema]:
         return self.entries
 
     # The following provides compatibility as we changed ra/dec_point to
     # ra/dec_object. These will go away in the next version of the API (1.3).
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
-    def ra_point(self) -> float:
+    def ra_point(self) -> Optional[float]:
         return self.ra_object
 
-    @ra_point.setter
-    def ra_point(self, ra) -> float:
-        self.ra_object = ra
+    #    @ra_point.setter
+    #    def ra_point(self, ra: Optional[float]) -> None:
+    #        self.ra_object = ra
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
-    def dec_point(self) -> float:
+    def dec_point(self) -> Optional[float]:  # Updated return type to Optional[float]
         return self.dec_object
 
-    @dec_point.setter
-    def dec_point(self, dec) -> float:
-        self.dec_object = dec
+    #    @dec_point.setter
+    #    def dec_point(self, dec: Optional[float]) -> None:  # Updated parameter type to Optional[float]
+    #        self.dec_object = dec
 
     # Compat end
 
