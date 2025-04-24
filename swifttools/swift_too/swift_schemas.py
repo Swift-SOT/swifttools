@@ -44,7 +44,7 @@ class BeginEndLengthSchema(BaseSchema):
 
     begin: Optional[datetime] = Field(default=None, description="Start time (UTC)")
     end: Optional[datetime] = Field(default=None, description="End time (UTC)")
-    length: Optional[float] = Field(
+    length: Optional[timedelta] = Field(
         default=None,
         description="Length of requested time period (days)",
         exclude=True,  # We don't want to include length in the output
@@ -55,21 +55,22 @@ class BeginEndLengthSchema(BaseSchema):
         begin = self.begin
         end = self.end
         length = self.length
-
+        if isinstance(length, (int, float)):
+            length = timedelta(days=length)
         if not begin:
             raise ValueError("Begin time must be provided.")
         if end and length:
-            if end != begin + timedelta(days=length):
+            if end != begin + length:
                 raise ValueError("Only one of 'end', or 'length' should be provided.")
         if not (begin or end or length):
             raise ValueError("At least 'begin' and 'end' or 'length' must be provided.")
         if begin and length:
-            end = begin + timedelta(days=length)
+            end = begin + length
         if end and begin:
             if end < begin:
                 raise ValueError("End time cannot be before begin time.")
             else:
-                length = (end - begin).total_seconds() / 86400.0
+                length = end - begin
         self.length = length
         self.end = end
         return self
