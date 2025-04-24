@@ -1,16 +1,20 @@
-from datetime import datetime, timedelta, timezone
-
-from swifttools.swift_too.api_common import convert_to_dt
+from datetime import datetime, timedelta
+from typing import Any, Optional, Union
 
 
 class swiftdatetime(datetime):
     """Extend datetime to store met, utcf and swifttime. Default value is UTC"""
 
     api_name: str = "swiftdatetime"
-    _parameters: list[str] = ["met", "utcf", "swifttime", "utctime", "isutc"]
+
+    _utctime: Union[datetime, None]
+    _swifttime: Union[datetime, None]
+    _met: Union[float, None]
+    _utcf: Union[float, None]
+    _isutc: bool
 
     def __new__(self, *args, **kwargs):
-        return super(swiftdatetime, self).__new__(self, *args)
+        return super().__new__(self, *args)
 
     def __init__(self, *args, **kwargs):
         self._met = None
@@ -62,14 +66,14 @@ class swiftdatetime(datetime):
     @isutc.setter
     def isutc(self, utc):
         """Is this swiftdatetime based on UTC or Swift Time"""
-        if self._isutc_set is not True:
-            # If we change the time base for this, reset the values of swifttime and utctime
-            self._isutc = utc
-            self.swifttime = None
-            self.utctime = None
-            self._isutc_set = True
-        else:
-            raise AttributeError("Cannot set attribute isutc when previously set.")
+        # if self._isutc_set is not True:
+        # If we change the time base for this, reset the values of swifttime and utctime
+        self._isutc = utc
+        self.swifttime = None
+        self.utctime = None
+        self._isutc_set = True
+        # else:
+        #    raise AttributeError("Cannot set attribute isutc when previously set.")
 
     @property
     def met(self):
@@ -81,7 +85,7 @@ class swiftdatetime(datetime):
         self._met = met
 
     @property
-    def utctime(self):
+    def utctime(self) -> Optional[datetime]:
         if self._utctime is None:
             if self.isutc:
                 self._utctime = datetime(
@@ -93,7 +97,7 @@ class swiftdatetime(datetime):
                     self.second,
                     self.microsecond,
                 )
-            elif self.utcf is not None:
+            elif self.utcf is not None and self.swifttime is not None:
                 self._utctime = self.swifttime + timedelta(seconds=self.utcf)
         return self._utctime
 
@@ -101,13 +105,20 @@ class swiftdatetime(datetime):
     def utctime(self, utc):
         if isinstance(utc, datetime):
             # Ensure that utctime set to a pure datetime
-            if utc.tzinfo is not None:
-                utc = utc.astimezone(timezone.utc).replace(tzinfo=None)
+            self._utctime = datetime(
+                utc.year,
+                utc.month,
+                utc.day,
+                utc.hour,
+                utc.minute,
+                utc.second,
+                utc.microsecond,
+            )
         else:
             self._utctime = utc
 
     @property
-    def swifttime(self):
+    def swifttime(self) -> Optional[datetime]:
         if self._swifttime is None:
             if not self.isutc:
                 self._swifttime = datetime(
@@ -119,19 +130,25 @@ class swiftdatetime(datetime):
                     self.second,
                     self.microsecond,
                 )
-            elif self.utcf is not None:
+            elif self.utcf is not None and self.utctime is not None:
                 self._swifttime = self.utctime - timedelta(seconds=self.utcf)
         return self._swifttime
 
     @swifttime.setter
     def swifttime(self, st):
         if isinstance(st, datetime):
-            # Ensure that swifttime set to a pure datetime
-            if st.tzinfo is not None:
-                st = st.astimezone(timezone.utc).replace(tzinfo=None)
-            self._swifttime = st
+            # Ensure that swifttime is set to a pure datetime
+            self._swifttime = datetime(
+                st.year,
+                st.month,
+                st.day,
+                st.hour,
+                st.minute,
+                st.second,
+                st.microsecond,
+            )
         else:
-            self._swifttime = convert_to_dt(st)
+            self._swifttime = st
 
     @property
     def _table(self):
@@ -147,7 +164,15 @@ class swiftdatetime(datetime):
         dt = datetime(2001, 1, 1) + timedelta(seconds=met)
         if isutc and utcf is not None:
             dt += timedelta(seconds=utcf)
-        ret = cls(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.microsecond)
+        ret = cls(
+            dt.year,
+            dt.month,
+            dt.day,
+            dt.hour,
+            dt.minute,
+            dt.second,
+            dt.microsecond,
+        )
         ret.utcf = utcf
         ret.isutc = isutc
         return ret
