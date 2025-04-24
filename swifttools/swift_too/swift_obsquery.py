@@ -344,8 +344,6 @@ class SwiftAFST(
     _schema = SwiftAFSTSchema
     _get_schema = SwiftAFSTGetSchema
 
-    status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
-
     # Observations
     _observations = SwiftObservations()
 

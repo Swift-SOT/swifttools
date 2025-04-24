@@ -1,85 +1,17 @@
 import os
 import warnings
 from fnmatch import fnmatch
+from typing import Optional
 
 import boto3  # type: ignore[import-untyped]
-import requests
+import boto3.session
+import httpx  # type: ignore[import-untyped]
 from botocore import UNSIGNED  # type: ignore[import-untyped]
 from botocore.client import Config  # type: ignore[import-untyped]
+from tqdm.auto import tqdm  # type: ignore[import-untyped]
 
 from .api_common import TOOAPI_Baseclass
-from .swift_schemas import SwiftDataFileGetSchema, SwiftDataFileSchema, SwiftDataSchema
-
-try:
-    from tqdm.auto import tqdm  # type: ignore[import-untyped]
-except ImportError:
-
-    def tqdm(*args, **kwargs):
-        """A real simple replacement for tqdm if it's not locally installed"""
-        if "display" in kwargs.keys() and kwargs["display"] is not False:
-            print(f"Downloading {len(args[0])} files...")
-        return args[0]
-
-
-class SwiftDataFile(TOOAPI_Baseclass, SwiftDataFileSchema):
-    """Class containing information about a swift data file that can be
-    downloaded from the Swift Science Data Center
-
-    Attributes:
-    ----------
-    filename : str
-        filename
-    path : str
-        path to file
-    url : str
-        URL where file exists
-    type : str
-        Text description of file type
-    localpath : str
-        full path of file on disk
-    size : int
-        size of file in bytes
-    outdir : str
-        local directory in which to download file (default '.')
-    """
-
-    # API name
-    api_name: str = "Swift_Data_File"
-
-    @property
-    def size(self):
-        if self.localpath is not None:
-            return os.path.getsize(self.localpath)
-        else:
-            return None
-
-    def download(self, outdir=None):
-        """Download the file into a given `outdir`"""
-        if outdir is not None:
-            self.outdir = outdir
-        # Make the directories for the full path if they don't exist
-        fulldir = os.path.join(self.outdir, self.path)
-        if not os.path.exists(fulldir):
-            os.makedirs(fulldir)
-
-        # Download the data
-        fullfilepath = os.path.join(self.outdir, self.path, self.filename)
-
-        if "heasarc" in self.url and self.quicklook is False and self.s3 is not None:
-            # Download HEASARC hosted data from AWS
-            key_name = self.url.replace("https://heasarc.gsfc.nasa.gov/FTP/", "")
-            self.s3.download_file("nasa-heasarc", key_name, fullfilepath)
-        else:
-            r = requests.get(self.url, stream=True, allow_redirects=True)
-            if r.ok:
-                filedata = r.raw.read()
-                with open(fullfilepath, "wb") as outfile:
-                    outfile.write(filedata)
-                self.localpath = fullfilepath
-            else:
-                return False
-
-        return True
+from .swift_schemas import SwiftDataFileSchema, SwiftDataGetSchema, SwiftDataSchema
 
 
 class SwiftData(TOOAPI_Baseclass, SwiftDataSchema):
@@ -129,23 +61,17 @@ class SwiftData(TOOAPI_Baseclass, SwiftDataSchema):
     # Core API definitions
     api_name: str = "Swift_Data"
     _schema = SwiftDataSchema
-    _get_schema = SwiftDataFileGetSchema
+    _get_schema = SwiftDataGetSchema
     _endpoint = "/swift/data"
 
-    _local = [
-        "outdir",
-        "clobber",
-        "obsnum",
-        "targetid",
-        "target_id",
-        "seg",
-        "segment",
-        "shared_secret",
-        "fetch",
-        "match",
-        "quiet",
-        "aws",
-    ]
+    # Local arguments
+    outdir: str = "."
+    clobber: bool = False
+    fetch: bool = True
+    match: Optional[str] = None
+    quiet: bool = False
+    aws: bool = False
+    _s3: Optional[boto3.session.Session.client] = None
 
     def __getitem__(self, i):
         return self.entries[i]
@@ -185,9 +111,8 @@ class SwiftData(TOOAPI_Baseclass, SwiftDataSchema):
                 retries={"max_attempts": 0},
                 signature_version=UNSIGNED,
             )
-            s3 = boto3.client("s3", config=config)
-            for file in self.entries:
-                file.s3 = s3
+            self._s3 = boto3.client("s3", config=config)
+
         if self.match is not None:
             if type(self.match) is str:
                 self.match = [self.match]
@@ -237,7 +162,7 @@ class SwiftData(TOOAPI_Baseclass, SwiftDataSchema):
             localfile = f"{self.outdir}/{dfile.path}/{dfile.filename}"
             if not self.clobber and os.path.exists(localfile) and not self.quiet:
                 warnings.warn(f"{dfile.filename} exists and not overwritten (set clobber=True to override this).")
-            elif not dfile.download(outdir=self.outdir):
+            elif not dfile.download(outdir=self.outdir, s3=self._s3):
                 self.status.error(f"Error downloading {dfile.filename}")
                 return False
 
@@ -247,9 +172,9 @@ class SwiftData(TOOAPI_Baseclass, SwiftDataSchema):
 
 # Shorthand Aliases for better PEP8 compliant and future compat
 Data = SwiftData
-DataFile = SwiftDataFile
-Swift_Data_File = SwiftDataFile
-Swift_DataFile = SwiftDataFile
+DataFile = SwiftDataFileSchema
+Swift_Data_File = SwiftDataFileSchema
+Swift_DataFile = SwiftDataFileSchema
 Swift_Data = SwiftData
 
 
@@ -279,3 +204,6 @@ class TOOAPI_DownloadData:
             data.download()
         # Return the Swift_Data class on completion
         return data
+
+
+SwiftDataFile = SwiftDataFileSchema

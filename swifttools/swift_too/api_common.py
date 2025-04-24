@@ -3,7 +3,7 @@ import warnings
 from datetime import datetime
 from typing import Any
 
-import requests
+import httpx
 from pydantic import TypeAdapter
 from tabulate import tabulate
 
@@ -227,7 +227,7 @@ class TOOAPI_Baseclass:
     def submit(self):
         """Perform an API GET request to the server."""
         args = self._get_schema.model_validate(self).model_dump(exclude_none=True)
-        response = requests.get(
+        response = httpx.get(
             self.submit_url, params=args, timeout=self._timeout, auth=(self.username, self.shared_secret)
         )
         print(response.url)
@@ -243,7 +243,7 @@ class TOOAPI_Baseclass:
                 return False
         else:
             print("Sad trombone: ", response.status_code)
-            self.__set_error(f"Error: {response.status_code} - {response.text}")
+            #            self.__set_error(f"Error: {response.status_code} - {response.text}")
             return False
 
         # Perform processing of the response

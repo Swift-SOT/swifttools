@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+import os
 from datetime import date, datetime, timedelta
 from enum import Enum
 from typing import Optional, Union
 
+import botocore  # type: ignore[import-unsigned]
+import requests
 from astropy.coordinates import SkyCoord  # type: ignore[import-untyped]
 from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
-from pytz import utc
 
 from .swift_datetime import swiftdatetime
 
@@ -37,6 +39,25 @@ class SwiftTOOStatusSchema(BaseSchema):
     jobnumber: Optional[int] = None
     errors: list = []
     warnings: list = []
+
+    def __eq__(self, value):
+        return value == self.status
+
+    def __bool__(self):
+        if self.status == "Accepted":
+            return True
+        else:
+            return False
+
+    def error(self, error):
+        """Add an error to the list of errors"""
+        if error not in self.errors:
+            self.errors.append(error)
+
+    def warning(self, warning):
+        """Add a warning to the list of warnings"""
+        if warning not in self.warnings:
+            self.warnings.append(warning)
 
 
 class BeginEndLengthSchema(BaseSchema):
@@ -897,30 +918,77 @@ class SwiftSAAEntrySchema(BaseSchema):
 class SwiftDataSchema(BaseSchema):
     obsid: Optional[str] = None
     auxil: bool = True
-    bat: Optional[bool] = None
-    xrt: Optional[bool] = None
-    uvot: Optional[bool] = None
-    log: Optional[bool] = None
-    tdrss: Optional[bool] = None
-    quicklook: bool = False
-    uksdc: Optional[bool] = None
-    itsdc: Optional[bool] = None
-    subthresh: Optional[bool] = None
+    bat: bool = False
+    xrt: bool = False
+    uvot: bool = False
+    log: bool = False
+    tdrss: bool = False
+    quicklook: bool = Field(default=False, description="If true, only quicklook data will be returned")
+    uksdc: bool = False
+    itsdc: bool = False
+    subthresh: bool = False
     entries: list[SwiftDataFileSchema] = []
     status: SwiftTOOStatusSchema = SwiftTOOStatusSchema()
 
 
-class SwiftDataFileGetSchema(BaseSchema):
-    filename: Optional[str] = None
-    path: Optional[str] = None
-    url: Optional[str] = None
-    quicklook: bool = False
-    type: Optional[str]
+class SwiftDataGetSchema(BaseSchema):
+    # username: str = "anonymous"
+    obsid: str
+    auxil: bool = True
+    bat: bool = False
+    xrt: bool = False
+    uvot: bool = False
+    log: bool = False
+    tdrss: bool = False
+    quicklook: bool = Field(default=False, description="If true, only quicklook data will be returned")
+    uksdc: bool = False
+    itsdc: bool = False
+    subthresh: bool = False
 
 
 class SwiftDataFileSchema(BaseSchema):
-    filename: Optional[str] = None
-    path: Optional[str] = None
-    url: Optional[str] = None
+    filename: str
+    path: str
+    url: str
     quicklook: bool = False
-    type: Optional[str]
+    type: str
+    localpath: Optional[str] = None
+
+    @property
+    def size(self):
+        if self.localpath is not None:
+            return os.path.getsize(self.localpath)
+        else:
+            return None
+
+    def download(
+        self,
+        outdir: str = ".",
+        s3: Optional[botocore.client.S3] = None,
+    ):
+        """Download the file into a given `outdir`"""
+        #        if outdir is not None:
+        #            self.outdir = outdir
+        # Make the directories for the full path if they don't exist
+        fulldir = os.path.join(outdir, self.path)
+        if not os.path.exists(fulldir):
+            os.makedirs(fulldir)
+
+        # Download the data
+        fullfilepath = os.path.join(outdir, self.path, self.filename)
+
+        if "heasarc" in self.url and self.quicklook is False and s3 is not None and hasattr(s3, "download_file"):
+            # Download HEASARC hosted data from AWS
+            key_name = self.url.replace("https://heasarc.gsfc.nasa.gov/FTP/", "")
+            s3.download_file("nasa-heasarc", key_name, fullfilepath)
+        else:
+            r = requests.get(self.url, stream=True, allow_redirects=True)
+            if r.ok:
+                filedata = r.raw.read()
+                with open(fullfilepath, "wb") as outfile:
+                    outfile.write(filedata)
+                self.localpath = fullfilepath
+            else:
+                return False
+
+        return True
