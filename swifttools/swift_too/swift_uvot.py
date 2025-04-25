@@ -4,7 +4,7 @@ from tabulate import tabulate
 
 from .api_common import TOOAPIBaseclass
 from .api_resolve import TOOAPIAutoResolve
-from .swift_instruments import TOOAPIInstrumentsSchema
+from .swift_instruments import TOOAPIInstruments
 from .swift_schemas import BaseSchema, OptionalCoordinateSchema
 
 
@@ -73,7 +73,7 @@ class SwiftUVOTModeSchema(BaseSchema):
     entries: list[SwiftUVOTModeEntry] = []
 
 
-class SwiftUVOTMode(TOOAPIBaseclass, TOOAPIInstrumentsSchema, SwiftUVOTModeSchema, TOOAPIAutoResolve):
+class SwiftUVOTMode(TOOAPIBaseclass, TOOAPIInstruments, SwiftUVOTModeSchema, TOOAPIAutoResolve):
     """Class to fetch information about a given UVOT mode. Specifically this is
     useful for understanding for a given UVOT hex mode (e.g. 0x30ed), which
     filters and configuration are used by UVOT.

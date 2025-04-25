@@ -208,15 +208,72 @@ class TOOAPIBaseclass:
         pass
 
     def model_post_init(self, context: Any) -> None:
-        if self.status.status == "Pending":
+        if self.status.status == "Pending" and hasattr(self, "_get_schema"):
             if self.validate_get():
                 self.submit()
 
     def submit(self):
+        """
+        Submit the API request to the server. Right now it determines if the
+        submission type is GET or POST, based on existance of the `_get_schema`
+        or `_post_schema` attributes. If neither exist, it will return False.
+        If the request is successful, it will update the class with the
+        response data.
+
+        Returns
+        -------
+        bool
+            Was submission successful?
+        """
+        if self.status.status == "Pending":
+            if hasattr(self, "_get_schema"):
+                if self.validate_get():
+                    return self.submit_get()
+                return False
+            elif hasattr(self, "_post_schema"):
+                if self.validate_post():
+                    return self.submit_post()
+                return False
+        else:
+            return False
+
+    def submit_get(self):
         """Perform an API GET request to the server."""
         args = self._get_schema.model_validate(self).model_dump(exclude_none=True)
         response = requests.get(
-            self.submit_url, params=args, timeout=self._timeout, auth=(self.username, self.shared_secret)
+            self.submit_url,
+            params=args,
+            timeout=self._timeout,
+            auth=(self.username, self.shared_secret),
+        )
+        print(response.url)
+        # If the request was successful, parse the response
+        if response.status_code == 200:
+            try:
+                data = self.model_validate(response.json())
+                for key, value in dict(data).items():
+                    setattr(self, key, value)
+            except Exception as e:
+                self.__set_error(f"Error validating response: {e}")
+                return False
+        else:
+            print("Sad trombone: ", response.status_code)
+            #            self.__set_error(f"Error: {response.status_code} - {response.text}")
+            return False
+
+        # Perform processing of the response
+        self._post_process()
+
+        return True
+
+    def submit_post(self):
+        """Perform an API POST request to the server."""
+        args = self._get_schema.model_validate(self).model_dump(exclude_none=True)
+        response = requests.post(
+            self.submit_url,
+            json=args,
+            timeout=self._timeout,
+            auth=(self.username, self.shared_secret),
         )
         print(response.url)
         # If the request was successful, parse the response
@@ -249,6 +306,22 @@ class TOOAPIBaseclass:
 
         try:
             self._get_schema.model_validate(self)
+        except ValidationError as e:
+            self.__set_error(f"Validation failed: {e}")
+            return False
+        return True
+
+    def validate_post(self):
+        """Validate API submission before submit
+
+        Returns
+        -------
+        bool
+            Was validation successful?
+        """
+
+        try:
+            self._post_schema.model_validate(self)
         except ValidationError as e:
             self.__set_error(f"Validation failed: {e}")
             return False

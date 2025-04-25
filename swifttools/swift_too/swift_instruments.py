@@ -37,7 +37,7 @@ MODESXRT = {
 }
 
 
-class TOOAPIInstrumentsSchema(BaseModel):
+class TOOAPIInstruments(BaseModel):
     """Pydantic schema for XRT / UVOT / BAT mode display and capture"""
 
     uvot_mode: Optional[Any] = Field(default=None, description="UVOT mode, stored as int or str")
@@ -81,7 +81,7 @@ class TOOAPIInstrumentsSchema(BaseModel):
 
         # Convert input values for each field
         if "uvot_mode" in values:
-            values["uvot"] = uvot_mode_convert(values["uvot"])
+            values["uvot"] = uvot_mode_convert(values["uvot_mode"])
         if "bat_mode" in values:
             values["bat"] = uvot_mode_convert(values["bat"])
         if "uvot_mode_approved" in values:

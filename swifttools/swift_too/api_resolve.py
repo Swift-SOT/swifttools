@@ -111,8 +111,8 @@ class TOOAPIAutoResolve(OptionalCoordinateSchema):
         if name is not None and isinstance(name, str):
             r = SwiftResolve(name=name)
             if len(r.status.warnings) == 0 and len(r.status.errors) == 0:
-                values["ra"] = r.ra
-                values["dec"] = r.dec
+                values["ra"] = float(r.ra)
+                values["dec"] = float(r.dec)
             else:
                 # If resolving fails, set status to rejected
                 status = SwiftTOOStatus(status="Rejected", errors=[f"Unable to resolve {name}"]).model_dump()
