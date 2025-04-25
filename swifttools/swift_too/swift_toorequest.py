@@ -633,14 +633,6 @@ class XRTModeEnum(int, Enum):
     WINDOWED_TIMING = 6
 
 
-class ObsType(str, Enum):
-    SPECTROSCOPY = "Spectroscopy"
-    LIGHT_CURVE = "Light Curve"
-    POSITION = "Position"
-    TIMING = "Timing"
-    BLANK = ""
-
-
 class UrgencyEnum(int, Enum):
     """Enum for the urgency of a TOO request"""
 
@@ -656,38 +648,38 @@ class SwiftTOOUserParamsSchema(BaseSchema):
     source_type: str = Field(description="Source Type")
     # ra: float = Field(description="Right Ascension (degrees)", ge=0, le=360)
     # dec: float = Field(description="Declination (degrees)", ge=-90, le=90)
-    poserr: float | None = Field(None, description="Positional Error")
-    instrument: str | None
+    poserr: Optional[float] = Field(None, description="Positional Error")
+    instrument: Optional[str]
     obs_type: str
     urgency: UrgencyEnum = Field(UrgencyEnum.MEDIUM, description="TOO Urgency")
-    opt_mag: float | str | None = Field(None, description="Optical Magnitude")
-    opt_filt: str | None = Field(None, description="Optical Filter")
-    xrt_countrate: str | None = Field(None, description="XRT Count Rate")
-    bat_countrate: str | None = Field(None, description="BAT Count Rate")
-    other_brightness: str | None = Field(None, description="Other Brightness")
-    grb_detector: str | None = Field(None, description="GRB Detector")
-    grb_triggertime: datetime | None = Field(None, description="GRB Trigger Time")
-    redshift_val: str | None = Field(None, description="Redshift Value")
-    redshift_status: str | None = Field(None, description="Redshift Status")
+    opt_mag: Union[float, str, None] = Field(None, description="Optical Magnitude")
+    opt_filt: Optional[str] = Field(None, description="Optical Filter")
+    xrt_countrate: Optional[str] = Field(None, description="XRT Count Rate")
+    bat_countrate: Optional[str] = Field(None, description="BAT Count Rate")
+    other_brightness: Optional[str] = Field(None, description="Other Brightness")
+    grb_detector: Optional[str] = Field(None, description="GRB Detector")
+    grb_triggertime: Optional[datetime] = Field(None, description="GRB Trigger Time")
+    redshift_val: Optional[str] = Field(None, description="Redshift Value")
+    redshift_status: Optional[str] = Field(None, description="Redshift Status")
     uvot_mode: str = Field("0x9999", description="UVOT Mode")
     science_just: str = Field(description="Science Justification")
     immediate_objective: str = Field(..., description="Immediate Objective")
     exposure: int = Field(description="Exposure Time")
     # GI Proposal
     proposal: bool = Field(False, description="GI Proposal")
-    proposal_id: str | None = Field(None, description="Proposal ID")
-    proposal_trigger_just: str | None = Field(None, description="GI Program Trigger Criteria Justification")
-    proposal_pi: str | None = Field(None, description="GI Proposal PI")
+    proposal_id: Optional[str] = Field(None, description="Proposal ID")
+    proposal_trigger_just: Optional[str] = Field(None, description="GI Program Trigger Criteria Justification")
+    proposal_pi: Optional[str] = Field(None, description="GI Proposal PI")
     uvot_just: str = Field("", description="UVOT Filter Justification")
     xrt_mode: XRTModeEnum = Field(XRTModeEnum.PHOTON_COUNTING, description="XRT Mode")
     tiling: bool = Field(False, description="Tiling")
-    number_of_tiles: Literal["4", "7", "19", "37", "Other"] | None = Field(None, description="Number of Tiles")
-    exposure_time_per_tile: float | None = Field(None, description="Exposure Time per Tile")
-    tiling_justification: str | None = Field(None, description="Tiling Justification")
+    number_of_tiles: Optional[Literal["4", "7", "19", "37", "Other"]] = Field(None, description="Number of Tiles")
+    exposure_time_per_tile: Optional[float] = Field(None, description="Exposure Time per Tile")
+    tiling_justification: Optional[str] = Field(None, description="Tiling Justification")
     exp_time_just: str = Field(..., description="Exposure Time Justification")
-    exp_time_per_visit: float | None = Field(None, description="Exposure Time per Visit")
-    num_of_visits: int | None = Field(None, description="Number of Visits")
-    monitoring_freq: str | None = Field(None, description="Monitoring Frequency")
+    exp_time_per_visit: Optional[float] = Field(None, description="Exposure Time per Visit")
+    num_of_visits: Optional[int] = Field(None, description="Number of Visits")
+    monitoring_freq: Optional[str] = Field(None, description="Monitoring Frequency")
 
 
 class SwiftTOOFormSchema(SwiftTOOUserParamsSchema):
