@@ -208,8 +208,9 @@ class TOOAPIBaseclass:
         pass
 
     def model_post_init(self, context: Any) -> None:
-        if self.validate_get():
-            self.submit()
+        if self.status.status == "Pending":
+            if self.validate_get():
+                self.submit()
 
     def submit(self):
         """Perform an API GET request to the server."""
@@ -221,10 +222,9 @@ class TOOAPIBaseclass:
         # If the request was successful, parse the response
         if response.status_code == 200:
             try:
-                data = self._schema.model_validate(response.json())
-                for key, value in data:
+                data = self.model_validate(response.json())
+                for key, value in data.__dict__.items():
                     setattr(self, key, value)
-
             except Exception as e:
                 self.__set_error(f"Error validating response: {e}")
                 return False

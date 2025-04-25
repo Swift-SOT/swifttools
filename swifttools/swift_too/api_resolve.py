@@ -75,20 +75,25 @@ class SwiftResolve(TOOAPIBaseclass, SwiftResolveSchema):
 class TOOAPIAutoResolve(OptionalCoordinateSchema):
     name: Optional[str] = None
 
-    @model_validator(mode="after")
-    def validate_name(self) -> "TOOAPIAutoResolve":
-        """If you set a name, use `SwiftResolve` to retrieve it's `ra` and
-        `dec`."""
+    @model_validator(mode="before")
+    def validate_name(cls, values):
+        """If you set a name, use `SwiftResolve` to retrieve its `ra` and `dec`."""
 
-        if hasattr(self, "source_name"):
-            self.name = self.source_name
+        name = values.get("name")
+        source_name = values.get("source_name")
+        if source_name is not None:
+            values["name"] = source_name
+            name = source_name
 
-        if self.name is not None and isinstance(self.name, str):
-            r = SwiftResolve(name=self.name)
+        if name is not None and isinstance(name, str):
+            r = SwiftResolve(name=name)
             if r.status.status == "Accepted":
-                self.ra = r.ra
-                self.dec = r.dec
-        return self
+                values["ra"] = r.ra
+                values["dec"] = r.dec
+                print(f"Resolved {name} to RA: {r.ra}, Dec: {r.dec}")
+            else:
+                print(f"ERROR: Could not resolve name {name}.")
+        return values
 
 
 # Shorthand alias for class
