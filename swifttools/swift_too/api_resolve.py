@@ -2,6 +2,8 @@ from typing import Optional
 
 from pydantic import model_validator
 
+from swifttools.swift_too.api_status import SwiftTOOStatus
+
 from .api_common import TOOAPIBaseclass
 from .swift_schemas import BaseSchema, OptionalCoordinateSchema
 
@@ -17,7 +19,7 @@ class SwiftResolveSchema(OptionalCoordinateSchema):
 
 class SwiftResolve(TOOAPIBaseclass, SwiftResolveSchema):
     """
-    SwiftResolve class
+    SwiftResolve class.
 
     Performs name resolution using Simbad, TNS or MARS. Simply give the name of
     the source, and it will return `ra` and `dec` in decimal degrees, or a
@@ -73,6 +75,27 @@ class SwiftResolve(TOOAPIBaseclass, SwiftResolveSchema):
 
 
 class TOOAPIAutoResolve(OptionalCoordinateSchema):
+    """
+    TOOAPIAutoResolve schema for automatic coordinate resolution based on
+    source name. If a `name` (or `source_name`) is provided, attempts to
+    resolve its right ascension (`ra`) and declination (`dec`) using the
+    `SwiftResolve` service. If resolution is successful, the coordinates are
+    set in the schema. If resolution fails, the status is set to "Rejected"
+    with an appropriate error message.
+
+    Attributes
+    ----------
+    name : Optional[str]
+        The name of the astronomical source to resolve. If provided,
+        coordinates will be automatically retrieved.
+
+    Methods
+    -------
+    validate_name(values)
+        Validates and resolves the source name to coordinates. If resolution
+        fails, updates the status accordingly.
+    """
+
     name: Optional[str] = None
 
     @model_validator(mode="before")
@@ -87,12 +110,13 @@ class TOOAPIAutoResolve(OptionalCoordinateSchema):
 
         if name is not None and isinstance(name, str):
             r = SwiftResolve(name=name)
-            if r.status.status == "Accepted":
+            if len(r.status.warnings) == 0 and len(r.status.errors) == 0:
                 values["ra"] = r.ra
                 values["dec"] = r.dec
-                print(f"Resolved {name} to RA: {r.ra}, Dec: {r.dec}")
             else:
-                print(f"ERROR: Could not resolve name {name}.")
+                # If resolving fails, set status to rejected
+                status = SwiftTOOStatus(status="Rejected", errors=[f"Unable to resolve {name}"]).model_dump()
+                values["status"] = status
         return values
 
 
