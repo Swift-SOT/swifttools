@@ -223,7 +223,7 @@ class TOOAPIBaseclass:
         if response.status_code == 200:
             try:
                 data = self.model_validate(response.json())
-                for key, value in data.__dict__.items():
+                for key, value in dict(data).items():
                     setattr(self, key, value)
             except Exception as e:
                 self.__set_error(f"Error validating response: {e}")
