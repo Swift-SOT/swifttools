@@ -9,6 +9,8 @@ from astropy.coordinates import Latitude, Longitude, SkyCoord  # type: ignore[im
 from astropy.time import Time, TimeDelta  # type: ignore[import-untyped]
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from .api_functions import utcnow
+
 
 class ObsType(str, Enum):
     SPECTROSCOPY = "Spectroscopy"
@@ -36,7 +38,7 @@ class BeginEndLengthSchema(BaseSchema):
     Only one of 'end' or 'length' should be provided.
     """
 
-    begin: Optional[datetime] = Field(default=None, description="Start time (UTC)")
+    begin: datetime = utcnow()
     end: Optional[datetime] = Field(default=None, description="End time (UTC)")
     length: Optional[timedelta] = Field(
         default=None,
@@ -50,8 +52,8 @@ class BeginEndLengthSchema(BaseSchema):
         end = self.end
         length = self.length
 
-        if not begin:
-            raise ValueError("Begin time must be provided.")
+        if begin is None:
+            begin = utcnow()
         if end and length:
             if end != begin + length:
                 raise ValueError("Only one of 'end', or 'length' should be provided.")

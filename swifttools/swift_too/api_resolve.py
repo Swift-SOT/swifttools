@@ -2,9 +2,8 @@ from typing import Optional
 
 from pydantic import model_validator
 
-from swifttools.swift_too.api_status import SwiftTOOStatus
-
 from .api_common import TOOAPIBaseclass
+from .api_status import SwiftTOOStatus
 from .swift_schemas import BaseSchema, OptionalCoordinateSchema
 
 
@@ -51,17 +50,15 @@ class SwiftResolve(TOOAPIBaseclass, SwiftResolveSchema):
     _get_schema = SwiftResolveGetSchema
 
     def validate(self):
-        """Validate API submission before submit
+        """
+        Validate API submission before submit
 
         Returns
         -------
         bool
             Was validation successful?
         """
-        if not self._get_schema.model_validate(self):
-            self.status.error("Validation failed.")
-            return False
-        return True
+        return self.validate_get()
 
     @property
     def _table(self):
