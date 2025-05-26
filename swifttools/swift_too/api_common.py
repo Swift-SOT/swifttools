@@ -94,6 +94,16 @@ class TOOAPIBaseclass:
     # Every request gets a status
     status: SwiftTOOStatus = SwiftTOOStatus()
 
+    def __init__(self, *args, **kwargs):
+        # Convert positional arguments to keyword arguments
+        if len(args) > 0:
+            for i, key in enumerate(self._get_schema.model_fields.keys()):
+                if i < len(args):
+                    kwargs[key] = args[i]
+                else:
+                    break
+        super().__init__(**kwargs)
+
     @property
     def shared_secret(self):
         if self._shared_secret is None and self.username != "anonymous":
