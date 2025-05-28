@@ -133,10 +133,6 @@ class TOOAPIAutoResolve(OptionalCoordinateSchema):
             if len(r.status.warnings) == 0 and len(r.status.errors) == 0:
                 values["ra"] = float(r.ra)
                 values["dec"] = float(r.dec)
-            else:
-                # If resolving fails, set status to rejected
-                status = SwiftTOOStatus(status="Rejected", errors=[f"Unable to resolve {name}"]).model_dump()
-                values["status"] = status
         return values
 
 
