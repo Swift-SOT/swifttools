@@ -9,13 +9,13 @@ def utcnow():
     return datetime.utcnow().replace(tzinfo=None)
 
 
-def convert_to_timedelta(value: Union[float, int, u.Quantity]) -> timedelta:
+def convert_from_timedelta(value: Union[float, int, u.Quantity, timedelta]) -> float:
     """Convert a value to a timedelta in days."""
     if isinstance(value, u.Quantity):
-        return timedelta(days=value.to_value(u.day))
+        return value.to(u.day).value
     elif isinstance(value, (int, float)):
-        return timedelta(days=value)
+        return float(value)
     elif isinstance(value, timedelta):
-        return value
+        return value.total_seconds() / 86400.0
     else:
         raise TypeError(f"Unsupported type for timedelta conversion: {type(value)}")

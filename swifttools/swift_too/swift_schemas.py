@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import os
 from datetime import datetime, timedelta, timezone
 from enum import Enum
+from time import tzset
 from typing import Annotated, Any, Optional, Union
 
 import astropy.units as u  # type: ignore[import-untyped]
@@ -9,7 +11,12 @@ from astropy.coordinates import Latitude, Longitude, SkyCoord  # type: ignore[im
 from astropy.time import Time, TimeDelta  # type: ignore[import-untyped]
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, PlainSerializer, TypeAdapter, model_validator
 
-from .api_functions import convert_to_timedelta, utcnow
+from .api_functions import convert_from_timedelta, utcnow
+
+# Make sure we are working in UTC times
+os.environ["TZ"] = "UTC"
+tzset()
+
 
 # Custom Types
 NaiveUTCDatetime = Annotated[
@@ -31,7 +38,7 @@ AstropyAngle = Annotated[
     Union[float, int, "u.Quantity"], PlainSerializer(lambda x: x.to_value(u.deg) if hasattr(x, "unit") else x)
 ]
 
-AstropyDayLength = Annotated[Union[float, int, "u.Quantity"], PlainSerializer(convert_to_timedelta)]
+AstropyDayLength = Annotated[Union[float, int, "u.Quantity", timedelta], PlainSerializer(convert_from_timedelta)]
 
 
 class ObsType(str, Enum):
@@ -76,15 +83,13 @@ class BeginEndLengthSchema(BaseSchema):
 
         if begin is None:
             begin = utcnow()
-        if not end and not length:
-            end = begin + timedelta(days=1)
         if end and length:
-            if end != begin + length:
+            if end != begin + timedelta(days=convert_from_timedelta(length)):
                 raise ValueError("Only one of 'end', or 'length' should be provided.")
         if not (begin or end or length):
             raise ValueError("At least 'begin' and 'end' or 'length' must be provided.")
         if begin and length:
-            end = begin + length
+            end = begin + timedelta(days=convert_from_timedelta(length))
         if end and begin:
             if end < begin:
                 raise ValueError("End time cannot be before begin time.")
@@ -133,7 +138,6 @@ class OptionalBeginEndLengthSchema(BaseSchema):
     length: Optional[AstropyDayLength] = Field(
         default=None,
         description="Length of requested time period (days)",
-        exclude=True,  # We don't want to include length in the output
     )
 
     @model_validator(mode="after")
@@ -146,12 +150,11 @@ class OptionalBeginEndLengthSchema(BaseSchema):
             return self
         if not begin:
             return self
-        if not end and not length:
-            end = begin + timedelta(days=1)
         if end and length:
-            raise ValueError("Only one of 'end', or 'length' should be provided.")
+            if end != begin + timedelta(days=convert_from_timedelta(length)):
+                raise ValueError("Only one of 'end', or 'length' should be provided.")
         if begin and length:
-            end = begin + timedelta(days=length)
+            end = begin + timedelta(days=convert_from_timedelta(length))
         if end and begin:
             if end < begin:
                 raise ValueError("End time cannot be before begin time.")
