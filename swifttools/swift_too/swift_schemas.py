@@ -2,14 +2,20 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Optional, Union
+from typing import Annotated, Any, Optional, Union
 
 import astropy.units as u  # type: ignore[import-untyped]
 from astropy.coordinates import Latitude, Longitude, SkyCoord  # type: ignore[import-untyped]
 from astropy.time import Time, TimeDelta  # type: ignore[import-untyped]
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, PlainSerializer, model_validator
 
 from .api_functions import utcnow
+
+# Custom Type
+
+AstropyAngle = Annotated[
+    Union[float, int, "u.Quantity"], PlainSerializer(lambda x: x.to_value(u.deg) if hasattr(x, "unit") else x)
+]
 
 
 class ObsType(str, Enum):
@@ -167,8 +173,8 @@ class OptionalBeginEndLengthSchema(BaseSchema):
 
 
 class OptionalCoordinateSchema(BaseSchema):
-    ra: Optional[float] = Field(default=None, description="Right Ascension (degrees)", ge=0, lt=360)
-    dec: Optional[float] = Field(default=None, description="Declination (degrees)", ge=-90, le=90)
+    ra: Optional[AstropyAngle] = Field(default=None, description="Right Ascension (degrees)", ge=0, lt=360)
+    dec: Optional[AstropyAngle] = Field(default=None, description="Declination (degrees)", ge=-90, le=90)
     skycoord: Optional[SkyCoord] = Field(default=None, exclude=True)
 
     @model_validator(mode="before")
@@ -225,8 +231,8 @@ class OptionalCoordinateSchema(BaseSchema):
 
 
 class CoordinateSchema(BaseSchema):
-    ra: float = Field(description="Right Ascension (degrees)", ge=0, lt=360)
-    dec: float = Field(description="Declination (degrees)", ge=-90, le=90)
+    ra: AstropyAngle = Field(description="Right Ascension (degrees)", ge=0, lt=360)
+    dec: AstropyAngle = Field(description="Declination (degrees)", ge=-90, le=90)
     skycoord: SkyCoord = Field(..., exclude=True)
 
     @model_validator(mode="before")

@@ -1,8 +1,9 @@
 __docformat__ = "restructedtext en"
 import pandas as pd
-from .dataquery_base import dataQuery
-from ..data import GRB as dGRB
+
 from .. import plotLightCurve as lcPlot
+from ..data import GRB as dGRB
+from .dataquery_base import dataQuery
 
 
 class GRBQuery(dataQuery):

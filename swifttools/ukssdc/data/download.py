@@ -7,17 +7,18 @@ This module provides functions for downloading data or products.
 __docformat__ = "restructedtext en"
 
 
+import fnmatch
+import io
 import os
 import os.path
-import io
-import shutil
-import requests
 import re
-import fnmatch
-import pandas as pd
+import shutil
 import subprocess
-from .. import main as base
 
+import pandas as pd
+import requests
+
+from .. import main as base
 
 _allowedInstruments = ["bat", "xrt", "uvot"]
 _allowedSources = ["uk", "uk_reproc", "us", "italy"]

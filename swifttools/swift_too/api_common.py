@@ -218,9 +218,14 @@ class TOOAPIBaseclass:
         pass
 
     def model_post_init(self, context: Any) -> None:
+        """
+        Post-initialization hook for Pydantic models. The behavior of this
+        is to perform a GET request on instantiation of the class, if the
+        status is "Pending" and the class has a `_get_schema` attribute.
+        """
         if self.status.status == "Pending" and hasattr(self, "_get_schema"):
             if self.validate_get():
-                self.submit()
+                self.submit_get()
 
     def submit(self):
         """
@@ -270,10 +275,8 @@ class TOOAPIBaseclass:
             print("Sad trombone: ", response.status_code)
             #            self.__set_error(f"Error: {response.status_code} - {response.text}")
             return False
-
         # Perform processing of the response
         self._post_process()
-
         return True
 
     def submit_post(self):

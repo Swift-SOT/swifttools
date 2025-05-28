@@ -9,6 +9,7 @@ from .api_common import TOOAPIBaseclass
 from .api_resolve import TOOAPIAutoResolve
 from .swift_data import TOOAPIDownloadData
 from .swift_schemas import (
+    AstropyAngle,
     BaseSchema,
     CoordinateSchema,
     OptionalBeginEndLengthSchema,
@@ -65,7 +66,7 @@ class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect):
     roll: Optional[float] = None
     targetid: Optional[int] = None
     seg: Optional[int] = None
-    obsnum: Optional[int] = None
+    obs_id: Optional[int] = None
     bat: Optional[int] = None
     xrt: Optional[int] = None
     uvot: Optional[int] = None
@@ -97,7 +98,7 @@ class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect):
         "bat": "BAT Mode",
         "fom": "Figure of Merit",
         "obstype": "Observation Type",
-        "obsnum": "Observation Number",
+        "obs_id": "Observation Number",
         "exposure": "Exposure (s)",
         "slewtime": "Slewtime (s)",
     }
@@ -112,14 +113,14 @@ class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect):
 
     @property
     def _table(self):
-        parameters = ["begin", "end", "targname", "obsnum", "exposure", "slewtime"]
+        parameters = ["begin", "end", "targname", "obs_id", "exposure", "slewtime"]
         header = [self._header_title(row) for row in parameters]
         return header, [
             [
                 self.begin,
                 self.end,
                 self.targname,
-                self.obsnum,
+                self.obs_id,
                 self.exposure.seconds,
                 self.slewtime.seconds,
             ]
@@ -127,21 +128,21 @@ class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect):
 
 
 class SwiftAFSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
-    radius: float = 0.19666666666666668
+    radius: AstropyAngle = 0.19666666666666668
     targetid: Union[int, list[int], None] = None
-    obsnum: Optional[int] = None
+    obs_id: Optional[int] = None
 
 
 class SwiftAFSTSchema(OptionalCoordinateSchema, OptionalBeginEndLengthSchema):
-    radius: float = 0.19666666666666668
+    radius: AstropyAngle = 0.19666666666666668
     targetid: Union[int, list[int], None] = None
-    obsnum: Optional[int] = None
+    obs_id: Optional[int] = None
     afstmax: Optional[datetime] = None
     entries: list[SwiftAFSTEntry] = []
 
 
 class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, BaseSchema):
-    """Class to summarize observations taken for given observation ID (obsnum).
+    """Class to summarize observations taken for given observation ID (obs_id).
     Whereas observations are typically one or more individual snapshot, in TOO
     API speak a `SwiftAFSTEntry`, this class summarizes all snapshots into a
     single begin time, end time. Note that as ra/dec varies between each
@@ -209,10 +210,10 @@ class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, BaseSchema):
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def obsnum(self) -> Optional[int]:
+    def obs_id(self) -> Optional[int]:
         if len(self.entries) == 0:
             return None
-        return self.entries[0].obsnum
+        return self.entries[0].obs_id
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -326,14 +327,14 @@ class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, BaseSchema):
                 self.begin,
                 self.end,
                 self.targname,
-                self.obsnum,
+                self.obs_id,
                 self.exposure.seconds,
                 self.slewtime.seconds,
             ]
         ]
 
     # Aliases
-    obsid = obsnum
+    obsid = obs_id
     target_id = targetid
     segment = seg
 
@@ -362,7 +363,7 @@ class SwiftAFST(
     constraints. Essentially this will return what Swift observed and when, for
     given constraints. Constraints can be for give coordinate (SkyCoord or J2000
     RA/Dec) and radius (in degrees), a given date range, or a given target ID
-    (targetid) or Observation ID (obsnum).
+    (targetid) or Observation ID (obs_id).
 
     Attributes
     ----------
@@ -420,8 +421,8 @@ class SwiftAFST(
     def observations(self):
         if len(self.entries) > 0 and len(self._observations.keys()) == 0:
             for q in self.entries:
-                self._observations[q.obsnum] = SwiftObservation()
-            _ = [self._observations[q.obsnum].append(q) for q in self.entries]
+                self._observations[q.obs_id] = SwiftObservation()
+            _ = [self._observations[q.obs_id].append(q) for q in self.entries]
         return self._observations
 
     def __getitem__(self, index):

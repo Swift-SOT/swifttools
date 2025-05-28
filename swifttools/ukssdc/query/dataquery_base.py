@@ -1,8 +1,9 @@
 __docformat__ = "restructedtext en"
 
+import pandas as pd
+
 from .. import main as base
 from ..data import download as dl
-import pandas as pd
 from .DBFilter import filter
 
 if base.HAS_ASTROPY:

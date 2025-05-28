@@ -3,9 +3,10 @@
 __docformat__ = "restructedtext en"
 
 import pandas as pd
-from .dataquery_base import dataQuery
-from ..data import SXPS as dcat
+
 from .. import plotLightCurve as lcPlot
+from ..data import SXPS as dcat
+from .dataquery_base import dataQuery
 
 
 class SXPSQuery(dataQuery):

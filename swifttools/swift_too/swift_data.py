@@ -17,7 +17,7 @@ from .swift_schemas import BaseSchema
 
 class SwiftDataGetSchema(BaseSchema):
     # username: str = "anonymous"
-    obsid: str
+    obs_id: str
     auxil: bool = True
     bat: bool = False
     xrt: bool = False
@@ -79,7 +79,7 @@ class SwiftDataFile(BaseSchema):
 
 
 class SwiftDataSchema(BaseSchema):
-    obsid: Optional[str] = None
+    obs_id: Optional[str] = None
     auxil: bool = True
     bat: bool = False
     xrt: bool = False
@@ -100,7 +100,7 @@ class SwiftData(TOOAPIBaseclass, SwiftDataSchema):
 
     Attributes
     ----------
-    obsid : str / int
+    obs_id : str / int
         the observation ID of the data to download. Can be in SDC or spacecraft
         format. Note: can also use target_id and segment, but must supply both.
     auxil : boolean
@@ -214,7 +214,7 @@ class SwiftData(TOOAPIBaseclass, SwiftDataSchema):
 
         # If no files, return error
         if len(self.entries) == 0:
-            self.status.error(f"No data found for {self.obsid}.")
+            self.status.error(f"No data found for {self.obs_id}.")
             self.status.status = "Rejected"
             return False
 
@@ -250,7 +250,7 @@ class SwiftData(TOOAPIBaseclass, SwiftDataSchema):
 
 
 class TOOAPIDownloadData:
-    """Mixin to add add download method to any class that has an associated obsid."""
+    """Mixin to add add download method to any class that has an associated obs_id."""
 
     def download(self, *args, **kwargs):
         """Download data from SDC"""
@@ -267,7 +267,7 @@ class TOOAPIDownloadData:
             else:
                 raise TypeError(f"{self.api_name} got an unexpected keyword argument '{key}'")
         # Set up and download data
-        data.obsid = self.obsid
+        data.obs_id = self.obs_id
         data.username = self.username
         data.shared_secret = self.shared_secret
         data.submit()

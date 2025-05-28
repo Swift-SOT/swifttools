@@ -23,12 +23,13 @@ __docformat__ = "restructedtext en"
 
 
 import os
-import pandas as pd
-import tempfile
 import subprocess
+import tempfile
+
+import pandas as pd
+
 from .. import main as base
 from . import download as dl
-
 
 if base.HAS_ASTROPY:
     import astropy.coordinates  # noqa

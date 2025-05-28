@@ -11,7 +11,7 @@ from .swift_schemas import (
 )
 
 
-class SwiftGUANOGTI(BaseSchema, TOOAPIClockCorrect):
+class SwiftGUANOGTI(BaseSchema, TOOAPIBaseclass, TOOAPIClockCorrect):
     """
     Define GUANO event data Good Time Intervals (GTI)
 
@@ -44,7 +44,7 @@ class SwiftGUANOGTI(BaseSchema, TOOAPIClockCorrect):
         return f"{self.begin} - {self.end} ({self.exposure})"
 
 
-class SwiftGUANOData(BaseSchema, TOOAPIClockCorrect):
+class SwiftGUANOData(BaseSchema, TOOAPIBaseclass, TOOAPIClockCorrect):
     """Class to hold information about GUANO data based on analysis of the BAT
     event files that are downlinked.
 
@@ -66,7 +66,7 @@ class SwiftGUANOData(BaseSchema, TOOAPIClockCorrect):
     all_gtis : list
         list of individual GTIs. More than one GTI can exist if data is split
         between multiple files, or if significant gaps appear in the event data
-    obsid : str
+    obs_id : str
         Observation ID associated with the GUANO data
     completed : datetime
         time request finished processing
@@ -83,7 +83,7 @@ class SwiftGUANOData(BaseSchema, TOOAPIClockCorrect):
         option of Swift_Data (AKA Data)
     """
 
-    obsid: Optional[str] = None
+    obs_id: Optional[str] = None
     triggertime: Optional[datetime] = None
     all_gtis: list[SwiftGUANOGTI]
     filenames: Union[list[str], None] = None
@@ -111,7 +111,7 @@ class SwiftGUANOData(BaseSchema, TOOAPIClockCorrect):
             return False
 
 
-class SwiftGUANOEntry(BaseSchema, TOOAPIClockCorrect, TOOAPIDownloadData):
+class SwiftGUANOEntry(BaseSchema, TOOAPIBaseclass, TOOAPIClockCorrect, TOOAPIDownloadData):
     """
     Entry for an individual BAT ring buffer dump (AKA GUANO) event.
 
@@ -137,12 +137,14 @@ class SwiftGUANOEntry(BaseSchema, TOOAPIClockCorrect, TOOAPIDownloadData):
     triggertime: Optional[datetime] = None
     offset: Optional[float] = None
     duration: Optional[float] = None
-    obsnum: Optional[str] = None
+    obs_id: Optional[str] = None
     exectime: Optional[datetime] = None
     ra: Optional[float] = None
     dec: Optional[float] = None
     data: Optional[SwiftGUANOData] = None
     quadsaway: Optional[int] = None
+    begin: Optional[datetime] = None
+    end: Optional[datetime] = None
 
     @property
     def executed(self):
@@ -302,14 +304,14 @@ class SwiftGUANO(
                     exposure += "*"
             else:
                 exposure = ent.duration
-            if ent.obsnum is not None:
-                obsnum = ent.obsnum
+            if ent.obs_id is not None:
+                obs_id = ent.obs_id
             else:
                 if ent.executed:
-                    obsnum = "Pending Data"
+                    obs_id = "Pending Data"
                 elif ent.uplinked:
-                    obsnum = "Pending Execution"
-            table.append([ent.triggertype, ent.triggertime, ent.offset, exposure, obsnum])
+                    obs_id = "Pending Execution"
+            table.append([ent.triggertype, ent.triggertime, ent.offset, exposure, obs_id])
 
         return header, table
 

@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import model_validator
+from pydantic import computed_field, model_validator
 
 from .api_common import TOOAPIBaseclass
 from .api_status import SwiftTOOStatus
@@ -93,7 +93,30 @@ class TOOAPIAutoResolve(OptionalCoordinateSchema):
         fails, updates the status accordingly.
     """
 
-    name: Optional[str] = None
+    _name: Optional[str] = None
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def name(self) -> Optional[str]:
+        """Name of the astronomical source to resolve."""
+        return self._name
+
+    @name.setter
+    def name(self, value: Optional[str]):
+        """Set the name of the astronomical source."""
+        self._name = value
+        resolve = SwiftResolve(name=value)
+        if resolve.status.status == "Accepted":
+            self.ra = resolve.ra
+            self.dec = resolve.dec
+            self.skycoord = resolve.skycoord
+            # self.resolver = resolve.resolver
+        else:
+            # If resolving fails, set status to rejected
+            status = SwiftTOOStatus(status="Rejected", errors=[f"Unable to resolve {value}"]).model_dump()
+            self.status = status
+
+    # name: Optional[str] = None
 
     @model_validator(mode="before")
     def validate_name(cls, values):
