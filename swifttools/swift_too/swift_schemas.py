@@ -18,6 +18,21 @@ AstropyAngle = Annotated[
 ]
 
 
+def convert_to_timedelta(value: Union[float, int, u.Quantity]) -> timedelta:
+    """Convert a value to a timedelta in days."""
+    if isinstance(value, u.Quantity):
+        return timedelta(days=value.to_value(u.day))
+    elif isinstance(value, (int, float)):
+        return timedelta(days=value)
+    elif isinstance(value, timedelta):
+        return value
+    else:
+        raise TypeError(f"Unsupported type for timedelta conversion: {type(value)}")
+
+
+AstropyDayLength = Annotated[Union[float, int, "u.Quantity"], PlainSerializer(convert_to_timedelta)]
+
+
 class ObsType(str, Enum):
     SPECTROSCOPY = "Spectroscopy"
     LIGHT_CURVE = "Light Curve"
@@ -46,8 +61,8 @@ class BeginEndLengthSchema(BaseSchema):
 
     begin: datetime = utcnow()
     end: Optional[datetime] = Field(default=None, description="End time (UTC)")
-    length: Optional[timedelta] = Field(
-        default=None,
+    length: Optional[AstropyDayLength] = Field(
+        default=timedelta(days=1),
         description="Length of requested time period (days)",
         exclude=True,  # We don't want to include length in the output
     )
@@ -60,6 +75,8 @@ class BeginEndLengthSchema(BaseSchema):
 
         if begin is None:
             begin = utcnow()
+        if not end and not length:
+            end = begin + timedelta(days=1)
         if end and length:
             if end != begin + length:
                 raise ValueError("Only one of 'end', or 'length' should be provided.")
@@ -112,7 +129,7 @@ class OptionalBeginEndLengthSchema(BaseSchema):
 
     begin: Optional[datetime] = Field(default=None, description="Start time (UTC)")
     end: Optional[datetime] = Field(default=None, description="End time (UTC)")
-    length: Optional[float] = Field(
+    length: Optional[AstropyDayLength] = Field(
         default=None,
         description="Length of requested time period (days)",
         exclude=True,  # We don't want to include length in the output
@@ -124,13 +141,14 @@ class OptionalBeginEndLengthSchema(BaseSchema):
         end = self.end
         length = self.length
 
+        if not (begin or end or length):
+            return self
         if not begin:
             return self
+        if not end and not length:
+            end = begin + timedelta(days=1)
         if end and length:
-            if end != begin + timedelta(days=length):
-                raise ValueError("Only one of 'end', or 'length' should be provided.")
-        if not (begin or end or length):
-            raise ValueError("At least 'begin' and 'end' or 'length' must be provided.")
+            raise ValueError("Only one of 'end', or 'length' should be provided.")
         if begin and length:
             end = begin + timedelta(days=length)
         if end and begin:
