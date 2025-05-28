@@ -151,11 +151,7 @@ class TOOAPIBaseclass:
         return header, table
 
     def _repr_html_(self):
-        if (
-            hasattr(self, "status")
-            and self.status == "Rejected"
-            and self.status.__class__.__name__ == "Swift_TOO_Status"
-        ):
+        if hasattr(self, "status") and self.status.status == "Rejected" and self.status.api_name == "Swift_TOO_Status":
             return "<b>Rejected with the following error(s): </b>" + " ".join(self.status.errors)
         else:
             header, table = self._table
@@ -165,11 +161,7 @@ class TOOAPIBaseclass:
                 return "No data"
 
     def __str__(self):
-        if (
-            hasattr(self, "status")
-            and self.status == "Rejected"
-            and self.status.__class__.__name__ == "Swift_TOO_Status"
-        ):
+        if hasattr(self, "status") and self.status == "Rejected" and self.status.api_name == "Swift_TOO_Status":
             return "Rejected with the following error(s): " + " ".join(self.status.errors)
         else:
             header, table = self._table
@@ -179,7 +171,6 @@ class TOOAPIBaseclass:
                 return "No data"
 
     def __repr__(self):
-        name = self.__class__.__name__
         args = ",".join(
             [
                 f"{row}='{getattr(self, row)}'"
@@ -187,7 +178,7 @@ class TOOAPIBaseclass:
                 if getattr(self, row) is not None and getattr(self, row) != []
             ]
         )
-        return f"{name}({args})"
+        return f"{self.api_name}({args})"
 
     def __set_status(self, newstatus):
         if hasattr(self, "status"):
@@ -264,16 +255,25 @@ class TOOAPIBaseclass:
         print(response.url)
         # If the request was successful, parse the response
         if response.status_code == 200:
-            try:
-                data = self.model_validate(response.json())
-                for key, value in dict(data).items():
-                    setattr(self, key, value)
-            except Exception as e:
-                self.__set_error(f"Error validating response: {e}")
-                return False
-        else:
+            pass
+        elif response.status_code >= 400 and response.status_code < 500:
+            # Assume that errors codes in the 400s will return status
             print("Sad trombone: ", response.status_code)
-            #            self.__set_error(f"Error: {response.status_code} - {response.text}")
+        else:
+            # Catch all other errors
+            print("Sad trombone: ", response.status_code)
+            self.__set_error(f"Error: {response.status_code} - {response.text}")
+            return False
+
+        # Parse the response and update the class attributes
+        try:
+            data = self.model_validate(response.json())
+            for key, value in data:
+                setattr(self, key, value)
+        except Exception as e:
+            self.__set_error(f"Error validating response: {e}")
+            return False
+
             return False
         # Perform processing of the response
         self._post_process()
