@@ -3,10 +3,9 @@ from typing import Optional, Union
 
 from pydantic import computed_field
 
-from swifttools.swift_too.swift_clock import TOOAPIClockCorrect
-
 from .api_common import TOOAPIBaseclass
 from .api_resolve import TOOAPIAutoResolve
+from .swift_clock import TOOAPIClockCorrect
 from .swift_data import TOOAPIDownloadData
 from .swift_schemas import (
     AstropyAngle,

@@ -3,7 +3,7 @@ from typing import Optional
 
 from .api_common import TOOAPIBaseclass
 from .api_resolve import TOOAPIAutoResolve
-from .swift_schemas import BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
+from .swift_schemas import AstropyAngle, BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
 from .swift_toorequest import SwiftTOORequestSchema
 
 
@@ -24,9 +24,9 @@ class SwiftTOORequestsSchema(BaseSchema):
     year: Optional[int] = None
     detail: bool = False
     too_id: Optional[int] = None
-    ra: Optional[float] = None
-    dec: Optional[float] = None
-    radius: Optional[float] = None
+    ra: Optional[AstropyAngle] = None
+    dec: Optional[AstropyAngle] = None
+    radius: Optional[AstropyAngle] = None
     debug: bool = False
     entries: list[SwiftTOORequestSchema] = []
 

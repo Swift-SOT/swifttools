@@ -4,7 +4,7 @@ from typing import Optional
 from .api_common import TOOAPIBaseclass
 from .api_resolve import TOOAPIAutoResolve
 from .swift_clock import TOOAPIClockCorrect
-from .swift_schemas import BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
+from .swift_schemas import AstropyAngle, BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
 
 
 class SwiftCalendarGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
@@ -66,8 +66,8 @@ class SwiftCalendarEntry(BaseSchema, TOOAPIClockCorrect):
     roll: Optional[float]
     target_ID: Optional[int]
     target_name: Optional[str]
-    ra: Optional[float]
-    dec: Optional[float]
+    ra: Optional[AstropyAngle]
+    dec: Optional[AstropyAngle]
     sip: Optional[int]
     sip_uvot_mode: int = 39321
     sip_SSmin: int = 300
@@ -105,9 +105,9 @@ class SwiftCalendarSchema(BaseSchema):
     begin: Optional[datetime] = None
     end: Optional[datetime] = None
     too_id: Optional[int] = None
-    ra: Optional[float] = None
-    dec: Optional[float] = None
-    radius: Optional[float] = None
+    ra: Optional[AstropyAngle] = None
+    dec: Optional[AstropyAngle] = None
+    radius: Optional[AstropyAngle] = None
     targetid: Optional[int] = None
     entries: list[SwiftCalendarEntry] = []
 

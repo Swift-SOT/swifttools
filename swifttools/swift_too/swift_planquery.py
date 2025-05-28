@@ -6,13 +6,13 @@ from .api_resolve import TOOAPIAutoResolve
 from .swift_clock import TOOAPIClockCorrect
 from .swift_data import TOOAPIDownloadData
 from .swift_obsquery import SwiftObservation
-from .swift_schemas import BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
+from .swift_schemas import AstropyAngle, BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
 
 
 class SwiftPPSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
-    radius: Optional[float] = None
+    radius: Optional[AstropyAngle] = None
     targetid: Union[int, list[int], None] = None
-    obsnum: Optional[int] = None
+    obs_id: Optional[int] = None
 
 
 class SwiftPPSTEntry(BaseSchema, TOOAPIClockCorrect):
@@ -58,7 +58,7 @@ class SwiftPPSTEntry(BaseSchema, TOOAPIClockCorrect):
     end: Optional[datetime] = None
     targetid: Optional[int] = None
     seg: Optional[int] = None
-    obsnum: Optional[int] = None
+    obs_id: Optional[int] = None
     bat: Optional[int] = None
     xrt: Optional[int] = None
     uvot: Optional[int] = None
@@ -80,7 +80,7 @@ class SwiftPPSTEntry(BaseSchema, TOOAPIClockCorrect):
         "uvot": "UVOT Mode",
         "bat": "BAT Mode",
         "fom": "Figure of Merit",
-        "obsnum": "Observation Number",
+        "obs_id": "Observation Number",
         "exposure": "Exposure (s)",
         "slewtime": "Slewtime (s)",
     }
@@ -91,17 +91,17 @@ class SwiftPPSTEntry(BaseSchema, TOOAPIClockCorrect):
 
     @property
     def _table(self):
-        _parameters = ["begin", "end", "targname", "obsnum", "exposure"]
+        _parameters = ["begin", "end", "targname", "obs_id", "exposure"]
         header = [self._header_title(row) for row in _parameters]
-        return header, [[self.begin, self.end, self.targname, self.obsnum, self.exposure.seconds]]
+        return header, [[self.begin, self.end, self.targname, self.obs_id, self.exposure.seconds]]
 
 
 class SwiftPPSTSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
     """Schema for Swift Pre-Planned Science Timeline (PPST) API."""
 
-    radius: Optional[float] = None
+    radius: Optional[AstropyAngle] = None
     targetid: Union[int, list[int], None] = None
-    obsnum: Optional[int] = None
+    obs_id: Optional[int] = None
     ppstmax: Optional[datetime] = None
     entries: list[SwiftPPSTEntry] = []
 
@@ -111,7 +111,7 @@ class SwiftPPST(TOOAPIBaseclass, TOOAPIDownloadData, TOOAPIAutoResolve, TOOAPICl
     constraints. Essentially this will return what Swift was planned to observe
     and when, for given constraints. Constraints can be for give coordinate
     (SkyCoord or J2000 RA/Dec) and radius (in degrees), a given date range, or a
-    given target ID (targetid) or Observation ID (obsnum).
+    given target ID (targetid) or Observation ID (obs_id).
 
     Attributes
     ----------
@@ -159,8 +159,8 @@ class SwiftPPST(TOOAPIBaseclass, TOOAPIDownloadData, TOOAPIAutoResolve, TOOAPICl
     def observations(self):
         if len(self.entries) > 0 and len(self._observations.keys()) == 0:
             for q in self.entries:
-                self._observations[q.obsnum] = SwiftObservation()
-            _ = [self._observations[q.obsnum].append(q) for q in self.entries]
+                self._observations[q.obs_id] = SwiftObservation()
+            _ = [self._observations[q.obs_id].append(q) for q in self.entries]
         return self._observations
 
     def __getitem__(self, index):

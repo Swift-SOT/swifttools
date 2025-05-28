@@ -14,6 +14,7 @@ from swifttools.swift_too.swift_instruments import TOOAPIInstruments
 from .api_common import TOOAPIBaseclass
 from .api_resolve import TOOAPIAutoResolve
 from .swift_schemas import (
+    AstropyAngle,
     BaseSchema,
     ObsType,
 )
@@ -24,8 +25,8 @@ class SwiftTOORequestSchema(BaseSchema):
     timestamp: Optional[datetime] = None
     source_name: Optional[str] = None
     source_type: Optional[str] = None
-    ra: Optional[float] = None
-    dec: Optional[float] = None
+    ra: Optional[AstropyAngle] = None
+    dec: Optional[AstropyAngle] = None
     poserr: Union[float, str, None] = None
     instrument: Optional[str] = None
     urgency: Optional[int] = None
