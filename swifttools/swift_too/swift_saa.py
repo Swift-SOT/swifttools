@@ -9,9 +9,12 @@ class SwiftSAAGetSchema(BeginEndLengthSchema):
     bat: bool = False
 
 
-class SwiftSAAEntry(BaseSchema, TOOAPIClockCorrect):
+class SwiftSAAEntry(BaseSchema, TOOAPIClockCorrect, TOOAPIBaseclass):
     begin: datetime
     end: datetime
+    _varnames = {"begin": "Begin Time", "end": "End Time"}
+    _isutc = True
+    # FIXME: Clock correcting assumes begin/end are SwiftTime, they're UTC.
 
     @property
     def _table(self):
