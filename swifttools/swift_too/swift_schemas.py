@@ -35,7 +35,7 @@ AstropyDateTime = Annotated[
 ]
 
 AstropyAngle = Annotated[
-    Union[float, int, "u.Quantity"], PlainSerializer(lambda x: x.to_value(u.deg) if hasattr(x, "unit") else x)
+    Union[float, int, u.Quantity], PlainSerializer(lambda x: x.to_value(u.deg) if hasattr(x, "unit") else x)
 ]
 
 AstropyDayLength = Annotated[Union[float, int, "u.Quantity", timedelta], PlainSerializer(convert_from_timedelta)]
