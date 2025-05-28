@@ -1,12 +1,14 @@
 from datetime import datetime
 from typing import Optional, Union
 
+from pydantic import Field
+
 from .api_common import TOOAPIBaseclass
 from .api_resolve import TOOAPIAutoResolve
 from .swift_clock import TOOAPIClockCorrect
 from .swift_data import TOOAPIDownloadData
 from .swift_obsquery import SwiftObservation
-from .swift_schemas import AstropyAngle, BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
+from .swift_schemas import AstropyAngle, BaseSchema, ObsIDSDC, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
 
 
 class SwiftPPSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
@@ -50,7 +52,7 @@ class SwiftPPSTEntry(BaseSchema, TOOAPIClockCorrect):
         Target name of the primary target of the observation
     """
 
-    targname: Optional[str] = None
+    targname: Optional[str] = Field(default=None, alias="target_name")
     ra: Optional[float] = None
     dec: Optional[float] = None
     roll: Optional[float] = None
@@ -58,7 +60,7 @@ class SwiftPPSTEntry(BaseSchema, TOOAPIClockCorrect):
     end: Optional[datetime] = None
     targetid: Optional[int] = None
     seg: Optional[int] = None
-    obs_id: Optional[int] = None
+    obs_id: Optional[ObsIDSDC] = None
     bat: Optional[int] = None
     xrt: Optional[int] = None
     uvot: Optional[int] = None
