@@ -210,7 +210,7 @@ class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, BaseSchema):
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def obs_id(self) -> Optional[int]:
+    def obs_id(self) -> Optional[ObsIDSDC]:
         if len(self.entries) == 0:
             return None
         return self.entries[0].obs_id

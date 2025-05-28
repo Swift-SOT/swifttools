@@ -3,7 +3,6 @@ from typing import Optional
 from pydantic import computed_field, model_validator
 
 from .api_common import TOOAPIBaseclass
-from .api_status import SwiftTOOStatus
 from .swift_schemas import BaseSchema, OptionalCoordinateSchema
 
 
@@ -111,10 +110,10 @@ class TOOAPIAutoResolve(OptionalCoordinateSchema):
             self.dec = resolve.dec
             self.skycoord = resolve.skycoord
             # self.resolver = resolve.resolver
-        else:
-            # If resolving fails, set status to rejected
-            status = SwiftTOOStatus(status="Rejected", errors=[f"Unable to resolve {value}"]).model_dump()
-            self.status = status
+        # else:
+        #     # If resolving fails, set status to rejected
+        #     status = SwiftTOOStatus(status="Rejected", errors=[f"Unable to resolve {value}"]).model_dump()
+        #     self.status = status
 
     # name: Optional[str] = None
 
