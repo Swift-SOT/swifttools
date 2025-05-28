@@ -1,34 +1,35 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Annotated, Any, Optional, Union
 
 import astropy.units as u  # type: ignore[import-untyped]
 from astropy.coordinates import Latitude, Longitude, SkyCoord  # type: ignore[import-untyped]
 from astropy.time import Time, TimeDelta  # type: ignore[import-untyped]
-from pydantic import BaseModel, ConfigDict, Field, PlainSerializer, model_validator
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, PlainSerializer, TypeAdapter, model_validator
 
-from .api_functions import utcnow
+from .api_functions import convert_to_timedelta, utcnow
 
-# Custom Type
+# Custom Types
+NaiveUTCDatetime = Annotated[
+    datetime,
+    AfterValidator(lambda x: x.astimezone(timezone.utc).replace(tzinfo=None)),
+]
+
+to_datetime = TypeAdapter(NaiveUTCDatetime)
+
+AstropyDateTime = Annotated[
+    Union[datetime, Time],
+    PlainSerializer(
+        lambda x: x.utc.datetime if isinstance(x, Time) else to_datetime.validate_python(x)  # type: ignore[call-arg]
+    ),
+    Field(description="Datetime in UTC, either as a datetime object or an astropy Time object"),
+]
 
 AstropyAngle = Annotated[
     Union[float, int, "u.Quantity"], PlainSerializer(lambda x: x.to_value(u.deg) if hasattr(x, "unit") else x)
 ]
-
-
-def convert_to_timedelta(value: Union[float, int, u.Quantity]) -> timedelta:
-    """Convert a value to a timedelta in days."""
-    if isinstance(value, u.Quantity):
-        return timedelta(days=value.to_value(u.day))
-    elif isinstance(value, (int, float)):
-        return timedelta(days=value)
-    elif isinstance(value, timedelta):
-        return value
-    else:
-        raise TypeError(f"Unsupported type for timedelta conversion: {type(value)}")
-
 
 AstropyDayLength = Annotated[Union[float, int, "u.Quantity"], PlainSerializer(convert_to_timedelta)]
 
@@ -59,8 +60,8 @@ class BeginEndLengthSchema(BaseSchema):
     Only one of 'end' or 'length' should be provided.
     """
 
-    begin: datetime = utcnow()
-    end: Optional[datetime] = Field(default=None, description="End time (UTC)")
+    begin: AstropyDateTime = utcnow()
+    end: Optional[AstropyDateTime] = Field(default=None, description="End time (UTC)")
     length: Optional[AstropyDayLength] = Field(
         default=timedelta(days=1),
         description="Length of requested time period (days)",
@@ -127,8 +128,8 @@ class OptionalBeginEndLengthSchema(BaseSchema):
     Only one of 'end' or 'length' should be provided.
     """
 
-    begin: Optional[datetime] = Field(default=None, description="Start time (UTC)")
-    end: Optional[datetime] = Field(default=None, description="End time (UTC)")
+    begin: Optional[AstropyDateTime] = Field(default=None, description="Start time (UTC)")
+    end: Optional[AstropyDateTime] = Field(default=None, description="End time (UTC)")
     length: Optional[AstropyDayLength] = Field(
         default=None,
         description="Length of requested time period (days)",
@@ -299,8 +300,8 @@ class SwiftTOOStatusGetSchema(BaseSchema):
 
 
 class SwiftObservationSchema(BaseSchema):
-    begin: Optional[datetime] = None
-    end: Optional[datetime] = None
+    begin: Optional[AstropyDateTime] = None
+    end: Optional[AstropyDateTime] = None
     obstype: Optional[str] = None
     targname: Optional[str] = None
     roll: Optional[float] = None
