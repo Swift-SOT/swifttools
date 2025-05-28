@@ -11,6 +11,7 @@ from .swift_schemas import (
     AstropyAngle,
     BaseSchema,
     CoordinateSchema,
+    ObsIDSDC,
     OptionalBeginEndLengthSchema,
     OptionalCoordinateSchema,
 )
@@ -65,7 +66,7 @@ class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect):
     roll: Optional[float] = None
     targetid: Optional[int] = None
     seg: Optional[int] = None
-    obs_id: Optional[int] = None
+    obs_id: Optional[ObsIDSDC] = None
     bat: Optional[int] = None
     xrt: Optional[int] = None
     uvot: Optional[int] = None
