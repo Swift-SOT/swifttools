@@ -20,6 +20,7 @@ class SwiftTOOStatus(BaseSchema):
         For a TOO request, the TOO ID assigned to a new request
     """
 
+    api_name: str = "Swift_TOO_Status"
     status: str = "Pending"
     too_id: Optional[int] = None
     jobnumber: Optional[int] = None
