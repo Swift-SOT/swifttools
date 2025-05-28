@@ -9,14 +9,30 @@ from typing import Annotated, Any, Optional, Union
 import astropy.units as u  # type: ignore[import-untyped]
 from astropy.coordinates import Latitude, Longitude, SkyCoord  # type: ignore[import-untyped]
 from astropy.time import Time, TimeDelta  # type: ignore[import-untyped]
-from pydantic import AfterValidator, BaseModel, ConfigDict, Field, PlainSerializer, TypeAdapter, model_validator
+from pydantic import (
+    AfterValidator,
+    BaseModel,
+    BeforeValidator,
+    ConfigDict,
+    Field,
+    PlainSerializer,
+    TypeAdapter,
+    WithJsonSchema,
+    model_validator,
+)
 
-from .api_functions import convert_from_timedelta, utcnow
+from .api_functions import convert_from_timedelta, convert_obsnum_sdc, utcnow
 
 # Make sure we are working in UTC times
 os.environ["TZ"] = "UTC"
 tzset()
 
+ObsIDSDC = Annotated[
+    str,
+    BeforeValidator(lambda x: convert_obsnum_sdc(x)),
+    PlainSerializer(lambda x: x, return_type=str),
+    WithJsonSchema({"type": "string"}, mode="serialization"),
+]
 
 # Custom Types
 NaiveUTCDatetime = Annotated[
@@ -138,6 +154,7 @@ class OptionalBeginEndLengthSchema(BaseSchema):
     length: Optional[AstropyDayLength] = Field(
         default=None,
         description="Length of requested time period (days)",
+        exclude=True,  # We don't want to include length in the output
     )
 
     @model_validator(mode="after")
@@ -306,7 +323,7 @@ class SwiftObservationSchema(BaseSchema):
     begin: Optional[AstropyDateTime] = None
     end: Optional[AstropyDateTime] = None
     obstype: Optional[str] = None
-    targname: Optional[str] = None
+    targname: Optional[str] = Field(default=None, alias="target_name")
     roll: Optional[float] = None
     targetid: Optional[int] = None
     seg: Optional[int] = None
