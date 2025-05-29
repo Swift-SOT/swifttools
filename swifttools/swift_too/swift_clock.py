@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Union
+from typing import Optional, Union
 
 from pydantic import computed_field
 
@@ -152,10 +152,12 @@ class TOOAPIClockCorrect:
     spiders through a class looking for datetimes, submits them to SwiftClock,
     and then replaces them all with the results of SwiftClock."""
 
+    _clock: Optional[SwiftClock] = None
+
     def clock_correct(self):
         """Spider through the class dictionary recording datetimes, and then
         updating them using SwiftClock"""
-        if not hasattr(self, "_clock"):
+        if self._clock is None:
             # Get the index of the first datetime value
             _, datevalues = index_datetimes(self.__dict__, 0, [])
             # What is the base time format for this class? Send that to Clock for
@@ -175,11 +177,15 @@ class TOOAPIClockCorrect:
 
     def to_utctime(self):
         """Convert times to a UTC base"""
+        if self._clock is None:
+            self.clock_correct()
         self._clock.to_utctime()
         _, _ = index_datetimes(self.__dict__, 0, [], setvals=self._clock)
 
     def to_swifttime(self):
         """Convert times to a Swift time base"""
+        if self._clock is None:
+            self.clock_correct()
         self._clock.to_swifttime()
         _, _ = index_datetimes(self.__dict__, 0, [], setvals=self._clock)
 

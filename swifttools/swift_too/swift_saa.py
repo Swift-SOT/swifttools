@@ -13,7 +13,7 @@ class SwiftSAAEntry(BaseSchema, TOOAPIClockCorrect, TOOAPIBaseclass):
     begin: datetime
     end: datetime
     _varnames = {"begin": "Begin Time", "end": "End Time"}
-    _isutc = True
+
     # FIXME: Clock correcting assumes begin/end are SwiftTime, they're UTC.
 
     @property
@@ -50,7 +50,8 @@ class SwiftSAA(TOOAPIBaseclass, TOOAPIClockCorrect, SwiftSAASchema):
     api_name: str = "Swift_SAA"
     _schema = SwiftSAASchema
     _get_schema = SwiftSAAGetSchema
-    _endpoint = "/swift/saa"
+    _endpoint: str = "/swift/saa"
+    _isutc: bool = True
 
     def __getitem__(self, index):
         return self.entries[index]
@@ -60,7 +61,7 @@ class SwiftSAA(TOOAPIBaseclass, TOOAPIClockCorrect, SwiftSAASchema):
 
     @property
     def _table(self):
-        if self.entries is None:
+        if not self.entries:
             return [], []
         else:
             vals = list()

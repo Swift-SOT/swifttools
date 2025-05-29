@@ -32,9 +32,6 @@ try:
 except ImportError:
     keyring_support = False
 
-# Convert degrees to radians
-dtor = 0.017453292519943295
-
 # Submission URL
 API_URL = "https://www.swift.psu.edu/api/v1.2"
 API_URL = "http://localhost:8000/api/v1.2"
