@@ -86,7 +86,7 @@ class TOOAPIBaseclass:
     # Submission timeout
     _timeout: int = 120  # 2 mins
     # By default all API dates are in Swift Time
-    _isutc: bool = False
+    _isutc: bool
 
     # Every request gets a status
     status: SwiftTOOStatus = SwiftTOOStatus()

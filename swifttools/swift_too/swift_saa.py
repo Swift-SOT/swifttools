@@ -53,14 +53,14 @@ class SwiftSAA(TOOAPIBaseclass, TOOAPIClockCorrect, SwiftSAASchema):
     _endpoint: str = "/swift/saa"
     _isutc: bool = True
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int) -> SwiftSAAEntry:
         return self.entries[index]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.entries)
 
     @property
-    def _table(self):
+    def _table(self) -> tuple[list[str], list[list[datetime]]]:
         if not self.entries:
             return [], []
         else:
