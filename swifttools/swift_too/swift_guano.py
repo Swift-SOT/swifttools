@@ -145,6 +145,7 @@ class SwiftGUANOEntry(BaseSchema, TOOAPIBaseclass, TOOAPIClockCorrect, TOOAPIDow
     quadsaway: Optional[int] = None
     begin: Optional[datetime] = None
     end: Optional[datetime] = None
+    _isutc: bool = True
 
     @property
     def executed(self):

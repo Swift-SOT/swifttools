@@ -409,6 +409,9 @@ class SwiftAFST(
     # Local variables
     _local = ["obsid", "name", "skycoord", "length", "target_id", "shared_secret"]
 
+    # Default times are Swift spacecraft times, not UTC
+    _isutc = False
+
     @property
     def _table(self):
         if len(self.entries) > 0:

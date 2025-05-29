@@ -112,7 +112,7 @@ class SwiftCalendarSchema(BaseSchema):
     entries: list[SwiftCalendarEntry] = []
 
 
-class Swift_Calendar(
+class SwiftCalendar(
     TOOAPIBaseclass,
     TOOAPIClockCorrect,
     TOOAPIAutoResolve,
@@ -144,7 +144,7 @@ class Swift_Calendar(
     too_id : int
         Unique TOO identifying number
     entries : list
-        list of calendar entries returned by query (`Swift_CalendarEntries`)
+        list of calendar entries returned by query (`SwiftCalendarEntries`)
     status : Swift_TOOStatus
         Status of API request
     """
@@ -178,6 +178,7 @@ class Swift_Calendar(
 
 
 # Shorthand alias
-Calendar = Swift_Calendar
+Calendar = SwiftCalendar
+Swift_Calendar = SwiftCalendar
 CalendarEntry = SwiftCalendarEntry
 Swift_Calendar_Entry = SwiftCalendarEntry
