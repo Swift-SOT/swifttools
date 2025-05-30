@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, Union
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from .api_common import TOOAPIBaseclass
 from .api_resolve import TOOAPIAutoResolve
@@ -15,6 +15,19 @@ class SwiftPPSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema)
     radius: Optional[AstropyAngle] = None
     targetid: Union[int, list[int], None] = None
     obs_id: Optional[int] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_exactly_one_field(cls, values):
+        params = cls.model_fields.keys()
+        values = values.__dict__ if not isinstance(values, dict) else values
+        provided_fields = [field for field in params if values.get(field) is not None]
+        if not provided_fields:
+            raise ValueError(
+                "At least one of 'begin', 'end', 'length', 'ra', 'dec', 'radius', 'targetid', or 'obs_id' must be provided"
+            )
+
+        return values
 
 
 class SwiftPPSTEntry(BaseSchema, TOOAPIClockCorrect):

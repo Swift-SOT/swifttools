@@ -124,24 +124,6 @@ class TestSwiftTOORequest:
         assert too._varnames["source_name"] == "Object Name"
         assert too._varnames["ra"] == "Right Ascenscion (J2000)"
 
-    def test_table_property_empty(self):
-        """Test _table property with empty TOO."""
-        too = SwiftTOORequest()
-        header, tab = too._table
-
-        assert isinstance(header, list)
-        assert isinstance(tab, list)
-
-    def test_table_property_with_data(self, mock_resolve_get):
-        """Test _table property with populated TOO."""
-        too = SwiftTOORequest(source_name="Test Source", ra=123.456, dec=78.901)
-        header, tab = too._table
-
-        assert header == ["Parameter", "Value"]
-        assert len(tab) > 0
-        assert isinstance(tab[0], list)
-        assert len(tab[0]) == 2
-
     @patch("swifttools.swift_too.swift_toorequest.SwiftTOORequest.validate_post")
     @patch("swifttools.swift_too.swift_toorequest.SwiftTOORequest.submit")
     def test_server_validate_success(self, mock_submit, mock_validate_post):

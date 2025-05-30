@@ -82,18 +82,19 @@ class TOOAPIBaseclass:
     # Set api_version for all classes
     api_version: str = api_version
     username: str = "anonymous"
-    _shared_secret: str = "anonymous"
+    shared_secret: str = "anonymous"
     # Submission timeout
     _timeout: int = 120  # 2 mins
     # By default all API dates are in Swift Time
     _isutc: bool
+    autosubmit: bool = True
 
     # Every request gets a status
     status: SwiftTOOStatus = SwiftTOOStatus()
 
     def __init__(self, *args, **kwargs):
         # Convert positional arguments to keyword arguments
-        if len(args) > 0:
+        if len(args) > 0 and hasattr(self, "_get_schema") and hasattr(self._get_schema, "model_fields"):
             for i, key in enumerate(self._get_schema.model_fields.keys()):
                 if i < len(args):
                     kwargs[key] = args[i]
@@ -101,34 +102,34 @@ class TOOAPIBaseclass:
                     break
         super().__init__(**kwargs)
 
-    @property
-    def shared_secret(self):
-        if self._shared_secret is None and self.username != "anonymous":
-            # Try to fetch password using keyring, if available
-            if keyring_support:
-                self._shared_secret = keyring.get_password("swifttools.swift_too", self.username)
-            else:
-                raise Exception("Warning: keyring support not available. Please set shared_secret manually.")
-        elif self.username == "anonymous":
-            return "anonymous"
-        return self._shared_secret
+    # @property
+    # def shared_secret(self):
+    #     if self._shared_secret is None and self.username != "anonymous":
+    #         # Try to fetch password using keyring, if available
+    #         if keyring_support:
+    #             self._shared_secret = keyring.get_password("swifttools.swift_too", self.username)
+    #         else:
+    #             raise Exception("Warning: keyring support not available. Please set shared_secret manually.")
+    #     elif self.username == "anonymous":
+    #         return "anonymous"
+    #     return self._shared_secret
 
-    @shared_secret.setter
-    def shared_secret(self, secret):
-        if self.username != "anonymous" and (self.username is not None or self.username == ""):
-            # Try to remember the password using keyring if available
-            if keyring_support:
-                try:
-                    keyring.set_password("swifttools.swift_too", self.username, secret)
-                except keyring.errors.PasswordSetError:
-                    # This error is raised in if keyring support is enabled on
-                    # macOS, but the person isn't running the code interactively
-                    # or if they're logged in via ssh. Just trap and move on to
-                    # avoid code crashing.
-                    pass
+    # @shared_secret.setter
+    # def shared_secret(self, secret):
+    #     if self.username != "anonymous" and (self.username is not None or self.username == ""):
+    #         # Try to remember the password using keyring if available
+    #         if keyring_support:
+    #             try:
+    #                 keyring.set_password("swifttools.swift_too", self.username, secret)
+    #             except keyring.errors.PasswordSetError:
+    #                 # This error is raised in if keyring support is enabled on
+    #                 # macOS, but the person isn't running the code interactively
+    #                 # or if they're logged in via ssh. Just trap and move on to
+    #                 # avoid code crashing.
+    #                 pass
 
-        if self.username != "anonymous":
-            self._shared_secret = secret
+    #     if self.username != "anonymous":
+    #         self._shared_secret = secret
 
     @property
     def _table(self):
@@ -211,7 +212,7 @@ class TOOAPIBaseclass:
         is to perform a GET request on instantiation of the class, if the
         status is "Pending" and the class has a `_get_schema` attribute.
         """
-        if self.status.status == "Pending" and hasattr(self, "_get_schema"):
+        if self.status.status == "Pending" and hasattr(self, "_get_schema") and self.autosubmit is True:
             if self.validate_get(set_error=False):
                 self.submit_get()
 
@@ -242,7 +243,7 @@ class TOOAPIBaseclass:
 
     def submit_get(self):
         """Perform an API GET request to the server."""
-        args = self._get_schema.model_validate(self).model_dump(exclude_none=True)
+        args = self._get_schema.model_validate(self.model_dump()).model_dump(exclude_none=True)
         response = requests.get(
             self.submit_url,
             params=args,
@@ -278,7 +279,8 @@ class TOOAPIBaseclass:
 
     def submit_post(self):
         """Perform an API POST request to the server."""
-        args = self._get_schema.model_validate(self).model_dump(exclude_none=True)
+        args = self._post_schema.model_validate(self.model_dump()).model_dump(exclude_none=True)
+
         response = requests.post(
             self.submit_url,
             json=args,

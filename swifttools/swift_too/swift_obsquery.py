@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional, Union
 
-from pydantic import computed_field
+from pydantic import computed_field, model_validator
 
 from .api_common import TOOAPIBaseclass
 from .api_resolve import TOOAPIAutoResolve
@@ -131,6 +131,20 @@ class SwiftAFSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema)
     radius: AstropyAngle = 0.19666666666666668
     targetid: Union[int, list[int], None] = None
     obs_id: Optional[int] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_exactly_one_field(cls, values):
+        values = values.__dict__ if not isinstance(values, dict) else values
+        params = cls.model_fields.keys()
+        provided_fields = [field for field in params if values.get(field) is not None]
+
+        if provided_fields == ["radius"]:
+            raise ValueError(
+                "At least one of 'begin', 'end', 'length', 'ra', 'dec',  'targetid', or 'obs_id' must be provided"
+            )
+
+        return values
 
 
 class SwiftAFSTSchema(OptionalCoordinateSchema, OptionalBeginEndLengthSchema):

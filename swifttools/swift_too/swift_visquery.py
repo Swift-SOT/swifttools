@@ -4,6 +4,7 @@ from .swift_clock import TOOAPIClockCorrect
 from .swift_schemas import (
     BeginEndLengthSchema,
     CoordinateSchema,
+    OptionalBeginEndLengthSchema,
     OptionalCoordinateSchema,
 )
 
@@ -42,7 +43,7 @@ class SwiftVisWindow(BeginEndLengthSchema, TOOAPIClockCorrect):
             raise IndexError("list index out of range")
 
 
-class SwiftVisQuerySchema(BeginEndLengthSchema, OptionalCoordinateSchema):
+class SwiftVisQuerySchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
     hires: bool = False
     windows: list[SwiftVisWindow] = []
 
