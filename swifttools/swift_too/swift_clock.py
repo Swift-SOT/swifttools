@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, Union
 
-from pydantic import computed_field
+from pydantic import computed_field, model_validator
 
 from .api_common import TOOAPIBaseclass
 from .swift_datetime import swiftdatetime
@@ -35,6 +35,19 @@ class SwiftClockGetSchema(BaseSchema):
     met: Union[float, list[float], None] = None
     utctime: Union[datetime, list[datetime], None] = None
     swifttime: Union[datetime, list[datetime], None] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_exactly_one_field(cls, values):
+        """Require exactly one of met, utctime, or swifttime to be provided"""
+        if not isinstance(values, dict):
+            values = values.__dict__
+        provided_fields = [field for field in ["met", "utctime", "swifttime"] if values.get(field) is not None]
+
+        if len(provided_fields) != 1:
+            raise ValueError("Exactly one of 'met', 'utctime', or 'swifttime' must be provided")
+
+        return values
 
 
 class SwiftClock(TOOAPIBaseclass, SwiftClockSchema):
@@ -191,9 +204,9 @@ class TOOAPIClockCorrect:
 
     def _header_title(self, parameter):
         """Add UTC or Swift to headers in table depending on the default"""
-        title = self._varnames[parameter]
-        value = getattr(self, parameter)
-        if type(value) == swiftdatetime:
+        title = self._varnames.get(parameter, parameter)
+        value = getattr(self, parameter, None)
+        if isinstance(value, swiftdatetime):
             if value.isutc:
                 title += " (UTC)"
             else:

@@ -139,9 +139,9 @@ class TOOAPIBaseclass:
         for row in _parameters:
             value = getattr(self, row)
             if value is not None and value != [] and value != "":
-                if row == "status" and type(value) != str:
+                if row == "status" and not isinstance(value, str):
                     table.append([row, value.status])
-                elif type(value) == list:
+                elif isinstance(value, list):
                     table.append([row, "\n".join([f"{le}" for le in value])])
                 else:
                     table.append([row, "\n".join(textwrap.wrap(f"{value}"))])
@@ -179,7 +179,7 @@ class TOOAPIBaseclass:
 
     def __set_status(self, newstatus):
         if hasattr(self, "status"):
-            if type(self.status) == str:
+            if isinstance(self.status, str):
                 self.status = newstatus
             else:
                 self.status.status = newstatus
@@ -188,7 +188,7 @@ class TOOAPIBaseclass:
 
     def __set_error(self, newerror):
         if hasattr(self, "status"):
-            if type(self.status) == str:
+            if isinstance(self.status, str):
                 self.error(newerror)
             else:
                 self.status.error(newerror)
@@ -212,7 +212,7 @@ class TOOAPIBaseclass:
         status is "Pending" and the class has a `_get_schema` attribute.
         """
         if self.status.status == "Pending" and hasattr(self, "_get_schema"):
-            if self.validate_get():
+            if self.validate_get(set_error=False):
                 self.submit_get()
 
     def submit(self):
@@ -305,7 +305,7 @@ class TOOAPIBaseclass:
 
         return True
 
-    def validate_get(self):
+    def validate_get(self, set_error=True):
         """Validate API submission before submit
 
         Returns
@@ -317,11 +317,13 @@ class TOOAPIBaseclass:
         try:
             self._get_schema.model_validate(self)
         except ValidationError as e:
-            self.__set_error(f"Validation failed: {e}")
+            if set_error:
+                # Set error message if validation fails
+                self.__set_error(f"Validation failed: {e}")
             return False
         return True
 
-    def validate_post(self):
+    def validate_post(self, set_error=True):
         """Validate API submission before submit
 
         Returns
@@ -333,6 +335,8 @@ class TOOAPIBaseclass:
         try:
             self._post_schema.model_validate(self)
         except ValidationError as e:
-            self.__set_error(f"Validation failed: {e}")
+            if set_error:
+                # Set error message if validation fails
+                self.__set_error(f"Validation failed: {e}")
             return False
         return True

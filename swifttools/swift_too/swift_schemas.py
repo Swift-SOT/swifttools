@@ -184,6 +184,8 @@ class OptionalBeginEndLengthSchema(BaseSchema):
     @model_validator(mode="before")
     @classmethod
     def check_length(cls, values: dict[str, Any]) -> dict[str, Any]:
+        if values is None:
+            return values
         if not isinstance(values, dict):
             values = values.__dict__
         begin = values.get("begin")

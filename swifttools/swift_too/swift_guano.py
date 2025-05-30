@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 from typing import Optional, Union
 
+from pydantic import model_validator
+
 from swifttools.swift_too.swift_data import TOOAPIDownloadData
 
 from .api_common import TOOAPIBaseclass
@@ -145,7 +147,6 @@ class SwiftGUANOEntry(BaseSchema, TOOAPIBaseclass, TOOAPIClockCorrect, TOOAPIDow
     quadsaway: Optional[int] = None
     begin: Optional[datetime] = None
     end: Optional[datetime] = None
-    _isutc: bool = True
 
     @property
     def executed(self):
@@ -198,6 +199,20 @@ class SwiftGUANOGetSchema(OptionalBeginEndLengthSchema):
     limit: Optional[int] = None
     page: Optional[int] = None
     triggertype: Optional[str] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_parameters(cls, values):
+        good = False
+        if values is None:
+            pass
+        elif isinstance(values, dict):
+            values = values.__dict__
+            for key in cls.model_fields.keys():
+                if key in values:
+                    good = True
+        if not good:
+            raise ValueError("At least one of the parameters must be provided")
 
 
 class SwiftGUANOSchema(BaseSchema):
@@ -254,6 +269,8 @@ class SwiftGUANO(
     _schema = SwiftGUANOSchema
     _get_schema = SwiftGUANOGetSchema
     _endpoint = "/guano"
+    _isutc: bool = True
+
     # Core API definitions
 
     _local = ["length", "shared_secret"]

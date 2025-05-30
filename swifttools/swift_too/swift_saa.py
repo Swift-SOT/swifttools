@@ -22,10 +22,6 @@ class SwiftSAAEntry(BaseSchema, TOOAPIClockCorrect, TOOAPIBaseclass):
         data = [[self.begin, self.end]]
         return header, data
 
-    @property
-    def table(self):
-        return ["begin", "end"], [[self.begin, self.end]]
-
 
 class SwiftSAASchema(OptionalBeginEndLengthSchema):
     bat: bool = False

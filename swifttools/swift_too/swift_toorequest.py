@@ -8,16 +8,32 @@ from pydantic import (
     model_validator,
 )
 
-from swifttools.swift_too.swift_calendar import SwiftCalendarSchema
-from swifttools.swift_too.swift_instruments import TOOAPIInstruments
-
 from .api_common import TOOAPIBaseclass
 from .api_resolve import TOOAPIAutoResolve
+from .swift_calendar import SwiftCalendarSchema
 from .swift_schemas import (
     AstropyAngle,
     BaseSchema,
     ObsType,
 )
+
+
+class XRTModeEnum(int, Enum):
+    """Enum for the XRT mode of a TOO request"""
+
+    AUTO = 0
+    PHOTON_COUNTING = 7
+    WINDOWED_TIMING = 6
+
+
+class UrgencyEnum(int, Enum):
+    """Enum for the urgency of a TOO request"""
+
+    URGENT = 0
+    HIGHEST = 1
+    HIGH = 2
+    MEDIUM = 3
+    LOW = 4
 
 
 class SwiftTOORequestSchema(BaseSchema):
@@ -29,7 +45,7 @@ class SwiftTOORequestSchema(BaseSchema):
     dec: Optional[AstropyAngle] = None
     poserr: Union[float, str, None] = None
     instrument: Optional[str] = None
-    urgency: Optional[int] = None
+    urgency: Optional[int] = UrgencyEnum.MEDIUM
     opt_mag: Union[float, str, None] = None
     opt_filt: Optional[str] = None
     xrt_countrate: Union[float, str, None] = None
@@ -43,14 +59,14 @@ class SwiftTOORequestSchema(BaseSchema):
     exp_time_per_visit_approved: Optional[int] = None
     num_of_visits_approved: Optional[int] = None
     monitoring_freq: Optional[str] = None
-    proposal: Optional[bool] = None
+    proposal: bool = False
     proposal_id: Optional[str] = None
     proposal_trigger_just: Optional[str] = None
     proposal_pi: Optional[str] = None
-    xrt_mode: Optional[int] = None
-    uvot_mode: Optional[str] = None
+    xrt_mode: int = XRTModeEnum.PHOTON_COUNTING
+    uvot_mode: Optional[str] = "0x9999"
     uvot_just: Optional[str] = None
-    tiling: Optional[bool] = None
+    tiling: bool = False
     number_of_tiles: Optional[str] = None
     exposure_time_per_tile: Optional[int] = None
     tiling_justification: Optional[str] = None
@@ -66,6 +82,8 @@ class SwiftTOORequestSchema(BaseSchema):
     date_begin: Union[str, date, None] = None
     date_end: Union[str, date, None] = None
     l_name: Optional[str] = None
+    num_of_visits: int = 1
+    exp_time_per_visit: Optional[int] = None
 
 
 # class Swift_TOORequest(
@@ -626,24 +644,6 @@ class SwiftTOORequestSchema(BaseSchema):
 # Swift_TOO_Request = Swift_TOORequest
 
 
-class XRTModeEnum(int, Enum):
-    """Enum for the XRT mode of a TOO request"""
-
-    AUTO = 0
-    PHOTON_COUNTING = 7
-    WINDOWED_TIMING = 6
-
-
-class UrgencyEnum(int, Enum):
-    """Enum for the urgency of a TOO request"""
-
-    URGENT = 0
-    HIGHEST = 1
-    HIGH = 2
-    MEDIUM = 3
-    LOW = 4
-
-
 class SwiftTOOUserParamsSchema(BaseSchema):
     source_name: str = Field(description="Source Name")
     source_type: str = Field(description="Source Type")
@@ -660,8 +660,8 @@ class SwiftTOOUserParamsSchema(BaseSchema):
     other_brightness: Optional[str] = Field(None, description="Other Brightness")
     grb_detector: Optional[str] = Field(None, description="GRB Detector")
     grb_triggertime: Optional[datetime] = Field(None, description="GRB Trigger Time")
-    redshift_val: Optional[str] = Field(None, description="Redshift Value")
-    redshift_status: Optional[str] = Field(None, description="Redshift Status")
+    # redshift_val: Optional[str] = Field(None, description="Redshift Value")
+    # redshift_status: Optional[str] = Field(None, description="Redshift Status")
     uvot_mode: str = Field("0x9999", description="UVOT Mode")
     science_just: str = Field(description="Science Justification")
     immediate_objective: str = Field(..., description="Immediate Objective")
@@ -743,11 +743,33 @@ class SwiftTOOPostSchema(SwiftTOOFormSchema):
     quiet: bool = True
     validate_only: bool = False
 
+    @model_validator(mode="before")
+    @classmethod
+    def check_requirements(cls, data: Any) -> Any:
+        requirements = [
+            "ra",
+            "dec",
+            "num_of_visits",
+            "exp_time_just",
+            "source_type",
+            "source_name",
+            "science_just",
+            "username",
+            "obs_type",
+        ]
+        for req in requirements:
+            if getattr(data, req, None) is None:
+                raise ValueError(f"Missing required field: {req}")
 
-class SwiftTOORequest(TOOAPIBaseclass, TOOAPIAutoResolve, TOOAPIInstruments, SwiftTOORequestSchema):
+
+class SwiftTOORequest(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestSchema):
+    api_name: str = "Swift_TOO_Request"
     _schema = SwiftTOOFormSchema
     _post_schema = SwiftTOOPostSchema
     _endpoint = "/swift/too"
+
+    validate_only: bool = False
+    debug: bool = False
 
     # English Descriptions of all the variables
     _varnames: dict[str, str] = {
@@ -859,10 +881,14 @@ class SwiftTOORequest(TOOAPIBaseclass, TOOAPIAutoResolve, TOOAPIInstruments, Swi
             ]
         else:
             _parameters = list(self.__class__.model_fields.keys())
+            _parameters.remove("api_version")
+            _parameters.remove("status")
+            _parameters.remove("api_name")
+            _parameters.remove("skycoord")
         for row in _parameters:
             val = getattr(self, row)
             if val is not None and val != "":
-                tab.append([self.varnames[row], val])
+                tab.append([self._varnames[row], val])
         if len(tab) > 0:
             header = ["Parameter", "Value"]
         else:

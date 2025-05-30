@@ -55,12 +55,7 @@ class SwiftUVOTModeEntry(BaseSchema):
     weight: Optional[int] = None
     special: Optional[int] = None
     comment: Optional[str] = None
-    filter_name: str
-
-    def __init__(self):
-        # Lazy variable init
-        for row in self._parameters:
-            setattr(self, row, None)
+    filter_name: Optional[str] = None
 
     def __str__(self):
         return self.filter_name
@@ -95,7 +90,7 @@ class SwiftUVOTMode(TOOAPIBaseclass, TOOAPIInstruments, SwiftUVOTModeSchema, TOO
     # Core API definitions
     api_name: str = "UVOT_mode"
     _schema = SwiftUVOTModeSchema
-    _get_schema = SwiftUVOTModeSchema
+    _get_schema = SwiftUVOTModeGetSchema
     _endpoint = "/swift/uvotmode"
 
     def __getitem__(self, index):
@@ -179,13 +174,14 @@ class SwiftUVOTMode(TOOAPIBaseclass, TOOAPIInstruments, SwiftUVOTModeSchema, TOO
                 if i % 2:
                     html += '<tr style="background-color:#eee;">'
                 else:
-                    html += '<tr">'
+                    html += "<tr>"
                 for col in table_cols:
                     html += "<td>"
                     html += f"{getattr(entry, col)}"
                     html += "</td>"
 
                 html += "</tr>"
+                i += 1
             html += "</table>"
             html += '<p id="terms">'
             html += "<small><b>Filter: </b>The particular filter in the sequence.<br>"

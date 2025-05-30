@@ -1,7 +1,7 @@
 import os
 import warnings
 from fnmatch import fnmatch
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 import boto3  # type: ignore[import-untyped]
 import boto3.session  # type: ignore[import-untyped]
@@ -142,12 +142,42 @@ class SwiftData(TOOAPIBaseclass, SwiftDataSchema):
     _schema = SwiftDataSchema
     _get_schema = SwiftDataGetSchema
     _endpoint = "/swift/data"
+    _parameters = [
+        "username",
+        "obsid",
+        "quicklook",
+        "auxil",
+        "bat",
+        "xrt",
+        "uvot",
+        "subthresh",
+        "log",
+        "tdrss",
+        "uksdc",
+        "itsdc",
+    ]
+    # Local and alias parameters
+    _local = [
+        "outdir",
+        "clobber",
+        "obsnum",
+        "targetid",
+        "target_id",
+        "seg",
+        "segment",
+        "shared_secret",
+        "fetch",
+        "match",
+        "quiet",
+        "aws",
+    ]
+    _attributes = ["entries", "status"]
 
     # Local arguments
     outdir: str = "."
     clobber: bool = False
     fetch: bool = True
-    match: Optional[str] = None
+    match: Union[str, list[str], None] = None
     quiet: bool = False
     aws: bool = False
     _s3: Optional[boto3.session.Session.client] = None
