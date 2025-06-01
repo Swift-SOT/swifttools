@@ -154,7 +154,7 @@ from .swift_obsquery import ObsQuery, Swift_ObsQuery, SwiftAFST
 from .swift_planquery import PlanQuery, Swift_PlanQuery, Swift_PPST
 from .swift_requests import Swift_TOO_Requests, Swift_TOORequests, TOORequests
 from .swift_saa import SAA, Swift_SAA
-from .swift_toorequest import TOO, Swift_TOO, Swift_TOO_Request, TOORequest
+from .swift_toorequest import TOO, Swift_TOO, Swift_TOO_Request, SwiftTOO, TOORequest
 from .swift_uvot import Swift_UVOTMode, UVOT_mode, UVOTMode
 from .swift_visquery import Swift_VisQuery, VisQuery
 from .version import version as __version__
@@ -191,6 +191,7 @@ __all__ = [
     "SwiftGUANO",
     "SwiftResolve",
     "TOO",
+    "SwiftTOO",
     "TOORequest",
     "TOORequests",
     "UVOT_mode",

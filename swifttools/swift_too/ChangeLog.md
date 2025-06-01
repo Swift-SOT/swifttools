@@ -6,6 +6,15 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
+## `swifttools` 4.0.0 / `swift_too` 2.0.0
+
+** Jun ?, 2025 **: Updated `swift_too` module utilizing new REST API for Swift.
+Functionality of API client should be compatible with prior version, however
+some minor changes maybe be present, for example in the types of some
+attributes. `swift_too` API client is now strongly typed utilizing Pydantic.
+As this may be a breaking change, the version is bumped to `swifttools-4.0`
+with the version for `swift_too` being bumped to `2.0`.
+
 ## `swifttools` 3.0.23`/`swift_too` 1.2.33
 
 ** Nov 13, 2024 **: Fix bug that caused crash when reading in UVOT modes in

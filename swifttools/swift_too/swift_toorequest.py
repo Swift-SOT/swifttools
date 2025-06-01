@@ -921,3 +921,4 @@ TOO = SwiftTOORequest
 TOORequest = SwiftTOORequest
 Swift_TOO_Request = SwiftTOORequest
 Swift_TOORequest = SwiftTOORequest
+SwiftTOO = SwiftTOORequest
