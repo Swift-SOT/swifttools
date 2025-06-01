@@ -238,8 +238,7 @@ class TOOAPIBaseclass:
                 if self.validate_post():
                     return self.submit_post()
                 return False
-        else:
-            return False
+        return False
 
     def submit_get(self):
         """Perform an API GET request to the server."""
@@ -272,7 +271,6 @@ class TOOAPIBaseclass:
             self.__set_error(f"Error validating response: {e}")
             return False
 
-            return False
         # Perform processing of the response
         self._post_process()
         return True
