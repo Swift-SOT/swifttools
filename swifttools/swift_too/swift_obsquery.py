@@ -30,15 +30,15 @@ class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect):
         end time of observation
     slewtime : timedelta
         slew time of the observation
-    targetid : int
+    target_id : int
         target ID  of the observation
-    seg : int
+    segment : int
         segment number of the observation
-    xrt : str
+    xrt_mode : str
         XRT mode of the observation
-    uvot : str
+    uvot_mode : str
         Hex string UVOT mode of the observation
-    bat : int
+    bat_mode : int
         BAT mode of the observation
     exposure : timedelta
         exposure time of the observation
@@ -64,12 +64,12 @@ class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect):
     obstype: Optional[str] = None
     targname: Optional[str] = None
     roll: Optional[float] = None
-    targetid: Optional[int] = None
-    seg: Optional[int] = None
+    target_id: Optional[int] = None
+    segment: Optional[int] = None
     obs_id: Optional[ObsIDSDC] = None
-    bat: Optional[int] = None
-    xrt: Optional[int] = None
-    uvot: Optional[int] = None
+    bat_mode: Optional[int] = None
+    xrt_mode: Optional[int] = None
+    uvot_mode: Optional[int] = None
     fom: Optional[int] = None
     comment: Optional[str] = None
     timetarget: Optional[int] = None
@@ -78,8 +78,8 @@ class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect):
     mvdfwpos: Optional[int] = None
     targettype: Optional[str] = None
     sunha: Optional[float] = None
-    ra_point: Optional[float] = None
-    dec_point: Optional[float] = None
+    ra_object: Optional[float] = None
+    dec_object: Optional[float] = None
 
     _varnames = {
         "begin": "Begin Time",
@@ -89,13 +89,13 @@ class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect):
         "dec": "Dec(J200)",
         "roll": "Roll (deg)",
         "targname": "Target Name",
-        "targetid": "Target ID",
-        "seg": "Segment",
+        "target_id": "Target ID",
+        "segment": "Segment",
         "ra_object": "Object RA(J2000)",
         "dec_object": "Object Dec(J2000)",
-        "xrt": "XRT Mode",
-        "uvot": "UVOT Mode",
-        "bat": "BAT Mode",
+        "xrt_mode": "XRT Mode",
+        "uvot_mode": "UVOT Mode",
+        "bat_mode": "BAT Mode",
         "fom": "Figure of Merit",
         "obstype": "Observation Type",
         "obs_id": "Observation Number",
@@ -129,7 +129,7 @@ class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect):
 
 class SwiftAFSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
     radius: AstropyAngle = 0.19666666666666668
-    targetid: Union[int, list[int], None] = None
+    target_id: Union[int, list[int], None] = None
     obs_id: Optional[int] = None
 
     @model_validator(mode="before")
@@ -141,7 +141,7 @@ class SwiftAFSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema)
 
         if provided_fields == ["radius"]:
             raise ValueError(
-                "At least one of 'begin', 'end', 'length', 'ra', 'dec',  'targetid', or 'obs_id' must be provided"
+                "At least one of 'begin', 'end', 'length', 'ra', 'dec',  'target_id', or 'obs_id' must be provided"
             )
 
         return values
@@ -149,7 +149,7 @@ class SwiftAFSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema)
 
 class SwiftAFSTSchema(OptionalCoordinateSchema, OptionalBeginEndLengthSchema):
     radius: AstropyAngle = 0.19666666666666668
-    targetid: Union[int, list[int], None] = None
+    target_id: Union[int, list[int], None] = None
     obs_id: Optional[int] = None
     afstmax: Optional[datetime] = None
     entries: list[SwiftAFSTEntry] = []
@@ -172,15 +172,15 @@ class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, BaseSchema):
         end time of observation
     slewtime : timedelta
         slew time of the observation
-    targetid : int
+    target_id : int
         target ID  of the observation
-    seg : int
+    segment : int
         segment number of the observation
-    xrt : str
+    xrt_mode : str
         XRT mode of the observation
-    uvot : str
+    uvot_mode : str
         Hex string UVOT mode of the observation
-    bat : int
+    bat_mode : int
         BAT mode of the observation
     exposure : timedelta
         exposure time of the observation
@@ -210,17 +210,17 @@ class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, BaseSchema):
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def targetid(self) -> Optional[int]:
+    def target_id(self) -> Optional[int]:
         if len(self.entries) == 0:
             return None
-        return self.entries[0].targetid
+        return self.entries[0].target_id
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def seg(self) -> Optional[int]:
+    def segment(self) -> Optional[int]:
         if len(self.entries) == 0:
             return None
-        return self.entries[0].seg
+        return self.entries[0].segment
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -284,49 +284,29 @@ class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, BaseSchema):
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def xrt(self) -> Optional[int]:  # Updated return type to Optional[int]
+    def xrt_mode(self) -> Optional[int]:  # Updated return type to Optional[int]
         if len(self.entries) == 0:
             return None
-        return self.entries[0].xrt
+        return self.entries[0].xrt_mode
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def uvot(self) -> Optional[int]:  # Updated return type to Optional[int]
+    def uvot_mode(self) -> Optional[int]:  # Updated return type to Optional[int]
         if len(self.entries) == 0:
             return None
-        return self.entries[0].uvot
+        return self.entries[0].uvot_mode
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def bat(self) -> Optional[int]:  # Updated return type to Optional[int]
+    def bat_mode(self) -> Optional[int]:  # Updated return type to Optional[int]
         if len(self.entries) == 0:
             return None
-        return self.entries[0].bat
+        return self.entries[0].bat_mode
 
     @computed_field  # type: ignore[prop-decorator]
     @property
     def snapshots(self) -> list[SwiftAFSTEntry]:
         return self.entries
-
-    # The following provides compatibility as we changed ra/dec_point to
-    # ra/dec_object. These will go away in the next version of the API (1.3).
-    @computed_field  # type: ignore[prop-decorator]
-    @property
-    def ra_point(self) -> Optional[float]:
-        return self.ra_object
-
-    #    @ra_point.setter
-    #    def ra_point(self, ra: Optional[float]) -> None:
-    #        self.ra_object = ra
-
-    @computed_field  # type: ignore[prop-decorator]
-    @property
-    def dec_point(self) -> Optional[float]:  # Updated return type to Optional[float]
-        return self.dec_object
-
-    #    @dec_point.setter
-    #    def dec_point(self, dec: Optional[float]) -> None:  # Updated parameter type to Optional[float]
-    #        self.dec_object = dec
 
     # Compat end
 
@@ -349,8 +329,9 @@ class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, BaseSchema):
 
     # Aliases
     obsid = obs_id
-    target_id = targetid
-    segment = seg
+    obsnum = obs_id
+    targetid = target_id
+    seg = segment
 
 
 class SwiftObservations(dict, TOOAPIBaseclass):
@@ -377,7 +358,7 @@ class SwiftAFST(
     constraints. Essentially this will return what Swift observed and when, for
     given constraints. Constraints can be for give coordinate (SkyCoord or J2000
     RA/Dec) and radius (in degrees), a given date range, or a given target ID
-    (targetid) or Observation ID (obs_id).
+    (target_id) or Observation ID (obs_id).
 
     Attributes
     ----------

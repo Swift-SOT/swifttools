@@ -13,7 +13,7 @@ from .swift_schemas import AstropyAngle, BaseSchema, ObsIDSDC, OptionalBeginEndL
 
 class SwiftPPSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
     radius: Optional[AstropyAngle] = None
-    targetid: Union[int, list[int], None] = None
+    target_id: Union[int, list[int], None] = None
     obs_id: Optional[int] = None
 
     @model_validator(mode="before")
@@ -24,7 +24,7 @@ class SwiftPPSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema)
         provided_fields = [field for field in params if values.get(field) is not None]
         if not provided_fields:
             raise ValueError(
-                "At least one of 'begin', 'end', 'length', 'ra', 'dec', 'radius', 'targetid', or 'obs_id' must be provided"
+                "At least one of 'begin', 'end', 'length', 'ra', 'dec', 'radius', 'target_id', or 'obs_id' must be provided"
             )
 
         return values
@@ -41,15 +41,15 @@ class SwiftPPSTEntry(BaseSchema, TOOAPIClockCorrect):
         begin time of observation
     end : datetime
         end time of observation
-    targetid : int
+    target_id : int
         target ID  of the observation
-    seg : int
+    segment : int
         segment number of the observation
-    xrt : str
+    xrt_mode : str
         XRT mode of the observation
-    uvot : str
+    uvot_mode : str
         Hex string UVOT mode of the observation
-    bat : int
+    bat_mode : int
         BAT mode of the observation
     exposure : timedelta
         exposure time of the observation
@@ -71,12 +71,12 @@ class SwiftPPSTEntry(BaseSchema, TOOAPIClockCorrect):
     roll: Optional[float] = None
     begin: Optional[datetime] = None
     end: Optional[datetime] = None
-    targetid: Optional[int] = None
-    seg: Optional[int] = None
+    target_id: Optional[int] = None
+    segment: Optional[int] = None
     obs_id: Optional[ObsIDSDC] = None
-    bat: Optional[int] = None
-    xrt: Optional[int] = None
-    uvot: Optional[int] = None
+    bat_mode: Optional[int] = None
+    xrt_mode: Optional[int] = None
+    uvot_mode: Optional[int] = None
     fom: Optional[float] = None
     comment: Optional[str] = None
     timetarg: Optional[int] = None
@@ -89,11 +89,11 @@ class SwiftPPSTEntry(BaseSchema, TOOAPIClockCorrect):
         "ra": "RA(J2000)",
         "dec": "Dec(J200)",
         "roll": "Roll (deg)",
-        "targetid": "Target ID",
-        "seg": "Segment",
-        "xrt": "XRT Mode",
-        "uvot": "UVOT Mode",
-        "bat": "BAT Mode",
+        "target_id": "Target ID",
+        "segment": "Segment",
+        "xrt_mode": "XRT Mode",
+        "uvot_mode": "UVOT Mode",
+        "bat_mode": "BAT Mode",
         "fom": "Figure of Merit",
         "obs_id": "Observation Number",
         "exposure": "Exposure (s)",
@@ -115,7 +115,7 @@ class SwiftPPSTSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
     """Schema for Swift Pre-Planned Science Timeline (PPST) API."""
 
     radius: Optional[AstropyAngle] = None
-    targetid: Union[int, list[int], None] = None
+    target_id: Union[int, list[int], None] = None
     obs_id: Optional[int] = None
     ppstmax: Optional[datetime] = None
     entries: list[SwiftPPSTEntry] = []
@@ -126,7 +126,7 @@ class SwiftPPST(TOOAPIBaseclass, TOOAPIDownloadData, TOOAPIAutoResolve, TOOAPICl
     constraints. Essentially this will return what Swift was planned to observe
     and when, for given constraints. Constraints can be for give coordinate
     (SkyCoord or J2000 RA/Dec) and radius (in degrees), a given date range, or a
-    given target ID (targetid) or Observation ID (obs_id).
+    given target ID (target_id) or Observation ID (obs_id).
 
     Attributes
     ----------

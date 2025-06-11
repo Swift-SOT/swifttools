@@ -21,7 +21,7 @@ from pydantic import (
     model_validator,
 )
 
-from .api_functions import convert_from_timedelta, convert_obsnum_sdc, utcnow
+from .api_functions import convert_from_timedelta, convert_obs_id_sdc, utcnow
 
 # Make sure we are working in UTC times
 os.environ["TZ"] = "UTC"
@@ -29,7 +29,7 @@ tzset()
 
 ObsIDSDC = Annotated[
     str,
-    BeforeValidator(lambda x: convert_obsnum_sdc(x)),
+    BeforeValidator(lambda x: convert_obs_id_sdc(x)),
     PlainSerializer(lambda x: x, return_type=str),
     WithJsonSchema({"type": "string"}, mode="serialization"),
 ]
@@ -327,9 +327,9 @@ class SwiftObservationSchema(BaseSchema):
     obstype: Optional[str] = None
     targname: Optional[str] = Field(default=None, alias="target_name")
     roll: Optional[float] = None
-    targetid: Optional[int] = None
+    target_id: Optional[int] = None
     seg: Optional[int] = None
-    obsnum: Optional[int] = None
+    obs_id: Optional[int] = None
     bat: Optional[int] = None
     xrt: Optional[int] = None
     uvot: Optional[int] = None
@@ -354,14 +354,14 @@ class SwiftObservationSchema(BaseSchema):
 
     @property
     def _table(self):
-        parameters = ["begin", "end", "targname", "obsnum", "exposure", "slewtime"]
+        parameters = ["begin", "end", "targname", "obs_id", "exposure", "slewtime"]
         header = [row for row in parameters]
         return header, [
             [
                 self.begin,
                 self.end,
                 self.targname,
-                self.obsnum,
+                self.obs_id,
                 self.exposure.seconds,
                 self.slewtime.seconds,
             ]
