@@ -22,32 +22,32 @@ def convert_from_timedelta(value: Union[float, int, u.Quantity, timedelta]) -> f
         raise TypeError(f"Unsupported type for timedelta conversion: {type(value)}")
 
 
-def convert_obsnum_sdc(obsnum: Union[str, int]) -> str:
+def convert_obs_id_sdc(obs_id: Union[str, int]) -> str:
     """
-    Convert various formats for obsnum (SDC and Spacecraft) into one format
+    Convert various formats for obs_id (SDC and Spacecraft) into one format
     (Spacecraft)
     """
-    if isinstance(obsnum, str):
+    if isinstance(obs_id, str):
         # All SDC format target IDs are 11 digits long and start with a "0"
         # (unless we get into the 10,000,000 target ID range)
-        if obsnum.startswith("0"):
-            if re.match(r"0[0-9]{10}", obsnum) is None:
+        if obs_id.startswith("0"):
+            if re.match(r"0[0-9]{10}", obs_id) is None:
                 raise ValueError("ERROR: Obsnum string format incorrect")
-            return obsnum
+            return obs_id
         # Handle case where obsids are strings, but not in SDC format
-        elif re.match(r"[0-9]+", obsnum) is None:
+        elif re.match(r"[0-9]+", obs_id) is None:
             raise ValueError("ERROR: Obsnum string format incorrect")
         else:
-            obsnum = int(obsnum)
+            obs_id = int(obs_id)
 
-    if isinstance(obsnum, int):
-        if obsnum == -1:
+    if isinstance(obs_id, int):
+        if obs_id == -1:
             return "00000000000"
-        if obsnum < 0 or obsnum > 0xFFFFFFFF:
+        if obs_id < 0 or obs_id > 0xFFFFFFFF:
             raise ValueError("ERROR: Obsnum int format incorrect")
         # Convert to SDC format
-        targetid = obsnum & 0xFFFFFF
-        segment = obsnum >> 24
+        targetid = obs_id & 0xFFFFFF
+        segment = obs_id >> 24
         return f"{targetid:08d}{segment:03d}"
     else:
-        raise ValueError("`obsnum` in wrong format.")
+        raise ValueError("`obs_id` in wrong format.")

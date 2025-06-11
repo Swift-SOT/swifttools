@@ -327,7 +327,7 @@ class SwiftObservationSchema(BaseSchema):
     obstype: Optional[str] = None
     targname: Optional[str] = Field(default=None, alias="target_name")
     roll: Optional[float] = None
-    target_id: Optional[int] = None
+    targetid: Optional[int] = None
     seg: Optional[int] = None
     obs_id: Optional[int] = None
     bat: Optional[int] = None
