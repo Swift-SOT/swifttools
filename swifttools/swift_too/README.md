@@ -19,10 +19,10 @@ from swifttools.swift_too import SwiftTOO
 too = SwiftTOO()
 
 # The relevant details of the object to observe
-too.source_name = "SMC X-3" # Typical name of source, if it resolves in Simbad, all the better
+too.target_name = "SMC X-3" # Typical name of source, if it resolves in Simbad, all the better
 too.ra = 13.023439          # Right ascension in decimal degrees
 too.dec = -72.434508        # Declination in decimal degrees
-too.source_type = "Be/XRB"  # Short description of source class
+too.target_type = "Be/XRB"  # Short description of source class
 
 # Estimate of how bright it is
 too.xrt_countrate = 0.1         # XRT counts/s

@@ -160,7 +160,7 @@ class SwiftData(TOOAPIBaseclass, SwiftDataSchema):
     _local = [
         "outdir",
         "clobber",
-        "obsnum",
+        "obs_id",
         "targetid",
         "target_id",
         "seg",

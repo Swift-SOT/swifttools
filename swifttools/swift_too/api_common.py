@@ -1,11 +1,15 @@
+from pathlib import Path
 import textwrap
 import warnings
 from datetime import datetime
 from typing import Any
+import http.cookiejar
 
-import requests
+import httpx
 from pydantic import TypeAdapter, ValidationError
 from tabulate import tabulate
+
+from swifttools.swift_too.swift_schemas import BaseSchema
 
 from .api_status import SwiftTOOStatus
 from .version import version_tuple
@@ -35,6 +39,15 @@ except ImportError:
 # Submission URL
 API_URL = "https://www.swift.psu.edu/api/v1.2"
 API_URL = "http://localhost:8000/api/v1.2"
+COOKIE_JAR_PATH = Path.home() / ".swift_too" / "cookies.txt"
+COOKIE_JAR_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+# Create and optionally load cookies
+cookie_jar = http.cookiejar.LWPCookieJar(COOKIE_JAR_PATH)
+try:
+    cookie_jar.load(ignore_discard=True)
+except FileNotFoundError:
+    pass
 
 
 def convert_to_dt(dt: Any) -> datetime:
@@ -88,6 +101,11 @@ class TOOAPIBaseclass:
     # By default all API dates are in Swift Time
     _isutc: bool
     autosubmit: bool = True
+    _get_schema: Any = None
+    _put_schema: Any = None
+    _endpoint: str
+    _post_schema: Any = None
+    _delete_schema: Any = None
 
     # Every request gets a status
     status: SwiftTOOStatus = SwiftTOOStatus()
@@ -240,25 +258,52 @@ class TOOAPIBaseclass:
                 return False
         return False
 
-    def submit_get(self):
+    def login(self, client: httpx.Client) -> bool:
+        """
+        Login to the server and set the session cookie.
+
+        Parameters
+        ----------
+        client : httpx.Client
+            The HTTP client to use for the request.
+        """
+        # Log into the API server using the username and shared secret.
+        resp = client.post(f"{API_URL}/login", json={"username": self.username, "password": self.shared_secret})
+        if resp.status_code != 200:
+            return False
+        return True
+
+    def submit_get(self) -> bool:
         """Perform an API GET request to the server."""
         args = self._get_schema.model_validate(self.model_dump()).model_dump(exclude_none=True)
-        response = requests.get(
-            self.submit_url,
-            params=args,
-            timeout=self._timeout,
-            auth=(self.username, self.shared_secret),
-        )
-        print(response.url)
+
+        with httpx.Client(cookies=cookie_jar) as client:
+            # Login if no valid session cookie exists
+            if not any(c.name == "session" and not c.is_expired() for c in cookie_jar) and self.username != "anonymous":
+                if not self.login(client):
+                    self.__set_error("Login failed. Please check your username and shared_secret.")
+                    return False
+                # Save the cookies to the cookie jar
+                cookie_jar.save(ignore_discard=True)
+
+            # Perform the GET request
+            response = client.get(
+                self.submit_url,
+                params=args,
+                timeout=self._timeout,
+                follow_redirects=True,
+            )
+
+        print(response.url, response)
         # If the request was successful, parse the response
         if response.status_code == 200:
             pass
         elif response.status_code >= 400 and response.status_code < 500:
             # Assume that errors codes in the 400s will return status
-            print("Sad trombone: ", response.status_code)
+            print("Sad trombone: ", response.status_code, response.text)
         else:
             # Catch all other errors
-            print("Sad trombone: ", response.status_code)
+            print("Sad trombone: ", response.status_code, response.text)
             self.__set_error(f"Error: {response.status_code} - {response.text}")
             return False
 
@@ -279,12 +324,22 @@ class TOOAPIBaseclass:
         """Perform an API POST request to the server."""
         args = self._post_schema.model_validate(self.model_dump()).model_dump(exclude_none=True)
 
-        response = requests.post(
-            self.submit_url,
-            json=args,
-            timeout=self._timeout,
-            auth=(self.username, self.shared_secret),
-        )
+        with httpx.Client(cookies=cookie_jar) as client:
+            # Login if no valid session cookie exists
+            if not any(c.name == "session" and not c.is_expired() for c in cookie_jar) and self.username != "anonymous":
+                if not self.login(client):
+                    self.__set_error("Login failed. Please check your username and shared_secret.")
+                    return False
+                # Save the cookies to the cookie jar
+                cookie_jar.save(ignore_discard=True)
+
+            # Perform the POST request
+            response = client.post(
+                self.submit_url,
+                json=args,
+                timeout=self._timeout,
+                follow_redirects=True,
+            )
         print(response.url)
         # If the request was successful, parse the response
         if response.status_code == 200:

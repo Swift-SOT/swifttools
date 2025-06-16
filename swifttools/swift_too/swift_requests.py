@@ -72,7 +72,7 @@ class SwiftTOORequests(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestsSchem
     api_name: str = "Swift_TOO_Requests"
     _schema = SwiftTOORequestsSchema
     _get_schema = SwiftTOORequestsGetSchema
-    _endpoint = "/swift/requests"
+    _endpoint = "/swift/too"
 
     def __getitem__(self, index):
         return self.entries[index]
@@ -99,7 +99,7 @@ class SwiftTOORequests(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestsSchem
     def _table(self):
         table_cols = [
             "too_id",
-            "source_name",
+            "target_name",
             "instrument",
             "ra",
             "dec",
@@ -113,7 +113,7 @@ class SwiftTOORequests(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestsSchem
             "target_id",
         ]
         if len(self.entries) > 0:
-            header = [self.entries[0].varnames[col] for col in table_cols]
+            header = [self.entries[0]._varnames[col] for col in table_cols]
         else:
             header = []
         t = list()

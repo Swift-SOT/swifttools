@@ -73,7 +73,7 @@ class SwiftResolve(TOOAPIBaseclass, SwiftResolveSchema):
 class TOOAPIAutoResolve(OptionalCoordinateSchema):
     """
     TOOAPIAutoResolve schema for automatic coordinate resolution based on
-    source name. If a `name` (or `source_name`) is provided, attempts to
+    source name. If a `name` (or `target_name`) is provided, attempts to
     resolve its right ascension (`ra`) and declination (`dec`) using the
     `SwiftResolve` service. If resolution is successful, the coordinates are
     set in the schema. If resolution fails, the status is set to "Rejected"
@@ -122,10 +122,10 @@ class TOOAPIAutoResolve(OptionalCoordinateSchema):
         """If you set a name, use `SwiftResolve` to retrieve its `ra` and `dec`."""
 
         name = values.get("name")
-        source_name = values.get("source_name")
-        if source_name is not None:
-            values["name"] = source_name
-            name = source_name
+        target_name = values.get("target_name")
+        if target_name is not None:
+            values["name"] = target_name
+            name = target_name
 
         if name is not None and isinstance(name, str):
             r = SwiftResolve(name=name)

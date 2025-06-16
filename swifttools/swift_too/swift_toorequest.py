@@ -39,8 +39,8 @@ class UrgencyEnum(int, Enum):
 class SwiftTOORequestSchema(BaseSchema):
     too_id: Optional[int] = None
     timestamp: Optional[datetime] = None
-    source_name: Optional[str] = None
-    source_type: Optional[str] = None
+    target_name: Optional[str] = None
+    target_type: Optional[str] = None
     ra: Optional[AstropyAngle] = None
     dec: Optional[AstropyAngle] = None
     poserr: Union[float, str, None] = None
@@ -84,6 +84,76 @@ class SwiftTOORequestSchema(BaseSchema):
     l_name: Optional[str] = None
     num_of_visits: int = 1
     exp_time_per_visit: Optional[int] = None
+
+    # English Descriptions of all the variables
+    _varnames: dict[str, str] = {
+        "decision": "Decision",
+        "done": "Done",
+        "date_begin": "Begin date",
+        "date_end": "End date",
+        "calendar": "Calendar",
+        "slew_in_place": "Slew in Place",
+        "grb_triggertime": "GRB Trigger Time (UT)",
+        "exp_time_per_visit_approved": "Exposure Time per Visit (s)",
+        "total_exp_time_approved": "Total Exposure (s)",
+        "num_of_visits_approved": "Number of Visits",
+        "l_name": "Requester",
+        "username": "Requester",
+        "too_id": "ToO ID",
+        "timestamp": "Time Submitted",
+        "target_id": "Primary Target ID",
+        "sourceinfo": "Object Information",
+        "ra": "Right Ascenscion (J2000)",
+        "dec": "Declination (J2000)",
+        "target_name": "Object Name",
+        "resolve": "Resolve coordinates",
+        "position_err": "Position Error",
+        "poserr": "Position Error (90% confidence - arcminutes)",
+        "obs_type": "What is Driving the Exposure Time?",
+        "target_type": "Type or Classification",
+        "tiling": "Tiling",
+        "immediate_objective": "Immediate Objective",
+        "proposal": "GI Program",
+        "proposal_details": "GI Proposal Details",
+        "instrument": "Instrument",
+        "tiling_type": "Tiling Type",
+        "number_of_tiles": "Number of Tiles",
+        "exposure_time_per_tile": "Exposure Time per Tile",
+        "tiling_justification": "Tiling Justification",
+        "instruments": "Instrument Most Critical to your Science Goals",
+        "urgency": "Urgency",
+        "proposal_id": "GI Proposal ID",
+        "proposal_pi": "GI Proposal PI",
+        "proposal_trigger_just": "GI Trigger Justification",
+        "source_brightness": "Object Brightness",
+        "opt_mag": "Optical Magnitude",
+        "opt_filt": "Optical Filter",
+        "xrt_countrate": "XRT Estimated Rate (c/s)",
+        "bat_countrate": "BAT Countrate (c/s)",
+        "other_brightness": "Other Brightness",
+        "science_just": "Science Justification",
+        "monitoring": "Observation Campaign",
+        "obs_n": "Observation Strategy",
+        "num_of_visits": "Number of Visits",
+        "exp_time_per_visit": "Exposure Time per Visit (seconds)",
+        "monitoring_freq": "Monitoring Cadence",
+        "monitoring_freq_approved": "Monitoring Cadence",
+        "monitoring_details": "Monitoring Details",
+        "exposure": "Exposure Time (seconds)",
+        "exp_time_just": "Exposure Time Justification",
+        "xrt_mode": "XRT Mode",
+        "xrt_mode_approved": "XRT Mode (Approved)",
+        "uvot_mode": "UVOT Mode",
+        "uvot_mode_approved": "UVOT Mode (Approved)",
+        "uvot_just": "UVOT Mode Justification",
+        "trigger_date": "GRB Trigger Date (YYYY/MM/DD)",
+        "trigger_time": "GRB Trigger Time (HH:MM:SS)",
+        "grb_detector": "GRB Discovery Instrument",
+        "grbinfo": "GRB Details",
+        "debug": "Debug mode",
+        "validate_only": "Validate only",
+        "quiet": "Quiet mode",
+    }
 
 
 # class Swift_TOORequest(
@@ -184,12 +254,12 @@ class SwiftTOORequestSchema(BaseSchema):
 #         "sourceinfo": "Object Information",
 #         "ra": "Right Ascenscion (J2000)",
 #         "dec": "Declination (J2000)",
-#         "source_name": "Object Name",
+#         "target_name": "Object Name",
 #         "resolve": "Resolve coordinates",
 #         "position_err": "Position Error",
 #         "poserr": "Position Error (90% confidence - arcminutes)",
 #         "obs_type": "What is Driving the Exposure Time?",
-#         "source_type": "Type or Classification",
+#         "target_type": "Type or Classification",
 #         "tiling": "Tiling",
 #         "immediate_objective": "Immediate Objective",
 #         "proposal": "GI Program",
@@ -244,9 +314,9 @@ class SwiftTOORequestSchema(BaseSchema):
 #     #         TOO ID assigned by server on acceptance (default None)
 #     #     timestamp : datetime
 #     #         Timestamp that TOO was accepted (default None)
-#     #     source_name : string
+#     #     target_name : string
 #     #         Name of the object we're requesting a TOO for (default None)
-#     #     source_type : string
+#     #     target_type : string
 #     #         Type of object (e.g. "Supernova", "LMXB", "BL Lac")  (default None)
 #     #     ra : float
 #     #         RA(J2000) Degrees decimal (default None)
@@ -339,9 +409,9 @@ class SwiftTOORequestSchema(BaseSchema):
 #     #     self.too_id = None  # TOO ID assigned by server on acceptance (int)
 #     #     self.timestamp = None  # Timestamp that TOO was accepted (datetime)
 #     #     # Source name, type, location, position_error
-#     #     self.source_name = None  # Name of the object we're requesting a TOO for (string)
+#     #     self.target_name = None  # Name of the object we're requesting a TOO for (string)
 #     #     # Type of object (e.g. "Supernova", "LMXB", "BL Lac")  (string)
-#     #     self.source_type = None
+#     #     self.target_type = None
 #     #     self.ra = None  # RA(J2000) Degrees decimal (float)
 #     #     self.dec = None  # declination (J2000) Degrees decimal (float)
 #     #     self.poserr = 0.0  # Position error in arc-minutes (float)
@@ -494,8 +564,8 @@ class SwiftTOORequestSchema(BaseSchema):
 #             "dec",
 #             "num_of_visits",
 #             "exp_time_just",
-#             "source_type",
-#             "source_name",
+#             "target_type",
+#             "target_name",
 #             "science_just",
 #             "username",
 #             "obs_type",
@@ -559,7 +629,7 @@ class SwiftTOORequestSchema(BaseSchema):
 
 #         # Check trigger requirements
 #         grb_requirements = ["grb_triggertime", "grb_detector"]
-#         if self.source_type == "GRB":
+#         if self.target_type == "GRB":
 #             for req in grb_requirements:
 #                 if getattr(self, req) is None:
 #                     self.status.error(f"Missing key: {req}")
@@ -595,8 +665,8 @@ class SwiftTOORequestSchema(BaseSchema):
 #                 "l_name",
 #                 "timestamp",
 #                 "urgency",
-#                 "source_name",
-#                 "source_type",
+#                 "target_name",
+#                 "target_type",
 #                 "grb_triggertime",
 #                 "grb_detector",
 #                 "ra",
@@ -645,8 +715,8 @@ class SwiftTOORequestSchema(BaseSchema):
 
 
 class SwiftTOOUserParamsSchema(BaseSchema):
-    source_name: str = Field(description="Source Name")
-    source_type: str = Field(description="Source Type")
+    target_name: str = Field(description="Source Name")
+    target_type: str = Field(description="Source Type")
     # ra: float = Field(description="Right Ascension (degrees)", ge=0, le=360)
     # dec: float = Field(description="Declination (degrees)", ge=-90, le=90)
     poserr: Optional[float] = Field(None, description="Positional Error")
@@ -706,7 +776,7 @@ class SwiftTOOFormSchema(SwiftTOOUserParamsSchema):
                 "Must specify at least one brightness value. If specifying optical brightness, ensure filter is set."
             )
 
-        if data.source_type == "GRB" and (data.grb_triggertime is None or data.grb_detector is None):
+        if data.target_type == "GRB" and (data.grb_triggertime is None or data.grb_detector is None):
             raise ValueError("Must specify GRB trigger time and detector if source type is GRB.")
 
         if data.uvot_just == "" and "0x9999" not in data.uvot_mode:
@@ -751,8 +821,8 @@ class SwiftTOOPostSchema(SwiftTOOFormSchema):
             "dec",
             "num_of_visits",
             "exp_time_just",
-            "source_type",
-            "source_name",
+            "target_type",
+            "target_name",
             "science_just",
             "username",
             "obs_type",
@@ -771,76 +841,6 @@ class SwiftTOORequest(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestSchema)
     validate_only: bool = False
     debug: bool = False
 
-    # English Descriptions of all the variables
-    _varnames: dict[str, str] = {
-        "decision": "Decision",
-        "done": "Done",
-        "date_begin": "Begin date",
-        "date_end": "End date",
-        "calendar": "Calendar",
-        "slew_in_place": "Slew in Place",
-        "grb_triggertime": "GRB Trigger Time (UT)",
-        "exp_time_per_visit_approved": "Exposure Time per Visit (s)",
-        "total_exp_time_approved": "Total Exposure (s)",
-        "num_of_visits_approved": "Number of Visits",
-        "l_name": "Requester",
-        "username": "Requester",
-        "too_id": "ToO ID",
-        "timestamp": "Time Submitted",
-        "target_id": "Primary Target ID",
-        "sourceinfo": "Object Information",
-        "ra": "Right Ascenscion (J2000)",
-        "dec": "Declination (J2000)",
-        "source_name": "Object Name",
-        "resolve": "Resolve coordinates",
-        "position_err": "Position Error",
-        "poserr": "Position Error (90% confidence - arcminutes)",
-        "obs_type": "What is Driving the Exposure Time?",
-        "source_type": "Type or Classification",
-        "tiling": "Tiling",
-        "immediate_objective": "Immediate Objective",
-        "proposal": "GI Program",
-        "proposal_details": "GI Proposal Details",
-        "instrument": "Instrument",
-        "tiling_type": "Tiling Type",
-        "number_of_tiles": "Number of Tiles",
-        "exposure_time_per_tile": "Exposure Time per Tile",
-        "tiling_justification": "Tiling Justification",
-        "instruments": "Instrument Most Critical to your Science Goals",
-        "urgency": "Urgency",
-        "proposal_id": "GI Proposal ID",
-        "proposal_pi": "GI Proposal PI",
-        "proposal_trigger_just": "GI Trigger Justification",
-        "source_brightness": "Object Brightness",
-        "opt_mag": "Optical Magnitude",
-        "opt_filt": "Optical Filter",
-        "xrt_countrate": "XRT Estimated Rate (c/s)",
-        "bat_countrate": "BAT Countrate (c/s)",
-        "other_brightness": "Other Brightness",
-        "science_just": "Science Justification",
-        "monitoring": "Observation Campaign",
-        "obs_n": "Observation Strategy",
-        "num_of_visits": "Number of Visits",
-        "exp_time_per_visit": "Exposure Time per Visit (seconds)",
-        "monitoring_freq": "Monitoring Cadence",
-        "monitoring_freq_approved": "Monitoring Cadence",
-        "monitoring_details": "Monitoring Details",
-        "exposure": "Exposure Time (seconds)",
-        "exp_time_just": "Exposure Time Justification",
-        "xrt_mode": "XRT Mode",
-        "xrt_mode_approved": "XRT Mode (Approved)",
-        "uvot_mode": "UVOT Mode",
-        "uvot_mode_approved": "UVOT Mode (Approved)",
-        "uvot_just": "UVOT Mode Justification",
-        "trigger_date": "GRB Trigger Date (YYYY/MM/DD)",
-        "trigger_time": "GRB Trigger Time (HH:MM:SS)",
-        "grb_detector": "GRB Discovery Instrument",
-        "grbinfo": "GRB Details",
-        "debug": "Debug mode",
-        "validate_only": "Validate only",
-        "quiet": "Quiet mode",
-    }
-
     @property
     def _table(self):
         tab = list()
@@ -850,8 +850,8 @@ class SwiftTOORequest(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestSchema)
                 "l_name",
                 "timestamp",
                 "urgency",
-                "source_name",
-                "source_type",
+                "target_name",
+                "target_type",
                 "grb_triggertime",
                 "grb_detector",
                 "ra",
