@@ -9,6 +9,8 @@ import httpx
 from pydantic import TypeAdapter, ValidationError
 from tabulate import tabulate
 
+from .swift_schemas import BaseSchema
+
 from .api_status import SwiftTOOStatus
 from .version import version_tuple
 
@@ -86,11 +88,12 @@ def _tablefy(table, header=None):
     return tab
 
 
-class TOOAPIBaseclass:
+class TOOAPIBaseclass(BaseSchema):
     """Mixin for TOO API Classes. Most of these are to do with reading and
     writing classes out as JSON/dicts."""
 
     # Set api_version for all classes
+    api_name: str
     api_version: str = api_version
     username: str = "anonymous"
     shared_secret: str = "anonymous"
@@ -116,36 +119,8 @@ class TOOAPIBaseclass:
                     kwargs[key] = args[i]
                 else:
                     break
+        print(kwargs)
         super().__init__(**kwargs)
-
-    # @property
-    # def shared_secret(self):
-    #     if self._shared_secret is None and self.username != "anonymous":
-    #         # Try to fetch password using keyring, if available
-    #         if keyring_support:
-    #             self._shared_secret = keyring.get_password("swifttools.swift_too", self.username)
-    #         else:
-    #             raise Exception("Warning: keyring support not available. Please set shared_secret manually.")
-    #     elif self.username == "anonymous":
-    #         return "anonymous"
-    #     return self._shared_secret
-
-    # @shared_secret.setter
-    # def shared_secret(self, secret):
-    #     if self.username != "anonymous" and (self.username is not None or self.username == ""):
-    #         # Try to remember the password using keyring if available
-    #         if keyring_support:
-    #             try:
-    #                 keyring.set_password("swifttools.swift_too", self.username, secret)
-    #             except keyring.errors.PasswordSetError:
-    #                 # This error is raised in if keyring support is enabled on
-    #                 # macOS, but the person isn't running the code interactively
-    #                 # or if they're logged in via ssh. Just trap and move on to
-    #                 # avoid code crashing.
-    #                 pass
-
-    #     if self.username != "anonymous":
-    #         self._shared_secret = secret
 
     @property
     def _table(self):

@@ -17,7 +17,7 @@ from .swift_schemas import (
 )
 
 
-class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect):
+class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect, TOOAPIBaseclass, TOOAPIDownloadData):
     """Class that defines an individual entry in the Swift As-Flown Timeline
 
     Attributes
@@ -57,6 +57,8 @@ class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect):
     targname : str
         Target name of the primary target of the observation
     """
+
+    api_name: str = "Swift_AFST_Entry"
 
     begin: Optional[datetime] = None
     settle: Optional[datetime] = None

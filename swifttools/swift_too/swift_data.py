@@ -5,7 +5,7 @@ from typing import Any, Optional, Union
 
 import boto3  # type: ignore[import-untyped]
 import boto3.session  # type: ignore[import-untyped]
-import requests
+import httpx
 from botocore import UNSIGNED  # type: ignore[import-untyped]
 from botocore.client import Config  # type: ignore[import-untyped]
 from pydantic import Field
@@ -51,8 +51,6 @@ class SwiftDataFile(BaseSchema):
         s3: Optional[Any] = None,
     ):
         """Download the file into a given `outdir`"""
-        #        if outdir is not None:
-        #            self.outdir = outdir
         # Make the directories for the full path if they don't exist
         fulldir = os.path.join(outdir, self.path)
         if not os.path.exists(fulldir):
@@ -66,19 +64,34 @@ class SwiftDataFile(BaseSchema):
             key_name = self.url.replace("https://heasarc.gsfc.nasa.gov/FTP/", "")
             s3.download_file("nasa-heasarc", key_name, fullfilepath)
         else:
-            r = requests.get(self.url, stream=True, allow_redirects=True)
-            if r.ok:
-                filedata = r.raw.read()
-                with open(fullfilepath, "wb") as outfile:
-                    outfile.write(filedata)
+            with httpx.stream("GET", self.url, follow_redirects=True) as response:
+                try:
+                    response.raise_for_status()  # Raise error if the request failed
+                except httpx.HTTPStatusError:
+                    return False
+
+                total = int(response.headers.get("Content-Length", 0))
+
+                with (
+                    open(fullfilepath, "wb") as f,
+                    tqdm(
+                        total=total,
+                        unit="B",
+                        unit_scale=True,
+                        unit_divisor=1024,
+                        desc=os.path.basename(fullfilepath),
+                    ) as progress,
+                ):
+                    for chunk in response.iter_bytes(chunk_size=8192):
+                        f.write(chunk)
+                        progress.update(len(chunk))
+
                 self.localpath = fullfilepath
-            else:
-                return False
 
         return True
 
 
-class SwiftDataSchema(BaseSchema):
+class SwiftDataSchema(TOOAPIBaseclass):
     obs_id: Optional[str] = None
     auxil: bool = True
     bat: bool = False
@@ -93,7 +106,7 @@ class SwiftDataSchema(BaseSchema):
     entries: list[SwiftDataFile] = []
 
 
-class SwiftData(TOOAPIBaseclass, SwiftDataSchema):
+class SwiftData(SwiftDataSchema):
     """
     Class to download Swift data from the UK or US SDC for a given observation
     ID.
@@ -286,13 +299,13 @@ class TOOAPIDownloadData:
         """Download data from SDC"""
         # Set up the Data class
         data = SwiftData()
-        params = SwiftData._parameters + SwiftData._local
+        params = data._parameters + data._local
         # Read in arguments
         for i in range(len(args)):
             setattr(data, params[i + 1], args[i])
         # Parse argument keywords
         for key in kwargs.keys():
-            if key in params + self._local:
+            if key in params:
                 setattr(data, key, kwargs[key])
             else:
                 raise TypeError(f"{self.api_name} got an unexpected keyword argument '{key}'")
