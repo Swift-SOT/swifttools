@@ -1,15 +1,13 @@
-from pathlib import Path
+import http.cookiejar
 import textwrap
 import warnings
 from datetime import datetime
+from pathlib import Path
 from typing import Any
-import http.cookiejar
 
 import httpx
 from pydantic import TypeAdapter, ValidationError
 from tabulate import tabulate
-
-from swifttools.swift_too.swift_schemas import BaseSchema
 
 from .api_status import SwiftTOOStatus
 from .version import version_tuple
