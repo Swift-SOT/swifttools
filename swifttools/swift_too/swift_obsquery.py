@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 from pydantic import computed_field, model_validator
 
@@ -104,15 +104,15 @@ class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect):
     }
 
     @property
-    def exposure(self):
+    def exposure(self) -> timedelta:
         return self.end - self.settle
 
     @property
-    def slewtime(self):
+    def slewtime(self) -> timedelta:
         return self.settle - self.begin
 
     @property
-    def _table(self):
+    def _table(self) -> tuple[list[str], list[list[Any]]]:
         parameters = ["begin", "end", "targname", "obs_id", "exposure", "slewtime"]
         header = [self._header_title(row) for row in parameters]
         return header, [
@@ -134,7 +134,7 @@ class SwiftAFSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema)
 
     @model_validator(mode="before")
     @classmethod
-    def validate_exactly_one_field(cls, values):
+    def validate_exactly_one_field(cls, values: Any) -> dict[str, Any]:
         values = values.__dict__ if not isinstance(values, dict) else values
         params = cls.model_fields.keys()
         provided_fields = [field for field in params if values.get(field) is not None]
@@ -196,16 +196,16 @@ class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, BaseSchema):
     api_name: str = "Swift_Observation"
     entries: list[SwiftAFSTEntry] = []
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int) -> SwiftAFSTEntry:
         return self.entries[index]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.entries)
 
-    def append(self, value):
+    def append(self, value: SwiftAFSTEntry) -> None:
         self.entries.append(value)
 
-    def extend(self, value):
+    def extend(self, value: list[SwiftAFSTEntry]) -> None:
         self.entries.extend(value)
 
     @computed_field  # type: ignore[prop-decorator]
@@ -311,7 +311,7 @@ class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, BaseSchema):
     # Compat end
 
     @property
-    def _table(self):
+    def _table(self) -> tuple[list[str], list[list[Any]]]:
         if len(self.entries) > 0:
             header = self.entries[0]._table[0]
         else:
@@ -340,7 +340,7 @@ class SwiftObservations(dict, TOOAPIBaseclass):
     typically the Swift Observation ID in SDC format (e.g. '00012345012')."""
 
     @property
-    def _table(self):
+    def _table(self) -> tuple[list[str], list[list[Any]]]:
         if len(self.values()) > 0:
             header = list(self.values())[0]._table[0]
         else:
@@ -408,7 +408,7 @@ class SwiftAFST(
     _isutc = False
 
     @property
-    def _table(self):
+    def _table(self) -> tuple[list[str], list[list[Any]]]:
         if len(self.entries) > 0:
             header = self.entries[0]._table[0]
         else:
@@ -416,20 +416,20 @@ class SwiftAFST(
         return header, [ppt._table[1][0] for ppt in self.entries]
 
     @property
-    def observations(self):
+    def observations(self) -> SwiftObservations:
         if len(self.entries) > 0 and len(self._observations.keys()) == 0:
             for q in self.entries:
                 self._observations[q.obs_id] = SwiftObservation()
             _ = [self._observations[q.obs_id].append(q) for q in self.entries]
         return self._observations
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int) -> SwiftAFSTEntry:
         return self.entries[index]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.entries)
 
-    def append(self, value):
+    def append(self, value: SwiftAFSTEntry) -> None:
         self.entries.append(value)
 
 

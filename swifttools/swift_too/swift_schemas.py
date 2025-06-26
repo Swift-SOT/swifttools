@@ -325,10 +325,10 @@ class SwiftObservationSchema(BaseSchema):
     begin: Optional[AstropyDateTime] = None
     end: Optional[AstropyDateTime] = None
     obstype: Optional[str] = None
-    targname: Optional[str] = Field(default=None, alias="target_name")
+    target_name: Optional[str] = None
     roll: Optional[float] = None
-    targetid: Optional[int] = None
-    seg: Optional[int] = None
+    target_id: Optional[int] = None
+    segment: Optional[int] = None
     obs_id: Optional[int] = None
     bat: Optional[int] = None
     xrt: Optional[int] = None
