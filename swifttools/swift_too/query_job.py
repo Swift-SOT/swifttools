@@ -1,14 +1,14 @@
-from .api_status import SwiftTOOStatus
-from .swift_calendar import Calendar
-from .swift_clock import Clock
-from .swift_data import Data
-from .swift_guano import GUANO
-from .swift_obsquery import AFST
-from .swift_planquery import PPST
-from .swift_requests import TOORequests
-from .swift_saa import SAA
-from .swift_uvot import UVOTMode
-from .swift_visquery import VisQuery
+from .base.status import SwiftTOOStatus
+from .swift.calendar import Calendar
+from .swift.clock import Clock
+from .swift.data import Data
+from .swift.guano import GUANO
+from .swift.obsquery import AFST
+from .swift.planquery import PPST
+from .swift.requests import TOORequests
+from .swift.saa import SAA
+from .swift.uvot import UVOTMode
+from .swift.visquery import VisQuery
 
 
 class QueryJob(SwiftTOOStatus):

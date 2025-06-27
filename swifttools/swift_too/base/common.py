@@ -93,10 +93,29 @@ class TOOAPIBaseclass:
     _post_schema: Any = None
     _delete_schema: Any = None
 
+    # Provide backward compatibility for some arguments passed as kwargs
+    _back_compat_args: dict = {
+        "obs_id": ["obsnum", "obsid"],
+        "target_id": ["targetid", "targid", "target_ID"],
+        "target_name": ["targetname", "targname", "source_name"],
+        "uvot_mode": ["uvotmode"],
+        "xrt_mode": ["xrtmode"],
+        "bat_mode": ["batmode"],
+    }
+
     # Every request gets a status
     status: SwiftTOOStatus = SwiftTOOStatus()
 
     def __init__(self, *args, **kwargs):
+        # Check if any of the arguments are in the back compatibility list, and
+        # convert them to the correct keyword arguments.
+        for key, values in self._back_compat_args.items():
+            for value in values:
+                if value in kwargs:
+                    if key not in kwargs:
+                        kwargs[key] = kwargs[value]
+                    del kwargs[value]
+
         # Convert positional arguments to keyword arguments
         if len(args) > 0 and hasattr(self, "_get_schema") and hasattr(self._get_schema, "model_fields"):
             for i, key in enumerate(self._get_schema.model_fields.keys()):
