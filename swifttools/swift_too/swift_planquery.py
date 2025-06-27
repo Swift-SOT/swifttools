@@ -147,7 +147,7 @@ class SwiftPPST(TOOAPIBaseclass, TOOAPIDownloadData, TOOAPIAutoResolve, TOOAPICl
     shared_secret: str
         TOO API shared secret (default 'anonymous')
     entries : list
-        List of observations (`Swift_AFSTEntry`)
+        List of observations (`SwiftPPSTEntry`)
     status : TOOStatus
         Status of API request
     ppstmax: datetime

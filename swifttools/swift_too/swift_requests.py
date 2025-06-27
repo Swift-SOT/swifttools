@@ -41,7 +41,7 @@ class SwiftTOORequests(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestsSchem
     shared_secret: str
         TOO API shared secret (default 'anonymous')
     entries : list
-        List of TOOs (`Swift_TOO_Request`)
+        List of TOOs (`SwiftTOORequest`)
     status : TOOStatus
         Status of API request
     detail : boolean

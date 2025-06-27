@@ -37,7 +37,7 @@ class SwiftSAA(TOOAPIBaseclass, TOOAPIClockCorrect, SwiftSAASchema):
     Attributes
     ----------
     entries : list
-        Array of Swift_SAAEntry classes containing the windows.
+        Array of SwiftSAAEntry classes containing the windows.
     status : TOOStatus
         Status of API request
     """

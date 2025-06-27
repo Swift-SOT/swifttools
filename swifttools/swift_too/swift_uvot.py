@@ -8,8 +8,11 @@ from .swift_instruments import TOOAPIInstruments
 from .swift_schemas import BaseSchema, OptionalCoordinateSchema
 
 
-class SwiftUVOTModeGetSchema(OptionalCoordinateSchema):
-    uvotmode: int
+class UVOTModeSchema(BaseSchema):
+    uvot_mode: int
+
+
+class SwiftUVOTModeGetSchema(OptionalCoordinateSchema, UVOTModeSchema): ...
 
 
 class SwiftUVOTModeEntry(BaseSchema):
@@ -17,7 +20,7 @@ class SwiftUVOTModeEntry(BaseSchema):
 
     Attributes
     ----------
-    uvotmode : int
+    uvot_mode : int
         UVOT mode
     filter_num : int
         filter number
@@ -43,7 +46,7 @@ class SwiftUVOTModeEntry(BaseSchema):
         comment on special modes
     """
 
-    uvotmode: int = 0
+    uvot_mode: int = 0
     filter_num: Optional[int] = None
     min_exposure: Optional[int] = None
     filter_pos: Optional[int] = None
@@ -62,7 +65,7 @@ class SwiftUVOTModeEntry(BaseSchema):
 
 
 class SwiftUVOTModeSchema(BaseSchema):
-    uvotmode: Optional[int] = None
+    uvot_mode: Optional[int] = None
     ra: Optional[float] = None
     dec: Optional[float] = None
     entries: list[SwiftUVOTModeEntry] = []
@@ -75,7 +78,7 @@ class SwiftUVOTMode(TOOAPIBaseclass, TOOAPIInstruments, SwiftUVOTModeSchema, TOO
 
     Attributes
     ----------
-    uvotmode : int / str
+    uvot_mode : int / str
         UVOT mode to fetch information about (can be hex string or integer)
     username : str
         username for TOO API (default 'anonymous')
@@ -91,7 +94,7 @@ class SwiftUVOTMode(TOOAPIBaseclass, TOOAPIInstruments, SwiftUVOTModeSchema, TOO
     api_name: str = "UVOT_mode"
     _schema = SwiftUVOTModeSchema
     _get_schema = SwiftUVOTModeGetSchema
-    _endpoint = "/swift/uvotmode"
+    _endpoint = "/swift/uvot_mode"
 
     def __getitem__(self, index):
         return self.entries[index]
@@ -101,7 +104,7 @@ class SwiftUVOTMode(TOOAPIBaseclass, TOOAPIInstruments, SwiftUVOTModeSchema, TOO
 
     def __str__(self):
         """Display UVOT mode table"""
-        if hasattr(self, "status") and self.status == "Rejected" and self.status.__class__.__name__ == "TOOStatus":
+        if hasattr(self, "status") and self.status == "Rejected" and self.status.__class__.__name__ == "SwiftTOOStatus":
             return "Rejected with the following error(s): " + " ".join(self.status.errors)
         elif self.entries is not None:
             table_cols = [
@@ -128,7 +131,7 @@ class SwiftUVOTMode(TOOAPIBaseclass, TOOAPIInstruments, SwiftUVOTModeSchema, TOO
             for entry in self.entries:
                 table_columns.append([getattr(entry, col) for col in table_cols])
 
-            table = f"UVOT Mode: {self.uvotmode}\n"
+            table = f"UVOT Mode: {self.uvot_mode}\n"
             table += "The following table summarizes this mode, ordered by the filter sequence:\n"
             table += tabulate(table_columns, tablefmt="pretty")
             table += "\nFilter: The particular filter in the sequence.\n"
@@ -143,10 +146,15 @@ class SwiftUVOTMode(TOOAPIBaseclass, TOOAPIInstruments, SwiftUVOTModeSchema, TOO
 
     def _repr_html_(self):
         """Jupyter Notebook friendly display of UVOT mode table"""
-        if hasattr(self, "status") and self.status == "Rejected" and self.status.__class__.__name__ == "TOOStatus":
+
+        if (
+            hasattr(self, "status")
+            and self.status.status == "Rejected"
+            and self.status.__class__.__name__ == "SwiftTOOStatus"
+        ):
             return "<b>Rejected with the following error(s): </b>" + " ".join(self.status.errors)
         elif self.entries is not None:
-            html = f"<h2>UVOT Mode: {self.uvotmode}</h2>"
+            html = f"<h2>UVOT Mode: {self.uvot_mode}</h2>"
             html += "<p>The following table summarizes this mode, ordered by the filter sequence:</p>"
 
             html += '<table id="modelist" cellpadding=4 cellspacing=0>'

@@ -9,8 +9,6 @@ import httpx
 from pydantic import TypeAdapter, ValidationError
 from tabulate import tabulate
 
-from .swift_schemas import BaseSchema
-
 from .api_status import SwiftTOOStatus
 from .version import version_tuple
 
@@ -23,22 +21,9 @@ warnings.formatwarning = lambda message, category, filename, lineno, line=None: 
 # Define the API version
 api_version = f"{version_tuple[0]}.{version_tuple[1]}"
 
-# Next imports are not dependancies, but if you have them installed, we'll use
-# them
-try:
-    import keyring
-
-    # Check that keyring actually is set up and working
-    if keyring.get_keyring().name != "fail Keyring":
-        keyring_support = True
-    else:
-        keyring_support = False
-except ImportError:
-    keyring_support = False
-
 # Submission URL
 API_URL = "https://www.swift.psu.edu/api/v1.2"
-API_URL = "http://localhost:8000/api/v1.2"
+# API_URL = "http://localhost:8000/api/v1.2"
 COOKIE_JAR_PATH = Path.home() / ".swift_too" / "cookies.txt"
 COOKIE_JAR_PATH.parent.mkdir(parents=True, exist_ok=True)
 
@@ -88,7 +73,7 @@ def _tablefy(table, header=None):
     return tab
 
 
-class TOOAPIBaseclass(BaseSchema):
+class TOOAPIBaseclass:
     """Mixin for TOO API Classes. Most of these are to do with reading and
     writing classes out as JSON/dicts."""
 
@@ -115,6 +100,7 @@ class TOOAPIBaseclass(BaseSchema):
         # Convert positional arguments to keyword arguments
         if len(args) > 0 and hasattr(self, "_get_schema") and hasattr(self._get_schema, "model_fields"):
             for i, key in enumerate(self._get_schema.model_fields.keys()):
+                print(i, key)
                 if i < len(args):
                     kwargs[key] = args[i]
                 else:
@@ -150,7 +136,7 @@ class TOOAPIBaseclass(BaseSchema):
                 return "No data"
 
     def __str__(self):
-        if hasattr(self, "status") and self.status == "Rejected" and self.status.api_name == "Swift_TOO_Status":
+        if hasattr(self, "status") and self.status.status == "Rejected" and self.status.api_name == "Swift_TOO_Status":
             return "Rejected with the following error(s): " + " ".join(self.status.errors)
         else:
             header, table = self._table
