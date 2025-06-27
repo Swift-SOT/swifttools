@@ -1,10 +1,10 @@
 from datetime import datetime
 from typing import Optional
 
-from .api_common import TOOAPIBaseclass
-from .api_resolve import TOOAPIAutoResolve
-from .swift_clock import TOOAPIClockCorrect
-from .swift_schemas import AstropyAngle, BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
+from ..base.common import TOOAPIBaseclass
+from ..base.resolve import TOOAPIAutoResolve
+from .clock import TOOAPIClockCorrect
+from .schemas import AstropyAngle, BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
 
 
 class SwiftCalendarGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):

@@ -1,10 +1,10 @@
 from datetime import datetime
 from typing import Optional
 
-from .api_common import TOOAPIBaseclass
-from .api_resolve import TOOAPIAutoResolve
-from .swift_schemas import AstropyAngle, BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
-from .swift_toorequest import SwiftTOORequestSchema
+from ..base.common import TOOAPIBaseclass
+from ..base.resolve import TOOAPIAutoResolve
+from .schemas import AstropyAngle, BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
+from .toorequest import SwiftTOORequestSchema
 
 
 class SwiftTOORequestsGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):

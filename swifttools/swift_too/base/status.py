@@ -1,6 +1,6 @@
 from typing import Optional
 
-from .swift_schemas import BaseSchema
+from ..swift.schemas import BaseSchema
 
 
 class SwiftTOOStatus(BaseSchema):

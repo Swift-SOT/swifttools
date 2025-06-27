@@ -8,10 +8,10 @@ from pydantic import (
     model_validator,
 )
 
-from .api_common import TOOAPIBaseclass
-from .api_resolve import TOOAPIAutoResolve
-from .swift_calendar import SwiftCalendarSchema
-from .swift_schemas import (
+from ..base.common import TOOAPIBaseclass
+from ..base.resolve import TOOAPIAutoResolve
+from .calendar import SwiftCalendarSchema
+from .schemas import (
     AstropyAngle,
     BaseSchema,
     ObsType,

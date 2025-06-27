@@ -3,11 +3,10 @@ from typing import Optional, Union
 
 from pydantic import model_validator
 
-from swifttools.swift_too.swift_data import TOOAPIDownloadData
-
-from .api_common import TOOAPIBaseclass
-from .swift_clock import TOOAPIClockCorrect
-from .swift_schemas import (
+from ..base.common import TOOAPIBaseclass
+from .clock import TOOAPIClockCorrect
+from .data import TOOAPIDownloadData
+from .schemas import (
     BaseSchema,
     OptionalBeginEndLengthSchema,
 )

@@ -2,10 +2,10 @@ from typing import Optional
 
 from tabulate import tabulate
 
-from .api_common import TOOAPIBaseclass
-from .api_resolve import TOOAPIAutoResolve
-from .swift_instruments import TOOAPIInstruments
-from .swift_schemas import BaseSchema, OptionalCoordinateSchema
+from ..base.common import TOOAPIBaseclass
+from ..base.resolve import TOOAPIAutoResolve
+from .instruments import TOOAPIInstruments
+from .schemas import BaseSchema, OptionalCoordinateSchema
 
 
 class UVOTModeSchema(BaseSchema):

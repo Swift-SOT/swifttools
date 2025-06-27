@@ -9,8 +9,8 @@ import httpx
 from pydantic import TypeAdapter, ValidationError
 from tabulate import tabulate
 
-from .api_status import SwiftTOOStatus
-from .version import version_tuple
+from ..version import version_tuple
+from .status import SwiftTOOStatus
 
 # Make Warnings a little less weird
 formatwarning_orig = warnings.formatwarning

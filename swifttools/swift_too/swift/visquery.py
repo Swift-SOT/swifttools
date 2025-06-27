@@ -1,7 +1,7 @@
-from .api_common import TOOAPIBaseclass
-from .api_resolve import TOOAPIAutoResolve
-from .swift_clock import TOOAPIClockCorrect
-from .swift_schemas import (
+from ..base.common import TOOAPIBaseclass
+from ..base.resolve import TOOAPIAutoResolve
+from .clock import TOOAPIClockCorrect
+from .schemas import (
     BeginEndLengthSchema,
     CoordinateSchema,
     OptionalBeginEndLengthSchema,

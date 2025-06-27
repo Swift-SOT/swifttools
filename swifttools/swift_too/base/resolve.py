@@ -2,8 +2,8 @@ from typing import Optional
 
 from pydantic import computed_field, model_validator
 
-from .api_common import TOOAPIBaseclass
-from .swift_schemas import BaseSchema, OptionalCoordinateSchema
+from ..swift.schemas import BaseSchema, OptionalCoordinateSchema
+from .common import TOOAPIBaseclass
 
 
 class SwiftResolveGetSchema(BaseSchema):

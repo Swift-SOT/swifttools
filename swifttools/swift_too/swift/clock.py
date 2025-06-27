@@ -3,9 +3,9 @@ from typing import Optional, Union
 
 from pydantic import computed_field, model_validator
 
-from .api_common import TOOAPIBaseclass
-from .swift_datetime import swiftdatetime
-from .swift_schemas import BaseSchema
+from ..base.common import TOOAPIBaseclass
+from .datetime import swiftdatetime
+from .schemas import BaseSchema
 
 
 class SwiftDateTimeSchema(BaseSchema):

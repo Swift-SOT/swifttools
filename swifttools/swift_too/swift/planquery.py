@@ -3,12 +3,12 @@ from typing import Optional, Union
 
 from pydantic import Field, model_validator
 
-from .api_common import TOOAPIBaseclass
-from .api_resolve import TOOAPIAutoResolve
-from .swift_clock import TOOAPIClockCorrect
-from .swift_data import TOOAPIDownloadData
-from .swift_obsquery import SwiftObservation
-from .swift_schemas import AstropyAngle, BaseSchema, ObsIDSDC, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
+from ..base.common import TOOAPIBaseclass
+from ..base.resolve import TOOAPIAutoResolve
+from .clock import TOOAPIClockCorrect
+from .data import TOOAPIDownloadData
+from .obsquery import SwiftObservation
+from .schemas import AstropyAngle, BaseSchema, ObsIDSDC, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
 
 
 class SwiftPPSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):

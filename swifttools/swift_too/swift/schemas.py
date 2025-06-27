@@ -11,9 +11,7 @@ from astropy.coordinates import Latitude, Longitude, SkyCoord  # type: ignore[im
 from astropy.time import Time, TimeDelta  # type: ignore[import-untyped]
 from pydantic import (
     AfterValidator,
-    BaseModel,
     BeforeValidator,
-    ConfigDict,
     Field,
     PlainSerializer,
     TypeAdapter,
@@ -21,7 +19,8 @@ from pydantic import (
     model_validator,
 )
 
-from .api_functions import convert_from_timedelta, convert_obs_id_sdc, utcnow
+from ..base.functions import convert_from_timedelta, convert_obs_id_sdc, utcnow
+from ..base.schemas import BaseSchema
 
 # Make sure we are working in UTC times
 os.environ["TZ"] = "UTC"
@@ -63,19 +62,6 @@ class ObsType(str, Enum):
     POSITION = "Position"
     TIMING = "Timing"
     BLANK = ""
-
-
-class BaseSchema(BaseModel):
-    """Just define from_attributes for every Schema"""
-
-    model_config = ConfigDict(
-        from_attributes=True,
-    )
-    model_config = ConfigDict(
-        from_attributes=True,
-        arbitrary_types_allowed=True,
-        extra="allow"
-    )
 
 
 class BeginEndLengthSchema(BaseSchema):

@@ -3,11 +3,11 @@ from typing import Any, Optional, Union
 
 from pydantic import computed_field, model_validator
 
-from .api_common import TOOAPIBaseclass
-from .api_resolve import TOOAPIAutoResolve
-from .swift_clock import TOOAPIClockCorrect
-from .swift_data import TOOAPIDownloadData
-from .swift_schemas import (
+from ..base.common import TOOAPIBaseclass
+from ..base.resolve import TOOAPIAutoResolve
+from .clock import TOOAPIClockCorrect
+from .data import TOOAPIDownloadData
+from .schemas import (
     AstropyAngle,
     BaseSchema,
     CoordinateSchema,
