@@ -9,8 +9,8 @@ from pydantic import (
 )
 
 from ..base.common import TOOAPIBaseclass
-from ..base.resolve import TOOAPIAutoResolve
 from .calendar import SwiftCalendarSchema
+from .resolve import TOOAPIAutoResolve
 from .schemas import (
     AstropyAngle,
     BaseSchema,

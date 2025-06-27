@@ -1,6 +1,6 @@
 from ..base.common import TOOAPIBaseclass
-from ..base.resolve import TOOAPIAutoResolve
 from .clock import TOOAPIClockCorrect
+from .resolve import TOOAPIAutoResolve
 from .schemas import (
     BeginEndLengthSchema,
     CoordinateSchema,

@@ -4,9 +4,9 @@ from typing import Any, Optional, Union
 from pydantic import computed_field, model_validator
 
 from ..base.common import TOOAPIBaseclass
-from ..base.resolve import TOOAPIAutoResolve
 from .clock import TOOAPIClockCorrect
 from .data import TOOAPIDownloadData
+from .resolve import TOOAPIAutoResolve
 from .schemas import (
     AstropyAngle,
     BaseSchema,

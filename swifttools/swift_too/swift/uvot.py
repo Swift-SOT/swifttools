@@ -3,8 +3,8 @@ from typing import Optional
 from tabulate import tabulate
 
 from ..base.common import TOOAPIBaseclass
-from ..base.resolve import TOOAPIAutoResolve
 from .instruments import TOOAPIInstruments
+from .resolve import TOOAPIAutoResolve
 from .schemas import BaseSchema, OptionalCoordinateSchema
 
 

@@ -144,7 +144,6 @@ served basis. Typically processing requests takes a 10-20 seconds. Status of
 requests can be queried, and errors are reported back.
 """
 
-from .base.resolve import Resolve, Swift_Resolve, SwiftResolve
 from .query_job import QueryJob
 from .swift.calendar import Calendar, Swift_Calendar
 from .swift.clock import Clock, Swift_Clock, SwiftClock
@@ -153,6 +152,7 @@ from .swift.guano import GUANO, Swift_GUANO, SwiftGUANO
 from .swift.obsquery import ObsQuery, Swift_ObsQuery, SwiftAFST
 from .swift.planquery import PlanQuery, Swift_PlanQuery, Swift_PPST
 from .swift.requests import Swift_TOO_Requests, Swift_TOORequests, TOORequests
+from .swift.resolve import Resolve, Swift_Resolve, SwiftResolve
 from .swift.saa import SAA, Swift_SAA
 from .swift.toorequest import TOO, Swift_TOO, Swift_TOO_Request, SwiftTOO, TOORequest
 from .swift.uvot import Swift_UVOTMode, UVOT_mode, UVOTMode
