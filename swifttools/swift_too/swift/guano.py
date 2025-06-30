@@ -4,12 +4,12 @@ from typing import Optional, Union
 from pydantic import model_validator
 
 from ..base.common import TOOAPIBaseclass
-from .clock import TOOAPIClockCorrect
-from .data import TOOAPIDownloadData
-from .schemas import (
+from ..base.schemas import (
     BaseSchema,
     OptionalBeginEndLengthSchema,
 )
+from .clock import TOOAPIClockCorrect
+from .data import TOOAPIDownloadData
 
 
 class SwiftGUANOGTI(BaseSchema, TOOAPIBaseclass, TOOAPIClockCorrect):

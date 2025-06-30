@@ -253,7 +253,11 @@ class TOOAPIBaseclass:
 
     def submit_get(self) -> bool:
         """Perform an API GET request to the server."""
-        args = self._get_schema.model_validate(self.model_dump()).model_dump(exclude_none=True)
+        args = self._get_schema.model_validate(self.model_dump(exclude={"__pydantic_extra__"})).model_dump(
+            exclude_none=True
+        )
+        # Remove status from the arguments, as it is not needed for the GET request
+        args.pop("status", None)
 
         with httpx.Client(cookies=cookie_jar) as client:
             # Login if no valid session cookie exists
@@ -300,7 +304,9 @@ class TOOAPIBaseclass:
 
     def submit_post(self):
         """Perform an API POST request to the server."""
-        args = self._post_schema.model_validate(self.model_dump()).model_dump(exclude_none=True)
+        args = self._post_schema.model_validate(self.model_dump(exclude={"__pydantic_extra__"})).model_dump(
+            exclude_none=True
+        )
 
         with httpx.Client(cookies=cookie_jar) as client:
             # Login if no valid session cookie exists

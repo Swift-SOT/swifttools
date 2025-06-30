@@ -12,7 +12,7 @@ from pydantic import Field
 from tqdm.auto import tqdm  # type: ignore[import-untyped]
 
 from ..base.common import TOOAPIBaseclass
-from .schemas import BaseSchema
+from ..base.schemas import BaseSchema
 
 
 class SwiftDataGetSchema(BaseSchema):

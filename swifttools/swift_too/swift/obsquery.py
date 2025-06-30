@@ -4,17 +4,17 @@ from typing import Any, Optional, Union
 from pydantic import computed_field, model_validator
 
 from ..base.common import TOOAPIBaseclass
-from .clock import TOOAPIClockCorrect
-from .data import TOOAPIDownloadData
-from .resolve import TOOAPIAutoResolve
-from .schemas import (
+from ..base.schemas import (
     AstropyAngle,
     BaseSchema,
     CoordinateSchema,
-    ObsIDSDC,
     OptionalBeginEndLengthSchema,
     OptionalCoordinateSchema,
 )
+from .clock import TOOAPIClockCorrect
+from .data import TOOAPIDownloadData
+from .resolve import TOOAPIAutoResolve
+from .schemas import ObsIDSDC
 
 
 class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect, TOOAPIBaseclass, TOOAPIDownloadData):

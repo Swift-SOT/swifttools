@@ -2,9 +2,9 @@ from datetime import datetime
 from typing import Optional
 
 from ..base.common import TOOAPIBaseclass
+from ..base.schemas import AstropyAngle, BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
 from .clock import TOOAPIClockCorrect
 from .resolve import TOOAPIAutoResolve
-from .schemas import AstropyAngle, BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
 
 
 class SwiftCalendarGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):

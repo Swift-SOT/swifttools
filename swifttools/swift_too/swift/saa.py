@@ -1,8 +1,8 @@
 from datetime import datetime
 
 from ..base.common import TOOAPIBaseclass
+from ..base.schemas import BaseSchema, BeginEndLengthSchema, OptionalBeginEndLengthSchema
 from .clock import TOOAPIClockCorrect
-from .schemas import BaseSchema, BeginEndLengthSchema, OptionalBeginEndLengthSchema
 
 
 class SwiftSAAGetSchema(BeginEndLengthSchema):

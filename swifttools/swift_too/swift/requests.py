@@ -2,8 +2,8 @@ from datetime import datetime
 from typing import Optional
 
 from ..base.common import TOOAPIBaseclass
+from ..base.schemas import AstropyAngle, BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
 from .resolve import TOOAPIAutoResolve
-from .schemas import AstropyAngle, BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
 from .toorequest import SwiftTOORequestSchema
 
 

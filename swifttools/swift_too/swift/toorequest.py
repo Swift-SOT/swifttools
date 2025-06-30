@@ -9,13 +9,10 @@ from pydantic import (
 )
 
 from ..base.common import TOOAPIBaseclass
+from ..base.schemas import AstropyAngle, BaseSchema
 from .calendar import SwiftCalendarSchema
 from .resolve import TOOAPIAutoResolve
-from .schemas import (
-    AstropyAngle,
-    BaseSchema,
-    ObsType,
-)
+from .schemas import ObsType
 
 
 class XRTModeEnum(int, Enum):

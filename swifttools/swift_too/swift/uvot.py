@@ -3,9 +3,9 @@ from typing import Optional
 from tabulate import tabulate
 
 from ..base.common import TOOAPIBaseclass
+from ..base.schemas import BaseSchema, OptionalCoordinateSchema
 from .instruments import TOOAPIInstruments
 from .resolve import TOOAPIAutoResolve
-from .schemas import BaseSchema, OptionalCoordinateSchema
 
 
 class UVOTModeSchema(BaseSchema):

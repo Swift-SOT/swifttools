@@ -93,6 +93,7 @@ class TOOAPIAutoResolve(OptionalCoordinateSchema):
     """
 
     _name: Optional[str] = None
+    resolve: Optional[SwiftResolve] = None
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -104,11 +105,11 @@ class TOOAPIAutoResolve(OptionalCoordinateSchema):
     def name(self, value: Optional[str]):
         """Set the name of the astronomical source."""
         self._name = value
-        resolve = SwiftResolve(name=value)
-        if resolve.status.status == "Accepted":
-            self.ra = resolve.ra
-            self.dec = resolve.dec
-            self.skycoord = resolve.skycoord
+        self.resolve = SwiftResolve(name=value)
+        if self.resolve.status.status == "Accepted":
+            self.ra = self.resolve.ra
+            self.dec = self.resolve.dec
+            self.skycoord = self.resolve.skycoord
             # self.resolver = resolve.resolver
         # else:
         #     # If resolving fails, set status to rejected

@@ -1,12 +1,12 @@
 from ..base.common import TOOAPIBaseclass
-from .clock import TOOAPIClockCorrect
-from .resolve import TOOAPIAutoResolve
-from .schemas import (
+from ..base.schemas import (
     BeginEndLengthSchema,
     CoordinateSchema,
     OptionalBeginEndLengthSchema,
     OptionalCoordinateSchema,
 )
+from .clock import TOOAPIClockCorrect
+from .resolve import TOOAPIAutoResolve
 
 
 class SwiftVisWindow(BeginEndLengthSchema, TOOAPIClockCorrect):
