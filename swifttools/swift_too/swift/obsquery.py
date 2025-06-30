@@ -107,10 +107,14 @@ class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect, TOOAPIBaseclass, TOOA
 
     @property
     def exposure(self) -> timedelta:
+        if self.settle is None or self.end is None:
+            raise TypeError("Settle and end times must be set to calculate exposure")
         return self.end - self.settle
 
     @property
     def slewtime(self) -> timedelta:
+        if self.settle is None or self.begin is None:
+            raise TypeError("Begin and settle times must be set to calculate slewtime")
         return self.settle - self.begin
 
     @property
@@ -324,8 +328,8 @@ class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, BaseSchema):
                 self.end,
                 self.targname,
                 self.obs_id,
-                self.exposure.seconds,
-                self.slewtime.seconds,
+                self.exposure.seconds if self.exposure else None,
+                self.slewtime.seconds if self.slewtime else None,
             ]
         ]
 
