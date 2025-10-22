@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import computed_field, model_validator
+from pydantic import ConfigDict, computed_field, model_validator
 
 from ..base.common import TOOAPIBaseclass
 from ..base.schemas import BaseSchema, OptionalCoordinateSchema
@@ -8,6 +8,7 @@ from ..base.schemas import BaseSchema, OptionalCoordinateSchema
 
 class SwiftResolveGetSchema(BaseSchema):
     name: str
+    model_config = ConfigDict(extra="ignore")
 
 
 class SwiftResolveSchema(OptionalCoordinateSchema):

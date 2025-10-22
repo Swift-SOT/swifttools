@@ -11,7 +11,7 @@ from botocore.client import Config  # type: ignore[import-untyped]
 from pydantic import Field
 from tqdm.auto import tqdm  # type: ignore[import-untyped]
 
-from ..base.common import TOOAPIBaseclass
+from ..base.common import TOOAPIBaseclass, TOOAPIReprMixin
 from ..base.schemas import BaseSchema
 
 
@@ -30,7 +30,7 @@ class SwiftDataGetSchema(BaseSchema):
     subthresh: bool = False
 
 
-class SwiftDataFile(BaseSchema):
+class SwiftDataFile(BaseSchema, TOOAPIReprMixin):
     filename: str
     path: str
     url: str
@@ -91,7 +91,7 @@ class SwiftDataFile(BaseSchema):
         return True
 
 
-class SwiftDataSchema(TOOAPIBaseclass):
+class SwiftDataSchema(BaseSchema):
     obs_id: Optional[str] = None
     auxil: bool = True
     bat: bool = False
@@ -106,7 +106,7 @@ class SwiftDataSchema(TOOAPIBaseclass):
     entries: list[SwiftDataFile] = []
 
 
-class SwiftData(SwiftDataSchema):
+class SwiftData(TOOAPIBaseclass, SwiftDataSchema):
     """
     Class to download Swift data from the UK or US SDC for a given observation
     ID.
@@ -225,7 +225,8 @@ class SwiftData(SwiftDataSchema):
 
     def _post_process(self):
         """A place to do things to API results after they have been fetched."""
-        # Filter out files that don't match `match` expression
+
+        # Set up S3 client if needed
         if not self.uksdc and not self.itsdc and self.aws is True:
             # Set up S3 stuff
             config = Config(
@@ -235,6 +236,7 @@ class SwiftData(SwiftDataSchema):
             )
             self._s3 = boto3.client("s3", config=config)
 
+        # Filter out files that don't match `match` expression
         if self.match is not None:
             if type(self.match) is str:
                 self.match = [self.match]
@@ -248,6 +250,10 @@ class SwiftData(SwiftDataSchema):
                     del self.entries[i]
                 else:
                     i += 1
+
+        # Download data if requested
+        if self.fetch:
+            self.download()
 
     def download(self, outdir=None):
         """Download Swift data for selected instruments to `outdir`"""
