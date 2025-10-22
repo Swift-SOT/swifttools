@@ -1,18 +1,14 @@
 from datetime import datetime
-from typing import Optional
 
 from pydantic import ConfigDict
 
 from ..base.common import TOOAPIBaseclass, TOOAPIReprMixin
-from ..base.schemas import BaseSchema
+from ..base.schemas import BaseSchema, OptionalBeginEndLengthSchema
 from ..base.status import TOOStatus
 from .clock import TOOAPIClockCorrect
 
 
-class SwiftSAAGetSchema(BaseSchema):
-    begin: Optional[datetime] = None
-    end: Optional[datetime] = None
-    length: Optional[float] = None
+class SwiftSAAGetSchema(OptionalBeginEndLengthSchema):
     bat: bool = False
 
     model_config = ConfigDict(extra="ignore")
@@ -32,10 +28,7 @@ class SwiftSAAEntry(BaseSchema, TOOAPIClockCorrect, TOOAPIReprMixin):
         return header, data
 
 
-class SwiftSAASchema(BaseSchema):
-    begin: Optional[datetime] = None
-    end: Optional[datetime] = None
-    length: Optional[float] = None
+class SwiftSAASchema(OptionalBeginEndLengthSchema):
     bat: bool = False
     entries: list[SwiftSAAEntry] = []
     status: TOOStatus = TOOStatus()

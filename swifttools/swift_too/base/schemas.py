@@ -6,7 +6,17 @@ from typing import Annotated, Any, Optional, Union
 import astropy.units as u  # type: ignore[import-untyped]
 from astropy.coordinates import Latitude, Longitude, SkyCoord  # type: ignore[import-untyped]
 from astropy.time import Time, TimeDelta  # type: ignore[import-untyped]
-from pydantic import AfterValidator, BaseModel, ConfigDict, Field, PlainSerializer, TypeAdapter, model_validator
+from pydantic import (
+    AfterValidator,
+    BaseModel,
+    ConfigDict,
+    Field,
+    GetCoreSchemaHandler,
+    PlainSerializer,
+    TypeAdapter,
+    model_validator,
+)
+from pydantic_core import core_schema
 
 from .functions import convert_from_timedelta, utcnow
 
@@ -16,16 +26,37 @@ NaiveUTCDatetime = Annotated[
     AfterValidator(lambda x: x.astimezone(timezone.utc).replace(tzinfo=None)),
 ]
 
-
+# Create a TypeAdapter for NaiveUTCDatetime for reuse
 to_datetime = TypeAdapter(NaiveUTCDatetime)
 
-AstropyDateTime = Annotated[
-    Union[datetime, Time],
-    PlainSerializer(
-        lambda x: x.utc.datetime if isinstance(x, Time) else to_datetime.validate_python(x)  # type: ignore[call-arg]
-    ),
-    Field(description="Datetime in UTC, either as a datetime object or an astropy Time object"),
-]
+
+# helper: convert any input into a datetime in UTC
+def to_utc_datetime(value):
+    if isinstance(value, str):
+        return to_datetime.validate_python(value)
+    if isinstance(value, datetime):
+        return to_datetime.validate_python(value)
+    if isinstance(value, Time):
+        return value.utc.datetime
+    raise TypeError(f"Expected datetime or astropy Time or string formatted time, got {type(value)}")
+
+
+class AstropyDateTimeAnnotation:
+    """Custom Pydantic-compatible annotation for Astropy or datetime"""
+
+    @classmethod
+    def __get_pydantic_core_schema__(cls, source_type, handler: GetCoreSchemaHandler):
+        return core_schema.no_info_plain_validator_function(to_utc_datetime)
+
+    @classmethod
+    def __get_pydantic_json_schema__(cls, schema, handler):
+        json_schema = handler(schema)
+        json_schema.update(type="string", format="date-time", description="Datetime in UTC")
+        return json_schema
+
+
+# Define annotated type
+AstropyDateTime = Annotated[datetime, AstropyDateTimeAnnotation]
 
 AstropyAngle = Annotated[
     Union[float, int, u.Quantity], PlainSerializer(lambda x: x.to_value(u.deg) if hasattr(x, "unit") else x)
@@ -81,22 +112,24 @@ class BeginEndLengthSchema(BaseSchema):
     def check_length(cls, values: dict[str, Any]) -> dict[str, Any]:
         if not isinstance(values, dict):
             values = values.__dict__
-        begin = values.get("begin", utcnow())
-        end = values.get("end")
+
+        # Retrieve values and convert to datetime
+        begin = TypeAdapter(AstropyDateTime).validate_python(values.get("begin", utcnow()))
+        end = TypeAdapter(AstropyDateTime).validate_python(values.get("end"))
         length = values.get("length")
 
         # Support for astropy TimeDelta and Quantity objects
         if isinstance(length, (TimeDelta, u.Quantity)):
             length = timedelta(days=length.to_value("day"))
 
-        # Support for astropy Time objects
-        if isinstance(begin, Time):
-            begin = begin.utc.datetime
-        if isinstance(end, Time):
-            end = end.utc.datetime
-
+        # Support for float/int days
         if isinstance(length, (int, float)):
             length = timedelta(days=length)
+
+        # Set end if length is provided
+        if begin is not None and end is None and length is not None:
+            end = begin + length
+
         values["length"] = length
         values["end"] = end
         values["begin"] = begin
@@ -149,28 +182,31 @@ class OptionalBeginEndLengthSchema(BaseSchema):
             return values
         if not isinstance(values, dict):
             values = values.__dict__
-        begin = values.get("begin")
+
+        # Retrieve values and convert to datetime
+        begin = values.get("begin", utcnow())
         end = values.get("end")
+        if begin is not None:
+            begin = TypeAdapter(AstropyDateTime).validate_python(begin)
+        if end is not None:
+            end = TypeAdapter(AstropyDateTime).validate_python(end)
         length = values.get("length")
 
         # Support for astropy TimeDelta and Quantity objects
         if isinstance(length, (TimeDelta, u.Quantity)):
             length = length.to_value("day")
 
-        # Support for astropy Time objects
-        if isinstance(begin, Time):
-            begin = begin.utc.datetime
-
-        if isinstance(end, Time):
-            end = end.utc.datetime
-
+        # Support for timedelta objects
         if isinstance(length, timedelta):
             length = length.total_seconds() / 86400.0
+
+        # Support for float/int days
+        if end is None and begin is not None and length is not None:
+            end = begin + timedelta(days=length)
 
         values["length"] = length
         values["end"] = end
         values["begin"] = begin
-
         return values
 
 
