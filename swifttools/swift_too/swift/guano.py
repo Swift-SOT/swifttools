@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
 from typing import Optional, Union
 
-from pydantic import model_validator
+from pydantic import ConfigDict, model_validator
 
-from ..base.common import TOOAPIBaseclass
+from ..base.common import TOOAPIBaseclass, TOOAPIReprMixin
 from ..base.schemas import (
     BaseSchema,
     OptionalBeginEndLengthSchema,
@@ -12,7 +12,7 @@ from .clock import TOOAPIClockCorrect
 from .data import TOOAPIDownloadData
 
 
-class SwiftGUANOGTI(BaseSchema, TOOAPIBaseclass, TOOAPIClockCorrect):
+class SwiftGUANOGTI(BaseSchema, TOOAPIReprMixin):  # TOOAPIBaseclass, TOOAPIClockCorrect):
     """
     Define GUANO event data Good Time Intervals (GTI)
 
@@ -45,7 +45,7 @@ class SwiftGUANOGTI(BaseSchema, TOOAPIBaseclass, TOOAPIClockCorrect):
         return f"{self.begin} - {self.end} ({self.exposure})"
 
 
-class SwiftGUANOData(BaseSchema, TOOAPIBaseclass, TOOAPIClockCorrect):
+class SwiftGUANOData(BaseSchema, TOOAPIReprMixin):  # , TOOAPIBaseclass, TOOAPIClockCorrect):
     """Class to hold information about GUANO data based on analysis of the BAT
     event files that are downlinked.
 
@@ -112,7 +112,7 @@ class SwiftGUANOData(BaseSchema, TOOAPIBaseclass, TOOAPIClockCorrect):
             return False
 
 
-class SwiftGUANOEntry(BaseSchema, TOOAPIBaseclass, TOOAPIClockCorrect, TOOAPIDownloadData):
+class SwiftGUANOEntry(BaseSchema, TOOAPIReprMixin, TOOAPIDownloadData):  # , TOOAPIClockCorrect, ):
     """
     Entry for an individual BAT ring buffer dump (AKA GUANO) event.
 
@@ -198,20 +198,24 @@ class SwiftGUANOGetSchema(OptionalBeginEndLengthSchema):
     limit: Optional[int] = None
     page: Optional[int] = None
     triggertype: Optional[str] = None
+    
+    model_config = ConfigDict(extra='ignore')
 
     @model_validator(mode="before")
     @classmethod
     def validate_parameters(cls, values):
         good = False
         if values is None:
-            pass
-        elif isinstance(values, dict):
+            return
+        if not isinstance(values, dict):
             values = values.__dict__
-            for key in cls.model_fields.keys():
-                if key in values:
-                    good = True
+        print(values)
+        for key in cls.model_fields.keys():
+            if key in values:
+                good = True
         if not good:
             raise ValueError("At least one of the parameters must be provided")
+        return values
 
 
 class SwiftGUANOSchema(BaseSchema):
@@ -267,7 +271,7 @@ class SwiftGUANO(
     api_name: str = "Swift_GUANO"
     _schema = SwiftGUANOSchema
     _get_schema = SwiftGUANOGetSchema
-    _endpoint = "/guano"
+    _endpoint = "/swift/guano"
     _isutc: bool = True
 
     # Core API definitions

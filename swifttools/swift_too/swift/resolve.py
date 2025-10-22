@@ -3,7 +3,7 @@ from typing import Optional
 from pydantic import computed_field, model_validator
 
 from ..base.common import TOOAPIBaseclass
-from .schemas import BaseSchema, OptionalCoordinateSchema
+from ..base.schemas import BaseSchema, OptionalCoordinateSchema
 
 
 class SwiftResolveGetSchema(BaseSchema):

@@ -23,7 +23,6 @@ api_version = f"{version_tuple[0]}.{version_tuple[1]}"
 
 # Submission URL
 API_URL = "https://www.swift.psu.edu/api/v1.2"
-# API_URL = "http://localhost:8000/api/v1.2"
 COOKIE_JAR_PATH = Path.home() / ".swift_too" / "cookies.txt"
 COOKIE_JAR_PATH.parent.mkdir(parents=True, exist_ok=True)
 
@@ -73,59 +72,8 @@ def _tablefy(table, header=None):
     return tab
 
 
-class TOOAPIBaseclass:
-    """Mixin for TOO API Classes. Most of these are to do with reading and
-    writing classes out as JSON/dicts."""
-
-    # Set api_version for all classes
-    api_name: str
-    api_version: str = api_version
-    username: str = "anonymous"
-    shared_secret: str = "anonymous"
-    # Submission timeout
-    _timeout: int = 120  # 2 mins
-    # By default all API dates are in Swift Time
-    _isutc: bool
-    autosubmit: bool = True
-    _get_schema: Any = None
-    _put_schema: Any = None
-    _endpoint: str
-    _post_schema: Any = None
-    _delete_schema: Any = None
-
-    # Provide backward compatibility for some arguments passed as kwargs
-    _back_compat_args: dict = {
-        "obs_id": ["obsnum", "obsid"],
-        "target_id": ["targetid", "targid", "target_ID"],
-        "target_name": ["targetname", "targname", "source_name"],
-        "uvot_mode": ["uvotmode"],
-        "xrt_mode": ["xrtmode"],
-        "bat_mode": ["batmode"],
-    }
-
-    # Every request gets a status
-    status: SwiftTOOStatus = SwiftTOOStatus()
-
-    def __init__(self, *args, **kwargs):
-        # Check if any of the arguments are in the back compatibility list, and
-        # convert them to the correct keyword arguments.
-        for key, values in self._back_compat_args.items():
-            for value in values:
-                if value in kwargs:
-                    if key not in kwargs:
-                        kwargs[key] = kwargs[value]
-                    del kwargs[value]
-
-        # Convert positional arguments to keyword arguments
-        if len(args) > 0 and hasattr(self, "_get_schema") and hasattr(self._get_schema, "model_fields"):
-            for i, key in enumerate(self._get_schema.model_fields.keys()):
-                print(i, key)
-                if i < len(args):
-                    kwargs[key] = args[i]
-                else:
-                    break
-        print(kwargs)
-        super().__init__(**kwargs)
+class TOOAPIReprMixin:
+    """Mixin to provide string and HTML representations for TOO API classes."""
 
     @property
     def _table(self):
@@ -166,13 +114,62 @@ class TOOAPIBaseclass:
 
     def __repr__(self):
         args = ",".join(
-            [
-                f"{row}='{getattr(self, row)}'"
-                for row in self._parameters
-                if getattr(self, row) is not None and getattr(self, row) != []
-            ]
+            [f"{row}='{getattr(self, row)}'" for row in self.__class__.model_fields if getattr(self, row) is not None]
         )
         return f"{self.api_name}({args})"
+
+
+class TOOAPIBaseclass(TOOAPIReprMixin):
+    """Mixin for TOO API Classes. Most of these are to do with reading and
+    writing classes out as JSON/dicts."""
+
+    # Set api_version for all classes
+    api_name: str
+    api_version: str = api_version
+    username: str = "anonymous"
+    shared_secret: str = "anonymous"
+    # Submission timeout
+    _timeout: int = 120  # 2 mins
+    # By default all API dates are in Swift Time
+    _isutc: bool
+    autosubmit: bool = True
+    _get_schema: Any
+    _put_schema: Any
+    _endpoint: str
+    _post_schema: Any
+    _delete_schema: Any
+
+    # Provide backward compatibility for some arguments passed as kwargs
+    _back_compat_args: dict = {
+        "obs_id": ["obsnum", "obsid"],
+        "target_id": ["targetid", "targid", "target_ID"],
+        "target_name": ["targetname", "targname", "source_name"],
+        "uvot_mode": ["uvotmode"],
+        "xrt_mode": ["xrtmode"],
+        "bat_mode": ["batmode"],
+    }
+
+    # Every request gets a status
+    status: SwiftTOOStatus = SwiftTOOStatus()
+
+    def __init__(self, *args, **kwargs):
+        # Check if any of the arguments are in the back compatibility list, and
+        # convert them to the correct keyword arguments.
+        for key, values in self._back_compat_args.items():
+            for value in values:
+                if value in kwargs:
+                    if key not in kwargs:
+                        kwargs[key] = kwargs[value]
+                    del kwargs[value]
+
+        # Convert positional arguments to keyword arguments
+        if len(args) > 0 and hasattr(self, "_get_schema") and hasattr(self._get_schema, "model_fields"):
+            for i, key in enumerate(self._get_schema.model_fields.keys()):
+                if i < len(args):
+                    kwargs[key] = args[i]
+                else:
+                    break
+        super().__init__(**kwargs)
 
     def __set_status(self, newstatus):
         if hasattr(self, "status"):
@@ -275,8 +272,8 @@ class TOOAPIBaseclass:
                 timeout=self._timeout,
                 follow_redirects=True,
             )
-
-        print(response.url, response)
+        self.response = response
+        print(response.url)
         # If the request was successful, parse the response
         if response.status_code == 200:
             pass

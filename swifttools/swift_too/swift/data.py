@@ -311,8 +311,12 @@ class TOOAPIDownloadData:
                 raise TypeError(f"{self.api_name} got an unexpected keyword argument '{key}'")
         # Set up and download data
         data.obs_id = self.obs_id
-        data.username = self.username
-        data.shared_secret = self.shared_secret
+        if hasattr(self, "username"):
+            data.username = self.username
+            data.shared_secret = self.shared_secret
+        else:
+            data.username = "anonymous"
+            data.shared_secret = "anonymous"
         data.submit()
         if data.fetch:
             data.download()
