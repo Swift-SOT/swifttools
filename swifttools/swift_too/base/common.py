@@ -14,7 +14,7 @@ from swifttools.swift_too.base.status import TOOStatus
 from ..version import version_tuple
 
 # Always show deprecation warnings
-warnings.simplefilter('always', DeprecationWarning)
+warnings.simplefilter("always", DeprecationWarning)
 
 
 # Make Warnings a little less weird
@@ -24,10 +24,10 @@ warnings.formatwarning = lambda message, category, filename, lineno, line=None: 
 )
 
 # Define the API version
-api_version = f"{version_tuple[0]}.{version_tuple[1]}"
+API_VERSION = f"{version_tuple[0]}.{version_tuple[1]}"
 
 # Submission URL
-API_URL = "https://www.swift.psu.edu/api/v1.2"
+API_URL = f"https://www.swift.psu.edu/api/v{API_VERSION}"
 COOKIE_JAR_PATH = Path.home() / ".swift_too" / "cookies.txt"
 COOKIE_JAR_PATH.parent.mkdir(parents=True, exist_ok=True)
 
@@ -128,8 +128,6 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
     """Mixin for TOO API Classes. Most of these are to do with reading and
     writing classes out as JSON/dicts."""
 
-    # Set api_version for all classes
-    api_version: str = api_version
     username: str = "anonymous"
     shared_secret: str = "anonymous"
     # Submission timeout
@@ -267,7 +265,6 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
                 timeout=self._timeout,
                 follow_redirects=True,
             )
-        self.response = response
         print(response.url)
         # If the request was successful, parse the response
         if response.status_code == 200:

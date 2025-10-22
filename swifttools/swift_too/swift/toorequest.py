@@ -880,7 +880,6 @@ class SwiftTOORequest(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestSchema)
             ]
         else:
             _parameters = list(self.__class__.model_fields.keys())
-            _parameters.remove("api_version")
             _parameters.remove("status")
             _parameters.remove("skycoord")
         for row in _parameters:
