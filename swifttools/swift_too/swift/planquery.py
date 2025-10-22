@@ -16,7 +16,7 @@ from .schemas import ObsIDSDC
 class SwiftPPSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
     radius: Optional[AstropyAngle] = None
     target_id: Union[int, list[int], None] = None
-    obs_id: Optional[ObsIDSDC | list[ObsIDSDC]] = None
+    obs_id: Union[ObsIDSDC, list[ObsIDSDC], None] = None
 
     model_config = ConfigDict(extra="ignore")
 
@@ -120,7 +120,7 @@ class SwiftPPSTSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
 
     radius: Optional[AstropyAngle] = None
     target_id: Union[int, list[int], None] = None
-    obs_id: Optional[ObsIDSDC | list[ObsIDSDC]] = None
+    obs_id: Union[ObsIDSDC, list[ObsIDSDC], None] = None
     ppstmax: Optional[datetime] = None
     entries: list[SwiftPPSTEntry] = []
     status: TOOStatus = TOOStatus()

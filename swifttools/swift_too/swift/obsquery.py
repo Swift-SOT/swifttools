@@ -135,7 +135,7 @@ class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect, TOOAPIBaseclass, TOOA
 class SwiftAFSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
     radius: AstropyAngle = 0.19666666666666668
     target_id: Union[int, list[int], None] = None
-    obs_id: Optional[ObsIDSDC | list[ObsIDSDC]] = None
+    obs_id: Union[ObsIDSDC, list[ObsIDSDC], None] = None
 
     model_config = ConfigDict(extra="ignore")
 
@@ -157,7 +157,7 @@ class SwiftAFSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema)
 class SwiftAFSTSchema(OptionalCoordinateSchema, OptionalBeginEndLengthSchema):
     radius: AstropyAngle = 0.19666666666666668
     target_id: Union[int, list[int], None] = None
-    obs_id: Optional[ObsIDSDC | list[ObsIDSDC]] = None
+    obs_id: Union[ObsIDSDC, list[ObsIDSDC], None] = None
     afstmax: Optional[datetime] = None
     entries: list[SwiftAFSTEntry] = []
     status: TOOStatus = TOOStatus()
@@ -202,6 +202,7 @@ class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, TOOAPIBackCompat, Ba
 
     # Core API definitions
     entries: list[SwiftAFSTEntry] = []
+    status: TOOStatus = TOOStatus()
 
     def __getitem__(self, index: int) -> SwiftAFSTEntry:
         return self.entries[index]
