@@ -271,7 +271,6 @@ class SwiftGUANO(
     """
 
     # API Name
-    api_name: str = "Swift_GUANO"
     _schema = SwiftGUANOSchema
     _get_schema = SwiftGUANOGetSchema
     _endpoint = "/swift/guano"

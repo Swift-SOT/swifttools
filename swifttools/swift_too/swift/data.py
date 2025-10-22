@@ -108,7 +108,6 @@ class SwiftDataSchema(BaseSchema):
     status: TOOStatus = TOOStatus()
 
 
-
 class SwiftData(TOOAPIBaseclass, SwiftDataSchema):
     """
     Class to download Swift data from the UK or US SDC for a given observation
@@ -154,7 +153,6 @@ class SwiftData(TOOAPIBaseclass, SwiftDataSchema):
     """
 
     # Core API definitions
-    api_name: str = "Swift_Data"
     _schema = SwiftDataSchema
     _get_schema = SwiftDataGetSchema
     _endpoint = "/swift/data"
@@ -317,7 +315,7 @@ class TOOAPIDownloadData:
             if key in params:
                 setattr(data, key, kwargs[key])
             else:
-                raise TypeError(f"{self.api_name} got an unexpected keyword argument '{key}'")
+                raise TypeError(f"{self.__class__.__name__} got an unexpected keyword argument '{key}'")
         # Set up and download data
         data.obs_id = self.obs_id
         if hasattr(self, "username"):

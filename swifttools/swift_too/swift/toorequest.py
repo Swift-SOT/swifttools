@@ -756,8 +756,7 @@ class SwiftTOOUserParamsSchema(BaseSchema):
 
 class SwiftTOOFormSchema(SwiftTOOUserParamsSchema):
     @model_validator(mode="after")
-    @classmethod
-    def check_proposal(cls, data: Any) -> Any:
+    def check_proposal(self, data: Any) -> Any:
         if data.proposal is True and (data.proposal_id is None or data.proposal_pi is None):
             raise ValueError("Must specify proposal ID and PI if GI proposal.")
 
@@ -834,7 +833,6 @@ class SwiftTOOPostSchema(SwiftTOOFormSchema):
 
 
 class SwiftTOORequest(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestSchema):
-    api_name: str = "Swift_TOO_Request"
     _schema = SwiftTOOFormSchema
     _post_schema = SwiftTOOPostSchema
     _endpoint = "/swift/too"
@@ -884,7 +882,6 @@ class SwiftTOORequest(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestSchema)
             _parameters = list(self.__class__.model_fields.keys())
             _parameters.remove("api_version")
             _parameters.remove("status")
-            _parameters.remove("api_name")
             _parameters.remove("skycoord")
         for row in _parameters:
             val = getattr(self, row)

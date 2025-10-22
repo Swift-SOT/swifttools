@@ -154,7 +154,6 @@ class SwiftCalendar(
     """
 
     # Core API definitions
-    api_name: str = "Swift_Calendar"
     _schema = SwiftCalendarSchema
     _get_schema = SwiftCalendarGetSchema
     _endpoint = "/swift/calendar"

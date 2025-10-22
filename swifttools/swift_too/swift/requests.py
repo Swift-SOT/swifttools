@@ -71,8 +71,6 @@ class SwiftTOORequests(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestsSchem
         radius in degrees to search for TOOs
     """
 
-    # API name
-    api_name: str = "Swift_TOO_Requests"
     _schema = SwiftTOORequestsSchema
     _get_schema = SwiftTOORequestsGetSchema
     _endpoint = "/swift/too"

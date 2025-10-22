@@ -88,8 +88,7 @@ class SwiftVisQuery(TOOAPIBaseclass, TOOAPIClockCorrect, TOOAPIAutoResolve, Swif
         Status of API request
     """
 
-    # API Name
-    api_name: str = "Swift_VisQuery"
+    # Core API definitions
     _schema = SwiftVisQuerySchema
     _get_schema = SwiftVisQueryGetSchema
     _endpoint = "/swift/visquery"

@@ -47,7 +47,6 @@ class SwiftResolve(TOOAPIBaseclass, SwiftResolveSchema):
         status of API request
     """
 
-    api_name: str = "Swift_Resolve"
     _endpoint: str = "/resolve"
     _schema = SwiftResolveSchema
     _get_schema = SwiftResolveGetSchema

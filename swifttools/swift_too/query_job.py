@@ -58,9 +58,6 @@ class QueryJob(SwiftTOOStatus):
         Clock,
         SAA,
     ]
-    # API name
-    # This is really just a Swift_TOOStatus request with a twist
-    api_name: str = "Swift_TOO_Status"
 
     def __init__(self, *args, **kwargs):
         """
@@ -74,7 +71,7 @@ class QueryJob(SwiftTOOStatus):
             shared secret for TOO API (default 'anonymous')
         """
         # Call the TOOStatus constructor with fetchresult=True to that make this a QueryJob
-        SwiftTOOStatus.__init__(self, *args, fetchresult=True, api_name=self.api_name, **kwargs)
+        SwiftTOOStatus.__init__(self, *args, fetchresult=True, **kwargs)
 
     @property
     def _table(self):

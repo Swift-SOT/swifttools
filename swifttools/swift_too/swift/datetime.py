@@ -5,8 +5,6 @@ from typing import Optional, Union
 class swiftdatetime(datetime):
     """Extend datetime to store met, utcf and swifttime. Default value is UTC"""
 
-    api_name: str = "swiftdatetime"
-
     _utctime: Union[datetime, None]
     _swifttime: Union[datetime, None]
     _met: Union[float, None]

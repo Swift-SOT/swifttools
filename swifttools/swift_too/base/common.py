@@ -9,7 +9,12 @@ import httpx
 from pydantic import TypeAdapter, ValidationError
 from tabulate import tabulate
 
+from swifttools.swift_too.base.status import TOOStatus
+
 from ..version import version_tuple
+
+# Always show deprecation warnings
+warnings.simplefilter('always', DeprecationWarning)
 
 
 # Make Warnings a little less weird
@@ -93,7 +98,7 @@ class TOOAPIReprMixin:
         return header, table
 
     def _repr_html_(self):
-        if hasattr(self, "status") and self.status.status == "Rejected" and self.status.api_name == "Swift_TOO_Status":
+        if hasattr(self, "status") and self.status.status == "Rejected" and isinstance(self, TOOStatus):
             return "<b>Rejected with the following error(s): </b>" + " ".join(self.status.errors)
         else:
             header, table = self._table
@@ -103,7 +108,7 @@ class TOOAPIReprMixin:
                 return "No data"
 
     def __str__(self):
-        if hasattr(self, "status") and self.status.status == "Rejected" and self.status.api_name == "Swift_TOO_Status":
+        if hasattr(self, "status") and self.status.status == "Rejected" and isinstance(self, TOOStatus):
             return "Rejected with the following error(s): " + " ".join(self.status.errors)
         else:
             header, table = self._table
@@ -116,7 +121,7 @@ class TOOAPIReprMixin:
         args = ",".join(
             [f"{row}='{getattr(self, row)}'" for row in self.__class__.model_fields if getattr(self, row) is not None]
         )
-        return f"{self.api_name}({args})"
+        return f"{self.__class__.__name__}({args})"
 
 
 class TOOAPIBaseclass(TOOAPIReprMixin):
@@ -124,7 +129,6 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
     writing classes out as JSON/dicts."""
 
     # Set api_version for all classes
-    api_name: str
     api_version: str = api_version
     username: str = "anonymous"
     shared_secret: str = "anonymous"
@@ -168,15 +172,6 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
                     break
         super().__init__(**kwargs)
 
-    def __set_status(self, newstatus):
-        if hasattr(self, "status"):
-            if isinstance(self.status, str):
-                self.status = newstatus
-            else:
-                self.status.status = newstatus
-        else:
-            print(f"STATUS: {newstatus}")
-
     def __set_error(self, newerror):
         if hasattr(self, "status"):
             if isinstance(self.status, str):
@@ -202,6 +197,7 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         is to perform a GET request on instantiation of the class, if the
         status is "Pending" and the class has a `_get_schema` attribute.
         """
+        assert hasattr(self, "status"), "API Schema requires a 'status' attribute."
         if self.status.status == "Pending" and hasattr(self, "_get_schema") and self.autosubmit is True:
             if self.validate_get(set_error=False):
                 self.submit_get()
@@ -247,6 +243,8 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
 
     def submit_get(self) -> bool:
         """Perform an API GET request to the server."""
+        assert hasattr(self, "_schema"), "GET schema not defined for this API class."
+        assert hasattr(self, "model_dump"), "Not a Pydantic model."
         args = self._get_schema.model_validate(self.model_dump(exclude={"__pydantic_extra__"})).model_dump(
             exclude_none=True
         )
@@ -442,4 +440,18 @@ class TOOAPIBackCompat:
     def seg(self) -> Any:
         if hasattr(self, "segment"):
             return self.segment
+        return None
+
+    @property
+    def ra_point(self) -> Any:
+        if hasattr(self, "ra_object"):
+            warnings.warn("ra_point is deprecated, please use ra_object instead.", DeprecationWarning, stacklevel=2)
+            return self.ra_object
+        return None
+
+    @property
+    def dec_point(self) -> Any:
+        if hasattr(self, "dec_object"):
+            warnings.warn("dec_point is deprecated, please use dec_object instead.", DeprecationWarning, stacklevel=2)
+            return self.dec_object
         return None

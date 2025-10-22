@@ -168,7 +168,6 @@ class SwiftPPST(
     _endpoint = "/swift/planquery"
     _isutc = False
     _local = ["obsid", "name", "skycoord", "length", "target_id", "shared_secret"]
-    api_name: str = "Swift_PPST"
 
     @property
     def _table(self):

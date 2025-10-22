@@ -81,7 +81,6 @@ class SwiftClock(TOOAPIBaseclass, SwiftClockSchema):
     """
 
     # API details
-    api_name: str = "Swift_Clock"
     _schema = SwiftClockSchema
     _get_schema = SwiftClockGetSchema
     _endpoint = "/swift/clock"

@@ -60,8 +60,6 @@ class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect, TOOAPIBaseclass, TOOA
         Target name of the primary target of the observation
     """
 
-    api_name: str = "Swift_AFST_Entry"
-
     begin: Optional[datetime] = None
     settle: Optional[datetime] = None
     end: Optional[datetime] = None
@@ -204,7 +202,6 @@ class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, TOOAPIBackCompat, Ba
     """
 
     # Core API definitions
-    api_name: str = "Swift_Observation"
     entries: list[SwiftAFSTEntry] = []
 
     def __getitem__(self, index: int) -> SwiftAFSTEntry:
@@ -393,9 +390,6 @@ class SwiftAFST(
     afstmax: datetime
         When is the AFST valid up to
     """
-
-    # Define API name
-    api_name: str = "Swift_AFST"
 
     # Define API endpoint
     _endpoint = "/swift/obsquery"

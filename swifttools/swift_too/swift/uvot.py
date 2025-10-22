@@ -95,7 +95,6 @@ class SwiftUVOTMode(TOOAPIBaseclass, TOOAPIInstruments, SwiftUVOTModeSchema, TOO
     """
 
     # Core API definitions
-    api_name: str = "UVOT_mode"
     _schema = SwiftUVOTModeSchema
     _get_schema = SwiftUVOTModeGetSchema
     _endpoint = "/swift/uvot_mode"

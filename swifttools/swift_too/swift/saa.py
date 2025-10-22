@@ -46,7 +46,6 @@ class SwiftSAA(TOOAPIBaseclass, TOOAPIClockCorrect, SwiftSAASchema):
     """
 
     # API details
-    api_name: str = "Swift_SAA"
     _schema = SwiftSAASchema
     _get_schema = SwiftSAAGetSchema
     _endpoint: str = "/swift/saa"
