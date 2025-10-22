@@ -9,8 +9,7 @@ import httpx
 from pydantic import TypeAdapter, ValidationError
 from tabulate import tabulate
 
-from swifttools.swift_too.base.status import TOOStatus
-
+from ..base.status import TOOStatus
 from ..version import version_tuple
 
 # Always show deprecation warnings
@@ -162,12 +161,17 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
                     del kwargs[value]
 
         # Convert positional arguments to keyword arguments
-        if len(args) > 0 and hasattr(self, "_get_schema") and hasattr(self._get_schema, "model_fields"):
-            for i, key in enumerate(self._get_schema.model_fields.keys()):
+        if (
+            len(args) > 0
+            and hasattr(self.__class__, "_get_schema")
+            and hasattr(self.__class__._get_schema.default, "model_fields")
+        ):
+            for i, key in enumerate(self.__class__._get_schema.default.model_fields.keys()):
                 if i < len(args):
                     kwargs[key] = args[i]
                 else:
                     break
+        print(kwargs)
         super().__init__(**kwargs)
 
     def __set_error(self, newerror):

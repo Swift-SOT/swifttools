@@ -1,16 +1,24 @@
 from datetime import datetime
+from typing import Optional
 
-from ..base.common import TOOAPIBaseclass
-from ..base.schemas import BaseSchema, BeginEndLengthSchema, OptionalBeginEndLengthSchema
+from pydantic import ConfigDict
+
+from ..base.common import TOOAPIBaseclass, TOOAPIReprMixin
+from ..base.schemas import BaseSchema
 from ..base.status import TOOStatus
 from .clock import TOOAPIClockCorrect
 
 
-class SwiftSAAGetSchema(BeginEndLengthSchema):
+class SwiftSAAGetSchema(BaseSchema):
+    begin: Optional[datetime] = None
+    end: Optional[datetime] = None
+    length: Optional[float] = None
     bat: bool = False
 
+    model_config = ConfigDict(extra="ignore")
 
-class SwiftSAAEntry(BaseSchema, TOOAPIClockCorrect, TOOAPIBaseclass):
+
+class SwiftSAAEntry(BaseSchema, TOOAPIClockCorrect, TOOAPIReprMixin):
     begin: datetime
     end: datetime
     _varnames = {"begin": "Begin Time", "end": "End Time"}
@@ -24,7 +32,10 @@ class SwiftSAAEntry(BaseSchema, TOOAPIClockCorrect, TOOAPIBaseclass):
         return header, data
 
 
-class SwiftSAASchema(OptionalBeginEndLengthSchema):
+class SwiftSAASchema(BaseSchema):
+    begin: Optional[datetime] = None
+    end: Optional[datetime] = None
+    length: Optional[float] = None
     bat: bool = False
     entries: list[SwiftSAAEntry] = []
     status: TOOStatus = TOOStatus()
@@ -45,8 +56,8 @@ class SwiftSAA(TOOAPIBaseclass, TOOAPIClockCorrect, SwiftSAASchema):
     """
 
     # API details
-    _schema = SwiftSAASchema
-    _get_schema = SwiftSAAGetSchema
+    _schema: type[SwiftSAASchema] = SwiftSAASchema
+    _get_schema: type[SwiftSAAGetSchema] = SwiftSAAGetSchema
     _endpoint: str = "/swift/saa"
     _isutc: bool = True
 
