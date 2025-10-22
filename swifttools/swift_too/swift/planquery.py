@@ -3,10 +3,9 @@ from typing import Optional, Union
 
 from pydantic import ConfigDict, Field, model_validator
 
-from ..base.status import TOOStatus
-
 from ..base.common import TOOAPIBackCompat, TOOAPIBaseclass
 from ..base.schemas import AstropyAngle, BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
+from ..base.status import TOOStatus
 from .clock import TOOAPIClockCorrect
 from .data import TOOAPIDownloadData
 from .obsquery import SwiftObservation

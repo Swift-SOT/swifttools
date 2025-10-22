@@ -1,10 +1,9 @@
 from datetime import datetime
 from typing import Optional
 
-from ..base.status import TOOStatus
-
 from ..base.common import TOOAPIBaseclass
 from ..base.schemas import AstropyAngle, BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
+from ..base.status import TOOStatus
 from .clock import TOOAPIClockCorrect
 from .resolve import TOOAPIAutoResolve
 
@@ -14,7 +13,6 @@ class SwiftCalendarGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSch
     radius: Optional[float] = 12 / 60.0
     targetid: Optional[int] = None
     status: TOOStatus = TOOStatus()
-
 
 
 class SwiftCalendarEntry(BaseSchema, TOOAPIClockCorrect):

@@ -2,17 +2,16 @@ from typing import Optional
 
 from tabulate import tabulate
 
-from ..base.status import TOOStatus
-
 from ..base.common import TOOAPIBaseclass
 from ..base.schemas import BaseSchema, OptionalCoordinateSchema
+from ..base.status import TOOStatus
 from .instruments import TOOAPIInstruments
 from .resolve import TOOAPIAutoResolve
 
 
 class UVOTModeSchema(BaseSchema):
     uvot_mode: int
-    
+
 
 class SwiftUVOTModeGetSchema(OptionalCoordinateSchema, UVOTModeSchema): ...
 
@@ -72,7 +71,6 @@ class SwiftUVOTModeSchema(BaseSchema):
     dec: Optional[float] = None
     entries: list[SwiftUVOTModeEntry] = []
     status: TOOStatus = TOOStatus()
-
 
 
 class SwiftUVOTMode(TOOAPIBaseclass, TOOAPIInstruments, SwiftUVOTModeSchema, TOOAPIAutoResolve):

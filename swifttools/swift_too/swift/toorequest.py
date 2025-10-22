@@ -8,10 +8,9 @@ from pydantic import (
     model_validator,
 )
 
-from ..base.status import TOOStatus
-
 from ..base.common import TOOAPIBaseclass
 from ..base.schemas import AstropyAngle, BaseSchema
+from ..base.status import TOOStatus
 from .calendar import SwiftCalendarSchema
 from .resolve import TOOAPIAutoResolve
 from .schemas import ObsType
@@ -84,7 +83,6 @@ class SwiftTOORequestSchema(BaseSchema):
     num_of_visits: int = 1
     exp_time_per_visit: Optional[int] = None
     status: TOOStatus = TOOStatus()
-
 
     # English Descriptions of all the variables
     _varnames: dict[str, str] = {

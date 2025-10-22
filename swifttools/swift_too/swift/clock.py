@@ -3,10 +3,9 @@ from typing import Optional, Union
 
 from pydantic import ConfigDict, computed_field, model_validator
 
-from ..base.status import TOOStatus
-
 from ..base.common import TOOAPIBaseclass
 from ..base.schemas import BaseSchema
+from ..base.status import TOOStatus
 from .datetime import swiftdatetime
 
 
@@ -33,8 +32,9 @@ class SwiftClockSchema(BaseSchema):
     swifttime: Union[datetime, list[datetime], None] = None
     entries: list[SwiftDateTimeSchema] = []
     status: TOOStatus = TOOStatus()
-    
+
     model_config = ConfigDict(extra="ignore")
+
 
 class SwiftClockGetSchema(BaseSchema):
     met: Union[float, list[float], None] = None

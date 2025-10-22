@@ -11,9 +11,9 @@ from botocore.client import Config  # type: ignore[import-untyped]
 from pydantic import Field
 from tqdm.auto import tqdm
 
-from ..base.status import TOOStatus  # type: ignore[import-untyped]
 from ..base.common import TOOAPIBaseclass, TOOAPIReprMixin
 from ..base.schemas import BaseSchema
+from ..base.status import TOOStatus  # type: ignore[import-untyped]
 
 
 class SwiftDataGetSchema(BaseSchema):

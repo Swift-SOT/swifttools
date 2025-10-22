@@ -2,10 +2,9 @@ from typing import Optional
 
 from pydantic import ConfigDict, computed_field, model_validator
 
-from ..base.status import TOOStatus
-
 from ..base.common import TOOAPIBaseclass
 from ..base.schemas import BaseSchema, OptionalCoordinateSchema
+from ..base.status import TOOStatus
 
 
 class SwiftResolveGetSchema(BaseSchema):

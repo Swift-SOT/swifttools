@@ -1,4 +1,3 @@
-from ..base.status import TOOStatus
 from ..base.common import TOOAPIBaseclass
 from ..base.schemas import (
     BeginEndLengthSchema,
@@ -6,6 +5,7 @@ from ..base.schemas import (
     OptionalBeginEndLengthSchema,
     OptionalCoordinateSchema,
 )
+from ..base.status import TOOStatus
 from .clock import TOOAPIClockCorrect
 from .resolve import TOOAPIAutoResolve
 
@@ -48,7 +48,6 @@ class SwiftVisQuerySchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema
     hires: bool = False
     windows: list[SwiftVisWindow] = []
     status: TOOStatus = TOOStatus()
-
 
 
 class SwiftVisQueryGetSchema(BeginEndLengthSchema, CoordinateSchema):

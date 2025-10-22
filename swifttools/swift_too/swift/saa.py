@@ -1,9 +1,8 @@
 from datetime import datetime
 
-from ..base.status import TOOStatus
-
 from ..base.common import TOOAPIBaseclass
 from ..base.schemas import BaseSchema, BeginEndLengthSchema, OptionalBeginEndLengthSchema
+from ..base.status import TOOStatus
 from .clock import TOOAPIClockCorrect
 
 

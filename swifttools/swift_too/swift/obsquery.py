@@ -3,8 +3,6 @@ from typing import Any, Generator, Optional, Union
 
 from pydantic import ConfigDict, computed_field, model_validator
 
-from ..base.status import TOOStatus
-
 from ..base.common import TOOAPIBackCompat, TOOAPIBaseclass
 from ..base.schemas import (
     AstropyAngle,
@@ -13,6 +11,7 @@ from ..base.schemas import (
     OptionalBeginEndLengthSchema,
     OptionalCoordinateSchema,
 )
+from ..base.status import TOOStatus
 from .clock import TOOAPIClockCorrect
 from .data import TOOAPIDownloadData
 from .resolve import TOOAPIAutoResolve

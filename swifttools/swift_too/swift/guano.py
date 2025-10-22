@@ -3,13 +3,12 @@ from typing import Optional, Union
 
 from pydantic import ConfigDict, model_validator
 
-from ..base.status import TOOStatus
-
 from ..base.common import TOOAPIBaseclass, TOOAPIReprMixin
 from ..base.schemas import (
     BaseSchema,
     OptionalBeginEndLengthSchema,
 )
+from ..base.status import TOOStatus
 from .clock import TOOAPIClockCorrect
 from .data import TOOAPIDownloadData
 
