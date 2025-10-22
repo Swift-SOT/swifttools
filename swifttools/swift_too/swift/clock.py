@@ -128,69 +128,21 @@ Swift_Clock = SwiftClock
 Clock = SwiftClock
 
 
-def transform_datetimes_in_model(model: BaseSchema) -> BaseSchema:
-    """
-    Recursively find all datetime values in a Pydantic model,
-    apply a transformation function to them, and replace them in place.
-
-    Args:
-        model: A Pydantic BaseModel instance.
-        transform_func: A function that takes a list[datetime] and returns list[datetime].
-
-    Returns:
-        The same model instance with updated datetime values.
-    """
-    # Step 1: Collect all datetime references (paths + objects)
-    datetime_refs = []
-
-    def collect_datetimes(obj: Any, path: list[Any]):
-        if isinstance(obj, datetime):
-            datetime_refs.append((path.copy(), obj))
-        elif isinstance(obj, BaseSchema):
-            for field_name, value in obj.__dict__.items():
-                collect_datetimes(value, path + [("model", field_name)])
-        elif isinstance(obj, list):
-            for i, item in enumerate(obj):
-                collect_datetimes(item, path + [("list", i)])
-        elif isinstance(obj, dict):
-            for k, v in obj.items():
-                collect_datetimes(v, path + [("dict", k)])
-
-    collect_datetimes(model, [])
-
-    # Step 2: Apply transformation
-    new_values = Clock(swifttime=[dt for _, dt in datetime_refs])
-    model._clock = new_values  # Store the Clock object in the model for reference
-
-    # Step 3: Replace them in place
-    for (path, _), new_value in zip(datetime_refs, new_values.entries):
-        current = model
-        for kind, key in path[:-1]:
-            if kind == "model":
-                current = getattr(current, key)
-            elif kind == "list":
-                current = current[key]
-            elif kind == "dict":
-                current = current[key]
-        kind, key = path[-1]
-        if kind == "model":
-            setattr(current, key, new_value)
-        elif kind == "list":
-            current[key] = new_value
-        elif kind == "dict":
-            current[key] = new_value
-
-    return model
-
-
 def index_datetimes(dictionary, i=0, values=[], setvals=None):
-    """Recursively spider a dictionary looking for datetimes and updating them
-    if necessary"""
+    """
+    Recursively spider a dictionary looking for datetimes and updating them if
+    necessary.
+    """
+    print("resurse", dictionary, i)
     # Don't spider internal variables
-    keys = [key for key in list(dictionary.keys())]
+    if hasattr(dictionary, "model_dump"):
+        keys = [key for key in dictionary.model_dump().keys() if not key.startswith("_")]
+    else:
+        keys = [key for key in dictionary]
+
     # Go through all keys
     for key in keys:
-        value = dictionary[key]
+        value = getattr(dictionary, key)
         # Don't index any `SwiftClock`s
         if type(value) is SwiftClock:
             continue
@@ -226,40 +178,15 @@ class TOOAPIClockCorrect:
 
     _clock: Optional[SwiftClock] = None
 
-    def clock_correct(self):
-        """Spider through the class dictionary recording datetimes, and then
-        updating them using SwiftClock"""
-        if self._clock is None:
-            # Get the index of the first datetime value
-            _, datevalues = index_datetimes(self.__dict__, 0, [])
-            # What is the base time format for this class? Send that to Clock for
-            # clock correction
-            dts = [dt for dt in datevalues]
-            if len(dts) > 0:
-                if self._isutc:
-                    self._clock = SwiftClock(utctime=dts)
-                else:
-                    self._clock = SwiftClock(swifttime=dts)
-
-                # Replace existing datetime values with clock corrected swiftdatetimes
-                _, _ = index_datetimes(self.__dict__, 0, [], setvals=self._clock)
-
-        # After clock correction, make UTC the default time system
-        self.to_utctime()
-
     def to_utctime(self):
         """Convert times to a UTC base"""
-        if self._clock is None:
-            self.clock_correct()
         self._clock.to_utctime()
-        _, _ = index_datetimes(self.__dict__, 0, [], setvals=self._clock)
+        self.clock_correct()
 
     def to_swifttime(self):
         """Convert times to a Swift time base"""
-        if self._clock is None:
-            self.clock_correct()
         self._clock.to_swifttime()
-        _, _ = index_datetimes(self.__dict__, 0, [], setvals=self._clock)
+        self.clock_correct()
 
     def _header_title(self, parameter):
         """Add UTC or Swift to headers in table depending on the default"""
@@ -271,3 +198,58 @@ class TOOAPIClockCorrect:
             else:
                 title += " (Swift)"
         return title
+
+    def clock_correct(self) -> None:
+        """
+        Recursively find all datetime values in a Pydantic model,
+        apply a transformation function to them, and replace them in place.
+
+        Args:
+            model: A Pydantic BaseModel instance.
+            transform_func: A function that takes a list[datetime] and returns list[datetime].
+
+        Returns:
+            The same model instance with updated datetime values.
+        """
+        if self._clock is None:
+            # Step 1: Collect all datetime references (paths + objects)
+            datetime_refs = []
+
+            def collect_datetimes(obj: Any, path: list[Any]):
+                if isinstance(obj, datetime):
+                    datetime_refs.append((path.copy(), obj))
+                elif isinstance(obj, BaseSchema):
+                    for field_name, value in obj.__dict__.items():
+                        collect_datetimes(value, path + [("model", field_name)])
+                elif isinstance(obj, list):
+                    for i, item in enumerate(obj):
+                        collect_datetimes(item, path + [("list", i)])
+                elif isinstance(obj, dict):
+                    for k, v in obj.items():
+                        collect_datetimes(v, path + [("dict", k)])
+
+            collect_datetimes(self, [])
+            self._datetime_refs = datetime_refs
+            # Step 2: Apply transformation
+            self._clock = Clock(swifttime=[dt for _, dt in datetime_refs])
+            self._clock.to_utctime()
+        else:
+            datetime_refs = self._datetime_refs
+
+        # Step 3: Replace them in place
+        for (path, _), new_value in zip(datetime_refs, self._clock.entries):
+            current = self
+            for kind, key in path[:-1]:
+                if kind == "model":
+                    current = getattr(current, key)
+                elif kind == "list":
+                    current = current[key]
+                elif kind == "dict":
+                    current = current[key]
+            kind, key = path[-1]
+            if kind == "model":
+                setattr(current, key, new_value)
+            elif kind == "list":
+                current[key] = new_value
+            elif kind == "dict":
+                current[key] = new_value
