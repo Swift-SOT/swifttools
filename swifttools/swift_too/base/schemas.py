@@ -191,6 +191,8 @@ class OptionalBeginEndLengthSchema(BaseSchema):
         if end is not None:
             end = TypeAdapter(AstropyDateTime).validate_python(end)
         length = values.get("length")
+        if length is None and end is None:
+            length = cls.model_fields["length"].default
 
         # Support for astropy TimeDelta and Quantity objects
         if isinstance(length, (TimeDelta, u.Quantity)):
@@ -208,6 +210,16 @@ class OptionalBeginEndLengthSchema(BaseSchema):
         values["end"] = end
         values["begin"] = begin
         return values
+
+
+class OptionalBeginEndLengthSchemaDefaultLength(OptionalBeginEndLengthSchema):
+    """Schema for SAA with default length of 1 day"""
+
+    length: Optional[AstropyDayLength] = Field(
+        default=1.0,
+        description="Length of requested time period (days)",
+        exclude=True,  # We don't want to include length in the output
+    )
 
 
 class OptionalCoordinateSchema(BaseSchema):
