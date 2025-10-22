@@ -198,8 +198,8 @@ class SwiftGUANOGetSchema(OptionalBeginEndLengthSchema):
     limit: Optional[int] = None
     page: Optional[int] = None
     triggertype: Optional[str] = None
-    
-    model_config = ConfigDict(extra='ignore')
+
+    model_config = ConfigDict(extra="ignore")
 
     @model_validator(mode="before")
     @classmethod

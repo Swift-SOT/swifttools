@@ -3,7 +3,7 @@ from typing import Any, Optional, Union
 
 from pydantic import computed_field, model_validator
 
-from ..base.common import TOOAPIBaseclass
+from ..base.common import TOOAPIBackCompat, TOOAPIBaseclass
 from ..base.schemas import (
     AstropyAngle,
     BaseSchema,
@@ -17,7 +17,7 @@ from .resolve import TOOAPIAutoResolve
 from .schemas import ObsIDSDC
 
 
-class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect, TOOAPIBaseclass, TOOAPIDownloadData):
+class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect, TOOAPIBaseclass, TOOAPIDownloadData, TOOAPIBackCompat):
     """Class that defines an individual entry in the Swift As-Flown Timeline
 
     Attributes
@@ -54,7 +54,7 @@ class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect, TOOAPIBaseclass, TOOA
         RA of the object that is the target of the pointing
     dec_object : float
         dec of the object that is the target of the pointing
-    targname : str
+    target_name : str
         Target name of the primary target of the observation
     """
 
@@ -64,7 +64,7 @@ class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect, TOOAPIBaseclass, TOOA
     settle: Optional[datetime] = None
     end: Optional[datetime] = None
     obstype: Optional[str] = None
-    targname: Optional[str] = None
+    target_name: Optional[str] = None
     roll: Optional[float] = None
     target_id: Optional[int] = None
     segment: Optional[int] = None
@@ -90,7 +90,7 @@ class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect, TOOAPIBaseclass, TOOA
         "ra": "RA(J2000)",
         "dec": "Dec(J200)",
         "roll": "Roll (deg)",
-        "targname": "Target Name",
+        "target_name": "Target Name",
         "target_id": "Target ID",
         "segment": "Segment",
         "ra_object": "Object RA(J2000)",
@@ -119,13 +119,13 @@ class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect, TOOAPIBaseclass, TOOA
 
     @property
     def _table(self) -> tuple[list[str], list[list[Any]]]:
-        parameters = ["begin", "end", "targname", "obs_id", "exposure", "slewtime"]
+        parameters = ["begin", "end", "target_name", "obs_id", "exposure", "slewtime"]
         header = [self._header_title(row) for row in parameters]
         return header, [
             [
                 self.begin,
                 self.end,
-                self.targname,
+                self.target_name,
                 self.obs_id,
                 self.exposure.seconds,
                 self.slewtime.seconds,
@@ -136,7 +136,7 @@ class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect, TOOAPIBaseclass, TOOA
 class SwiftAFSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
     radius: AstropyAngle = 0.19666666666666668
     target_id: Union[int, list[int], None] = None
-    obs_id: Optional[int] = None
+    obs_id: Optional[ObsIDSDC | list[ObsIDSDC]] = None
 
     @model_validator(mode="before")
     @classmethod
@@ -156,7 +156,7 @@ class SwiftAFSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema)
 class SwiftAFSTSchema(OptionalCoordinateSchema, OptionalBeginEndLengthSchema):
     radius: AstropyAngle = 0.19666666666666668
     target_id: Union[int, list[int], None] = None
-    obs_id: Optional[int] = None
+    obs_id: Optional[ObsIDSDC | list[ObsIDSDC]] = None
     afstmax: Optional[datetime] = None
     entries: list[SwiftAFSTEntry] = []
 
@@ -194,7 +194,7 @@ class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, BaseSchema):
         RA of the object that is the target of the pointing
     dec_object : float
         dec of the object that is the target of the pointing
-    targname : str
+    target_name : str
         Target name of the primary target of the observation
     """
 
@@ -237,10 +237,10 @@ class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, BaseSchema):
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def targname(self) -> Optional[str]:  # Updated return type to Optional[str]
+    def target_name(self) -> Optional[str]:  # Updated return type to Optional[str]
         if len(self.entries) == 0:
             return None
-        return self.entries[0].targname
+        return self.entries[0].target_name
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -326,18 +326,12 @@ class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, BaseSchema):
             [
                 self.begin,
                 self.end,
-                self.targname,
+                self.target_name,
                 self.obs_id,
                 self.exposure.seconds if self.exposure else None,
                 self.slewtime.seconds if self.slewtime else None,
             ]
         ]
-
-    # Aliases
-    obsid = obs_id
-    obsnum = obs_id
-    targetid = target_id
-    seg = segment
 
 
 class SwiftObservations(dict, TOOAPIBaseclass):
@@ -359,6 +353,7 @@ class SwiftAFST(
     TOOAPIAutoResolve,
     TOOAPIClockCorrect,
     SwiftAFSTSchema,
+    TOOAPIBackCompat,
 ):
     """Class to fetch Swift As-Flown Science Timeline (AFST) for given
     constraints. Essentially this will return what Swift observed and when, for

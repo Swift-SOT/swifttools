@@ -376,3 +376,43 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
                 self.__set_error(f"Validation failed: {e}")
             return False
         return True
+
+
+class TOOAPIBackCompat:
+    """Mixin to provide backward compatibility for some property names."""
+
+    @property
+    def targname(self) -> Any:
+        if hasattr(self, "target_name"):
+            return self.target_name
+        return None
+
+    def obsid(self) -> Any:
+        if hasattr(self, "obs_id"):
+            return self.obs_id
+        return None
+
+    def obsnum(self) -> Any:
+        if hasattr(self, "obs_id"):
+            return self.obs_id
+        return None
+
+    def source_name(self) -> Any:
+        if hasattr(self, "target_name"):
+            return self.target_name
+        return None
+
+    def uvotmode(self) -> Any:
+        if hasattr(self, "uvot_mode"):
+            return self.uvot_mode
+        return None
+
+    def xrtmode(self) -> Any:
+        if hasattr(self, "xrt_mode"):
+            return self.xrt_mode
+        return None
+
+    def batmode(self) -> Any:
+        if hasattr(self, "bat_mode"):
+            return self.bat_mode
+        return None

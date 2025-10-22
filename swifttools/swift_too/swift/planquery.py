@@ -3,7 +3,7 @@ from typing import Optional, Union
 
 from pydantic import Field, model_validator
 
-from ..base.common import TOOAPIBaseclass
+from ..base.common import TOOAPIBackCompat, TOOAPIBaseclass
 from ..base.schemas import AstropyAngle, BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
 from .clock import TOOAPIClockCorrect
 from .data import TOOAPIDownloadData
@@ -15,7 +15,7 @@ from .schemas import ObsIDSDC
 class SwiftPPSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
     radius: Optional[AstropyAngle] = None
     target_id: Union[int, list[int], None] = None
-    obs_id: Optional[int] = None
+    obs_id: Optional[ObsIDSDC | list[ObsIDSDC]] = None
 
     @model_validator(mode="before")
     @classmethod
@@ -31,7 +31,7 @@ class SwiftPPSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema)
         return values
 
 
-class SwiftPPSTEntry(BaseSchema, TOOAPIClockCorrect):
+class SwiftPPSTEntry(BaseSchema, TOOAPIClockCorrect, TOOAPIBackCompat):
     """
     Class that defines an individual entry in the Swift Pre-Planned Science
     Timeline
@@ -62,11 +62,11 @@ class SwiftPPSTEntry(BaseSchema, TOOAPIClockCorrect):
         roll angle of the observation (decimal degrees)
     skycoord : SkyCoord
         SkyCoord version of RA/Dec if astropy is installed
-    targname : str
+    target_name : str
         Target name of the primary target of the observation
     """
 
-    targname: Optional[str] = Field(default=None, alias="target_name")
+    target_name: Optional[str] = Field(default=None, alias="target_name")
     ra: Optional[float] = None
     dec: Optional[float] = None
     roll: Optional[float] = None
@@ -86,7 +86,7 @@ class SwiftPPSTEntry(BaseSchema, TOOAPIClockCorrect):
     _varnames = {
         "begin": "Begin Time",
         "end": "End Time",
-        "targname": "Target Name",
+        "target_name": "Target Name",
         "ra": "RA(J2000)",
         "dec": "Dec(J200)",
         "roll": "Roll (deg)",
@@ -107,9 +107,9 @@ class SwiftPPSTEntry(BaseSchema, TOOAPIClockCorrect):
 
     @property
     def _table(self):
-        _parameters = ["begin", "end", "targname", "obs_id", "exposure"]
+        _parameters = ["begin", "end", "target_name", "obs_id", "exposure"]
         header = [self._header_title(row) for row in _parameters]
-        return header, [[self.begin, self.end, self.targname, self.obs_id, self.exposure.seconds]]
+        return header, [[self.begin, self.end, self.target_name, self.obs_id, self.exposure.seconds]]
 
 
 class SwiftPPSTSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
@@ -117,12 +117,14 @@ class SwiftPPSTSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
 
     radius: Optional[AstropyAngle] = None
     target_id: Union[int, list[int], None] = None
-    obs_id: Optional[int] = None
+    obs_id: Optional[ObsIDSDC | list[ObsIDSDC]] = None
     ppstmax: Optional[datetime] = None
     entries: list[SwiftPPSTEntry] = []
 
 
-class SwiftPPST(TOOAPIBaseclass, TOOAPIDownloadData, TOOAPIAutoResolve, TOOAPIClockCorrect, SwiftPPSTSchema):
+class SwiftPPST(
+    TOOAPIBaseclass, TOOAPIDownloadData, TOOAPIAutoResolve, TOOAPIClockCorrect, SwiftPPSTSchema, TOOAPIBackCompat
+):
     """Class to fetch Swift Pre-Planned Science Timeline (PPST) for given
     constraints. Essentially this will return what Swift was planned to observe
     and when, for given constraints. Constraints can be for give coordinate
