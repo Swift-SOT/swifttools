@@ -51,3 +51,35 @@ def convert_obs_id_sdc(obs_id: Union[str, int]) -> str:
         return f"{targetid:08d}{segment:03d}"
     else:
         raise ValueError("`obs_id` in wrong format.")
+
+
+def _tablefy(table, header=None):
+    """Simple HTML table generator
+
+    Parameters
+    ----------
+    table : list
+        Data for table
+    header : list
+        Headers for table, by default None
+
+    Returns
+    -------
+    str
+        HTML formatted table.
+    """
+
+    tab = "<table>"
+    if header is not None:
+        tab += "<thead>"
+        tab += "".join([f"<th style='text-align: left;'>{head}</th>" for head in header])
+        tab += "</thead>"
+
+    for row in table:
+        tab += "<tr>"
+        # Replace any carriage returns with <br>
+        row = [f"{col}".replace("\n", "<br>") for col in row]
+        tab += "".join([f"<td style='text-align: left;'>{col}</td>" for col in row])
+        tab += "</tr>"
+    tab += "</table>"
+    return tab

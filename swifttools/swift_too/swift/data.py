@@ -11,7 +11,8 @@ from botocore.client import Config  # type: ignore[import-untyped]
 from pydantic import Field
 from tqdm.auto import tqdm
 
-from ..base.common import TOOAPIBaseclass, TOOAPIReprMixin
+from ..base.common import TOOAPIBaseclass
+from ..base.repr import TOOAPIReprMixin
 from ..base.schemas import BaseSchema
 from ..base.status import TOOStatus  # type: ignore[import-untyped]
 

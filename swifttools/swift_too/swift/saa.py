@@ -2,7 +2,8 @@ from datetime import datetime
 
 from pydantic import ConfigDict
 
-from ..base.common import TOOAPIBaseclass, TOOAPIReprMixin
+from ..base.common import TOOAPIBaseclass
+from ..base.repr import TOOAPIReprMixin
 from ..base.schemas import BaseSchema, OptionalBeginEndLengthSchemaDefaultLength
 from ..base.status import TOOStatus
 from .clock import TOOAPIClockCorrect

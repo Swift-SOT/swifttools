@@ -1,9 +1,10 @@
 from typing import Optional
 
 from ..swift.schemas import BaseSchema
+from .repr import TOOAPIReprMixin
 
 
-class SwiftTOOStatus(BaseSchema):
+class SwiftTOOStatus(BaseSchema, TOOAPIReprMixin):
     """Simple class to describe the status of a submitted TOO API request
 
     Attributes
