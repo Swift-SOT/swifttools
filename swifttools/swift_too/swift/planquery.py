@@ -8,7 +8,7 @@ from ..base.schemas import AstropyAngle, BaseSchema, OptionalBeginEndLengthSchem
 from ..base.status import TOOStatus
 from .clock import TOOAPIClockCorrect
 from .data import TOOAPIDownloadData
-from .obsquery import SwiftObservation
+from .obsquery import SwiftObservation, SwiftObservations
 from .resolve import TOOAPIAutoResolve
 from .schemas import ObsIDSDC
 
@@ -167,6 +167,9 @@ class SwiftPPST(
     _endpoint = "/swift/planquery"
     _isutc = False
     _local = ["obsid", "name", "skycoord", "length", "target_id", "shared_secret"]
+
+    # Observations
+    _observations = SwiftObservations()
 
     @property
     def _table(self):

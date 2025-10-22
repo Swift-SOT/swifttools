@@ -272,7 +272,7 @@ class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, TOOAPIBackCompat, Ba
     @computed_field  # type: ignore[prop-decorator]
     @property
     def slewtime(self) -> Optional[timedelta]:  # Updated return type to Optional[timedelta>
-        if len(self.entries) == 0:
+        if len(self.entries) == 0 or not hasattr(self.entries[0], "slewtime"):
             return None
         return timedelta(seconds=sum([e.slewtime.seconds for e in self.entries]))
 
@@ -324,6 +324,7 @@ class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, TOOAPIBackCompat, Ba
             header = self.entries[0]._table[0]
         else:
             header = []
+
         return header, [
             [
                 self.begin,
