@@ -1,7 +1,9 @@
 from datetime import datetime
 from typing import Optional, Union
 
-from pydantic import Field, model_validator
+from pydantic import ConfigDict, Field, model_validator
+
+from ..base.status import TOOStatus
 
 from ..base.common import TOOAPIBackCompat, TOOAPIBaseclass
 from ..base.schemas import AstropyAngle, BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
@@ -16,6 +18,8 @@ class SwiftPPSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema)
     radius: Optional[AstropyAngle] = None
     target_id: Union[int, list[int], None] = None
     obs_id: Optional[ObsIDSDC | list[ObsIDSDC]] = None
+
+    model_config = ConfigDict(extra="ignore")
 
     @model_validator(mode="before")
     @classmethod
@@ -120,6 +124,7 @@ class SwiftPPSTSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
     obs_id: Optional[ObsIDSDC | list[ObsIDSDC]] = None
     ppstmax: Optional[datetime] = None
     entries: list[SwiftPPSTEntry] = []
+    status: TOOStatus = TOOStatus()
 
 
 class SwiftPPST(

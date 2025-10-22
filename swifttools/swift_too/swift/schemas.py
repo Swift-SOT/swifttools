@@ -46,7 +46,7 @@ class SwiftObservationSchema(BaseSchema):
     roll: Optional[float] = None
     target_id: Optional[int] = None
     segment: Optional[int] = None
-    obs_id: Optional[int] = None
+    obs_id: Optional[ObsIDSDC] = None
     bat: Optional[int] = None
     xrt: Optional[int] = None
     uvot: Optional[int] = None
@@ -71,13 +71,13 @@ class SwiftObservationSchema(BaseSchema):
 
     @property
     def _table(self):
-        parameters = ["begin", "end", "targname", "obs_id", "exposure", "slewtime"]
+        parameters = ["begin", "end", "target_name", "obs_id", "exposure", "slewtime"]
         header = [row for row in parameters]
         return header, [
             [
                 self.begin,
                 self.end,
-                self.targname,
+                self.target_name,
                 self.obs_id,
                 self.exposure.seconds,
                 self.slewtime.seconds,

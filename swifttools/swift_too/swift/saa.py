@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from ..base.status import TOOStatus
+
 from ..base.common import TOOAPIBaseclass
 from ..base.schemas import BaseSchema, BeginEndLengthSchema, OptionalBeginEndLengthSchema
 from .clock import TOOAPIClockCorrect
@@ -26,6 +28,7 @@ class SwiftSAAEntry(BaseSchema, TOOAPIClockCorrect, TOOAPIBaseclass):
 class SwiftSAASchema(OptionalBeginEndLengthSchema):
     bat: bool = False
     entries: list[SwiftSAAEntry] = []
+    status: TOOStatus = TOOStatus()
 
 
 class SwiftSAA(TOOAPIBaseclass, TOOAPIClockCorrect, SwiftSAASchema):

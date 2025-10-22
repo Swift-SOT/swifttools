@@ -9,8 +9,9 @@ import httpx
 from botocore import UNSIGNED  # type: ignore[import-untyped]
 from botocore.client import Config  # type: ignore[import-untyped]
 from pydantic import Field
-from tqdm.auto import tqdm  # type: ignore[import-untyped]
+from tqdm.auto import tqdm
 
+from ..base.status import TOOStatus  # type: ignore[import-untyped]
 from ..base.common import TOOAPIBaseclass, TOOAPIReprMixin
 from ..base.schemas import BaseSchema
 
@@ -104,6 +105,8 @@ class SwiftDataSchema(BaseSchema):
     itsdc: bool = False
     subthresh: bool = False
     entries: list[SwiftDataFile] = []
+    status: TOOStatus = TOOStatus()
+
 
 
 class SwiftData(TOOAPIBaseclass, SwiftDataSchema):

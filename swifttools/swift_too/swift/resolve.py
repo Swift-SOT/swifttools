@@ -2,6 +2,8 @@ from typing import Optional
 
 from pydantic import ConfigDict, computed_field, model_validator
 
+from ..base.status import TOOStatus
+
 from ..base.common import TOOAPIBaseclass
 from ..base.schemas import BaseSchema, OptionalCoordinateSchema
 
@@ -14,6 +16,7 @@ class SwiftResolveGetSchema(BaseSchema):
 class SwiftResolveSchema(OptionalCoordinateSchema):
     name: Optional[str] = None
     resolver: Optional[str] = None
+    status: TOOStatus = TOOStatus()
 
 
 class SwiftResolve(TOOAPIBaseclass, SwiftResolveSchema):

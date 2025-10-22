@@ -10,7 +10,7 @@ from pydantic import TypeAdapter, ValidationError
 from tabulate import tabulate
 
 from ..version import version_tuple
-from .status import SwiftTOOStatus
+
 
 # Make Warnings a little less weird
 formatwarning_orig = warnings.formatwarning
@@ -149,9 +149,6 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         "bat_mode": ["batmode"],
     }
 
-    # Every request gets a status
-    status: SwiftTOOStatus = SwiftTOOStatus()
-
     def __init__(self, *args, **kwargs):
         # Check if any of the arguments are in the back compatibility list, and
         # convert them to the correct keyword arguments.
@@ -288,7 +285,7 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
 
         # Parse the response and update the class attributes
         try:
-            data = self.model_validate(response.json())
+            data = self._schema.model_validate(response.json())
             for key, value in data:
                 setattr(self, key, value)
         except Exception as e:
@@ -387,32 +384,62 @@ class TOOAPIBackCompat:
             return self.target_name
         return None
 
+    @property
     def obsid(self) -> Any:
         if hasattr(self, "obs_id"):
             return self.obs_id
         return None
 
+    @property
     def obsnum(self) -> Any:
         if hasattr(self, "obs_id"):
             return self.obs_id
         return None
 
+    @property
     def source_name(self) -> Any:
         if hasattr(self, "target_name"):
             return self.target_name
         return None
 
+    @property
     def uvotmode(self) -> Any:
         if hasattr(self, "uvot_mode"):
             return self.uvot_mode
         return None
 
+    @property
     def xrtmode(self) -> Any:
         if hasattr(self, "xrt_mode"):
             return self.xrt_mode
         return None
 
+    @property
     def batmode(self) -> Any:
         if hasattr(self, "bat_mode"):
             return self.bat_mode
+        return None
+
+    @property
+    def xrt(self) -> Any:
+        if hasattr(self, "xrt_mode"):
+            return self.xrt_mode
+        return None
+
+    @property
+    def uvot(self) -> Any:
+        if hasattr(self, "uvot_mode"):
+            return self.uvot_mode
+        return None
+
+    @property
+    def bat(self) -> Any:
+        if hasattr(self, "bat_mode"):
+            return self.bat_mode
+        return None
+
+    @property
+    def seg(self) -> Any:
+        if hasattr(self, "segment"):
+            return self.segment
         return None

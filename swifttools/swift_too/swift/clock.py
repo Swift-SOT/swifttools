@@ -3,6 +3,8 @@ from typing import Optional, Union
 
 from pydantic import computed_field, model_validator
 
+from ..base.status import TOOStatus
+
 from ..base.common import TOOAPIBaseclass
 from ..base.schemas import BaseSchema
 from .datetime import swiftdatetime
@@ -12,6 +14,7 @@ class SwiftDateTimeSchema(BaseSchema):
     met: float
     utcf: float
     isutc: bool
+    status: TOOStatus = TOOStatus()
 
     @computed_field  # type: ignore[prop-decorator]
     @property

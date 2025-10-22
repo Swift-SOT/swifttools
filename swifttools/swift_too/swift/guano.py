@@ -3,6 +3,8 @@ from typing import Optional, Union
 
 from pydantic import ConfigDict, model_validator
 
+from ..base.status import TOOStatus
+
 from ..base.common import TOOAPIBaseclass, TOOAPIReprMixin
 from ..base.schemas import (
     BaseSchema,
@@ -229,6 +231,7 @@ class SwiftGUANOSchema(BaseSchema):
     lastcommand: Optional[datetime] = None
     guanostatus: Optional[bool] = None
     entries: list[SwiftGUANOEntry] = []
+    status: TOOStatus = TOOStatus()
 
 
 class SwiftGUANO(

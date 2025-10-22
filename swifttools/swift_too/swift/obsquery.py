@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta
-from typing import Any, Optional, Union
+from typing import Any, Generator, Optional, Union
 
-from pydantic import computed_field, model_validator
+from pydantic import ConfigDict, computed_field, model_validator
+
+from ..base.status import TOOStatus
 
 from ..base.common import TOOAPIBackCompat, TOOAPIBaseclass
 from ..base.schemas import (
@@ -138,6 +140,8 @@ class SwiftAFSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema)
     target_id: Union[int, list[int], None] = None
     obs_id: Optional[ObsIDSDC | list[ObsIDSDC]] = None
 
+    model_config = ConfigDict(extra="ignore")
+
     @model_validator(mode="before")
     @classmethod
     def validate_exactly_one_field(cls, values: Any) -> dict[str, Any]:
@@ -159,9 +163,10 @@ class SwiftAFSTSchema(OptionalCoordinateSchema, OptionalBeginEndLengthSchema):
     obs_id: Optional[ObsIDSDC | list[ObsIDSDC]] = None
     afstmax: Optional[datetime] = None
     entries: list[SwiftAFSTEntry] = []
+    status: TOOStatus = TOOStatus()
 
 
-class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, BaseSchema):
+class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, TOOAPIBackCompat, BaseSchema):
     """Class to summarize observations taken for given observation ID (obs_id).
     Whereas observations are typically one or more individual snapshot, in TOO
     API speak a `SwiftAFSTEntry`, this class summarizes all snapshots into a
@@ -429,6 +434,10 @@ class SwiftAFST(
 
     def __len__(self) -> int:
         return len(self.entries)
+
+    def __iter__(self) -> Generator:
+        for entry in self.entries:
+            yield entry
 
     def append(self, value: SwiftAFSTEntry) -> None:
         self.entries.append(value)

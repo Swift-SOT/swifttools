@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import Optional
 
+from ..base.status import TOOStatus
+
 from ..base.common import TOOAPIBaseclass
 from ..base.schemas import AstropyAngle, BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
 from .resolve import TOOAPIAutoResolve
@@ -29,6 +31,7 @@ class SwiftTOORequestsSchema(BaseSchema):
     radius: Optional[AstropyAngle] = None
     debug: bool = False
     entries: list[SwiftTOORequestSchema] = []
+    status: TOOStatus = TOOStatus()
 
 
 class SwiftTOORequests(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestsSchema):
