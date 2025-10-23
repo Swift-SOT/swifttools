@@ -2,7 +2,6 @@ from datetime import timedelta
 
 import astropy.units as u  # type: ignore[import-untyped]
 import pytest
-
 from swifttools.swift_too.api_functions import convert_from_timedelta, convert_obsnum_sdc
 
 

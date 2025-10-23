@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 
 import pytest
-
 from swifttools.swift_too.swift_datetime import swiftdatetime
 
 

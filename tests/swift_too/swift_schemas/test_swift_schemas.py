@@ -6,7 +6,6 @@ import pytest
 from astropy.coordinates import Latitude, Longitude, SkyCoord  # type: ignore[import-untyped]
 from astropy.time import Time, TimeDelta  # type: ignore[import-untyped]
 from pydantic import ValidationError
-
 from swifttools.swift_too.swift_schemas import (
     BaseSchema,
     BeginEndLengthSchema,

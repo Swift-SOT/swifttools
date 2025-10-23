@@ -4,7 +4,6 @@ from unittest.mock import patch
 
 from mock import MagicMock
 from pydantic import BaseModel
-
 from swifttools.swift_too.api_common import TOOAPIBaseclass, _tablefy, convert_to_dt
 from swifttools.swift_too.swift_schemas import BaseSchema
 

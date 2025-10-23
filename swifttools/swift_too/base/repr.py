@@ -2,7 +2,6 @@ import textwrap
 
 from tabulate import tabulate
 
-from ..base.status import TOOStatus
 from .functions import _tablefy
 
 
@@ -27,7 +26,7 @@ class TOOAPIReprMixin:
         return header, table
 
     def _repr_html_(self):
-        if hasattr(self, "status") and self.status.status == "Rejected" and isinstance(self, TOOStatus):
+        if hasattr(self, "status") and not isinstance(self.status, str) and self.status.status == "Rejected":
             return "<b>Rejected with the following error(s): </b>" + " ".join(self.status.errors)
         else:
             header, table = self._table
@@ -37,7 +36,7 @@ class TOOAPIReprMixin:
                 return "No data"
 
     def __str__(self):
-        if hasattr(self, "status") and self.status.status == "Rejected" and isinstance(self, TOOStatus):
+        if hasattr(self, "status") and not isinstance(self.status, str) and self.status.status == "Rejected":
             return "Rejected with the following error(s): " + " ".join(self.status.errors)
         else:
             header, table = self._table

@@ -3,7 +3,6 @@ from unittest.mock import MagicMock, Mock, patch
 
 import numpy as np
 import pytest
-
 from swifttools.swift_too.swift_toorequest import (
     TOO,
     Swift_TOO,
