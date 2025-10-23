@@ -119,8 +119,16 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         is to perform a GET request on instantiation of the class, if the
         status is "Pending" and the class has a `_get_schema` attribute.
         """
-        assert hasattr(self, "status"), "API Schema requires a 'status' attribute."
-        if self.status.status == "Pending" and hasattr(self, "_get_schema") and self.autosubmit is True:
+
+        # If, ands and buts...
+        if (
+            hasattr(self, "status")
+            and hasattr(self.status, "status")
+            and not isinstance(self.status, str)
+            and self.status.status == "Pending"
+            and hasattr(self, "_get_schema")
+            and self.autosubmit is True
+        ):
             if self.validate_get(set_error=False):
                 self.submit_get()
 
