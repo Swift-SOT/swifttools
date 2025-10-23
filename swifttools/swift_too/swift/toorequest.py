@@ -8,6 +8,8 @@ from pydantic import (
     model_validator,
 )
 
+from swifttools.swift_too.base.repr import TOOAPIReprMixin
+
 from ..base.common import TOOAPIBaseclass
 from ..base.schemas import AstropyAngle, BaseSchema
 from ..base.status import TOOStatus
@@ -34,7 +36,7 @@ class UrgencyEnum(int, Enum):
     LOW = 4
 
 
-class SwiftTOORequestSchema(BaseSchema):
+class SwiftTOORequestSchema(BaseSchema, TOOAPIReprMixin):
     too_id: Optional[int] = None
     timestamp: Optional[datetime] = None
     target_name: Optional[str] = None
@@ -75,7 +77,7 @@ class SwiftTOORequestSchema(BaseSchema):
     done: Optional[int] = None
     decision: Optional[str] = None
     target_id: Optional[int] = None
-    uvot_mode_approved: Optional[str] = None
+    uvot_mode_approved: Optional[int] = None
     xrt_mode_approved: Optional[int] = None
     date_begin: Union[str, date, None] = None
     date_end: Union[str, date, None] = None

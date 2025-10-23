@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import Optional
 
+from pydantic import ConfigDict, model_validator
+
 from ..base.common import TOOAPIBaseclass
 from ..base.schemas import AstropyAngle, BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
 from ..base.status import TOOStatus
@@ -16,6 +18,30 @@ class SwiftTOORequestsGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinate
     too_id: Optional[int] = None
     radius: Optional[float] = None
     debug: bool = False
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_at_least_one_param(cls, data):
+        """Validate that at least one parameter is set."""
+        if not isinstance(data, dict):
+            data = data.__dict__
+        if isinstance(data, dict):
+            # Exclude model_config and other class attributes
+            params = [
+                "begin",
+                "end",
+                "length",
+                "ra",
+                "dec",
+                "limit",
+                "year",
+                "too_id",
+            ]
+            if not any(data.get(param) is not None for param in params):
+                raise ValueError("At least one parameter must be set")
+        return data
+
+    model_config = ConfigDict(extra="ignore")
 
 
 class SwiftTOORequestsSchema(BaseSchema):

@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import Optional
 
+from swifttools.swift_too.base.repr import TOOAPIReprMixin
+
 from ..base.common import TOOAPIBaseclass
 from ..base.schemas import AstropyAngle, BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
 from ..base.status import TOOStatus
@@ -103,7 +105,7 @@ class SwiftCalendarEntry(BaseSchema, TOOAPIClockCorrect):
         return header, [[getattr(self, row) for row in parameters]]
 
 
-class SwiftCalendarSchema(BaseSchema):
+class SwiftCalendarSchema(BaseSchema, TOOAPIReprMixin):
     begin: Optional[datetime] = None
     end: Optional[datetime] = None
     too_id: Optional[int] = None
@@ -112,6 +114,7 @@ class SwiftCalendarSchema(BaseSchema):
     radius: Optional[AstropyAngle] = None
     targetid: Optional[int] = None
     entries: list[SwiftCalendarEntry] = []
+    status: TOOStatus = TOOStatus()
 
 
 class SwiftCalendar(
