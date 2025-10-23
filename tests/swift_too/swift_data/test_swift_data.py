@@ -1,7 +1,7 @@
 import tempfile
 from unittest.mock import MagicMock, Mock, patch
 
-from swifttools.swift_too.swift_data import SwiftData, SwiftDataFile
+from swifttools.swift_too.swift.data import SwiftData, SwiftDataFile
 
 
 class TestSwiftData:
@@ -26,7 +26,7 @@ class TestSwiftData:
 
     def test_init_with_obs_id(self):
         """Test SwiftData initialization with observation ID."""
-        with patch("swifttools.swift_too.swift_data.SwiftData.validate_get") as mock_validate:
+        with patch("swifttools.swift_too.swift.data.SwiftData.validate_get") as mock_validate:
             mock_validate.return_value = False
             data = SwiftData(obs_id="00012345001")
             assert data.obs_id == "00012345001"
@@ -164,7 +164,7 @@ class TestSwiftData:
 
     def test_download_with_quiet_mode(self):
         """Test download doesn't use tqdm progress bar in quiet mode."""
-        with patch("swifttools.swift_too.swift_data.tqdm") as mock_tqdm:
+        with patch("swifttools.swift_too.swift.data.tqdm") as mock_tqdm:
             data = SwiftData(quiet=True)
             mock_file = Mock()
             mock_file.download.return_value = True

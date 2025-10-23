@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from swifttools.swift_too.swift_guano import (
+from swifttools.swift_too.swift.guano import (
     SwiftGUANO,
     SwiftGUANOData,
     SwiftGUANOEntry,
@@ -138,7 +138,7 @@ class TestSwiftGUANO:
         """Test __getitem__ and __len__ methods."""
         entry1 = SwiftGUANOEntry()
         entry2 = SwiftGUANOEntry()
-        #        with patch("swifttools.swift_too.swift_guano.SwiftGUANO.validate_get", return_value=False):
+        #        with patch("swifttools.swift_too.swift.guano.SwiftGUANO.validate_get", return_value=False):
         guano = SwiftGUANO(entries=[entry1, entry2])
 
         assert len(guano) == 2

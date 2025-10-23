@@ -1,19 +1,19 @@
 from datetime import datetime
 from unittest.mock import Mock, patch
 
-from swifttools.swift_too.swift_clock import (
+from swifttools.swift_too.swift.clock import (
     SwiftClock,
     SwiftDateTimeSchema,
     TOOAPIClockCorrect,
     index_datetimes,
 )
-from swifttools.swift_too.swift_datetime import swiftdatetime
+from swifttools.swift_too.swift.datetime import swiftdatetime
 
 
 class TestSwiftDateTimeSchema:
     def test_swifttime_computed_field(self):
         """Test that swifttime computed field returns correct swiftdatetime."""
-        with patch("swifttools.swift_too.swift_clock.swiftdatetime.frommet") as mock_frommet:
+        with patch("swifttools.swift_too.swift.clock.swiftdatetime.frommet") as mock_frommet:
             mock_dt = Mock()
             mock_dt.swifttime = datetime(2023, 1, 1, 12, 0, 0)
             mock_frommet.return_value = mock_dt
@@ -26,7 +26,7 @@ class TestSwiftDateTimeSchema:
 
     def test_utctime_computed_field(self):
         """Test that utctime computed field returns correct swiftdatetime."""
-        with patch("swifttools.swift_too.swift_clock.swiftdatetime.frommet") as mock_frommet:
+        with patch("swifttools.swift_too.swift.clock.swiftdatetime.frommet") as mock_frommet:
             mock_dt = Mock()
             mock_dt.utctime = datetime(2023, 1, 1, 12, 0, 0)
             mock_frommet.return_value = mock_dt
@@ -49,7 +49,7 @@ class TestSwiftClock:
 
     def test_post_process(self):
         """Test _post_process method converts entries correctly."""
-        with patch("swifttools.swift_too.swift_clock.swiftdatetime.frommet") as mock_frommet:
+        with patch("swifttools.swift_too.swift.clock.swiftdatetime.frommet") as mock_frommet:
             mock_entry1 = Mock()
             mock_entry1.met = 123456.0
             mock_entry1.swifttime = datetime(2023, 1, 1, 12, 0, 0)
@@ -121,7 +121,7 @@ class TestSwiftClock:
 
     def test_to_utctime(self):
         """Test to_utctime method."""
-        with patch("swifttools.swift_too.swift_clock.swiftdatetime.frommet") as mock_frommet:
+        with patch("swifttools.swift_too.swift.clock.swiftdatetime.frommet") as mock_frommet:
             mock_entry1 = Mock()
             mock_entry1.met = 123456.0
             mock_entry1.utcf = 1.0
@@ -146,7 +146,7 @@ class TestSwiftClock:
 
     def test_to_swifttime(self):
         """Test to_swifttime method."""
-        with patch("swifttools.swift_too.swift_clock.swiftdatetime.frommet") as mock_frommet:
+        with patch("swifttools.swift_too.swift.clock.swiftdatetime.frommet") as mock_frommet:
             mock_entry1 = Mock()
             mock_entry1.met = 123456.0
             mock_entry1.utcf = 1.0

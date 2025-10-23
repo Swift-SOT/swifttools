@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 
 import pytest
-from swifttools.swift_too.swift_datetime import swiftdatetime
+
+from swifttools.swift_too.swift.datetime import swiftdatetime
 
 
 class TestSwiftDatetimeSub:

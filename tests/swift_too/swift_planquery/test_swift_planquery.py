@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 
 import pytest
-from swifttools.swift_too.swift_planquery import SwiftPPSTEntry
+
+from swifttools.swift_too.swift.planquery import SwiftPPSTEntry
 
 
 class TestSwiftPPSTEntry:
@@ -14,30 +15,30 @@ class TestSwiftPPSTEntry:
             roll=45.0,
             begin=datetime(2023, 1, 1, 12, 0, 0),
             end=datetime(2023, 1, 1, 13, 0, 0),
-            targetid=12345,
-            seg=1,
+            target_id=12345,
+            segment=1,
             obs_id=98765,
-            bat=1,
-            xrt=2,
-            uvot=3,
+            bat_mode=1,
+            xrt_mode=2,
+            uvot_mode=3,
             fom=0.95,
             comment="Test observation",
             timetarg=100,
             takodb="test_db",
         )
 
-        assert entry.targname == "Test Target"
+        assert entry.target_name == "Test Target"
         assert entry.ra == 123.456
         assert entry.dec == 78.901
         assert entry.roll == 45.0
         assert entry.begin == datetime(2023, 1, 1, 12, 0, 0)
         assert entry.end == datetime(2023, 1, 1, 13, 0, 0)
-        assert entry.targetid == 12345
-        assert entry.seg == 1
+        assert entry.target_id == 12345
+        assert entry.segment == 1
         assert entry.obs_id == "00098765000"
-        assert entry.bat == 1
-        assert entry.xrt == 2
-        assert entry.uvot == 3
+        assert entry.bat_mode == 1
+        assert entry.xrt_mode == 2
+        assert entry.uvot_mode == 3
         assert entry.fom == 0.95
         assert entry.comment == "Test observation"
         assert entry.timetarg == 100
@@ -47,18 +48,18 @@ class TestSwiftPPSTEntry:
         """Test SwiftPPSTEntry initialization with minimal fields."""
         entry = SwiftPPSTEntry()
 
-        assert entry.targname is None
+        assert entry.target_name is None
         assert entry.ra is None
         assert entry.dec is None
         assert entry.roll is None
         assert entry.begin is None
         assert entry.end is None
-        assert entry.targetid is None
-        assert entry.seg is None
+        assert entry.target_id is None
+        assert entry.segment is None
         assert entry.obs_id is None
-        assert entry.bat is None
-        assert entry.xrt is None
-        assert entry.uvot is None
+        assert entry.bat_mode is None
+        assert entry.xrt_mode is None
+        assert entry.uvot_mode is None
         assert entry.fom is None
         assert entry.comment is None
         assert entry.timetarg is None
@@ -82,11 +83,11 @@ class TestSwiftPPSTEntry:
             _ = entry.exposure
 
     def test_target_name_alias(self):
-        """Test that target_name alias works for targname field."""
+        """Test that target_name alias works for target_name field."""
         data = {"target_name": "Aliased Target"}
         entry = SwiftPPSTEntry(**data)
 
-        assert entry.targname == "Aliased Target"
+        assert entry.target_name == "Aliased Target"
 
     def test_table_property(self):
         """Test that _table property returns correct format."""
@@ -112,15 +113,15 @@ class TestSwiftPPSTEntry:
         expected_keys = [
             "begin",
             "end",
-            "targname",
+            "target_name",
             "ra",
             "dec",
             "roll",
-            "targetid",
-            "seg",
-            "xrt",
-            "uvot",
-            "bat",
+            "target_id",
+            "segment",
+            "xrt_mode",
+            "uvot_mode",
+            "bat_mode",
             "fom",
             "obs_id",
             "exposure",
@@ -132,7 +133,7 @@ class TestSwiftPPSTEntry:
 
         # Test some specific mappings
         assert entry._varnames["begin"] == "Begin Time"
-        assert entry._varnames["targname"] == "Target Name"
+        assert entry._varnames["target_name"] == "Target Name"
         assert entry._varnames["ra"] == "RA(J2000)"
         assert entry._varnames["obs_id"] == "Observation Number"
 
@@ -142,7 +143,7 @@ class TestSwiftPPSTEntry:
 
         # Test with existing key
         assert entry._header_title("begin") == "Begin Time"
-        assert entry._header_title("targname") == "Target Name"
+        assert entry._header_title("target_name") == "Target Name"
 
         # Test with non-existing key (should return the key itself)
         assert entry._header_title("unknown_key") == "unknown_key"

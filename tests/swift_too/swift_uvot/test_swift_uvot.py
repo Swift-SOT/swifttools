@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock
 
-from swifttools.swift_too.swift_uvot import (
+from swifttools.swift_too.swift.uvot import (
     Swift_UVOTModeEntry,
     SwiftUVOTMode,
     SwiftUVOTModeEntry,

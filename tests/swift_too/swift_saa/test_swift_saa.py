@@ -1,7 +1,7 @@
 from datetime import datetime
 from unittest.mock import patch
 
-from swifttools.swift_too.swift_saa import SwiftSAA, SwiftSAAEntry
+from swifttools.swift_too.swift.saa import SwiftSAA, SwiftSAAEntry
 
 
 class TestSwiftSAAEntry:
