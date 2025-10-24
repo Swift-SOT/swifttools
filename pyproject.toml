@@ -47,6 +47,7 @@ dev = [
     "pre-commit>=4.2.0",
     "types-mock>=5.2.0.20250516",
     "types-tqdm>=4.67.0.20250809",
+    "mock>=5.2.0",
 ]
 
 [tool.setuptools]
