@@ -105,7 +105,7 @@ class SwiftUVOTMode(TOOAPIBaseclass, TOOAPIInstruments, SwiftUVOTModeSchema, TOO
 
     def __str__(self):
         """Display UVOT mode table"""
-        if hasattr(self, "status") and self.status == "Rejected" and self.status.__class__.__name__ == "SwiftTOOStatus":
+        if hasattr(self, "status") and self.status == "Rejected" and isinstance(self.status, TOOStatus):
             return "Rejected with the following error(s): " + " ".join(self.status.errors)
         elif self.entries is not None:
             table_cols = [
