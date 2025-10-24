@@ -1,19 +1,21 @@
 from datetime import datetime, timedelta
 
-import astropy.units as u
+import astropy.units as u  # type: ignore[import-untyped]
 import numpy as np
 import pytest
 from astropy.coordinates import Latitude, Longitude, SkyCoord  # type: ignore[import-untyped]
 from astropy.time import Time, TimeDelta  # type: ignore[import-untyped]
 from pydantic import ValidationError
 
-from swifttools.swift_too.swift.schemas import (
-    BaseSchema,
+from swifttools.swift_too.base.schemas import (
     BeginEndLengthSchema,
     CoordinateSchema,
-    ObsType,
     OptionalBeginEndLengthSchema,
     OptionalCoordinateSchema,
+)
+from swifttools.swift_too.swift.schemas import (
+    BaseSchema,
+    ObsType,
     SwiftObservationSchema,
     SwiftTOOStatusGetSchema,
 )

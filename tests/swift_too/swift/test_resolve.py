@@ -1,6 +1,6 @@
 from unittest.mock import Mock, patch
 
-from swifttools.swift_too.api_resolve import TOOAPIAutoResolve
+from swifttools.swift_too.swift.resolve import TOOAPIAutoResolve
 
 
 class TestValidateName:

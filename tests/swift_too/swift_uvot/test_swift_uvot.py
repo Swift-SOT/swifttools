@@ -187,124 +187,125 @@ class TestSwiftUVOTModeEntry:
             assert entry.filter_name == name
             assert isinstance(entry.filter_name, str)
 
-    class TestSwiftUVOTMode:
-        def test_str_with_rejected_status(self):
-            """Test string representation with rejected status."""
-            mode = SwiftUVOTMode()
 
-            # Mock a rejected status
-            mock_status = MagicMock()
-            mock_status.__class__.__name__ = "TOOStatus"
-            mock_status.__eq__ = lambda self, other: other == "Rejected"
-            mock_status.errors = ["Invalid mode", "Missing parameter"]
-            mode.status = mock_status
+class TestSwiftUVOTMode:
+    def test_str_with_rejected_status(self):
+        """Test string representation with rejected status."""
+        mode = SwiftUVOTMode()
 
-            result = str(mode)
-            assert result == "Rejected with the following error(s): Invalid mode Missing parameter"
+        # Mock a rejected status
+        mock_status = MagicMock()
+        mock_status.__class__.__name__ = "TOOStatus"
+        mock_status.__eq__ = lambda self, other: other == "Rejected"
+        mock_status.errors = ["Invalid mode", "Missing parameter"]
+        mode.status = mock_status
 
-        def test_str_with_entries(self):
-            """Test string representation with valid entries."""
-            mode = SwiftUVOTMode()
-            mode.uvotmode = 12345
+        result = str(mode)
+        assert result == "Rejected with the following error(s): Invalid mode Missing parameter"
 
-            # Create mock entries
-            entry1 = SwiftUVOTModeEntry()
-            entry1.filter_name = "V"
-            entry1.eventmode = 1
-            entry1.field_of_view = 17
-            entry1.binning = 1
-            entry1.max_exposure = 1000
-            entry1.weight = 1
-            entry1.comment = "Test comment"
+    def test_str_with_entries(self):
+        """Test string representation with valid entries."""
+        mode = SwiftUVOTMode()
+        mode.uvotmode = 12345
 
-            entry2 = SwiftUVOTModeEntry()
-            entry2.filter_name = "UVW1"
-            entry2.eventmode = 0
-            entry2.field_of_view = 17
-            entry2.binning = 2
-            entry2.max_exposure = 500
-            entry2.weight = 0
-            entry2.comment = "Another comment"
+        # Create mock entries
+        entry1 = SwiftUVOTModeEntry()
+        entry1.filter_name = "V"
+        entry1.eventmode = 1
+        entry1.field_of_view = 17
+        entry1.binning = 1
+        entry1.max_exposure = 1000
+        entry1.weight = 1
+        entry1.comment = "Test comment"
 
-            mode.entries = [entry1, entry2]
+        entry2 = SwiftUVOTModeEntry()
+        entry2.filter_name = "UVW1"
+        entry2.eventmode = 0
+        entry2.field_of_view = 17
+        entry2.binning = 2
+        entry2.max_exposure = 500
+        entry2.weight = 0
+        entry2.comment = "Another comment"
 
-            result = str(mode)
+        mode.entries = [entry1, entry2]
 
-            assert "UVOT Mode: 12345" in result
-            assert "The following table summarizes this mode" in result
-            assert "Filter" in result
-            assert "Event FOV" in result
-            assert "Max. Exp. Time" in result
-            assert "V" in result
-            assert "UVW1" in result
-            assert "Filter: The particular filter in the sequence." in result
+        result = str(mode)
 
-        def test_str_with_no_data(self):
-            """Test string representation with no entries."""
-            mode = SwiftUVOTMode()
-            mode.entries = None
+        assert "UVOT Mode: 12345" in result
+        assert "The following table summarizes this mode" in result
+        assert "Filter" in result
+        assert "Event FOV" in result
+        assert "Max. Exp. Time" in result
+        assert "V" in result
+        assert "UVW1" in result
+        assert "Filter: The particular filter in the sequence." in result
 
-            result = str(mode)
-            assert result == "No data"
+    def test_str_with_no_data(self):
+        """Test string representation with no entries."""
+        mode = SwiftUVOTMode()
+        mode.entries = None
 
-        def test_str_with_empty_entries(self):
-            """Test string representation with empty entries list."""
-            mode = SwiftUVOTMode()
-            mode.uvotmode = 0
-            mode.entries = []
+        result = str(mode)
+        assert result == "No data"
 
-            result = str(mode)
+    def test_str_with_empty_entries(self):
+        """Test string representation with empty entries list."""
+        mode = SwiftUVOTMode()
+        mode.uvotmode = 0
+        mode.entries = []
 
-            assert "UVOT Mode: 0" in result
-            assert "The following table summarizes this mode" in result
+        result = str(mode)
 
-        def test_str_with_none_values_in_entries(self):
-            """Test string representation with entries containing None values."""
-            mode = SwiftUVOTMode()
-            mode.uvotmode = 999
+        assert "UVOT Mode: 0" in result
+        assert "The following table summarizes this mode" in result
 
-            entry = SwiftUVOTModeEntry()
-            entry.uvotmode = 999
-            entry.filter_name = None
-            entry.eventmode = None
-            entry.field_of_view = None
-            entry.binning = None
-            entry.max_exposure = None
-            entry.weight = None
-            entry.comment = None
+    def test_str_with_none_values_in_entries(self):
+        """Test string representation with entries containing None values."""
+        mode = SwiftUVOTMode()
+        mode.uvotmode = 999
 
-            mode.entries = [entry]
+        entry = SwiftUVOTModeEntry()
+        entry.uvotmode = 999
+        entry.filter_name = None
+        entry.eventmode = None
+        entry.field_of_view = None
+        entry.binning = None
+        entry.max_exposure = None
+        entry.weight = None
+        entry.comment = None
 
-            result = str(mode)
+        mode.entries = [entry]
 
-            assert "UVOT Mode: 999" in result
+        result = str(mode)
 
-        def test_str_formatting_structure(self):
-            """Test the overall structure of the string output."""
-            mode = SwiftUVOTMode()
-            mode.uvotmode = 54321
+        assert "UVOT Mode: 999" in result
 
-            entry = SwiftUVOTModeEntry()
-            entry.filter_name = "B"
-            entry.eventmode = 1
-            entry.field_of_view = 17
-            entry.binning = 1
-            entry.max_exposure = 800
-            entry.weight = 1
-            entry.comment = "Blue filter"
+    def test_str_formatting_structure(self):
+        """Test the overall structure of the string output."""
+        mode = SwiftUVOTMode()
+        mode.uvotmode = 54321
 
-            mode.entries = [entry]
+        entry = SwiftUVOTModeEntry()
+        entry.filter_name = "B"
+        entry.eventmode = 1
+        entry.field_of_view = 17
+        entry.binning = 1
+        entry.max_exposure = 800
+        entry.weight = 1
+        entry.comment = "Blue filter"
 
-            result = str(mode)
+        mode.entries = [entry]
 
-            # Check that all expected sections are present
-            assert result.startswith("UVOT Mode: 54321")
-            assert "Filter:" in result and "The particular filter in the sequence." in result
-            assert "Event FOV:" in result and "UVOT event data." in result
-            assert "Image FOV:" in result and "UVOT image data." in result
-            assert "Max. Exp. Time:" in result and "maximum amount of time" in result
-            assert "Weighting:" in result and "Ratio of time spent" in result
-            assert "Comments:" in result and "Additional notes" in result
+        result = str(mode)
+
+        # Check that all expected sections are present
+        assert result.startswith("UVOT Mode: 54321")
+        assert "Filter:" in result and "The particular filter in the sequence." in result
+        assert "Event FOV:" in result and "UVOT event data." in result
+        assert "Image FOV:" in result and "UVOT image data." in result
+        assert "Max. Exp. Time:" in result and "maximum amount of time" in result
+        assert "Weighting:" in result and "Ratio of time spent" in result
+        assert "Comments:" in result and "Additional notes" in result
 
 
 class TestSwiftUVOTModeReprHTML:

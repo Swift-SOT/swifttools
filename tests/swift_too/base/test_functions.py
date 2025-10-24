@@ -2,85 +2,86 @@ from datetime import timedelta
 
 import astropy.units as u  # type: ignore[import-untyped]
 import pytest
-from swifttools.swift_too.api_functions import convert_from_timedelta, convert_obsnum_sdc
+
+from swifttools.swift_too.base.functions import convert_from_timedelta, convert_obs_id_sdc
 
 
 class TestConvertObsnumSdc:
-    def test_convert_obsnum_sdc_with_valid_sdc_string(self):
-        """Test that convert_obsnum_sdc returns valid SDC format string unchanged."""
-        result = convert_obsnum_sdc("01234567890")
+    def test_convert_obs_id_sdc_with_valid_sdc_string(self):
+        """Test that convert_obs_id_sdc returns valid SDC format string unchanged."""
+        result = convert_obs_id_sdc("01234567890")
         assert result == "01234567890"
 
-    def test_convert_obsnum_sdc_with_invalid_sdc_string_format(self):
-        """Test that convert_obsnum_sdc raises ValueError for invalid SDC format."""
+    def test_convert_obs_id_sdc_with_invalid_sdc_string_format(self):
+        """Test that convert_obs_id_sdc raises ValueError for invalid SDC format."""
         with pytest.raises(ValueError, match="ERROR: Obsnum string format incorrect"):
-            convert_obsnum_sdc("0123456789a")
+            convert_obs_id_sdc("0123456789a")
 
-    def test_convert_obsnum_sdc_with_invalid_sdc_string_length(self):
-        """Test that convert_obsnum_sdc raises ValueError for incorrect SDC length."""
+    def test_convert_obs_id_sdc_with_invalid_sdc_string_length(self):
+        """Test that convert_obs_id_sdc raises ValueError for incorrect SDC length."""
         with pytest.raises(ValueError, match="ERROR: Obsnum string format incorrect"):
-            convert_obsnum_sdc("012345678")
+            convert_obs_id_sdc("012345678")
 
-    def test_convert_obsnum_sdc_with_numeric_string(self):
-        """Test that convert_obsnum_sdc converts numeric string to SDC format."""
-        result = convert_obsnum_sdc("12345678")
+    def test_convert_obs_id_sdc_with_numeric_string(self):
+        """Test that convert_obs_id_sdc converts numeric string to SDC format."""
+        result = convert_obs_id_sdc("12345678")
         expected_targetid = 12345678 & 0xFFFFFF
         expected_segment = 12345678 >> 24
         expected = f"{expected_targetid:08d}{expected_segment:03d}"
         assert result == expected
 
-    def test_convert_obsnum_sdc_with_invalid_string_format(self):
-        """Test that convert_obsnum_sdc raises ValueError for non-numeric string."""
+    def test_convert_obs_id_sdc_with_invalid_string_format(self):
+        """Test that convert_obs_id_sdc raises ValueError for non-numeric string."""
         with pytest.raises(ValueError, match="ERROR: Obsnum string format incorrect"):
-            convert_obsnum_sdc("abc123")
+            convert_obs_id_sdc("abc123")
 
-    def test_convert_obsnum_sdc_with_valid_int(self):
-        """Test that convert_obsnum_sdc converts valid integer to SDC format."""
-        obsnum = 16777216  # 2^24
-        result = convert_obsnum_sdc(obsnum)
-        targetid = obsnum & 0xFFFFFF
-        segment = obsnum >> 24
+    def test_convert_obs_id_sdc_with_valid_int(self):
+        """Test that convert_obs_id_sdc converts valid integer to SDC format."""
+        obs_id = 16777216  # 2^24
+        result = convert_obs_id_sdc(obs_id)
+        targetid = obs_id & 0xFFFFFF
+        segment = obs_id >> 24
         expected = f"{targetid:08d}{segment:03d}"
         assert result == expected
 
-    def test_convert_obsnum_sdc_with_special_case_minus_one(self):
-        """Test that convert_obsnum_sdc handles -1 as special case."""
-        result = convert_obsnum_sdc(-1)
+    def test_convert_obs_id_sdc_with_special_case_minus_one(self):
+        """Test that convert_obs_id_sdc handles -1 as special case."""
+        result = convert_obs_id_sdc(-1)
         assert result == "00000000000"
 
-    def test_convert_obsnum_sdc_with_negative_int(self):
-        """Test that convert_obsnum_sdc raises ValueError for negative integers (except -1)."""
+    def test_convert_obs_id_sdc_with_negative_int(self):
+        """Test that convert_obs_id_sdc raises ValueError for negative integers (except -1)."""
         with pytest.raises(ValueError, match="ERROR: Obsnum int format incorrect"):
-            convert_obsnum_sdc(-2)
+            convert_obs_id_sdc(-2)
 
-    def test_convert_obsnum_sdc_with_int_too_large(self):
-        """Test that convert_obsnum_sdc raises ValueError for integers too large."""
+    def test_convert_obs_id_sdc_with_int_too_large(self):
+        """Test that convert_obs_id_sdc raises ValueError for integers too large."""
         with pytest.raises(ValueError, match="ERROR: Obsnum int format incorrect"):
-            convert_obsnum_sdc(0xFFFFFFFF + 1)
+            convert_obs_id_sdc(0xFFFFFFFF + 1)
 
-    def test_convert_obsnum_sdc_with_zero_int(self):
-        """Test that convert_obsnum_sdc converts zero to SDC format."""
-        result = convert_obsnum_sdc(0)
+    def test_convert_obs_id_sdc_with_zero_int(self):
+        """Test that convert_obs_id_sdc converts zero to SDC format."""
+        result = convert_obs_id_sdc(0)
         assert result == "00000000000"
 
-    def test_convert_obsnum_sdc_with_max_valid_int(self):
-        """Test that convert_obsnum_sdc converts maximum valid integer to SDC format."""
-        obsnum = 0xFFFFFFFF
-        result = convert_obsnum_sdc(obsnum)
-        targetid = obsnum & 0xFFFFFF
-        segment = obsnum >> 24
+    def test_convert_obs_id_sdc_with_max_valid_int(self):
+        """Test that convert_obs_id_sdc converts maximum valid integer to SDC format."""
+        obs_id = 0xFFFFFFFF
+        result = convert_obs_id_sdc(obs_id)
+        targetid = obs_id & 0xFFFFFF
+        segment = obs_id >> 24
         expected = f"{targetid:08d}{segment:03d}"
         assert result == expected
 
-    def test_convert_obsnum_sdc_with_unsupported_type(self):
-        """Test that convert_obsnum_sdc raises ValueError for unsupported types."""
-        with pytest.raises(ValueError, match="`obsnum` in wrong format."):
-            convert_obsnum_sdc([1, 2, 3])
+    def test_convert_obs_id_sdc_with_unsupported_type(self):
+        """Test that convert_obs_id_sdc raises ValueError for unsupported types."""
+        with pytest.raises(ValueError, match="`obs_id` in wrong format."):
+            convert_obs_id_sdc([1, 2, 3])
 
-    def test_convert_obsnum_sdc_with_float(self):
-        """Test that convert_obsnum_sdc raises ValueError for float type."""
-        with pytest.raises(ValueError, match="`obsnum` in wrong format."):
-            convert_obsnum_sdc(123.45)
+    def test_convert_obs_id_sdc_with_float(self):
+        """Test that convert_obs_id_sdc raises ValueError for float type."""
+        with pytest.raises(ValueError, match="`obs_id` in wrong format."):
+            convert_obs_id_sdc(123.45)
 
 
 class TestConvertFromTimedelta:
