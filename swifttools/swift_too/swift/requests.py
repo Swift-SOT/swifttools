@@ -150,6 +150,6 @@ class SwiftTOORequests(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestsSchem
 
 # PEP8 compliant shorthand alias
 TOORequests = SwiftTOORequests
-# Future API compat
+# API compat
 Swift_TOORequests = SwiftTOORequests
 Swift_TOO_Requests = SwiftTOORequests
