@@ -1,15 +1,13 @@
 import http.cookiejar
 import warnings
-from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 import httpx
-from pydantic import TypeAdapter, ValidationError
-
-from swifttools.swift_too.base.repr import TOOAPIReprMixin
+from pydantic import ValidationError
 
 from ..version import version_tuple
+from .repr import TOOAPIReprMixin
 
 # Always show deprecation warnings
 warnings.simplefilter("always", DeprecationWarning)
@@ -26,21 +24,15 @@ API_VERSION = f"{version_tuple[0]}.{version_tuple[1]}"
 
 # Submission URL
 API_URL = f"https://www.swift.psu.edu/api/v{API_VERSION}"
-COOKIE_JAR_PATH = Path.home() / ".swift_too" / "cookies.txt"
-COOKIE_JAR_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 # Create and optionally load cookies
+COOKIE_JAR_PATH = Path.home() / ".swift_too" / "cookies.txt"
+COOKIE_JAR_PATH.parent.mkdir(parents=True, exist_ok=True)
 cookie_jar = http.cookiejar.LWPCookieJar(COOKIE_JAR_PATH)
 try:
     cookie_jar.load(ignore_discard=True)
 except FileNotFoundError:
     pass
-
-
-def convert_to_dt(dt: Any) -> datetime:
-    """Convert any datetime-like object to a datetime object."""
-    tdt = TypeAdapter(datetime)
-    return tdt.validate_python(dt).replace(tzinfo=None)
 
 
 class TOOAPIBaseclass(TOOAPIReprMixin):
