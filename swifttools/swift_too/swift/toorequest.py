@@ -8,9 +8,8 @@ from pydantic import (
     model_validator,
 )
 
-from swifttools.swift_too.base.repr import TOOAPIReprMixin
-
 from ..base.common import TOOAPIBaseclass
+from ..base.repr import TOOAPIReprMixin
 from ..base.schemas import AstropyAngle, BaseSchema
 from ..base.status import TOOStatus
 from .calendar import SwiftCalendarSchema

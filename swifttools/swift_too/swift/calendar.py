@@ -1,9 +1,8 @@
 from datetime import datetime
 from typing import Optional
 
-from swifttools.swift_too.base.repr import TOOAPIReprMixin
-
 from ..base.common import TOOAPIBaseclass
+from ..base.repr import TOOAPIReprMixin
 from ..base.schemas import AstropyAngle, BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
 from ..base.status import TOOStatus
 from .clock import TOOAPIClockCorrect

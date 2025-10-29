@@ -243,13 +243,17 @@ class TOOAPIClockCorrect:
                 if kind == "model":
                     current = getattr(current, key)
                 elif kind == "list":
+                    assert isinstance(current, list), f"Expected list but got {type(current)}"
                     current = current[key]
                 elif kind == "dict":
+                    assert isinstance(current, dict), f"Expected dict but got {type(current)}"
                     current = current[key]
             kind, key = path[-1]
             if kind == "model":
                 setattr(current, key, new_value)
             elif kind == "list":
+                assert isinstance(current, list), f"Expected list but got {type(current)}"
                 current[key] = new_value
             elif kind == "dict":
+                assert isinstance(current, dict), f"Expected dict but got {type(current)}"
                 current[key] = new_value
