@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from swifttools.swift_too.swift.planquery import SwiftPPSTEntry
+from swifttools.swift_too.swift.planquery import SwiftPPSTEntry, SwiftPPSTGetSchema
 
 
 class TestSwiftPPSTEntry:
@@ -154,4 +154,38 @@ class TestSwiftPPSTEntry:
 
         # Should inherit from BaseSchema and TOOAPIClockCorrect
         assert hasattr(entry, "model_dump")  # From BaseSchema (Pydantic)
+
         # TOOAPIClockCorrect methods would be tested in their respective test files
+
+
+class TestSwiftPPSTGetSchema:
+    def test_validate_exactly_one_field_with_no_fields(self):
+        """Test that validation fails when no fields are provided."""
+        with pytest.raises(ValueError) as excinfo:
+            SwiftPPSTGetSchema()
+        assert "At least one of" in str(excinfo.value)
+
+    @pytest.mark.parametrize(
+        "kwargs",
+        [
+            {"begin": datetime(2023, 1, 1)},
+            {"end": datetime(2023, 1, 2)},
+            {"length": 1000},
+            {"ra": 123.45},
+            {"dec": 67.89},
+            {"radius": 1.0},
+            {"target_id": 12345},
+            {"obs_id": "00012345001"},
+        ],
+    )
+    def test_validate_exactly_one_field_with_single_field(self, kwargs):
+        """Test that validation passes when exactly one field is provided."""
+        schema = SwiftPPSTGetSchema(**kwargs)
+        for key, value in kwargs.items():
+            assert getattr(schema, key) == value
+
+    def test_validate_exactly_one_field_with_multiple_fields(self):
+        """Test that validation passes when multiple fields are provided."""
+        schema = SwiftPPSTGetSchema(begin=datetime(2023, 1, 1), ra=123.45)
+        assert schema.begin == datetime(2023, 1, 1)
+        assert schema.ra == 123.45
