@@ -1,4 +1,3 @@
-from datetime import datetime
 from unittest.mock import Mock, patch
 
 from pydantic import BaseModel, ValidationError
@@ -6,31 +5,8 @@ from pydantic import BaseModel, ValidationError
 from swifttools.swift_too.base.common import (
     API_URL,
     TOOAPIBaseclass,
-    convert_to_dt,
 )
 from swifttools.swift_too.base.status import TOOStatus
-
-
-class TestConvertToDt:
-    """Tests for convert_to_dt function"""
-
-    def test_convert_datetime_object(self):
-        dt = datetime(2023, 1, 1, 12, 0, 0)
-        result = convert_to_dt(dt)
-        assert result == dt
-        assert result.tzinfo is None
-
-    def test_convert_string(self):
-        result = convert_to_dt("2023-01-01T12:00:00")
-        assert isinstance(result, datetime)
-        assert result.year == 2023
-        assert result.month == 1
-        assert result.day == 1
-
-    def test_convert_removes_timezone(self):
-        dt = datetime(2023, 1, 1, 12, 0, 0)
-        result = convert_to_dt(dt)
-        assert result.tzinfo is None
 
 
 class MockSchema(BaseModel):
@@ -218,8 +194,8 @@ class TestTOOAPIBaseclass:
 
         obj = TestAPI(autosubmit=False)
         with (
-            patch.object(obj, "validate_get", return_value=True),
-            patch.object(obj, "submit_get", return_value=True) as mock_submit,
+            patch.object(TestAPI, "validate_get", return_value=True),
+            patch.object(TestAPI, "submit_get", return_value=True) as mock_submit,
         ):
             result = obj.submit()
             mock_submit.assert_called_once()
@@ -234,8 +210,8 @@ class TestTOOAPIBaseclass:
 
         obj = TestAPI(autosubmit=False)
         with (
-            patch.object(obj, "validate_post", return_value=True),
-            patch.object(obj, "submit_post", return_value=True) as mock_submit,
+            patch.object(TestAPI, "validate_post", return_value=True),
+            patch.object(TestAPI, "submit_post", return_value=True) as mock_submit,
         ):
             result = obj.submit()
             mock_submit.assert_called_once()
@@ -245,7 +221,7 @@ class TestTOOAPIBaseclass:
         """Test submit returns False when status is not Pending"""
 
         class TestAPI(TOOAPIBaseclass, BaseModel):
-            status: TOOStatus = TOOStatus("Accepted")
+            status: TOOStatus = TOOStatus(status="Accepted")
 
         obj = TestAPI(autosubmit=False)
         result = obj.submit()

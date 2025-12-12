@@ -192,28 +192,27 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         print(response.url)
         # If the request was successful, parse the response
         if response.status_code == 200:
-            pass
+            # Parse the response and update the class attributes
+            try:
+                data = self.model_validate(response.json())  # type: ignore[attr-defined]
+                for key, value in dict(data).items():
+                    setattr(self, key, value)
+            except Exception as e:
+                self.__set_error(f"Error validating response: {e}")
+                return False
+
+            # Perform processing of the response
+            self._post_process()
+            return True
         elif response.status_code >= 400 and response.status_code < 500:
             # Assume that errors codes in the 400s will return status
             print("Sad trombone: ", response.status_code, response.text)
+            self.__set_error(f"Error: {response.status_code} - {response.text}")
         else:
             # Catch all other errors
             print("Sad trombone: ", response.status_code, response.text)
             self.__set_error(f"Error: {response.status_code} - {response.text}")
-            return False
-
-        # Parse the response and update the class attributes
-        try:
-            data = self._schema.model_validate(response.json())
-            for key, value in data:
-                setattr(self, key, value)
-        except Exception as e:
-            self.__set_error(f"Error validating response: {e}")
-            return False
-
-        # Perform processing of the response
-        self._post_process()
-        return True
+        return False
 
     def submit_post(self):
         """Perform an API POST request to the server."""
@@ -267,7 +266,7 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         """
 
         try:
-            self._get_schema.model_validate(self)
+            self._get_schema.model_validate(self.model_dump())
         except ValidationError as e:
             if set_error:
                 # Set error message if validation fails
@@ -285,7 +284,7 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         """
 
         try:
-            self._post_schema.model_validate(self)
+            self._post_schema.model_validate(self.model_dump())
         except ValidationError as e:
             if set_error:
                 # Set error message if validation fails

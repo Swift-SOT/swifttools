@@ -112,13 +112,17 @@ class TOOAPIAutoResolve(OptionalCoordinateSchema):
             self.ra = self.resolve.ra
             self.dec = self.resolve.dec
             self.skycoord = self.resolve.skycoord
-            # self.resolver = resolve.resolver
-        # else:
-        #     # If resolving fails, set status to rejected
-        #     status = SwiftTOOStatus(status="Rejected", errors=[f"Unable to resolve {value}"]).model_dump()
-        #     self.status = status
 
-    # name: Optional[str] = None
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def target_name(self) -> Optional[str]:
+        """Alias for `name`."""
+        return self._name
+
+    @target_name.setter
+    def target_name(self, value: Optional[str]):
+        """Set the target name, which is an alias for `name`."""
+        self.name = value
 
     @model_validator(mode="before")
     def validate_name(cls, values):
