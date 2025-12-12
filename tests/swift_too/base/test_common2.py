@@ -53,7 +53,7 @@ def table_with_newlines():
 @pytest.fixture
 def mock_response_success():
     mock_response = MagicMock()
-    mock_response.status_code = 404
+    mock_response.status_code = 200
     mock_response.json.return_value = {"field1": "updated_value", "field2": 200}
     mock_response.url = "http://test.com/api"
     return mock_response
@@ -205,13 +205,9 @@ class TestTOOAPIBaseclassSubmitPost:
 
             instance = MockTOOAPI("test_value", 100, autosubmit=False)
 
-            # Mock model_validate to return a dict-like object
-            mock_validate = patch.object(instance, "model_validate")
-            mock_validate.return_value = {"field1": "updated_value", "field2": 200}
-
             result = instance.submit_post()
 
-            assert result is False
+            assert result is True
             mock_post.assert_called_once()
 
     def test_submit_post_http_error(self, mock_response_500):
@@ -254,7 +250,7 @@ class TestTOOAPIBaseclassSubmitPost:
             result = instance.submit_post()
 
             assert result is False
-            mock_post.assert_not_called()
+            mock_post.assert_called_once()
 
     def test_submit_post_calls_post_process(self, mock_response_success):
         """Test that submit_post calls _post_process on success."""
@@ -270,13 +266,9 @@ class TestTOOAPIBaseclassSubmitPost:
 
             instance = MockTOOAPI("test_value", 100, autosubmit=False)
 
-            # Mock model_validate and _post_process
-            mock_validate = patch.object(instance, "model_validate")
-            mock_validate.return_value = {"field1": "updated_value", "field2": 200}
-
             result = instance.submit_post()
 
-            assert result is False
+            assert result is True
 
     def test_submit_post_uses_correct_parameters(self, mock_response_success):
         with patch("swifttools.swift_too.base.common.httpx.post", return_value=mock_response_success) as mock_post:
@@ -334,7 +326,7 @@ class TestTOOAPIBaseclassSubmit:
 
         assert instance._validate_get_called
         assert instance._submit_get_called
-        assert result is False
+        assert result is True
 
     def test_submit_get_with_validation_failure(self):
         """Test submit returns False when GET validation fails."""
@@ -571,4 +563,4 @@ class TestTOOAPIBaseclassSubmit:
             result = instance.submit_get()
 
             assert result is False
-            mock_get.assert_not_called()
+            mock_get.assert_called_once()

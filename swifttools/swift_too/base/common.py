@@ -73,12 +73,13 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
                     del kwargs[value]
 
         # Convert positional arguments to keyword arguments
-        if (
-            len(args) > 0
-            and hasattr(self.__class__, "_get_schema")
-            and hasattr(self.__class__._get_schema.default, "model_fields")
-        ):
-            for i, key in enumerate(self.__class__._get_schema.default.model_fields.keys()):
+        schema = None
+        if hasattr(self.__class__, "_get_schema") and hasattr(self.__class__._get_schema, "model_fields"):
+            schema = self.__class__._get_schema
+        elif hasattr(self.__class__, "_post_schema") and hasattr(self.__class__._post_schema, "model_fields"):
+            schema = self.__class__._post_schema
+        if schema and len(args) > 0:
+            for i, key in enumerate(schema.model_fields.keys()):
                 if i < len(args):
                     kwargs[key] = args[i]
                 else:
@@ -98,7 +99,7 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
     @property
     def submit_url(self):
         """Generate a URL that submits the TOO API request"""
-        url = f"{API_URL}{self._endpoint}"
+        url = f"{self._api_base}{self._endpoint}"
         return url
 
     def _post_process(self):
