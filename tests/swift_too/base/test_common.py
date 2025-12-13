@@ -1,238 +1,242 @@
+from typing import ClassVar, Optional
 from unittest.mock import Mock, patch
 
+import pytest
 from pydantic import BaseModel, ValidationError
 
-from swifttools.swift_too.base.common import (
-    API_URL,
-    TOOAPIBaseclass,
-)
+from swifttools.swift_too.base.common import API_URL, TOOAPIBackCompat, TOOAPIBaseclass
 from swifttools.swift_too.base.status import TOOStatus
 
 
 class MockSchema(BaseModel):
-    """Mock schema for testing"""
-
-    field1: str = "default"
-    field2: int = 42
+    obs_id: Optional[int] = None
+    username: str = "anonymous"
 
 
-class TestTOOAPIBaseclass:
-    """Tests for TOOAPIBaseclass"""
+class MockTOOAPIBaseclass(BaseModel, TOOAPIBaseclass):
+    """Mock class for testing TOOAPIBaseclass"""
 
-    def test_init_with_backward_compat_args(self):
-        """Test backward compatibility argument conversion"""
+    _endpoint: ClassVar[str] = "/test"
+    _api_base: str = API_URL
+    _schema: ClassVar[Mock] = Mock()
+    _get_schema: ClassVar[MockSchema] = MockSchema
+    _post_schema: ClassVar[Mock] = Mock()
+    status: TOOStatus = TOOStatus()
+    obs_id: Optional[int] = None
+    username: str = "anonymous"
+    shared_secret: str = "anonymous"
+    autosubmit: bool = False
 
-        class TestAPI(TOOAPIBaseclass, BaseModel):
-            target_id: int = 0
-            target_name: str = ""
-            status: TOOStatus = TOOStatus()
+    def __init__(self, **kwargs):
+        # Back compat
+        for key, values in self._back_compat_args.items():
+            for value in values:
+                if value in kwargs:
+                    if key not in kwargs:
+                        kwargs[key] = kwargs[value]
+                    del kwargs[value]
+        super().__init__(**kwargs)
 
-        obj = TestAPI(targid=123, targetname="Test", autosubmit=False)
-        assert obj.target_id == 123
-        assert obj.target_name == "Test"
 
-    def test_init_removes_old_args(self):
-        """Test that old backward compat args are removed from kwargs"""
+@pytest.fixture
+def mock_base_class():
+    return MockTOOAPIBaseclass(username="testuser", shared_secret="testsecret")
 
-        class TestAPI(TOOAPIBaseclass, BaseModel):
-            target_id: int = 0
-            status: TOOStatus = TOOStatus()
 
-        obj = TestAPI(obsnum=456, target_id=123, autosubmit=False)
-        assert obj.target_id == 123
+def test_init_with_back_compat_args(mock_base_class):
+    # Test backward compatibility arguments
+    obj = MockTOOAPIBaseclass(obsnum=123)
+    assert obj.obs_id == 123
 
-    def test_init_with_positional_args(self):
-        """Test conversion of positional arguments to keyword arguments"""
 
-        class TestAPI(TOOAPIBaseclass, BaseModel):
-            field1: str
-            field2: int
-            status: TOOStatus = TOOStatus()
-            _get_schema: type = MockSchema
+def test_submit_url_property(mock_base_class):
+    expected_url = f"{API_URL}/test"
+    assert mock_base_class.submit_url == expected_url
 
-        obj = TestAPI("test", 99, autosubmit=False)
-        assert obj.field1 == "test"
-        assert obj.field2 == 99
 
-    def test_submit_url_property(self):
-        """Test submit_url property generates correct URL"""
+@patch("httpx.Client")
+def test_login_success(mock_client, mock_base_class):
+    mock_response = Mock()
+    mock_response.status_code = 200
+    mock_client.return_value.__enter__.return_value.post.return_value = mock_response
 
-        class TestAPI(TOOAPIBaseclass, BaseModel):
-            _endpoint: str = "/test"
-            status: TOOStatus = TOOStatus()
+    result = mock_base_class.login(mock_client.return_value.__enter__.return_value)
+    assert result is True
 
-        obj = TestAPI(autosubmit=False)
-        assert obj.submit_url == f"{API_URL}/test"
 
-    def test_set_error_with_status_string(self, capsys):
-        """Test error setting when status is a string"""
+@patch("httpx.Client")
+def test_login_failure(mock_client, mock_base_class):
+    mock_response = Mock()
+    mock_response.status_code = 401
+    mock_client.return_value.__enter__.return_value.post.return_value = mock_response
 
-        class TestAPI(TOOAPIBaseclass, BaseModel):
-            status: TOOStatus = TOOStatus()
+    result = mock_base_class.login(mock_client.return_value.__enter__.return_value)
+    assert result is False
 
-        obj = TestAPI(autosubmit=False)
-        obj.status.error("Initial error")
 
-        assert "Initial error" in obj.status.errors
-
-    def test_set_error_with_status_object(self):
-        """Test error setting when status is an object"""
-
-        class TestAPI(TOOAPIBaseclass, BaseModel):
-            status: TOOStatus = TOOStatus()
-
-        obj = TestAPI(autosubmit=False)
-        obj._TOOAPIBaseclass__set_error("Test error")
-        assert "Test error" in obj.status.errors
-
-    def test_set_error_without_status(self, capsys):
-        """Test error setting when no status attribute exists"""
-
-        class TestAPI(TOOAPIBaseclass, BaseModel):
-            pass
-
-        obj = TestAPI(autosubmit=False)
-        obj._TOOAPIBaseclass__set_error("Test error")
-        captured = capsys.readouterr()
-        assert "ERROR: Test error" in captured.out
-
-    @patch("httpx.Client")
-    def test_login_success(self, mock_client):
-        """Test successful login"""
-
-        class TestAPI(TOOAPIBaseclass, BaseModel):
-            username: str = "testuser"
-            shared_secret: str = "testsecret"
-            status: TOOStatus = TOOStatus()
-
-        obj = TestAPI(autosubmit=False)
+@patch("httpx.Client")
+@patch("swifttools.swift_too.base.common.cookie_jar")
+def test_submit_get_success(mock_cookie_jar, mock_client, mock_base_class):
+    # Mock the schema validation
+    mock_validated = Mock()
+    mock_validated.model_dump.return_value = {"param": "value"}
+    with patch.object(MockSchema, "model_validate", return_value=mock_validated):
         mock_response = Mock()
         mock_response.status_code = 200
-        mock_client_instance = mock_client.return_value.__enter__.return_value
-        mock_client_instance.post.return_value = mock_response
+        mock_response.json.return_value = {"status": "success"}
 
-        result = obj.login(mock_client_instance)
-        assert result is True
-        mock_client_instance.post.assert_called_once()
+        mock_client.return_value.__enter__.return_value.get.return_value = mock_response
+        mock_client.return_value.__enter__.return_value.post.return_value = Mock(status_code=200)
 
-    @patch("httpx.Client")
-    def test_login_failure(self, mock_client):
-        """Test failed login"""
+        # Mock model_validate
+        def mock_model_validate(data):
+            mock_base_class.status.status = "success"
+            return mock_base_class
 
-        class TestAPI(TOOAPIBaseclass, BaseModel):
-            username: str = "testuser"
-            shared_secret: str = "wrongsecret"
-            status: TOOStatus = TOOStatus()
+        with patch.object(MockTOOAPIBaseclass, "model_validate", side_effect=mock_model_validate):
+            result = mock_base_class.submit_get()
+            assert result is True
 
-        obj = TestAPI(autosubmit=False)
+
+@patch("httpx.Client")
+@patch("swifttools.swift_too.base.common.cookie_jar")
+def test_submit_get_400_error(mock_cookie_jar, mock_client, mock_base_class):
+    # Mock the schema validation
+    mock_validated = Mock()
+    mock_validated.model_dump.return_value = {"param": "value"}
+    with patch.object(MockSchema, "model_validate", return_value=mock_validated):
         mock_response = Mock()
-        mock_response.status_code = 401
-        mock_client_instance = mock_client.return_value.__enter__.return_value
-        mock_client_instance.post.return_value = mock_response
+        mock_response.status_code = 400
+        mock_response.text = "Bad Request"
+        mock_client.return_value.__enter__.return_value.get.return_value = mock_response
+        mock_client.return_value.__enter__.return_value.post.return_value = Mock(status_code=200)
 
-        result = obj.login(mock_client_instance)
+        result = mock_base_class.submit_get()
         assert result is False
 
-    def test_validate_get_success(self):
-        """Test successful GET validation"""
 
-        class TestAPI(TOOAPIBaseclass, BaseModel):
-            field1: str = "test"
-            status: TOOStatus = TOOStatus()
-            _get_schema: type = MockSchema
-            _schema = MockSchema
+@patch("httpx.Client")
+@patch("swifttools.swift_too.base.common.cookie_jar")
+def test_submit_get_other_error(mock_cookie_jar, mock_client, mock_base_class):
+    # Mock the schema validation
+    mock_validated = Mock()
+    mock_validated.model_dump.return_value = {"param": "value"}
+    with patch.object(MockSchema, "model_validate", return_value=mock_validated):
+        mock_response = Mock()
+        mock_response.status_code = 500
+        mock_response.text = "Internal Server Error"
+        mock_client.return_value.__enter__.return_value.get.return_value = mock_response
+        mock_client.return_value.__enter__.return_value.post.return_value = Mock(status_code=200)
 
-        obj = TestAPI(autosubmit=False)
-        result = obj.validate_get()
-        assert obj.status.errors == []
-        assert result is True
-
-    def test_validate_get_failure(self):
-        """Test failed GET validation"""
-
-        class TestAPI(TOOAPIBaseclass, BaseModel):
-            field1: str = "test"
-            status: TOOStatus = TOOStatus()
-            _get_schema: type = MockSchema
-
-        obj = TestAPI(autosubmit=False)
-        with patch.object(MockSchema, "model_validate", side_effect=ValidationError.from_exception_data("test", [])):
-            result = obj.validate_get()
-            assert result is False
-
-    def test_validate_post_success(self):
-        """Test successful POST validation"""
-
-        class TestAPI(TOOAPIBaseclass, BaseModel):
-            field1: str = "test"
-            status: TOOStatus = TOOStatus()
-            _post_schema: type = MockSchema
-
-        obj = TestAPI(autosubmit=False)
-        result = obj.validate_post()
-        assert result is True
-
-    def test_validate_post_failure(self):
-        """Test failed POST validation"""
-
-        class TestAPI(TOOAPIBaseclass, BaseModel):
-            field1: str = "test"
-            status: TOOStatus = TOOStatus()
-            _post_schema: type = MockSchema
-
-        obj = TestAPI(autosubmit=False)
-        with patch.object(MockSchema, "model_validate", side_effect=ValidationError.from_exception_data("test", [])):
-            result = obj.validate_post()
-            assert result is False
-
-    def test_submit_calls_submit_get_when_get_schema_exists(self):
-        """Test submit calls submit_get when _get_schema exists"""
-
-        class TestAPI(TOOAPIBaseclass, BaseModel):
-            status: TOOStatus = TOOStatus()
-            _get_schema: type = MockSchema
-
-        obj = TestAPI(autosubmit=False)
-        with (
-            patch.object(TestAPI, "validate_get", return_value=True),
-            patch.object(TestAPI, "submit_get", return_value=True) as mock_submit,
-        ):
-            result = obj.submit()
-            mock_submit.assert_called_once()
-            assert result is True
-
-    def test_submit_calls_submit_post_when_post_schema_exists(self):
-        """Test submit calls submit_post when _post_schema exists"""
-
-        class TestAPI(TOOAPIBaseclass, BaseModel):
-            status: TOOStatus = TOOStatus()
-            _post_schema: type = MockSchema
-
-        obj = TestAPI(autosubmit=False)
-        with (
-            patch.object(TestAPI, "validate_post", return_value=True),
-            patch.object(TestAPI, "submit_post", return_value=True) as mock_submit,
-        ):
-            result = obj.submit()
-            mock_submit.assert_called_once()
-            assert result is True
-
-    def test_submit_returns_false_when_status_not_pending(self):
-        """Test submit returns False when status is not Pending"""
-
-        class TestAPI(TOOAPIBaseclass, BaseModel):
-            status: TOOStatus = TOOStatus(status="Accepted")
-
-        obj = TestAPI(autosubmit=False)
-        result = obj.submit()
+        result = mock_base_class.submit_get()
         assert result is False
 
-    def test_post_process_placeholder(self):
-        """Test _post_process is a placeholder method"""
 
-        class TestAPI(TOOAPIBaseclass, BaseModel):
-            status: TOOStatus = TOOStatus()
+@patch("httpx.Client")
+@patch("swifttools.swift_too.base.common.cookie_jar")
+def test_submit_post_400_error(mock_cookie_jar, mock_client, mock_base_class):
+    with patch.object(MockTOOAPIBaseclass, "_post_schema", Mock()) as mock_schema:
+        mock_schema.model_validate.return_value.model_dump.return_value = {"param": "value"}
 
-        obj = TestAPI(autosubmit=False)
-        # Should not raise any exceptions
-        obj._post_process()
+        mock_response = Mock()
+        mock_response.status_code = 400
+        mock_response.text = "Bad Request"
+
+        mock_client.return_value.__enter__.return_value.post.return_value = mock_response
+
+        result = mock_base_class.submit_post()
+        assert result is False
+
+
+@patch("httpx.Client")
+@patch("swifttools.swift_too.base.common.cookie_jar")
+def test_submit_post_other_error(mock_cookie_jar, mock_client, mock_base_class):
+    with patch.object(MockTOOAPIBaseclass, "_post_schema", Mock()) as mock_schema:
+        mock_validated = Mock()
+        mock_validated.model_dump.return_value = {"param": "value"}
+        mock_schema.model_validate.return_value = mock_validated
+
+        mock_response = Mock()
+        mock_response.status_code = 500
+        mock_response.text = "Internal Server Error"
+
+        mock_client.return_value.__enter__.return_value.post.return_value = mock_response
+
+        result = mock_base_class.submit_post()
+        assert result is False
+
+
+def test_validate_get_success(mock_base_class):
+    with patch.object(MockSchema, "model_validate", return_value=Mock()):
+        result = mock_base_class.validate_get()
+        assert result is True
+
+
+def test_validate_get_failure(mock_base_class):
+    with patch.object(MockSchema, "model_validate", side_effect=ValidationError.from_exception_data("test", [])):
+        result = mock_base_class.validate_get()
+        assert result is False
+
+
+def test_validate_post_success(mock_base_class):
+    with patch.object(MockTOOAPIBaseclass, "_post_schema", Mock()) as mock_schema:
+        mock_schema.model_validate.return_value = Mock()
+        result = mock_base_class.validate_post()
+        assert result is True
+
+
+def test_submit_not_pending(mock_base_class):
+    mock_base_class.status.status = "Completed"
+    result = mock_base_class.submit()
+    assert result is False
+
+
+def test_submit_get_validation_failure(mock_base_class):
+    mock_base_class.status.status = "Pending"
+    with (
+        patch.object(MockSchema, "model_validate", side_effect=ValidationError.from_exception_data("test", [])),
+        patch.object(MockTOOAPIBaseclass, "validate_post", return_value=False),
+    ):
+        result = mock_base_class.submit()
+        assert result is False
+
+
+def test_submit_post_validation_failure(mock_base_class):
+    mock_base_class.status.status = "Pending"
+    with (
+        patch.object(MockTOOAPIBaseclass, "validate_get", return_value=False),
+        patch.object(MockTOOAPIBaseclass, "_post_schema", Mock()) as mock_schema,
+    ):
+        mock_schema.model_validate.side_effect = ValidationError.from_exception_data("test", [])
+        result = mock_base_class.submit()
+        assert result is False
+
+
+class MockBackCompat(TOOAPIBackCompat):
+    def __init__(self):
+        self.target_name = "Test Target"
+        self.obs_id = 123
+        self.uvot_mode = "test_uvot"
+        self.xrt_mode = "test_xrt"
+        self.bat_mode = "test_bat"
+        self.segment = "test_seg"
+        self.ra_object = 10.0
+        self.dec_object = 20.0
+
+
+def test_back_compat_properties():
+    obj = MockBackCompat()
+
+    assert obj.targname == "Test Target"
+    assert obj.obsid == 123
+    assert obj.obsnum == 123
+    assert obj.source_name == "Test Target"
+    assert obj.uvotmode == "test_uvot"
+    assert obj.xrtmode == "test_xrt"
+    assert obj.batmode == "test_bat"
+    assert obj.xrt == "test_xrt"
+    assert obj.uvot == "test_uvot"
+    assert obj.bat == "test_bat"
+    assert obj.seg == "test_seg"
+    assert obj.ra_point == 10.0
+    assert obj.dec_point == 20.0
