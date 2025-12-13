@@ -264,6 +264,10 @@ class SwiftTOORequest(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestSchema)
     debug: bool = False
 
     @property
+    def obs_types(self) -> list[ObsType]:
+        return [obs.value for obs in ObsType]
+
+    @property
     def _table(self):
         tab = list()
         if self.decision is not None:
