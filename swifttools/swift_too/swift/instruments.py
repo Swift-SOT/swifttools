@@ -81,13 +81,13 @@ class TOOAPIInstruments(BaseModel):
 
         # Convert input values for each field
         if "uvot_mode" in values:
-            values["uvot"] = uvot_mode_convert(values["uvot_mode"])
+            values["uvot_mode"] = uvot_mode_convert(values["uvot_mode"])
         if "bat_mode" in values:
-            values["bat"] = uvot_mode_convert(values["bat"])
+            values["bat_mode"] = uvot_mode_convert(values["bat_mode"])
         if "uvot_mode_approved" in values:
             values["uvot_mode_approved"] = uvot_mode_convert(values["uvot_mode_approved"])
         if "xrt_mode" in values:
-            values["xrt"] = xrt_mode_convert(values["xrt"])
+            values["xrt_mode"] = xrt_mode_convert(values["xrt_mode"])
         if "xrt_mode_approved" in values:
             values["xrt_mode_approved"] = xrt_mode_convert(values["xrt_mode_approved"])
         return values

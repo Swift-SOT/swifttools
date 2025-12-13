@@ -179,40 +179,40 @@ class SwiftTOOUserParamsSchema(BaseSchema):
 
 class SwiftTOOFormSchema(SwiftTOOUserParamsSchema):
     @model_validator(mode="after")
-    def check_proposal(self, data: Any) -> Any:
-        if data.proposal is True and (data.proposal_id is None or data.proposal_pi is None):
+    def check_proposal(self) -> "SwiftTOOFormSchema":
+        if self.proposal is True and (self.proposal_id is None or self.proposal_pi is None):
             raise ValueError("Must specify proposal ID and PI if GI proposal.")
 
-        if data.proposal is True and data.proposal_trigger_just is None:
+        if self.proposal is True and self.proposal_trigger_just is None:
             raise ValueError("Must specify proposal trigger justification if GI TOO.")
 
-        if data.tiling_justification is None and data.tiling is True:
+        if self.tiling_justification is None and self.tiling is True:
             raise ValueError("Must specify tiling justification if tiling is True.")
 
         if (
-            (data.opt_mag is None or data.opt_filt is None)
-            and data.xrt_countrate is None
-            and data.bat_countrate is None
-            and data.other_brightness is None
+            (self.opt_mag is None or self.opt_filt is None)
+            and self.xrt_countrate is None
+            and self.bat_countrate is None
+            and self.other_brightness is None
         ):
             raise ValueError(
                 "Must specify at least one brightness value. If specifying optical brightness, ensure filter is set."
             )
 
-        if data.target_type == "GRB" and (data.grb_triggertime is None or data.grb_detector is None):
+        if self.target_type == "GRB" and (self.grb_triggertime is None or self.grb_detector is None):
             raise ValueError("Must specify GRB trigger time and detector if source type is GRB.")
 
-        if data.uvot_just == "" and "0x9999" not in data.uvot_mode:
+        if self.uvot_just == "" and "0x9999" not in str(self.uvot_mode):
             raise ValueError("Must specify UVOT justification if UVOT mode is not filter of the day (0x9999).")
 
-        if data.num_of_visits is not None and data.monitoring_freq is None:
+        if self.num_of_visits is not None and self.monitoring_freq is None:
             raise ValueError("Must specify monitoring frequency if number of visits is specified.")
 
-        if data.monitoring_freq is not None:
+        if self.monitoring_freq is not None:
             if (
                 re.match(
                     r"\d+(\.\d+)?\s+(day?|week?|month?|orbit?|minute?|second?)(s?)",
-                    data.monitoring_freq.strip(),
+                    self.monitoring_freq.strip(),
                 )
                 is None
             ):
@@ -220,13 +220,13 @@ class SwiftTOOFormSchema(SwiftTOOUserParamsSchema):
                     "Monitoring frequency in incorrect format. Must be a number followed by a time unit (day, week, month, orbit, minute, second)."
                 )
 
-        if data.exp_time_just is None and data.num_of_visits is not None:
+        if self.exp_time_just is None and self.num_of_visits is not None:
             raise ValueError("Must specify exposure time justification if exposure time per visit is specified.")
-        if data.exp_time_per_visit is None and data.num_of_visits is not None:
+        if self.exp_time_per_visit is None and self.num_of_visits is not None:
             raise ValueError("Must specify exposure time per visit if number of visits is specified.")
-        if data.num_of_visits is not None and data.num_of_visits > 1 and data.monitoring_freq is None:
+        if self.num_of_visits is not None and self.num_of_visits > 1 and self.monitoring_freq is None:
             raise ValueError("Must specify monitoring frequency if number of visits is greater than 1.")
-        return data
+        return self
 
 
 class SwiftTOOPostSchema(SwiftTOOFormSchema):
@@ -302,9 +302,9 @@ class SwiftTOORequest(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestSchema)
                 "target_id",
             ]
         else:
-            _parameters = list(self.__class__.model_fields.keys())
-            _parameters.remove("status")
-            _parameters.remove("skycoord")
+            _parameters = [
+                p for p in self.__class__.model_fields.keys() if p in self._varnames and p not in ["status", "skycoord"]
+            ]
         for row in _parameters:
             val = getattr(self, row)
             if val is not None and val != "":
@@ -325,11 +325,12 @@ class SwiftTOORequest(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestSchema)
             self.validate_only = True
             self.submit()
             self.validate_only = False
-            self.status.warnings += warnings
             if len(self.status.errors) == 0:
                 self.status.clear()
+                self.status.warnings = warnings
                 return True
             else:
+                self.status.warnings += warnings
                 return False
         else:
             return False

@@ -333,6 +333,8 @@ class SwiftGUANO(
                     obs_id = "Pending Data"
                 elif ent.uplinked:
                     obs_id = "Pending Execution"
+                else:
+                    obs_id = "Unknown Status"
             table.append([ent.triggertype, ent.triggertime, ent.offset, exposure, obs_id])
 
         return header, table

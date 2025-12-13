@@ -43,6 +43,8 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
     shared_secret: str = "anonymous"
     # Submission timeout
     _timeout: int = 120  # 2 mins
+    # API base URL
+    _api_base: str = API_URL
     # By default all API dates are in Swift Time
     _isutc: bool
     autosubmit: bool = True

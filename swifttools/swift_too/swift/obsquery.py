@@ -417,6 +417,11 @@ class SwiftAFST(
         return header, [ppt._table[1][0] for ppt in self.entries]
 
     @property
+    def api_name(self) -> str:
+        """API name for the class."""
+        return "Swift_AFST"
+
+    @property
     def observations(self) -> SwiftObservations:
         if len(self.entries) > 0 and len(self._observations.keys()) == 0:
             for q in self.entries:

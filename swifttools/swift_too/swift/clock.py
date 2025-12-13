@@ -128,21 +128,27 @@ Swift_Clock = SwiftClock
 Clock = SwiftClock
 
 
-def index_datetimes(dictionary, i=0, values=[], setvals=None):
+def index_datetimes(dictionary, i=0, values=None, setvals=None):
     """
     Recursively spider a dictionary looking for datetimes and updating them if
     necessary.
     """
-    print("resurse", dictionary, i)
+    if values is None:
+        values = []
     # Don't spider internal variables
-    if hasattr(dictionary, "model_dump"):
-        keys = [key for key in dictionary.model_dump().keys() if not key.startswith("_")]
+    if isinstance(dictionary, dict):
+        items = dictionary.items()
+    elif hasattr(dictionary, "model_dump"):
+        items = [(k, v) for k, v in dictionary.model_dump().items() if not k.startswith("_")]
     else:
-        keys = [key for key in dictionary]
+        items = [
+            (k, getattr(dictionary, k))
+            for k in dir(dictionary)
+            if not k.startswith("_") and not callable(getattr(dictionary, k))
+        ]
 
     # Go through all keys
-    for key in keys:
-        value = getattr(dictionary, key)
+    for key, value in items:
         # Don't index any `SwiftClock`s
         if type(value) is SwiftClock:
             continue
@@ -159,7 +165,10 @@ def index_datetimes(dictionary, i=0, values=[], setvals=None):
         # SwiftClock, increment the counter
         elif isinstance(value, datetime):
             if setvals is not None:
-                dictionary[key] = setvals[i]
+                if isinstance(dictionary, dict):
+                    dictionary[key] = setvals[i]
+                else:
+                    setattr(dictionary, key, setvals[i])
             values.append(value)
             i += 1
 

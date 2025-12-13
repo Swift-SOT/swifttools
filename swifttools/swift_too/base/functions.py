@@ -1,5 +1,5 @@
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Union
 
 from astropy import units as u  # type: ignore[import-untyped]
@@ -7,7 +7,7 @@ from astropy import units as u  # type: ignore[import-untyped]
 
 def utcnow():
     """Return the current UTC time as a datetime object."""
-    return datetime.utcnow().replace(tzinfo=None)
+    return datetime.now(tz=timezone.utc).replace(tzinfo=None)
 
 
 def convert_from_timedelta(value: Union[float, int, u.Quantity, timedelta]) -> float:
