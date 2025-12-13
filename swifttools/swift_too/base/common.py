@@ -219,6 +219,7 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
 
     def submit_post(self):
         """Perform an API POST request to the server."""
+        # DEBUG: submit_post called
         args = self._post_schema.model_validate(self.model_dump(exclude={"__pydantic_extra__"})).model_dump(
             exclude_none=True
         )
@@ -239,7 +240,7 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
                 timeout=self._timeout,
                 follow_redirects=True,
             )
-        print(response.url)
+
         # If the request was successful, parse the response
         if response.status_code == 200:
             try:
@@ -256,6 +257,7 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
 
         # Perform processing of the response
         self._post_process()
+        # DEBUG: submit_post returning True
 
         return True
 

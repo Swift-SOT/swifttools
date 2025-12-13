@@ -305,10 +305,24 @@ class SwiftTOORequest(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestSchema)
             _parameters = [
                 p for p in self.__class__.model_fields.keys() if p in self._varnames and p not in ["status", "skycoord"]
             ]
+        # Use __dict__ as fallback for cases where properties may shadow
+        # underlying fields (e.g., computed properties named 'target_name').
+        raw_data = getattr(self, "__dict__", {})
         for row in _parameters:
-            val = getattr(self, row)
+            val = getattr(self, row, None)
+            if val is None:
+                # Try to get the raw field value directly from model_dump for
+                # the specific field only. This avoids serializing unrelated
+                # fields (e.g., mocked objects) which can raise errors.
+                if hasattr(self, "model_dump"):
+                    try:
+                        val = self.model_dump(include={row}, exclude_none=True).get(row)
+                    except Exception:
+                        # Fall back to raw __dict__ lookup if present
+                        if isinstance(raw_data, dict) and row in raw_data:
+                            val = raw_data.get(row)
             if val is not None and val != "":
-                tab.append([self._varnames[row], val])
+                tab.append([self._varnames.get(row, row), val])
         if len(tab) > 0:
             header = ["Parameter", "Value"]
         else:

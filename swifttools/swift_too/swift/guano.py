@@ -297,14 +297,17 @@ class SwiftGUANO(
             self.limit is not None
             or self.begin is not None
             or self.end is not None
-            or self.length is not None
+            or getattr(self, "length", None) is not None
             or self.triggertime is not None
             or self.triggertype is not None
+            or self.subthreshold is True
         ):
             if self.subthreshold is True and self.username == "anonymous":
                 self.status.error("For subthreshold triggers, username cannot be anonymous.")
                 return False
             return True
+        # If there are no query parameters and subthreshold wasn't set, validation fails
+        return False
 
     @property
     def _table(self):
