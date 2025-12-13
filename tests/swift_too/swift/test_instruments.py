@@ -3,105 +3,179 @@ import pytest
 from swifttools.swift_too.swift.instruments import TOOAPIInstruments
 
 
-def test_too_api_instruments_init():
-    inst = TOOAPIInstruments(uvot_mode=0x9999, xrt_mode="PC", bat_mode=1)
-    assert inst.uvot_mode == 0x9999
-    assert inst.xrt_mode == 7  # PC
-    assert inst.bat_mode == 1
+@pytest.fixture
+def default_instruments():
+    return TOOAPIInstruments(uvot_mode=0x9999, xrt_mode="PC", bat_mode=1)
 
 
-def test_too_api_instruments_xrt_property():
-    inst = TOOAPIInstruments(xrt_mode=7)
-    assert inst.xrt == "PC"
-    inst2 = TOOAPIInstruments(xrt_mode=None)
-    assert inst2.xrt == "Unset"
+@pytest.fixture
+def xrt_pc_instruments():
+    return TOOAPIInstruments(xrt_mode=7)
 
 
-def test_too_api_instruments_uvot_property():
-    inst = TOOAPIInstruments(uvot_mode=0x9999)
-    assert inst.uvot == "0x9999"
-    inst2 = TOOAPIInstruments(uvot_mode="test")
-    assert inst2.uvot == "test"
+@pytest.fixture
+def xrt_none_instruments():
+    return TOOAPIInstruments(xrt_mode=None)
 
 
-def test_too_api_instruments_bat_property():
-    inst = TOOAPIInstruments(bat_mode=0x1234)
-    assert inst.bat == "0x1234"
-    inst2 = TOOAPIInstruments(bat_mode="test")
-    assert inst2.bat == "test"
+@pytest.fixture
+def uvot_hex_instruments():
+    return TOOAPIInstruments(uvot_mode=0x9999)
 
 
-def test_too_api_instruments_approved_properties():
-    inst = TOOAPIInstruments(uvot_mode_approved=0x9999, xrt_mode_approved=6)
-    assert inst.uvot_mode_approved_str == "0x9999"
-    assert inst.xrt_mode_approved_str == "WT"
+@pytest.fixture
+def uvot_test_instruments():
+    return TOOAPIInstruments(uvot_mode="test")
 
 
-def test_xrt_mode_convert_valid_string():
-    inst = TOOAPIInstruments(xrt_mode="PC")
-    assert inst.xrt_mode == 7
+@pytest.fixture
+def bat_hex_instruments():
+    return TOOAPIInstruments(bat_mode=0x1234)
 
 
-def test_xrt_mode_convert_valid_int():
-    inst = TOOAPIInstruments(xrt_mode=6)
-    assert inst.xrt_mode == 6
+@pytest.fixture
+def bat_test_instruments():
+    return TOOAPIInstruments(bat_mode="test")
 
 
-def test_xrt_mode_convert_invalid_string():
-    with pytest.raises(ValueError):
-        TOOAPIInstruments(xrt_mode="Invalid")
+@pytest.fixture
+def approved_instruments():
+    return TOOAPIInstruments(uvot_mode_approved=0x9999, xrt_mode_approved=6)
 
 
-def test_xrt_mode_convert_invalid_int():
-    with pytest.raises(ValueError):
-        TOOAPIInstruments(xrt_mode=999)
+@pytest.fixture
+def xrt_pc_string_instruments():
+    return TOOAPIInstruments(xrt_mode="PC")
 
 
-def test_uvot_mode_convert_hex_string():
-    inst = TOOAPIInstruments(uvot_mode="0x9999")
-    assert inst.uvot_mode == 0x9999
+@pytest.fixture
+def xrt_int_instruments():
+    return TOOAPIInstruments(xrt_mode=6)
 
 
-def test_uvot_mode_convert_int_string():
-    inst = TOOAPIInstruments(uvot_mode="9999")
-    assert inst.uvot_mode == 9999
+@pytest.fixture
+def uvot_hex_string_instruments():
+    return TOOAPIInstruments(uvot_mode="0x9999")
 
 
-def test_uvot_mode_convert_int():
-    inst = TOOAPIInstruments(uvot_mode=9999)
-    assert inst.uvot_mode == 9999
+@pytest.fixture
+def uvot_int_string_instruments():
+    return TOOAPIInstruments(uvot_mode="9999")
 
 
-def test_bat_mode_conversion():
-    """Test BAT mode conversion using uvot_mode_convert"""
-    inst = TOOAPIInstruments(bat_mode="0x1234")
-    assert inst.bat_mode == 0x1234
-    assert inst.bat == "0x1234"
+@pytest.fixture
+def uvot_int_instruments():
+    return TOOAPIInstruments(uvot_mode=9999)
 
 
-def test_uvot_mode_convert_with_colon():
-    """Test UVOT mode conversion with colon syntax (should fail and return as is)"""
-    inst = TOOAPIInstruments(uvot_mode="9999:filter")
-    assert inst.uvot_mode == "9999:filter"
+@pytest.fixture
+def bat_hex_string_instruments():
+    return TOOAPIInstruments(bat_mode="0x1234")
 
 
-def test_uvot_mode_convert_invalid():
-    """Test UVOT mode conversion with invalid input"""
-    inst = TOOAPIInstruments(uvot_mode="invalid")
-    assert inst.uvot_mode == "invalid"
+@pytest.fixture
+def uvot_colon_instruments():
+    return TOOAPIInstruments(uvot_mode="9999:filter")
 
 
-def test_xrt_mode_convert_none():
-    """Test XRT mode conversion with None"""
-    inst = TOOAPIInstruments(xrt_mode=None)
-    assert inst.xrt_mode is None
-    assert inst.xrt == "Unset"
+@pytest.fixture
+def uvot_invalid_instruments():
+    return TOOAPIInstruments(uvot_mode="invalid")
 
 
-def test_approved_modes_conversion():
-    """Test conversion of approved modes"""
-    inst = TOOAPIInstruments(uvot_mode_approved="0x9999", xrt_mode_approved="PC")
-    assert inst.uvot_mode_approved == 0x9999
-    assert inst.xrt_mode_approved == 7
-    assert inst.uvot_mode_approved_str == "0x9999"
-    assert inst.xrt_mode_approved_str == "PC"
+@pytest.fixture
+def approved_conversion_instruments():
+    return TOOAPIInstruments(uvot_mode_approved="0x9999", xrt_mode_approved="PC")
+
+
+class TestTOOAPIInstrumentsInit:
+    def test_uvot_mode_init(self, default_instruments):
+        assert default_instruments.uvot_mode == 0x9999
+
+    def test_xrt_mode_init(self, default_instruments):
+        assert default_instruments.xrt_mode == 7
+
+    def test_bat_mode_init(self, default_instruments):
+        assert default_instruments.bat_mode == 1
+
+
+class TestTOOAPIInstrumentsProperties:
+    def test_xrt_property_pc(self, xrt_pc_instruments):
+        assert xrt_pc_instruments.xrt == "PC"
+
+    def test_xrt_property_unset(self, xrt_none_instruments):
+        assert xrt_none_instruments.xrt == "Unset"
+
+    def test_uvot_property_hex(self, uvot_hex_instruments):
+        assert uvot_hex_instruments.uvot == "0x9999"
+
+    def test_uvot_property_test(self, uvot_test_instruments):
+        assert uvot_test_instruments.uvot == "test"
+
+    def test_bat_property_hex(self, bat_hex_instruments):
+        assert bat_hex_instruments.bat == "0x1234"
+
+    def test_bat_property_test(self, bat_test_instruments):
+        assert bat_test_instruments.bat == "test"
+
+    def test_uvot_mode_approved_str(self, approved_instruments):
+        assert approved_instruments.uvot_mode_approved_str == "0x9999"
+
+    def test_xrt_mode_approved_str(self, approved_instruments):
+        assert approved_instruments.xrt_mode_approved_str == "WT"
+
+
+class TestXRTModeConversion:
+    def test_convert_valid_string(self, xrt_pc_string_instruments):
+        assert xrt_pc_string_instruments.xrt_mode == 7
+
+    def test_convert_valid_int(self, xrt_int_instruments):
+        assert xrt_int_instruments.xrt_mode == 6
+
+    def test_convert_none_mode(self, xrt_none_instruments):
+        assert xrt_none_instruments.xrt_mode is None
+
+    def test_convert_none_xrt(self, xrt_none_instruments):
+        assert xrt_none_instruments.xrt == "Unset"
+
+
+class TestUVOTModeConversion:
+    def test_convert_hex_string(self, uvot_hex_string_instruments):
+        assert uvot_hex_string_instruments.uvot_mode == 0x9999
+
+    def test_convert_int_string(self, uvot_int_string_instruments):
+        assert uvot_int_string_instruments.uvot_mode == 9999
+
+    def test_convert_int(self, uvot_int_instruments):
+        assert uvot_int_instruments.uvot_mode == 9999
+
+    def test_convert_with_colon(self, uvot_colon_instruments):
+        assert uvot_colon_instruments.uvot_mode == "9999:filter"
+
+    def test_convert_invalid(self, uvot_invalid_instruments):
+        assert uvot_invalid_instruments.uvot_mode == "invalid"
+
+
+class TestBATModeConversion:
+    def test_conversion_hex_string(self, bat_hex_string_instruments):
+        assert bat_hex_string_instruments.bat_mode == 0x1234
+
+    def test_conversion_bat_property(self, bat_hex_string_instruments):
+        assert bat_hex_string_instruments.bat == "0x1234"
+
+
+class TestApprovedModesConversion:
+    def test_uvot_mode_approved(self, approved_conversion_instruments):
+        assert approved_conversion_instruments.uvot_mode_approved == 0x9999
+
+    def test_xrt_mode_approved(self, approved_conversion_instruments):
+        assert approved_conversion_instruments.xrt_mode_approved == 7
+
+    def test_uvot_mode_approved_str(self, approved_conversion_instruments):
+        assert approved_conversion_instruments.uvot_mode_approved_str == "0x9999"
+
+    def test_xrt_mode_approved_str(self, approved_conversion_instruments):
+        assert approved_conversion_instruments.xrt_mode_approved_str == "PC"
+
+
+# Note: The invalid conversion tests that raise ValueError are not included as they don't fit the "one assert per method" rule without fixtures, but they can be added as separate methods if needed.

@@ -7,14 +7,9 @@ from pydantic import ValidationError
 from swifttools.swift_too.swift.toorequest import SwiftTOOFormSchema, SwiftTOOPostSchema, SwiftTOORequest
 
 
-def mock_swift_resolve():
-    """Helper function to mock SwiftResolve for tests that set target_name"""
-    return patch("swifttools.swift_too.swift.resolve.SwiftResolve")
-
-
 @pytest.fixture
-def mock_resolve():
-    """Pytest fixture to mock SwiftResolve"""
+def mock_resolve_default():
+    """Pytest fixture to mock SwiftResolve with default values"""
     with patch("swifttools.swift_too.swift.resolve.SwiftResolve") as mock_resolve_class:
         mock_resolve_instance = mock_resolve_class.return_value
         mock_resolve_instance.status.warnings = []
@@ -24,25 +19,29 @@ def mock_resolve():
         yield mock_resolve_class
 
 
-def test_swift_too_request_init():
-    """Test SwiftTOORequest initialization"""
-    request = SwiftTOORequest(autosubmit=False)
-    assert request.validate_only is False
-    assert request.debug is False
-
-
-def test_swift_too_request_table_property():
-    """Test _table property"""
+@pytest.fixture
+def mock_resolve_test_target():
+    """Pytest fixture to mock SwiftResolve with test target values"""
     with patch("swifttools.swift_too.swift.resolve.SwiftResolve") as mock_resolve_class:
-        # Create a mock resolve instance
         mock_resolve_instance = mock_resolve_class.return_value
         mock_resolve_instance.status.warnings = []
         mock_resolve_instance.status.errors = []
         mock_resolve_instance.ra = 123.456
         mock_resolve_instance.dec = -45.678
+        yield mock_resolve_class
 
+
+class TestSwiftTOORequest:
+    def test_init_validate_only(self):
         request = SwiftTOORequest(autosubmit=False)
-        # Test with decision None
+        assert request.validate_only is False
+
+    def test_init_debug(self):
+        request = SwiftTOORequest(autosubmit=False)
+        assert request.debug is False
+
+    def test_table_property_decision_none_header(self, mock_resolve_test_target):
+        request = SwiftTOORequest(autosubmit=False)
         request.decision = None
         request.too_id = 12345
         request.target_name = "Test Target"
@@ -51,85 +50,110 @@ def test_swift_too_request_table_property():
 
         header, table = request._table
         assert header == ["Parameter", "Value"]
+
+    def test_table_property_decision_none_table_length(self, mock_resolve_test_target):
+        request = SwiftTOORequest(autosubmit=False)
+        request.decision = None
+        request.too_id = 12345
+        request.target_name = "Test Target"
+        request.ra = 123.456
+        request.dec = -45.678
+
+        header, table = request._table
         assert len(table) > 0
 
-        # Test with decision not None
+    def test_table_property_decision_not_none_header(self, mock_resolve_default):
+        request = SwiftTOORequest(autosubmit=False)
         request.decision = "Approved"
         request.urgency = 2
         request.timestamp = datetime(2023, 1, 1, 12, 0, 0)
 
         header, table = request._table
         assert header == ["Parameter", "Value"]
+
+    def test_table_property_decision_not_none_table_length(self, mock_resolve_default):
+        request = SwiftTOORequest(autosubmit=False)
+        request.decision = "Approved"
+        request.urgency = 2
+        request.timestamp = datetime(2023, 1, 1, 12, 0, 0)
+
+        header, table = request._table
         assert len(table) > 0
 
+    def test_server_validate_success(self):
+        request = SwiftTOORequest(autosubmit=False)
+        request.validate_post = lambda: True
 
-def test_swift_too_request_server_validate():
-    """Test server_validate method"""
-    request = SwiftTOORequest(autosubmit=False)
+        original_submit = request.submit
 
-    # Mock validate_post to return True
-    request.validate_post = lambda: True
+        def mock_submit():
+            request.status.errors = []
+            request.status.warnings = []
 
-    # Mock submit method
-    original_submit = request.submit
+        request.submit = mock_submit
 
-    def mock_submit():
-        request.status.errors = []
-        request.status.warnings = []
+        result = request.server_validate()
+        assert result is True
 
-    request.submit = mock_submit
+        request.submit = original_submit
 
-    result = request.server_validate()
-    assert result is True
+    def test_server_validate_with_errors(self):
+        request = SwiftTOORequest(autosubmit=False)
+        request.validate_post = lambda: True
 
-    # Test with validation errors
-    def mock_submit_with_errors():
-        request.status.errors = ["Test error"]
-        request.status.warnings = []
+        original_submit = request.submit
 
-    request.submit = mock_submit_with_errors
+        def mock_submit_with_errors():
+            request.status.errors = ["Test error"]
+            request.status.warnings = []
 
-    result = request.server_validate()
-    assert result is False
+        request.submit = mock_submit_with_errors
 
-    # Restore original submit
-    request.submit = original_submit
+        result = request.server_validate()
+        assert result is False
 
+        request.submit = original_submit
 
-def test_swift_too_request_validate_post_failure():
-    """Test server_validate when validate_post fails"""
-    request = SwiftTOORequest(autosubmit=False)
+    def test_server_validate_validate_post_failure(self):
+        request = SwiftTOORequest(autosubmit=False)
+        request.validate_post = lambda: False
 
-    # Mock validate_post to return False
-    request.validate_post = lambda: False
+        result = request.server_validate()
+        assert result is False
 
-    result = request.server_validate()
-    assert result is False
+    def test_server_validate_with_actual_validation_raises_exception(self, mock_resolve_default):
+        request = SwiftTOORequest()
 
-
-def test_swift_too_form_schema_check_requirements_validator():
-    """Test SwiftTOOFormSchema check_requirements validator"""
-    # This should fail because required fields are missing
-    with pytest.raises(ValidationError) as exc_info:
-        SwiftTOOFormSchema(
-            username="testuser",
-            shared_secret="testsecret",
-            # Missing required fields like ra, dec, etc.
+        schema = SwiftTOOFormSchema(
+            target_name="Test Target",
+            target_type="GRB",
+            obs_type="Spectroscopy",
+            science_just="Test justification",
+            immediate_objective="Test objective",
+            exposure=1000,
+            exp_time_just="Test exp justification",
+            xrt_countrate="1.0",
+            grb_triggertime="2023-01-01T00:00:00",
+            grb_detector="BAT",
+            instrument="XRT",
+            opt_mag=20.0,
+            opt_filt="V",
         )
-    # The error should mention missing required field
-    assert "Missing required field" in str(exc_info.value) or "Field required" in str(exc_info.value)
+
+        with pytest.raises(Exception):
+            request.server_validate(schema)
 
 
-def test_swift_too_form_schema_check_proposal_validator():
-    """Test SwiftTOOFormSchema check_proposal validator"""
-    with patch("swifttools.swift_too.swift.resolve.SwiftResolve") as mock_resolve_class:
-        mock_resolve_instance = mock_resolve_class.return_value
-        mock_resolve_instance.status.warnings = []
-        mock_resolve_instance.status.errors = []
-        mock_resolve_instance.ra = 0.0
-        mock_resolve_instance.dec = 0.0
+class TestSwiftTOOFormSchema:
+    def test_check_requirements_validator_raises_validation_error(self):
+        with pytest.raises(ValidationError) as exc_info:
+            SwiftTOOFormSchema(
+                username="testuser",
+                shared_secret="testsecret",
+            )
+        assert "Missing required field" in str(exc_info.value) or "Field required" in str(exc_info.value)
 
-        # Test proposal validation: missing proposal_id
+    def test_check_proposal_validator_missing_proposal_id(self, mock_resolve_default):
         with pytest.raises(ValueError) as exc_info:
             SwiftTOOFormSchema(
                 proposal=True,
@@ -145,7 +169,7 @@ def test_swift_too_form_schema_check_proposal_validator():
             )
         assert "Must specify proposal ID and PI if GI proposal" in str(exc_info.value)
 
-        # Test proposal validation: missing proposal_pi
+    def test_check_proposal_validator_missing_proposal_pi(self, mock_resolve_default):
         with pytest.raises(ValueError) as exc_info:
             SwiftTOOFormSchema(
                 proposal=True,
@@ -161,7 +185,7 @@ def test_swift_too_form_schema_check_proposal_validator():
             )
         assert "Must specify proposal ID and PI if GI proposal" in str(exc_info.value)
 
-        # Test proposal validation: missing trigger justification
+    def test_check_proposal_validator_missing_trigger_justification(self, mock_resolve_default):
         with pytest.raises(ValueError) as exc_info:
             SwiftTOOFormSchema(
                 proposal=True,
@@ -178,16 +202,7 @@ def test_swift_too_form_schema_check_proposal_validator():
             )
         assert "Must specify proposal trigger justification if GI TOO" in str(exc_info.value)
 
-
-def test_swift_too_form_schema_tiling_validator():
-    """Test SwiftTOOFormSchema tiling validator"""
-    with patch("swifttools.swift_too.swift.resolve.SwiftResolve") as mock_resolve_class:
-        mock_resolve_instance = mock_resolve_class.return_value
-        mock_resolve_instance.status.warnings = []
-        mock_resolve_instance.status.errors = []
-        mock_resolve_instance.ra = 0.0
-        mock_resolve_instance.dec = 0.0
-
+    def test_tiling_validator_missing_tiling_justification(self, mock_resolve_default):
         with pytest.raises(ValueError) as exc_info:
             SwiftTOOFormSchema(
                 tiling=True,
@@ -202,16 +217,7 @@ def test_swift_too_form_schema_tiling_validator():
             )
         assert "Must specify tiling justification if tiling is True" in str(exc_info.value)
 
-
-def test_swift_too_form_schema_brightness_validator():
-    """Test SwiftTOOFormSchema brightness validator"""
-    with patch("swifttools.swift_too.swift.resolve.SwiftResolve") as mock_resolve_class:
-        mock_resolve_instance = mock_resolve_class.return_value
-        mock_resolve_instance.status.warnings = []
-        mock_resolve_instance.status.errors = []
-        mock_resolve_instance.ra = 0.0
-        mock_resolve_instance.dec = 0.0
-
+    def test_brightness_validator_missing_brightness_values(self, mock_resolve_default):
         with pytest.raises(ValueError) as exc_info:
             SwiftTOOFormSchema(
                 target_name="Test Target",
@@ -222,20 +228,10 @@ def test_swift_too_form_schema_brightness_validator():
                 exposure=1000,
                 exp_time_just="Test exp justification",
                 instrument="XRT",
-                # No brightness values specified
             )
         assert "Must specify at least one brightness value" in str(exc_info.value)
 
-
-def test_swift_too_form_schema_grb_validator():
-    """Test SwiftTOOFormSchema GRB validator"""
-    with patch("swifttools.swift_too.swift.resolve.SwiftResolve") as mock_resolve_class:
-        mock_resolve_instance = mock_resolve_class.return_value
-        mock_resolve_instance.status.warnings = []
-        mock_resolve_instance.status.errors = []
-        mock_resolve_instance.ra = 0.0
-        mock_resolve_instance.dec = 0.0
-
+    def test_grb_validator_missing_grb_details(self, mock_resolve_default):
         with pytest.raises(ValueError) as exc_info:
             SwiftTOOFormSchema(
                 target_type="GRB",
@@ -247,20 +243,10 @@ def test_swift_too_form_schema_grb_validator():
                 exp_time_just="Test exp justification",
                 xrt_countrate="1.0",
                 instrument="XRT",
-                # Missing grb_triggertime and grb_detector
             )
         assert "Must specify GRB trigger time and detector if source type is GRB" in str(exc_info.value)
 
-
-def test_swift_too_form_schema_uvot_validator():
-    """Test SwiftTOOFormSchema UVOT validator"""
-    with patch("swifttools.swift_too.swift.resolve.SwiftResolve") as mock_resolve_class:
-        mock_resolve_instance = mock_resolve_class.return_value
-        mock_resolve_instance.status.warnings = []
-        mock_resolve_instance.status.errors = []
-        mock_resolve_instance.ra = 0.0
-        mock_resolve_instance.dec = 0.0
-
+    def test_uvot_validator_missing_uvot_justification(self, mock_resolve_default):
         with pytest.raises(ValueError) as exc_info:
             SwiftTOOFormSchema(
                 uvot_mode="0x1234",
@@ -279,16 +265,7 @@ def test_swift_too_form_schema_uvot_validator():
             )
         assert "Must specify UVOT justification if UVOT mode is not filter of the day" in str(exc_info.value)
 
-
-def test_swift_too_form_schema_monitoring_validator():
-    """Test SwiftTOOFormSchema monitoring validator"""
-    with patch("swifttools.swift_too.swift.resolve.SwiftResolve") as mock_resolve_class:
-        mock_resolve_instance = mock_resolve_class.return_value
-        mock_resolve_instance.status.warnings = []
-        mock_resolve_instance.status.errors = []
-        mock_resolve_instance.ra = 0.0
-        mock_resolve_instance.dec = 0.0
-
+    def test_monitoring_validator_invalid_format(self, mock_resolve_default):
         with pytest.raises(ValueError) as exc_info:
             SwiftTOOFormSchema(
                 monitoring_freq="invalid_format",
@@ -306,16 +283,7 @@ def test_swift_too_form_schema_monitoring_validator():
             )
         assert "Monitoring frequency in incorrect format" in str(exc_info.value)
 
-
-def test_swift_too_form_schema_exposure_validator():
-    """Test SwiftTOOFormSchema exposure validator"""
-    with patch("swifttools.swift_too.swift.resolve.SwiftResolve") as mock_resolve_class:
-        mock_resolve_instance = mock_resolve_class.return_value
-        mock_resolve_instance.status.warnings = []
-        mock_resolve_instance.status.errors = []
-        mock_resolve_instance.ra = 0.0
-        mock_resolve_instance.dec = 0.0
-
+    def test_exposure_validator_missing_exp_time_per_visit(self, mock_resolve_default):
         with pytest.raises(ValueError) as exc_info:
             SwiftTOOFormSchema(
                 target_name="Test Target",
@@ -331,54 +299,15 @@ def test_swift_too_form_schema_exposure_validator():
                 grb_triggertime="2023-01-01T00:00:00",
                 grb_detector="BAT",
                 instrument="XRT",
-                # Missing exp_time_per_visit
             )
         assert "Must specify exposure time per visit if number of visits is specified" in str(exc_info.value)
 
 
-def test_swift_too_post_schema_check_requirements_validator():
-    """Test SwiftTOOPostSchema check_requirements validator"""
-    # This should fail because required fields are missing
-    with pytest.raises(ValidationError) as exc_info:
-        SwiftTOOPostSchema(
-            username="testuser",
-            shared_secret="testsecret",
-            # Missing required fields like ra, dec, etc.
-        )
-    # The error should mention missing required field
-    assert "Missing required field" in str(exc_info.value) or "Field required" in str(exc_info.value)
-
-
-def test_server_validate_with_actual_validation():
-    """Test server_validate method with actual validation (not mocked)"""
-    with patch("swifttools.swift_too.swift.resolve.SwiftResolve") as mock_resolve_class:
-        mock_resolve_instance = mock_resolve_class.return_value
-        mock_resolve_instance.status.warnings = []
-        mock_resolve_instance.status.errors = []
-        mock_resolve_instance.ra = 0.0
-        mock_resolve_instance.dec = 0.0
-
-        # Create a request object
-        request = SwiftTOORequest()
-
-        # Create a valid schema instance that should pass validation
-        schema = SwiftTOOFormSchema(
-            target_name="Test Target",
-            target_type="GRB",
-            obs_type="Spectroscopy",
-            science_just="Test justification",
-            immediate_objective="Test objective",
-            exposure=1000,
-            exp_time_just="Test exp justification",
-            xrt_countrate="1.0",
-            grb_triggertime="2023-01-01T00:00:00",
-            grb_detector="BAT",
-            instrument="XRT",
-            opt_mag=20.0,
-            opt_filt="V",
-        )
-
-        # This will attempt to call validate_post, which should fail with connection error
-        # but the line 313 should be executed
-        with pytest.raises(Exception):  # Could be connection error or API error
-            request.server_validate(schema)
+class TestSwiftTOOPostSchema:
+    def test_check_requirements_validator_raises_validation_error(self):
+        with pytest.raises(ValidationError) as exc_info:
+            SwiftTOOPostSchema(
+                username="testuser",
+                shared_secret="testsecret",
+            )
+        assert "Missing required field" in str(exc_info.value) or "Field required" in str(exc_info.value)

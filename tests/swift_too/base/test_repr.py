@@ -1,5 +1,52 @@
+from pydantic import BaseModel
+
 from swifttools.swift_too.base.repr import TOOAPIReprMixin
 from swifttools.swift_too.base.schemas import BaseSchema
+from swifttools.swift_too.base.status import TOOStatus
+
+
+class ReprModel(TOOAPIReprMixin, BaseModel):
+    name: str | None = None
+    tags: list[str] = []
+    status: TOOStatus | str = TOOStatus()
+
+
+def test_table_includes_rows_and_status():
+    obj = ReprModel(name="TestName", tags=["a", "b"], status=TOOStatus())
+    obj.status.status = "Pending"
+    header, table = obj._table
+    assert header == ["Parameter", "Value"]
+    # Ensure name and tags rows exist
+    param_names = [r[0] for r in table]
+    assert "name" in param_names
+    assert "tags" in param_names
+    # status is stored as status string in second column of its row
+    status_row = [r for r in table if r[0] == "status"][0]
+    assert status_row[1] == "Pending"
+
+
+def test_repr_html_and_str_rejected():
+    obj = ReprModel()
+    # Set status to Rejected with errors
+    status = TOOStatus()
+    status.status = "Rejected"
+    status.errors = ["bad", "worse"]
+    obj.status = status
+    html = obj._repr_html_()
+    assert "Rejected with the following error(s):" in html
+    s = str(obj)
+    assert "Rejected with the following error(s):" in s
+
+
+def test_repr_no_data_and_repr():
+    obj = ReprModel()
+    # Clear out status and other values
+    obj.status = ""
+    assert obj._repr_html_() == "No data"
+    assert str(obj) == "No data"
+    # repr should include class name
+    r = repr(obj)
+    assert "ReprModel(" in r
 
 
 class MockReprClass(BaseSchema, TOOAPIReprMixin):

@@ -5,25 +5,31 @@ import pytest
 from swifttools.swift_too.query_job import QueryJob
 
 
-def test_query_job_init():
-    # Since the __init__ is broken, perhaps patch
-    with pytest.raises(TypeError):
-        _ = QueryJob(123)
-
-
-# Perhaps the __init__ is wrong, let's assume it's super().__init__(jobnumber=jobnumber, fetchresult=True, **kwargs)
-
-# But to test, let's mock
-
-
-def test_query_job_table():
+@pytest.fixture
+def mock_job():
     job = QueryJob(jobnumber=123, status="Completed")
     job.result = Mock()
     job.result.__class__.__name__ = "MockResult"
     job._parameters = ["jobnumber"]
     job._attributes = ["status"]
+    return job
 
-    header, table = job._table
-    assert header == ["Parameter", "Value"]
-    assert ["jobnumber", 123] in table
-    assert ["result", "MockResult object"] in table
+
+class TestQueryJobInit:
+    def test_init_raises_type_error(self):
+        with pytest.raises(TypeError):
+            _ = QueryJob(123)
+
+
+class TestQueryJobTable:
+    def test_header(self, mock_job):
+        header, _ = mock_job._table
+        assert header == ["Parameter", "Value"]
+
+    def test_jobnumber_in_table(self, mock_job):
+        _, table = mock_job._table
+        assert ["jobnumber", 123] in table
+
+    def test_result_in_table(self, mock_job):
+        _, table = mock_job._table
+        assert ["result", "MockResult object"] in table

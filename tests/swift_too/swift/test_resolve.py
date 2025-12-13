@@ -1,36 +1,62 @@
 from unittest.mock import patch
 
+import pytest
+
 from swifttools.swift_too.swift.resolve import SwiftResolve
 
 
-@patch("swifttools.swift_too.base.common.cookie_jar")
-@patch("httpx.Client")
-def test_swift_resolve_init(mock_client, mock_cookie_jar):
-    resolve = SwiftResolve(name="Test Name", autosubmit=False)
-    assert resolve.name == "Test Name"
-    assert resolve.status.status == "Pending"
+@pytest.fixture
+def mock_client():
+    with patch("httpx.Client") as mock:
+        yield mock
 
 
-def test_swift_resolve_validate():
-    resolve = SwiftResolve(name="Test Name", autosubmit=False)
-    # Since validate calls validate_get, and _get_schema is set
-    with patch.object(resolve, "validate_get", return_value=True):
-        assert resolve.validate() is True
+@pytest.fixture
+def mock_cookie_jar():
+    with patch("swifttools.swift_too.base.common.cookie_jar") as mock:
+        yield mock
 
 
-def test_swift_resolve_table():
-    resolve = SwiftResolve(name="Test Name", autosubmit=False)
-    resolve.ra = 10.0
-    resolve.dec = 20.0
-    resolve.resolver = "Simbad"
-
-    header, table = resolve._table
-    assert header == ["Name", "RA (J2000)", "Dec (J2000)", "Resolver"]
-    assert table == [["Test Name", "10.00000", "20.00000", "Simbad"]]
+@pytest.fixture
+def resolve_instance(mock_client, mock_cookie_jar):
+    return SwiftResolve(name="Test Name", autosubmit=False)
 
 
-def test_swift_resolve_table_no_ra():
-    resolve = SwiftResolve(name="Test Name", autosubmit=False)
-    header, table = resolve._table
-    assert header == []
-    assert table == []
+class TestSwiftResolveInit:
+    def test_name(self, resolve_instance):
+        assert resolve_instance.name == "Test Name"
+
+    def test_status(self, resolve_instance):
+        assert resolve_instance.status.status == "Pending"
+
+
+class TestSwiftResolveValidate:
+    def test_validate(self, resolve_instance):
+        with patch.object(resolve_instance, "validate_get", return_value=True):
+            assert resolve_instance.validate() is True
+
+
+class TestSwiftResolveTable:
+    def test_header(self, resolve_instance):
+        resolve_instance.ra = 10.0
+        resolve_instance.dec = 20.0
+        resolve_instance.resolver = "Simbad"
+        header, _ = resolve_instance._table
+        assert header == ["Name", "RA (J2000)", "Dec (J2000)", "Resolver"]
+
+    def test_table(self, resolve_instance):
+        resolve_instance.ra = 10.0
+        resolve_instance.dec = 20.0
+        resolve_instance.resolver = "Simbad"
+        _, table = resolve_instance._table
+        assert table == [["Test Name", "10.00000", "20.00000", "Simbad"]]
+
+
+class TestSwiftResolveTableNoRa:
+    def test_header_no_ra(self, resolve_instance):
+        header, _ = resolve_instance._table
+        assert header == []
+
+    def test_table_no_ra(self, resolve_instance):
+        _, table = resolve_instance._table
+        assert table == []

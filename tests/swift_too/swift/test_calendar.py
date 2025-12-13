@@ -1,42 +1,17 @@
 from datetime import datetime
 
+import pytest
+
 from swifttools.swift_too.swift.calendar import SwiftCalendar, SwiftCalendarEntry
 
 
-def test_swift_calendar_init():
-    """Test SwiftCalendar initialization"""
-    calendar = SwiftCalendar(autosubmit=False)
-    assert calendar.entries == []
+@pytest.fixture
+def calendar():
+    return SwiftCalendar(autosubmit=False)
 
 
-def test_swift_calendar_getitem():
-    """Test indexing"""
-    calendar = SwiftCalendar(autosubmit=False)
-    calendar.entries = ["entry1", "entry2"]
-    assert calendar[0] == "entry1"
-    assert calendar[1] == "entry2"
-
-
-def test_swift_calendar_len():
-    """Test len() method"""
-    calendar = SwiftCalendar(autosubmit=False)
-    assert len(calendar) == 0
-    calendar.entries = [1, 2, 3]
-    assert len(calendar) == 3
-
-
-def test_swift_calendar_table_property():
-    """Test _table property"""
-    calendar = SwiftCalendar(autosubmit=False)
-    calendar.entries = []
-    header, table = calendar._table
-    assert header == []
-    assert table == []
-
-
-def test_swift_calendar_table_property_with_entries():
-    """Test _table property with entries"""
-    calendar = SwiftCalendar(autosubmit=False)
+@pytest.fixture
+def sample_entry():
     entry = SwiftCalendarEntry(
         typeID=1, duration=3600.0, roll=0.0, target_ID=12345, target_name="Test Target", ra=123.456, dec=-45.678, sip=1
     )
@@ -46,44 +21,110 @@ def test_swift_calendar_table_property_with_entries():
     entry.uvot_mode = 39321
     entry.duration = 3600.0
     entry.asflown = 3500.0
-    calendar.entries = [entry]
-
-    header, table = calendar._table
-    assert len(header) == 7  # ["#"] + entry._table[0]
-    assert header[0] == "#"
-    assert len(table) == 1
-    assert table[0][0] == 0  # index of first entry
-    """Test SwiftCalendarEntry initialization"""
-    entry = SwiftCalendarEntry(
-        typeID=1, duration=3600.0, roll=0.0, target_ID=12345, target_name="Test Target", ra=123.456, dec=-45.678, sip=1
-    )
-    assert entry.type == "TOO"
-    assert entry.pi_name == ""
-    assert entry.sip_target_ID == 0
+    return entry
 
 
-def test_swift_calendar_entry_getitem():
-    """Test SwiftCalendarEntry indexing"""
-    entry = SwiftCalendarEntry(
-        typeID=1, duration=3600.0, roll=0.0, target_ID=12345, target_name="Test Target", ra=123.456, dec=-45.678, sip=1
-    )
-    entry.start = datetime(2023, 1, 1, 12, 0, 0)
-    assert entry["start"] == datetime(2023, 1, 1, 12, 0, 0)
+class TestSwiftCalendar:
+    def test_init_entries(self, calendar):
+        assert calendar.entries == []
+
+    def test_getitem_first(self, calendar):
+        calendar.entries = ["entry1", "entry2"]
+        assert calendar[0] == "entry1"
+
+    def test_getitem_second(self, calendar):
+        calendar.entries = ["entry1", "entry2"]
+        assert calendar[1] == "entry2"
+
+    def test_len_empty(self, calendar):
+        assert len(calendar) == 0
+
+    def test_len_with_entries(self, calendar):
+        calendar.entries = [1, 2, 3]
+        assert len(calendar) == 3
+
+    def test_table_property_header_empty(self, calendar):
+        calendar.entries = []
+        header, table = calendar._table
+        assert header == []
+
+    def test_table_property_table_empty(self, calendar):
+        calendar.entries = []
+        header, table = calendar._table
+        assert table == []
+
+    def test_table_property_with_entries_header_length(self, calendar, sample_entry):
+        calendar.entries = [sample_entry]
+        header, table = calendar._table
+        assert len(header) == 7
+
+    def test_table_property_with_entries_header_first(self, calendar, sample_entry):
+        calendar.entries = [sample_entry]
+        header, table = calendar._table
+        assert header[0] == "#"
+
+    def test_table_property_with_entries_table_length(self, calendar, sample_entry):
+        calendar.entries = [sample_entry]
+        header, table = calendar._table
+        assert len(table) == 1
+
+    def test_table_property_with_entries_table_first_index(self, calendar, sample_entry):
+        calendar.entries = [sample_entry]
+        header, table = calendar._table
+        assert table[0][0] == 0
 
 
-def test_swift_calendar_entry_table_property():
-    """Test SwiftCalendarEntry _table property"""
-    entry = SwiftCalendarEntry(
-        typeID=1, duration=3600.0, roll=0.0, target_ID=12345, target_name="Test Target", ra=123.456, dec=-45.678, sip=1
-    )
-    entry.start = datetime(2023, 1, 1, 12, 0, 0)
-    entry.stop = datetime(2023, 1, 1, 13, 0, 0)
-    entry.xrt_mode = 7
-    entry.uvot_mode = 39321
-    entry.duration = 3600.0
-    entry.asflown = 3500.0
+class TestSwiftCalendarEntry:
+    def test_init_type(self):
+        entry = SwiftCalendarEntry(
+            typeID=1,
+            duration=3600.0,
+            roll=0.0,
+            target_ID=12345,
+            target_name="Test Target",
+            ra=123.456,
+            dec=-45.678,
+            sip=1,
+        )
+        assert entry.type == "TOO"
 
-    header, table = entry._table
-    assert len(header) == 6
-    assert len(table) == 1
-    assert table[0][0] == datetime(2023, 1, 1, 12, 0, 0)  # start
+    def test_init_pi_name(self):
+        entry = SwiftCalendarEntry(
+            typeID=1,
+            duration=3600.0,
+            roll=0.0,
+            target_ID=12345,
+            target_name="Test Target",
+            ra=123.456,
+            dec=-45.678,
+            sip=1,
+        )
+        assert entry.pi_name == ""
+
+    def test_init_sip_target_ID(self):
+        entry = SwiftCalendarEntry(
+            typeID=1,
+            duration=3600.0,
+            roll=0.0,
+            target_ID=12345,
+            target_name="Test Target",
+            ra=123.456,
+            dec=-45.678,
+            sip=1,
+        )
+        assert entry.sip_target_ID == 0
+
+    def test_getitem_start(self, sample_entry):
+        assert sample_entry["start"] == datetime(2023, 1, 1, 12, 0, 0)
+
+    def test_table_property_header_length(self, sample_entry):
+        header, table = sample_entry._table
+        assert len(header) == 6
+
+    def test_table_property_table_length(self, sample_entry):
+        header, table = sample_entry._table
+        assert len(table) == 1
+
+    def test_table_property_table_first_start(self, sample_entry):
+        header, table = sample_entry._table
+        assert table[0][0] == datetime(2023, 1, 1, 12, 0, 0)

@@ -3,246 +3,334 @@ from unittest.mock import patch
 
 import pytest
 
-from swifttools.swift_too.swift.guano import SwiftGUANO, SwiftGUANOData, SwiftGUANOEntry, SwiftGUANOGTI
+from swifttools.swift_too.swift.guano import (
+    SwiftGUANO,
+    SwiftGUANOData,
+    SwiftGUANOEntry,
+    SwiftGUANOGetSchema,
+    SwiftGUANOGTI,
+)
 
 
-def test_swift_guano_init():
-    """Test SwiftGUANO initialization"""
-    guano = SwiftGUANO(autosubmit=False)
-    assert guano.entries == []
+@pytest.fixture
+def guano():
+    return SwiftGUANO(autosubmit=False)
 
 
-def test_swift_guano_getitem():
-    """Test indexing"""
-    guano = SwiftGUANO(autosubmit=False)
-    guano.entries = ["entry1", "entry2"]
-    assert guano[0] == "entry1"
-    assert guano[1] == "entry2"
+@pytest.fixture
+def entry():
+    return SwiftGUANOEntry()
 
 
-def test_swift_guano_len():
-    """Test len() method"""
-    guano = SwiftGUANO(autosubmit=False)
-    assert len(guano) == 0
-    guano.entries = [1, 2, 3]
-    assert len(guano) == 3
+@pytest.fixture
+def data():
+    return SwiftGUANOData(all_gtis=[])
 
 
-def test_swift_guano_validate():
-    """Test validate method"""
-    guano = SwiftGUANO(autosubmit=False)
-    # When no parameters are set, validate should return None but may raise AttributeError
-    # due to model initialization. Let's test with parameters set.
-
-    # Test with parameters - set length directly
-    guano.length = 1.0
-    assert guano.validate() is True
-
-    # Test subthreshold with anonymous user
-    guano.subthreshold = True
-    guano.username = "anonymous"
-    assert guano.validate() is False
+@pytest.fixture
+def gti():
+    return SwiftGUANOGTI()
 
 
-def test_swift_guano_entry_init():
-    """Test SwiftGUANOEntry initialization"""
-    entry = SwiftGUANOEntry()
-    assert entry.obs_id is None
+@pytest.fixture
+def mock_data():
+    return type("MockData", (), {"exposure": 5.0, "gti": None})()
 
 
-def test_swift_guano_data_init():
-    """Test SwiftGUANOData initialization"""
-    data = SwiftGUANOData(all_gtis=[])
-    assert data.gti is None
+@pytest.fixture
+def mock_data_none():
+    return type("MockData", (), {"exposure": None, "gti": None})()
 
 
-def test_swift_guano_data_properties():
-    """Test SwiftGUANOData properties"""
-    # Test utcf property
-    gti = SwiftGUANOGTI(utcf=10.5)
-    data = SwiftGUANOData(all_gtis=[], gti=gti)
-    assert data.utcf == 10.5
-
-    # Test subthresh property
-    data = SwiftGUANOData(all_gtis=[], filenames=["test_ms_file.fits"])
-    assert data.subthresh is True
-
-    data = SwiftGUANOData(all_gtis=[], filenames=["test_file.fits"])
-    assert data.subthresh is False
-
-    data = SwiftGUANOData(all_gtis=[], filenames=None)
-    assert data.subthresh is None
+@pytest.fixture
+def mock_entry():
+    return type("MockEntry", (), {"_calc_begin_end": lambda self: None})()
 
 
-def test_swift_guano_gti_init():
-    """Test SwiftGUANOGTI initialization"""
-    gti = SwiftGUANOGTI()
-    assert gti.filename is None
-    assert gti.exposure == timedelta(0)
+class TestSwiftGUANO:
+    def test_init_entries_empty(self, guano):
+        assert guano.entries == []
 
+    def test_getitem_first(self, guano):
+        guano.entries = ["entry1", "entry2"]
+        assert guano[0] == "entry1"
 
-def test_swift_guano_gti_str():
-    """Test SwiftGUANOGTI __str__ method"""
-    begin = datetime(2023, 1, 1, 12, 0, 0)
-    end = datetime(2023, 1, 1, 12, 10, 0)
-    gti = SwiftGUANOGTI(begin=begin, end=end, exposure=timedelta(minutes=10))
-    str_repr = str(gti)
-    assert "12:00:00" in str_repr
-    assert "12:10:00" in str_repr
+    def test_getitem_second(self, guano):
+        guano.entries = ["entry1", "entry2"]
+        assert guano[1] == "entry2"
 
+    def test_len_empty(self, guano):
+        assert len(guano) == 0
 
-def test_swift_guano_entry_properties():
-    """Test SwiftGUANOEntry properties"""
-    entry = SwiftGUANOEntry()
+    def test_len_with_entries(self, guano):
+        guano.entries = [1, 2, 3]
+        assert len(guano) == 3
 
-    # Test executed property
-    entry.quadsaway = 2
-    assert entry.executed is False
-    entry.quadsaway = 3
-    assert entry.executed is False
-    entry.quadsaway = 1
-    assert entry.executed is True
-    entry.quadsaway = 4
-    assert entry.executed is True
+    def test_validate_with_length(self, guano):
+        guano.length = 1.0
+        assert guano.validate() is True
 
-    # Test uplinked property
-    entry.quadsaway = 1
-    assert entry.uplinked is False
-    entry.quadsaway = 3
-    assert entry.uplinked is False
-    entry.quadsaway = 2
-    assert entry.uplinked is True
-    entry.quadsaway = 4
-    assert entry.uplinked is True
+    def test_validate_subthreshold_anonymous(self, guano):
+        guano.subthreshold = True
+        guano.username = "anonymous"
+        assert guano.validate() is False
 
+    def test_table_property_header(self, guano):
+        # Minimal setup for table
+        guano.entries = []
+        header, table = guano._table
+        assert header == [
+            "Trigger Type",
+            "Trigger Time",
+            "Offset (s)",
+            "Window Duration (s)",
+            "Observation ID",
+        ]
 
-def test_swift_guano_entry_calc_begin_end():
-    """Test SwiftGUANOEntry _calc_begin_end method"""
-    entry = SwiftGUANOEntry(triggertime=datetime(2023, 1, 1, 12, 0, 0), offset=10.0, duration=5.0)
-    entry._calc_begin_end()
-    assert entry.begin == datetime(2023, 1, 1, 12, 0, 7, 500000)  # 12:00:00 + 10 - 2.5 = 12:00:07.5
-    assert entry.end == datetime(2023, 1, 1, 12, 0, 12, 500000)  # 12:00:00 + 10 + 2.5 = 12:00:12.5
+    def test_table_property_table_length(self, guano):
+        # Setup with entries
+        entry1 = SwiftGUANOEntry(
+            triggertype="GRB",
+            triggertime=datetime(2023, 1, 1, 12, 0, 0),
+            offset=10.0,
+            duration=5.0,
+            obs_id="00012345001",
+            quadsaway=0,
+        )
+        entry1.data = type("MockData", (), {"exposure": 5.0, "gti": None})()
+        guano.entries = [entry1]
+        header, table = guano._table
+        assert len(table) == 1
 
+    def test_table_property_first_entry_type(self, guano):
+        entry1 = SwiftGUANOEntry(
+            triggertype="GRB",
+            triggertime=datetime(2023, 1, 1, 12, 0, 0),
+            offset=10.0,
+            duration=5.0,
+            obs_id="00012345001",
+            quadsaway=0,
+        )
+        entry1.data = type("MockData", (), {"exposure": 5.0, "gti": None})()
+        guano.entries = [entry1]
+        header, table = guano._table
+        assert table[0][0] == "GRB"
 
-def test_swift_guano_entry_table():
-    """Test SwiftGUANOEntry _table property"""
-    entry = SwiftGUANOEntry(
-        triggertype="GRB", triggertime=datetime(2023, 1, 1, 12, 0, 0), offset=10.0, duration=5.0, obs_id="00012345001"
-    )
-    # Mock data with exposure as float (seconds)
-    mock_data = type("MockData", (), {"exposure": 5.0, "gti": None})()
-    entry.data = mock_data
+    def test_table_property_first_entry_obs_id(self, guano):
+        entry1 = SwiftGUANOEntry(
+            triggertype="GRB",
+            triggertime=datetime(2023, 1, 1, 12, 0, 0),
+            offset=10.0,
+            duration=5.0,
+            obs_id="00012345001",
+            quadsaway=0,
+        )
+        entry1.data = type("MockData", (), {"exposure": 5.0, "gti": None})()
+        guano.entries = [entry1]
+        header, table = guano._table
+        assert table[0][4] == "00012345001"
 
-    header, table = entry._table
-    assert header == ["Parameter", "Value"]
-    # Should contain various parameters
-    assert len(table) > 0
+    def test_table_property_second_entry_type(self, guano):
+        entry2 = SwiftGUANOEntry(
+            triggertype="TEST",
+            triggertime=datetime(2023, 1, 1, 13, 0, 0),
+            offset=20.0,
+            duration=10.0,
+            obs_id=None,
+            quadsaway=2,
+        )
+        entry2.data = type("MockData", (), {"exposure": 5.0, "gti": None})()
+        guano.entries = [entry2]
+        header, table = guano._table
+        assert table[0][0] == "TEST"
 
-    # Test case where exposure is None
-    mock_data_none = type("MockData", (), {"exposure": None, "gti": None})()
-    entry.data = mock_data_none
-    header2, table2 = entry._table
-    assert header2 == ["Parameter", "Value"]
-    assert len(table2) > 0
+    def test_table_property_second_entry_obs_id(self, guano):
+        entry2 = SwiftGUANOEntry(
+            triggertype="TEST",
+            triggertime=datetime(2023, 1, 1, 13, 0, 0),
+            offset=20.0,
+            duration=10.0,
+            obs_id=None,
+            quadsaway=2,
+        )
+        entry2.data = type("MockData", (), {"exposure": 5.0, "gti": None})()
+        guano.entries = [entry2]
+        header, table = guano._table
+        assert table[0][4] == "Pending Execution"
 
+    def test_table_property_third_entry_obs_id(self, guano):
+        entry3 = SwiftGUANOEntry(
+            triggertype="UNKNOWN",
+            triggertime=datetime(2023, 1, 1, 14, 0, 0),
+            offset=30.0,
+            duration=15.0,
+            obs_id=None,
+            quadsaway=3,
+        )
+        entry3.data = type("MockData", (), {"exposure": 15.0, "gti": None})()
+        guano.entries = [entry3]
+        header, table = guano._table
+        assert table[0][4] == "Unknown Status"
 
-def test_swift_guano_get_schema_validate():
-    """Test SwiftGUANOGetSchema validate_parameters"""
-    from swifttools.swift_too.swift.guano import SwiftGUANOGetSchema
+    def test_table_property_fourth_entry_obs_id(self, guano):
+        entry4 = SwiftGUANOEntry(
+            triggertype="EXECUTED",
+            triggertime=datetime(2023, 1, 1, 15, 0, 0),
+            offset=40.0,
+            duration=20.0,
+            obs_id=None,
+            quadsaway=0,
+        )
+        entry4.data = type("MockData", (), {"exposure": 20.0, "gti": None})()
+        guano.entries = [entry4]
+        header, table = guano._table
+        assert table[0][4] == "Pending Data"
 
-    # Valid case - has parameters
-    values = {"triggertime": datetime(2023, 1, 1)}
-    result = SwiftGUANOGetSchema.validate_parameters(values)
-    assert result == values
-
-    # Invalid case - no parameters
-    with pytest.raises(ValueError, match="At least one of the parameters must be provided"):
-        SwiftGUANOGetSchema.validate_parameters({})
-
-
-def test_swift_guano_table_property():
-    """Test SwiftGUANO _table property with entries"""
-    guano = SwiftGUANO(autosubmit=False)
-
-    # Create mock entries
-    entry1 = SwiftGUANOEntry(
-        triggertype="GRB",
-        triggertime=datetime(2023, 1, 1, 12, 0, 0),
-        offset=10.0,
-        duration=5.0,
-        obs_id="00012345001",
-        quadsaway=0,
-    )
-    mock_data1 = type("MockData", (), {"exposure": 5.0, "gti": None})()
-    entry1.data = mock_data1
-
-    entry2 = SwiftGUANOEntry(
-        triggertype="TEST",
-        triggertime=datetime(2023, 1, 1, 13, 0, 0),
-        offset=20.0,
-        duration=10.0,
-        obs_id=None,
-        quadsaway=2,  # Not executed (quadsaway=2), but uplinked
-    )
-    mock_data2 = type(
-        "MockData", (), {"exposure": 5.0, "gti": None}
-    )()  # Different exposure to trigger the != condition
-    entry2.data = mock_data2
-
-    entry3 = SwiftGUANOEntry(
-        triggertype="UNKNOWN",
-        triggertime=datetime(2023, 1, 1, 14, 0, 0),
-        offset=30.0,
-        duration=15.0,
-        obs_id=None,
-        quadsaway=3,  # Neither executed nor uplinked
-    )
-    mock_data3 = type("MockData", (), {"exposure": 15.0, "gti": None})()
-    entry3.data = mock_data3
-
-    entry4 = SwiftGUANOEntry(
-        triggertype="EXECUTED",
-        triggertime=datetime(2023, 1, 1, 15, 0, 0),
-        offset=40.0,
-        duration=20.0,
-        obs_id=None,
-        quadsaway=0,  # Executed but no obs_id yet
-    )
-    mock_data4 = type("MockData", (), {"exposure": 20.0, "gti": None})()
-    entry4.data = mock_data4
-
-    guano.entries = [entry1, entry2, entry3, entry4]
-
-    header, table = guano._table
-    assert header == [
-        "Trigger Type",
-        "Trigger Time",
-        "Offset (s)",
-        "Window Duration (s)",
-        "Observation ID",
-    ]
-    assert len(table) == 4
-    assert table[0][0] == "GRB"
-    assert table[0][4] == "00012345001"
-    assert table[1][0] == "TEST"
-    assert table[1][4] == "Pending Execution"  # quadsaway=2
-    assert table[2][0] == "UNKNOWN"
-    assert table[2][4] == "Unknown Status"  # quadsaway=3
-    assert table[3][0] == "EXECUTED"
-    assert table[3][4] == "Pending Data"  # quadsaway=0, executed=True
-
-
-def test_swift_guano_post_process():
-    """Test _post_process method"""
-    with patch("swifttools.swift_too.swift.clock.Clock") as mock_clock_class:
-        # Create a mock clock instance
+    @patch("swifttools.swift_too.swift.clock.Clock")
+    def test_post_process_calls_calc_begin_end(self, mock_clock_class, guano, mock_entry):
         mock_clock_instance = mock_clock_class.return_value
         mock_clock_instance.entries = []
-
-        guano = SwiftGUANO(autosubmit=False)
-        # Mock entries with _calc_begin_end method
-        mock_entry = type("MockEntry", (), {"_calc_begin_end": lambda self: None})()
         guano.entries = [mock_entry]
         guano._post_process()
-        # Should call _calc_begin_end and clock_correct
+        # Assuming _calc_begin_end is called, but since it's a lambda, just check length
         assert len(guano.entries) == 1
+
+
+class TestSwiftGUANOEntry:
+    def test_init_obs_id_none(self, entry):
+        assert entry.obs_id is None
+
+    def test_executed_quadsaway_2(self, entry):
+        entry.quadsaway = 2
+        assert entry.executed is False
+
+    def test_executed_quadsaway_3(self, entry):
+        entry.quadsaway = 3
+        assert entry.executed is False
+
+    def test_executed_quadsaway_1(self, entry):
+        entry.quadsaway = 1
+        assert entry.executed is True
+
+    def test_executed_quadsaway_4(self, entry):
+        entry.quadsaway = 4
+        assert entry.executed is True
+
+    def test_uplinked_quadsaway_1(self, entry):
+        entry.quadsaway = 1
+        assert entry.uplinked is False
+
+    def test_uplinked_quadsaway_3(self, entry):
+        entry.quadsaway = 3
+        assert entry.uplinked is False
+
+    def test_uplinked_quadsaway_2(self, entry):
+        entry.quadsaway = 2
+        assert entry.uplinked is True
+
+    def test_uplinked_quadsaway_4(self, entry):
+        entry.quadsaway = 4
+        assert entry.uplinked is True
+
+    def test_calc_begin_end_begin(self, entry):
+        entry.triggertime = datetime(2023, 1, 1, 12, 0, 0)
+        entry.offset = 10.0
+        entry.duration = 5.0
+        entry._calc_begin_end()
+        assert entry.begin == datetime(2023, 1, 1, 12, 0, 7, 500000)
+
+    def test_calc_begin_end_end(self, entry):
+        entry.triggertime = datetime(2023, 1, 1, 12, 0, 0)
+        entry.offset = 10.0
+        entry.duration = 5.0
+        entry._calc_begin_end()
+        assert entry.end == datetime(2023, 1, 1, 12, 0, 12, 500000)
+
+    def test_table_header(self, entry, mock_data):
+        entry.triggertype = "GRB"
+        entry.triggertime = datetime(2023, 1, 1, 12, 0, 0)
+        entry.offset = 10.0
+        entry.duration = 5.0
+        entry.obs_id = "00012345001"
+        entry.data = mock_data
+        header, table = entry._table
+        assert header == ["Parameter", "Value"]
+
+    def test_table_length(self, entry, mock_data):
+        entry.triggertype = "GRB"
+        entry.triggertime = datetime(2023, 1, 1, 12, 0, 0)
+        entry.offset = 10.0
+        entry.duration = 5.0
+        entry.obs_id = "00012345001"
+        entry.data = mock_data
+        header, table = entry._table
+        assert len(table) > 0
+
+    def test_table_header_none_exposure(self, entry, mock_data_none):
+        entry.data = mock_data_none
+        header, table = entry._table
+        assert header == ["Parameter", "Value"]
+
+    def test_table_length_none_exposure(self, entry, mock_data_none):
+        entry.data = mock_data_none
+        header, table = entry._table
+        assert len(table) > 0
+
+
+class TestSwiftGUANOData:
+    def test_init_gti_none(self, data):
+        assert data.gti is None
+
+    def test_utcf_property(self, data, gti):
+        gti.utcf = 10.5
+        data.gti = gti
+        assert data.utcf == 10.5
+
+    def test_subthresh_ms_file(self, data):
+        data.filenames = ["test_ms_file.fits"]
+        assert data.subthresh is True
+
+    def test_subthresh_regular_file(self, data):
+        data.filenames = ["test_file.fits"]
+        assert data.subthresh is False
+
+    def test_subthresh_none_filenames(self, data):
+        data.filenames = None
+        assert data.subthresh is None
+
+
+class TestSwiftGUANOGTI:
+    def test_init_filename_none(self, gti):
+        assert gti.filename is None
+
+    def test_init_exposure_zero(self, gti):
+        assert gti.exposure == timedelta(0)
+
+    def test_str_contains_begin(self, gti):
+        begin = datetime(2023, 1, 1, 12, 0, 0)
+        end = datetime(2023, 1, 1, 12, 10, 0)
+        gti.begin = begin
+        gti.end = end
+        gti.exposure = timedelta(minutes=10)
+        str_repr = str(gti)
+        assert "12:00:00" in str_repr
+
+    def test_str_contains_end(self, gti):
+        begin = datetime(2023, 1, 1, 12, 0, 0)
+        end = datetime(2023, 1, 1, 12, 10, 0)
+        gti.begin = begin
+        gti.end = end
+        gti.exposure = timedelta(minutes=10)
+        str_repr = str(gti)
+        assert "12:10:00" in str_repr
+
+
+class TestSwiftGUANOGetSchema:
+    def test_validate_parameters_valid(self):
+        values = {"triggertime": datetime(2023, 1, 1)}
+        result = SwiftGUANOGetSchema.validate_parameters(values)
+        assert result == values
+
+    def test_validate_parameters_invalid(self):
+        with pytest.raises(ValueError, match="At least one of the parameters must be provided"):
+            SwiftGUANOGetSchema.validate_parameters({})

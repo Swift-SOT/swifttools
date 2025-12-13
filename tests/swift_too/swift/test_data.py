@@ -2,6 +2,9 @@ import os
 import tempfile
 from unittest.mock import MagicMock, patch
 
+import httpx
+import pytest
+
 from swifttools.swift_too.base.schemas import BaseSchema
 from swifttools.swift_too.swift.data import SwiftData, SwiftDataFile, TOOAPIDownloadData
 
@@ -142,3 +145,229 @@ def test_tooapi_download_data_download():
 
         result = mock_obj.download()
         assert result == mock_instance
+
+    def test_swift_datafile_download_heasarc_s3(tmp_path, monkeypatch):
+        # heasarc url with s3 client download_file called
+        file_obj = SwiftDataFile(
+            filename="test.fits",
+            path="data",
+            url="https://heasarc.gsfc.nasa.gov/FTP/heasarc/path/test.fits",
+            type="XRT",
+        )
+        s3 = MagicMock()
+        # ensure directory creation works
+        outdir = str(tmp_path)
+
+        # Call download with s3; should call s3.download_file and return True
+        res = file_obj.download(outdir=outdir, s3=s3)
+        assert res is True
+        # key name should be url replaced prefix
+        key_name = file_obj.url.replace("https://heasarc.gsfc.nasa.gov/FTP/", "")
+        s3.download_file.assert_called_once_with(
+            "nasa-heasarc", key_name, os.path.join(outdir, file_obj.path, file_obj.filename)
+        )
+
+    def test_swift_datafile_download_http_error(monkeypatch):
+        file_obj = SwiftDataFile(filename="test.fits", path="data", url="http://example.com/test.fits", type="BAT")
+
+        class FakeResp:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, tb):
+                return False
+
+            def raise_for_status(self):
+                raise httpx.HTTPStatusError("error", request=MagicMock(), response=MagicMock())
+
+        monkeypatch.setattr("swifttools.swift_too.swift.data.httpx.stream", lambda *a, **k: FakeResp())
+
+        res = file_obj.download(outdir="/tmp")
+        assert res is False
+
+    def test_post_process_match_filtering():
+        data = SwiftData(obs_id="00012345001", autosubmit=False, fetch=False)
+        data.entries = [
+            SwiftDataFile(filename="a.fits", path="p1", url="u1", type="t"),
+            SwiftDataFile(filename="b.fits", path="p2", url="u2", type="t"),
+            SwiftDataFile(filename="c.fits", path="p1", url="u3", type="t"),
+        ]
+        # single match string
+        data.match = "p1/*"
+        data._post_process()
+        assert len(data.entries) == 2
+
+    def test_post_process_fetch_calls_download():
+        data = SwiftData(obs_id="00012345001", autosubmit=False, fetch=True)
+        # patch download to ensure it's called
+        called = {"v": False}
+
+        def fake_download():
+            called["v"] = True
+
+        data.download = fake_download
+        data._post_process()
+        assert called["v"] is True
+
+    def test_download_success_and_quiet_true(tmp_path):
+        data = SwiftData(obs_id="00012345001", autosubmit=False)
+        file_obj = SwiftDataFile(filename="test.fits", path="data", url="u", type="t")
+        data.entries = [file_obj]
+        data.outdir = str(tmp_path)
+        data.quiet = True
+        data.clobber = False
+
+        # make download return True
+        file_obj.download = lambda **k: True
+        res = data.download()
+        assert res is True
+
+    def test_tooapi_download_data_positional_and_anonymous_username():
+        class HasObsNoUser(BaseSchema, TOOAPIDownloadData):
+            obs_id = "000"
+
+        obj = HasObsNoUser()
+        with patch("swifttools.swift_too.swift.data.SwiftData") as mock_swift_data:
+            inst = MagicMock()
+            mock_swift_data.return_value = inst
+            inst.fetch = True
+            inst.download.return_value = None
+            inst.submit.return_value = None
+
+            obj.download("argval")
+            mock_swift_data.assert_called_once()
+            # positional arg should set obsid on instance
+            assert getattr(inst, "obsid") == "argval"
+            # username should be anonymous when not provided
+            assert inst.username == "anonymous"
+
+    def test_table_path_quoting_for_repeated_paths():
+        data = SwiftData(autosubmit=False)
+        data.entries = [
+            SwiftDataFile(filename="a.fits", path="p", url="u", type="t"),
+            SwiftDataFile(filename="b.fits", path="p", url="u", type="t"),
+        ]
+        header, table = data._table
+        assert table[1][0] == "''"
+
+    def test_swift_datafile_makedirs_and_s3_download(monkeypatch, tmp_path):
+        # Ensure os.makedirs is called when fulldir doesn't exist and s3 branch used
+        file_obj = SwiftDataFile(
+            filename="test.fits",
+            path="data",
+            url="https://heasarc.gsfc.nasa.gov/FTP/heasarc/path/test.fits",
+            type="XRT",
+        )
+        s3 = MagicMock()
+
+        # simulate directory doesn't exist
+        monkeypatch.setattr("swifttools.swift_too.swift.data.os.path.exists", lambda p: False)
+        called = {"makedirs": False}
+
+        def fake_makedirs(p):
+            called["makedirs"] = True
+
+        monkeypatch.setattr("swifttools.swift_too.swift.data.os.makedirs", fake_makedirs)
+
+        res = file_obj.download(outdir=str(tmp_path), s3=s3)
+        assert res is True
+        assert called["makedirs"] is True
+
+    def test_download_existing_file_warns_and_localpath_indexing(tmp_path):
+        out = tmp_path / "data"
+        out.mkdir()
+        file_path = out / "test.fits"
+        file_path.write_bytes(b"abc")
+
+        data = SwiftData(obs_id="00012345001", autosubmit=False)
+        data.outdir = str(tmp_path)
+        data.entries = [SwiftDataFile(filename="test.fits", path="data", url="u", type="t")]
+        data.clobber = False
+        data.quiet = False
+        # index existing files should set localpath
+        data.download()
+        assert data.entries[0].localpath is not None
+
+    def test_swift_datafile_stream_zero_content_length(monkeypatch, tmp_path):
+        file_obj = SwiftDataFile(filename="test.fits", path="data", url="http://example.com/test.fits", type="BAT")
+        outdir = str(tmp_path)
+
+        class FakeResp:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, tb):
+                return False
+
+            def raise_for_status(self):
+                return None
+
+            @property
+            def headers(self):
+                return {}
+
+            def iter_bytes(self, chunk_size=8192):
+                yield b"a"
+                yield b"b"
+
+        monkeypatch.setattr("swifttools.swift_too.swift.data.httpx.stream", lambda *a, **k: FakeResp())
+
+        res = file_obj.download(outdir=outdir)
+        assert res is True
+        assert file_obj.localpath is not None
+
+    def test_download_existing_file_warning(tmp_path, capsys):
+        out = tmp_path / "data"
+        out.mkdir()
+        file_path = out / "test.fits"
+        file_path.write_bytes(b"abc")
+
+        data = SwiftData(obs_id="00012345001", autosubmit=False)
+        data.outdir = str(tmp_path)
+        data.entries = [SwiftDataFile(filename="test.fits", path="data", url="u", type="t")]
+        # ensure existing file is detected and warning issued
+        data.quiet = False
+        data.clobber = False
+        # Call download; should warn and not attempt download
+        data.download()
+        # No exception and method completes
+
+    def test_download_file_download_failure(monkeypatch, tmp_path):
+        data = SwiftData(obs_id="00012345001", autosubmit=False)
+        file_obj = SwiftDataFile(filename="test.fits", path="data", url="u", type="t")
+        data.entries = [file_obj]
+        data.outdir = str(tmp_path)
+
+        # Make file_obj.download return False
+        monkeypatch.setattr(file_obj, "download", lambda **k: False)
+
+        res = data.download()
+        assert res is False
+        assert data.status.status == "Rejected"
+
+    def test_tooapi_download_data_unexpected_kwarg_raises():
+        class HasObs(BaseSchema, TOOAPIDownloadData):
+            obs_id = "000"
+
+        obj = HasObs()
+        with pytest.raises(TypeError):
+            obj.download(nonexistent=True)
+
+    def test_tooapi_download_data_sets_params_and_username():
+        class HasObs(BaseSchema, TOOAPIDownloadData):
+            obs_id = "000"
+            username = "u"
+            shared_secret = "s"
+
+        obj = HasObs()
+        with patch("swifttools.swift_too.swift.data.SwiftData") as mock_swift_data:
+            inst = MagicMock()
+            mock_swift_data.return_value = inst
+            inst.fetch = True
+            inst.download.return_value = None
+            inst.submit.return_value = None
+
+            obj.download("argsval", quicklook=True)
+            # ensure SwiftData was instantiated and submit/download called
+            mock_swift_data.assert_called_once()
+            inst.submit.assert_called_once()
