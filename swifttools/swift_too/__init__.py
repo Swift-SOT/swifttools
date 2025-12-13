@@ -60,7 +60,7 @@ completed. `Queued` means that the job has been accepted, but not yet processed.
 completed. `Rejected` means that the server rejected the job for any number of
 reasons, that are reported by in `Swift_TOOStatus` class.
 
-6. UVOT_mode
+6. SwiftUVOTMode
 
 UVOT modes are typically given as hex modes. This class allows the user to look
 up the meaning of a given hex code, which is typically a table of UVOT filters
@@ -155,7 +155,7 @@ from .swift.requests import Swift_TOO_Requests, Swift_TOORequests, TOORequests
 from .swift.resolve import Resolve, Swift_Resolve, SwiftResolve
 from .swift.saa import SAA, Swift_SAA
 from .swift.toorequest import TOO, Swift_TOO, Swift_TOO_Request, SwiftTOO, TOORequest
-from .swift.uvot import Swift_UVOTMode, UVOT_mode, UVOTMode
+from .swift.uvot import Swift_UVOTMode, SwiftUVOTMode, UVOTMode
 from .swift.visquery import Swift_VisQuery, VisQuery
 from .version import version as __version__
 
@@ -194,7 +194,8 @@ __all__ = [
     "SwiftTOO",
     "TOORequest",
     "TOORequests",
-    "UVOT_mode",
+    "SwiftUVOTMode",
+    "UVOT_Mode",
     "UVOTMode",
     "VisQuery",
 ]

@@ -75,18 +75,23 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
                     del kwargs[value]
 
         # Convert positional arguments to keyword arguments
-        schema = None
-        if hasattr(self.__class__, "_get_schema") and hasattr(self.__class__._get_schema, "model_fields"):
-            schema = self.__class__._get_schema
-        elif hasattr(self.__class__, "_post_schema") and hasattr(self.__class__._post_schema, "model_fields"):
-            schema = self.__class__._post_schema
-        if schema and len(args) > 0:
-            for i, key in enumerate(schema.model_fields.keys()):
-                if i < len(args):
-                    kwargs[key] = args[i]
-                else:
-                    break
-        print(kwargs)
+        if len(args) > 0:
+            schema = None
+            if hasattr(self.__class__, "_get_schema") and hasattr(self.__class__()._get_schema, "model_fields"):
+                schema = self.__class__()._get_schema
+            elif hasattr(self.__class__, "_post_schema") and hasattr(self.__class__()._post_schema, "model_fields"):
+                schema = self.__class__()._post_schema
+
+            if schema and len(args) > 0:
+                # If a single positional argument is provided and the schema
+                # defines a primary identifying field (e.g. `uvot_mode`), map
+                # that positional argument directly to it. This preserves the
+                # intuitive behaviour of calling `UVOTMode(too.uvot_mode)`.
+                for i, key in enumerate(schema.model_fields.keys()):
+                    if i < len(args):
+                        kwargs[key] = args[i]
+                    else:
+                        break
         super().__init__(**kwargs)
 
     def __set_error(self, newerror):
