@@ -10,7 +10,7 @@ on:
     branches: ["main"]
 
 jobs:
-  python:
+  lint_and_format:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -22,3 +22,21 @@ jobs:
         uses: astral-sh/ruff-action@v3
         with:
           args: format --check
+
+  tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install the latest version of uv
+
+        uses: astral-sh/setup-uv@v7
+        with:
+          activate-environment: true
+      - name: Install Package
+        # Note need to pip install -e so that coverage works correctly
+        run: uv pip install -e .
+
+      - name: Run tests
+        run: pytest
