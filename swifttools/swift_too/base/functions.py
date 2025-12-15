@@ -5,6 +5,8 @@ from typing import Union
 from astropy import units as u  # type: ignore[import-untyped]
 from astropy.time import TimeDelta  # type: ignore[import-untyped]
 
+from .constants import MODESXRT, XRTMODES
+
 
 def utcnow():
     """Return the current UTC time as a datetime object."""
@@ -109,3 +111,27 @@ def validate_monitoring_cadence(value: str | u.Quantity | timedelta) -> str:
         else:
             return f"{value.to(u.hour).value} hours"
     raise ValueError("Monitoring frequency in incorrect format.")
+
+
+def uvot_mode_convert(mode: Union[int, str]) -> str:
+    if isinstance(mode, str):
+        return mode
+    if isinstance(mode, int) and mode >= 0 and mode <= 0xFFFF:
+        return f"0x{mode:04X}"
+    else:
+        raise ValueError("Invalid UVOT mode.")
+
+
+def xrt_mode_convert(mode):
+    if isinstance(mode, str):
+        if mode in MODESXRT:
+            return MODESXRT[mode]
+        else:
+            raise ValueError(f"Unknown mode ({mode}), should be PC, WT or Auto")
+    elif mode is None:
+        return mode
+    else:
+        if mode in XRTMODES:
+            return mode
+        else:
+            raise ValueError(f"Unknown mode ({mode}), should be PC (7), WT (6) or Auto (0)")

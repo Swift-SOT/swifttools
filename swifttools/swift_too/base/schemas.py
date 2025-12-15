@@ -13,13 +13,13 @@ from pydantic import (
     Field,
     GetCoreSchemaHandler,
     PlainSerializer,
+    PlainValidator,
     TypeAdapter,
-    field_validator,
     model_validator,
 )
 from pydantic_core import core_schema
 
-from .functions import convert_from_timedelta, utcnow, validate_monitoring_cadence
+from .functions import convert_from_timedelta, utcnow, uvot_mode_convert, validate_monitoring_cadence, xrt_mode_convert
 
 # Custom Types
 NaiveUTCDatetime = Annotated[
@@ -60,12 +60,25 @@ class AstropyDateTimeAnnotation:
 AstropyDateTime = Annotated[datetime, AstropyDateTimeAnnotation]
 
 AstropyAngle = Annotated[
-    Union[float, int, u.Quantity], PlainSerializer(lambda x: x.to_value(u.deg) if hasattr(x, "unit") else x)
+    Union[float, int, u.Quantity],
+    PlainSerializer(lambda x: float(x.to_value(u.deg)) if hasattr(x, "unit") else float(x)),
+    PlainValidator(lambda x: float(x.to_value(u.deg)) if hasattr(x, "unit") else float(x)),
 ]
 
-AstropyDayLength = Annotated[Union[float, int, "u.Quantity", timedelta], PlainSerializer(convert_from_timedelta)]
+AstropyDayLength = Annotated[Union[float, int, u.Quantity, timedelta], PlainSerializer(convert_from_timedelta)]
 
-TextLength = Annotated[Union[str, "u.Quantity", timedelta], PlainSerializer(validate_monitoring_cadence)]
+# Define as a type that validates monitoring cadence strings
+TextLength = Annotated[
+    Union[str, u.Quantity, timedelta],
+    PlainSerializer(validate_monitoring_cadence),
+    PlainValidator(validate_monitoring_cadence),
+]
+
+# Define Instrument Mode Types
+XRTModeType = Annotated[Optional[Union[int, str]], PlainSerializer(xrt_mode_convert), PlainValidator(xrt_mode_convert)]
+UVOTModeType = Annotated[
+    Optional[Union[int, str]], PlainSerializer(uvot_mode_convert), PlainValidator(uvot_mode_convert)
+]
 
 
 class BaseSchema(BaseModel):
@@ -232,14 +245,6 @@ class OptionalCoordinateSchema(BaseSchema):
     dec: Optional[AstropyAngle] = Field(default=None, description="Declination (degrees)", ge=-90, le=90)
     skycoord: Optional[SkyCoord] = Field(default=None, exclude=True)
 
-    @field_validator("ra", "dec", mode="before")
-    @classmethod
-    def convert_angle_units(cls, value):
-        """Convert astropy Quantity or Longitude/Latitude to degrees during assignment."""
-        if isinstance(value, (u.Quantity, Longitude, Latitude)):
-            return value.to_value("deg")
-        return value
-
     @model_validator(mode="before")
     @classmethod
     def check_coordinates(cls, values: dict[str, Union[float, SkyCoord]]) -> dict[str, float]:
@@ -251,16 +256,10 @@ class OptionalCoordinateSchema(BaseSchema):
         dec = values.get("dec")
         skycoord = values.get("skycoord")
 
-        # Check if RA/Dec are quatities or Latitude/Longitude
-        if isinstance(ra, (u.Quantity, Longitude)):
-            ra = ra.to_value("deg")
-        if isinstance(dec, (u.Quantity, Latitude)):
-            dec = dec.to_value("deg")
-
         # If only a SkyCoord is provided
         if skycoord is not None and isinstance(skycoord, SkyCoord):
-            ra = skycoord.fk5.ra.deg
-            dec = skycoord.fk5.dec.deg
+            ra = float(skycoord.fk5.ra.deg)
+            dec = float(skycoord.fk5.dec.deg)
 
         # Create the SkyCoord object from RA and Dec
         if skycoord is None and ra is not None and dec is not None:

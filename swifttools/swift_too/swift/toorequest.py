@@ -1,14 +1,11 @@
 from datetime import date, datetime
 from typing import Any, Literal, Optional, Union
 
-from pydantic import (
-    Field,
-    model_validator,
-)
+from pydantic import Field, model_validator
 
 from ..base.common import TOOAPIBaseclass
 from ..base.repr import TOOAPIReprMixin
-from ..base.schemas import AstropyAngle, BaseSchema, TextLength
+from ..base.schemas import AstropyAngle, BaseSchema, TextLength, UVOTModeType, XRTModeType
 from ..base.status import TOOStatus
 from .calendar import SwiftCalendarSchema
 from .enums import UrgencyEnum, XRTModeEnum
@@ -43,8 +40,8 @@ class SwiftTOORequestSchema(BaseSchema, TOOAPIReprMixin):
     proposal_id: Optional[str] = None
     proposal_trigger_just: Optional[str] = None
     proposal_pi: Optional[str] = None
-    xrt_mode: int = XRTModeEnum.PHOTON_COUNTING
-    uvot_mode: Optional[str] = "0x9999"
+    xrt_mode: XRTModeType = XRTModeEnum.PHOTON_COUNTING
+    uvot_mode: Optional[UVOTModeType] = 0x9999
     uvot_just: Optional[str] = None
     tiling: bool = False
     number_of_tiles: Optional[str] = None
@@ -155,7 +152,7 @@ class SwiftTOOUserParamsSchema(BaseSchema):
     grb_triggertime: Optional[datetime] = Field(None, description="GRB Trigger Time")
     # redshift_val: Optional[str] = Field(None, description="Redshift Value")
     # redshift_status: Optional[str] = Field(None, description="Redshift Status")
-    uvot_mode: str = Field("0x9999", description="UVOT Mode")
+    uvot_mode: UVOTModeType = Field(0x9999, description="UVOT Mode")
     science_just: str = Field(description="Science Justification")
     immediate_objective: str = Field(..., description="Immediate Objective")
     exposure: int = Field(description="Exposure Time")
@@ -165,7 +162,7 @@ class SwiftTOOUserParamsSchema(BaseSchema):
     proposal_trigger_just: Optional[str] = Field(None, description="GI Program Trigger Criteria Justification")
     proposal_pi: Optional[str] = Field(None, description="GI Proposal PI")
     uvot_just: str = Field("", description="UVOT Filter Justification")
-    xrt_mode: XRTModeEnum = Field(XRTModeEnum.PHOTON_COUNTING, description="XRT Mode")
+    xrt_mode: XRTModeType = Field(XRTModeEnum.PHOTON_COUNTING, description="XRT Mode")
     tiling: bool = Field(False, description="Tiling")
     number_of_tiles: Optional[Literal["4", "7", "19", "37", "Other"]] = Field(None, description="Number of Tiles")
     exposure_time_per_tile: Optional[float] = Field(None, description="Exposure Time per Tile")

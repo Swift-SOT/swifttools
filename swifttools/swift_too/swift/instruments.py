@@ -4,39 +4,8 @@ from typing import Any, Optional
 
 from pydantic import Field, model_validator
 
-from swifttools.swift_too.base.schemas import BaseSchema
-
-XRTMODES = {
-    0: "Auto",
-    1: "Null",
-    2: "ShortIM",
-    3: "LongIM",
-    4: "PUPD",
-    5: "LRPD",
-    6: "WT",
-    7: "PC",
-    8: "Raw",
-    9: "Bias",
-    150: "PC_150",
-    200: "PC_200",
-    255: "Manual",
-    None: "Unset",
-}
-MODESXRT = {
-    "Auto": 0,
-    "Null": 1,
-    "ShortIM": 2,
-    "LongIM": 3,
-    "PUPD": 4,
-    "LRPD": 5,
-    "WT": 6,
-    "PC": 7,
-    "Raw": 8,
-    "Bias": 9,
-    "PC_150": 150,
-    "PC_200": 200,
-    "Manual": 255,
-}
+from ..base.constants import MODESXRT, XRTMODES
+from ..base.schemas import BaseSchema
 
 
 class TOOAPIInstruments(BaseSchema):
