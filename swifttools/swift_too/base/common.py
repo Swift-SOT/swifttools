@@ -129,14 +129,14 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         errors = error.errors()
         if len(errors) == 1:
             err = errors[0]
-            field = " -> ".join(str(loc) for loc in err["loc"]) if err["loc"] else "root"
+            field = " -> ".join(str(loc) for loc in err["loc"]) if err["loc"] else "argument"
             msg = err["msg"]
             return f"{field}: {msg}"
         else:
             # Multiple errors - list them concisely
             error_msgs = []
             for err in errors[:5]:  # Limit to first 5 errors
-                field = " -> ".join(str(loc) for loc in err["loc"]) if err["loc"] else "root"
+                field = " -> ".join(str(loc) for loc in err["loc"]) if err["loc"] else "argument"
                 error_msgs.append(f"{field}: {err['msg']}")
             result = "; ".join(error_msgs)
             if len(errors) > 5:

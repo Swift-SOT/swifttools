@@ -1,12 +1,12 @@
 from datetime import date, datetime
 from typing import Any, Literal, Optional, Union
 
-from pydantic import Field, model_validator
+from pydantic import Field, PrivateAttr, field_validator, model_validator
 
 from ..base.back_compat import TOOAPIBackCompat
 from ..base.common import TOOAPIBaseclass
 from ..base.repr import TOOAPIReprMixin
-from ..base.schemas import AstropyAngle, BaseSchema, TextLength, UVOTModeType, XRTModeType
+from ..base.schemas import AstropyAngle, BaseSchema, StrIntFloat, TextLength, UVOTModeType, XRTModeType
 from ..base.status import TOOStatus
 from .calendar import SwiftCalendarSchema
 from .enums import UrgencyEnum, XRTModeEnum
@@ -26,7 +26,7 @@ class SwiftTOORequestSchema(BaseSchema, TOOAPIReprMixin, TOOAPIBackCompat):
     urgency: Optional[int] = UrgencyEnum.MEDIUM
     opt_mag: Union[float, str, None] = None
     opt_filt: Optional[str] = None
-    xrt_countrate: Union[float, str, None] = None
+    xrt_countrate: Union[StrIntFloat, None] = None
     bat_countrate: Union[float, str, None] = None
     other_brightness: Optional[str] = None
     grb_detector: Optional[str] = None
@@ -62,7 +62,11 @@ class SwiftTOORequestSchema(BaseSchema, TOOAPIReprMixin, TOOAPIBackCompat):
     l_name: Optional[str] = None
     num_of_visits: int = 1
     exp_time_per_visit: Optional[int] = None
+    exposure: Optional[int] = None
     status: TOOStatus = TOOStatus()
+
+    # Private attribute to track if exposure was explicitly set
+    _exposure_explicit: bool = PrivateAttr(default=False)
 
     # English Descriptions of all the variables
     _varnames: dict[str, str] = {
@@ -134,6 +138,15 @@ class SwiftTOORequestSchema(BaseSchema, TOOAPIReprMixin, TOOAPIBackCompat):
         "quiet": "Quiet mode",
     }
 
+    @field_validator("exposure", mode="after")
+    def validate_exposure(cls, value, info):
+        exp_time_per_visit = info.data.get("exp_time_per_visit")
+        num_of_visits = info.data.get("num_of_visits")
+        if value is None and exp_time_per_visit is not None and num_of_visits is not None:
+            return exp_time_per_visit * num_of_visits
+
+        return value
+
 
 class SwiftTOOFormSchema(BaseSchema):
     target_name: str = Field(description="Source Name")
@@ -146,7 +159,7 @@ class SwiftTOOFormSchema(BaseSchema):
     urgency: UrgencyEnum = Field(UrgencyEnum.MEDIUM, description="TOO Urgency")
     opt_mag: Union[float, str, None] = Field(None, description="Optical Magnitude")
     opt_filt: Optional[str] = Field(None, description="Optical Filter")
-    xrt_countrate: Optional[str] = Field(None, description="XRT Count Rate")
+    xrt_countrate: Optional[StrIntFloat] = Field(None, description="XRT Count Rate")
     bat_countrate: Optional[str] = Field(None, description="BAT Count Rate")
     other_brightness: Optional[str] = Field(None, description="Other Brightness")
     grb_detector: Optional[str] = Field(None, description="GRB Detector")
@@ -175,6 +188,9 @@ class SwiftTOOFormSchema(BaseSchema):
 
     @model_validator(mode="after")
     def check_proposal(self) -> "SwiftTOOFormSchema":
+        if self.exposure is None and self.exp_time_per_visit is not None and self.num_of_visits is not None:
+            self.exposure = self.exp_time_per_visit * self.num_of_visits
+
         if self.proposal is True and (self.proposal_id is None or self.proposal_pi is None):
             raise ValueError("Must specify proposal ID and PI if GI proposal.")
 
@@ -248,6 +264,39 @@ class SwiftTOORequest(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestSchema)
 
     validate_only: bool = False
     debug: bool = False
+
+    def __setattr__(self, name, value):
+        """Override to track explicit exposure setting and compute it from components if needed."""
+        if name == "exposure" and value is not None:
+            # Mark that exposure was explicitly set
+            object.__setattr__(self, "_exposure_explicit", True)
+        super().__setattr__(name, value)
+
+    def __getattribute__(self, name):
+        """Override to compute exposure from components if not explicitly set."""
+        if name == "exposure":
+            # Check if exposure was explicitly set
+            try:
+                explicit = object.__getattribute__(self, "_exposure_explicit")
+            except AttributeError:
+                explicit = False
+
+            # Get the actual exposure value
+            exposure_val = object.__getattribute__(self, "__dict__").get("exposure")
+
+            # If not explicitly set and is None, try to compute from components
+            if not explicit and exposure_val is None:
+                try:
+                    exp_time = object.__getattribute__(self, "exp_time_per_visit")
+                    num_visits = object.__getattribute__(self, "num_of_visits")
+                    if exp_time is not None and num_visits is not None:
+                        return int(exp_time * num_visits)
+                except AttributeError:
+                    pass
+
+            return exposure_val
+
+        return super().__getattribute__(name)
 
     @property
     def obs_types(self) -> list[ObsType]:

@@ -80,6 +80,13 @@ UVOTModeType = Annotated[
     Optional[Union[int, str]], PlainSerializer(uvot_mode_convert), PlainValidator(uvot_mode_convert)
 ]
 
+# Define a type that can be int, str, or float, but converts always to str
+StrIntFloat = Annotated[
+    Union[str, int, float],
+    PlainSerializer(lambda x: str(x)),
+    PlainValidator(lambda x: str(x)),
+]
+
 
 class BaseSchema(BaseModel):
     """Just define from_attributes for every Schema"""
