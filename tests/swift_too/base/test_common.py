@@ -4,7 +4,8 @@ from unittest.mock import Mock, patch
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from swifttools.swift_too.base.common import API_URL, TOOAPIBackCompat, TOOAPIBaseclass
+from swifttools.swift_too.base.back_compat import TOOAPIBackCompat
+from swifttools.swift_too.base.common import API_URL, TOOAPIBaseclass
 from swifttools.swift_too.base.status import TOOStatus
 
 
@@ -23,9 +24,7 @@ class MockTOOAPIBaseclass(BaseModel, TOOAPIBaseclass):
     _post_schema: ClassVar[Mock] = Mock()
     status: TOOStatus = TOOStatus()
     obs_id: Optional[int] = None
-    username: str = "anonymous"
-    shared_secret: str = "anonymous"
-    autosubmit: bool = False
+    # username, shared_secret, autosubmit inherited from TOOAPIBaseclass
 
     def __init__(self, **kwargs):
         # Back compat
@@ -64,21 +63,8 @@ class TestMockTOOAPIBaseclass:
         expected_url = f"{API_URL}/test"
         assert mock_base_class.submit_url == expected_url
 
-    def test_login_success(self, mock_client, mock_base_class):
-        mock_response = Mock()
-        mock_response.status_code = 200
-        mock_client.return_value.__enter__.return_value.post.return_value = mock_response
-
-        result = mock_base_class.login(mock_client.return_value.__enter__.return_value)
-        assert result is True
-
-    def test_login_failure(self, mock_client, mock_base_class):
-        mock_response = Mock()
-        mock_response.status_code = 401
-        mock_client.return_value.__enter__.return_value.post.return_value = mock_response
-
-        result = mock_base_class.login(mock_client.return_value.__enter__.return_value)
-        assert result is False
+    # Note: login method was refactored into _ensure_authenticated
+    # and is tested indirectly through submit_get/submit_post tests
 
     def test_submit_get_success(self, mock_cookie_jar, mock_client, mock_base_class):
         # Mock the schema validation
@@ -192,11 +178,11 @@ class TestMockTOOAPIBaseclass:
         assert called == ["Test error"]
 
     def test_set_error_with_status_object_calls_status_error(self, mock_base_class):
-        # Replace status with an object that has an error method we'll mock
+        # Replace status with an object that has an error method
         mock_base_class.status = TOOStatus()
-        mock_base_class.status.error = Mock()
         mock_base_class._TOOAPIBaseclass__set_error("New error")
-        mock_base_class.status.error.assert_called_once()
+        # Check that the error was added to the errors list
+        assert "New error" in mock_base_class.status.errors
 
     def test_set_error_with_no_status_prints(self, capsys):
         # Define a minimal class without status to ensure print fallback is used
@@ -212,7 +198,6 @@ class TestMockTOOAPIBaseclass:
     def test_model_post_init_calls_submit_get_when_pending(self, mock_base_class):
         # Ensure model_post_init calls submit_get when pending and autosubmit=True
         class TestModel(TOOAPIBaseclass, BaseModel):
-            autosubmit: bool = True
             _get_schema = MockSchema
             status: TOOStatus = TOOStatus()
 
@@ -227,7 +212,6 @@ class TestMockTOOAPIBaseclass:
 
     def test_model_post_init_not_calling_when_validate_fails(self, mock_base_class):
         class TestModel(TOOAPIBaseclass, BaseModel):
-            autosubmit: bool = True
             _get_schema = MockSchema
             status: TOOStatus = TOOStatus()
 
@@ -253,12 +237,13 @@ class TestMockTOOAPIBaseclass:
             mock_response = Mock()
             mock_response.status_code = 200
             mock_response.json.return_value = {"status": "success"}
+            # Mock both GET and POST responses (POST is for login)
             mock_client.return_value.__enter__.return_value.get.return_value = mock_response
-            mock_client.return_value.__enter__.return_value.post.return_value = Mock(status_code=200)
-            # Patch login to return True (so save gets called)
-            with patch.object(MockTOOAPIBaseclass, "login", return_value=True):
-                m.submit_get()
-                mock_cookie_jar.save.assert_called_with(ignore_discard=True)
+            login_response = Mock(status_code=200)
+            mock_client.return_value.__enter__.return_value.post.return_value = login_response
+            # Don't patch _ensure_authenticated - let it run and call save
+            m.submit_get()
+            mock_cookie_jar.save.assert_called_with(ignore_discard=True)
 
     # The positional-argument-to-keyword mapping is exercised indirectly by
     # other tests and classes; explicit positional-arg conversion tests are
@@ -269,9 +254,9 @@ class TestMockTOOAPIBaseclass:
         m.status.status = "Pending"
         # ensure no session cookie
         mock_cookie_jar.__iter__.return_value = []
-        # Patch login to return False
-        with patch.object(MockTOOAPIBaseclass, "login", return_value=False):
-            # prepare schema validation to pass so logic proceeds to login
+        # Patch _ensure_authenticated to return False
+        with patch.object(MockTOOAPIBaseclass, "_ensure_authenticated", return_value=False):
+            # prepare schema validation to pass so logic proceeds to authentication
             mock_validated = Mock()
             mock_validated.model_dump.return_value = {"param": "value"}
             with patch.object(MockSchema, "model_validate", return_value=mock_validated):

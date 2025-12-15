@@ -90,12 +90,13 @@ class TestSwiftTOORequestSubmit:
             with patch.object(type(too), "_post_schema") as mock_post_schema:
                 mock_post_schema.model_validate.return_value.model_dump.return_value = {"param": "value"}
 
-                def mock_model_validate(data):
+                def mock_handle_response(response):
+                    # Directly update the object like _handle_response would
                     too.status.status = "Accepted"
                     too.too_id = 123
-                    return too
+                    return True
 
-                with patch.object(too, "model_validate", side_effect=mock_model_validate):
+                with patch.object(too, "_handle_response", side_effect=mock_handle_response):
                     _ = too.submit()
                     assert too.status.status == "Accepted"
                     assert too.too_id == 123
@@ -118,12 +119,13 @@ class TestSwiftTOORequestSubmit:
             with patch.object(type(too), "_post_schema") as mock_post_schema:
                 mock_post_schema.model_validate.return_value.model_dump.return_value = {"param": "value"}
 
-                def mock_model_validate(data):
+                def mock_handle_response(response):
+                    # Directly update the object like _handle_response would
                     too.status.status = "Accepted"
                     too.too_id = 123
-                    return too
+                    return True
 
-                with patch.object(too, "model_validate", side_effect=mock_model_validate):
+                with patch.object(too, "_handle_response", side_effect=mock_handle_response):
                     too.submit()
                     assert too.status.status == "Accepted"
 
@@ -145,12 +147,13 @@ class TestSwiftTOORequestSubmit:
             with patch.object(type(too), "_post_schema") as mock_post_schema:
                 mock_post_schema.model_validate.return_value.model_dump.return_value = {"param": "value"}
 
-                def mock_model_validate(data):
+                def mock_handle_response(response):
+                    # Directly update the object like _handle_response would
                     too.status.status = "Accepted"
                     too.too_id = 123
-                    return too
+                    return True
 
-                with patch.object(too, "model_validate", side_effect=mock_model_validate):
+                with patch.object(too, "_handle_response", side_effect=mock_handle_response):
                     too.submit()
                     assert too.too_id == 123
 
@@ -203,11 +206,15 @@ class TestSwiftTOORequestServerValidateSuccess:
     def test_server_validate_result(self, mock_client, mock_cookie_jar, too_request_base):
         too = too_request_base
         too._api_base = API_URL
-        with patch.object(too, "validate_post", return_value=True):
-            with patch.object(too, "submit") as mock_submit:
-                mock_submit.return_value = True
-                too.status.errors = []
-                too.status.warnings = ["Some warning"]
+        # Set required fields for validate_post
+        object.__setattr__(too, "target_name", "Test Target")
+        object.__setattr__(too, "immediate_objective", "Test immediate objective")
+        object.__setattr__(too, "uvot_just", "Test UVOT justification")
+        # Clear errors before calling server_validate
+        too.status.errors.clear()
+        too.status.warnings = ["Some warning"]
+        with patch.object(SwiftTOORequest, "validate_post", return_value=True):
+            with patch.object(SwiftTOORequest, "submit", return_value=True):
                 result = too.server_validate()
                 assert result is True
 
@@ -216,8 +223,12 @@ class TestSwiftTOORequestServerValidateSuccess:
     def test_server_validate_validate_only(self, mock_client, mock_cookie_jar, too_request_base):
         too = too_request_base
         too._api_base = API_URL
-        with patch.object(too, "validate_post", return_value=True):
-            with patch.object(too, "submit") as mock_submit:
+        # Set required fields
+        object.__setattr__(too, "target_name", "Test Target")
+        object.__setattr__(too, "immediate_objective", "Test objective")
+        object.__setattr__(too, "uvot_just", "Test UVOT justification")
+        with patch.object(SwiftTOORequest, "validate_post", return_value=True):
+            with patch.object(SwiftTOORequest, "submit") as mock_submit:
                 mock_submit.return_value = True
                 too.status.errors = []
                 too.status.warnings = ["Some warning"]
@@ -229,8 +240,12 @@ class TestSwiftTOORequestServerValidateSuccess:
     def test_server_validate_warnings(self, mock_client, mock_cookie_jar, too_request_base):
         too = too_request_base
         too._api_base = API_URL
-        with patch.object(too, "validate_post", return_value=True):
-            with patch.object(too, "submit") as mock_submit:
+        # Set required fields
+        object.__setattr__(too, "target_name", "Test Target")
+        object.__setattr__(too, "immediate_objective", "Test objective")
+        object.__setattr__(too, "uvot_just", "Test UVOT justification")
+        with patch.object(SwiftTOORequest, "validate_post", return_value=True):
+            with patch.object(SwiftTOORequest, "submit") as mock_submit:
                 mock_submit.return_value = True
                 too.status.errors = []
                 too.status.warnings = ["Some warning"]

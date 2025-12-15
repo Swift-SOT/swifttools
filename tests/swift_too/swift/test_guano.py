@@ -34,12 +34,12 @@ def gti():
 
 @pytest.fixture
 def mock_data():
-    return type("MockData", (), {"exposure": 5.0, "gti": None})()
+    return type("MockData", (), {"exposure": 5.0, "gti": None, "all_gtis": []})()
 
 
 @pytest.fixture
 def mock_data_none():
-    return type("MockData", (), {"exposure": None, "gti": None})()
+    return type("MockData", (), {"exposure": None, "gti": None, "all_gtis": []})()
 
 
 @pytest.fixture
@@ -52,18 +52,52 @@ class TestSwiftGUANO:
         assert guano.entries == []
 
     def test_getitem_first(self, guano):
-        guano.entries = ["entry1", "entry2"]
-        assert guano[0] == "entry1"
+        from datetime import datetime
+
+        from swifttools.swift_too.swift.guano import SwiftGUANOEntry
+
+        entry1 = SwiftGUANOEntry(
+            triggertype="GRB", triggertime=datetime(2023, 1, 1), offset=10.0, duration=5.0, obs_id="00012345001"
+        )
+        entry2 = SwiftGUANOEntry(
+            triggertype="GRB", triggertime=datetime(2023, 1, 2), offset=20.0, duration=6.0, obs_id="00012345002"
+        )
+        guano.entries = [entry1, entry2]
+        assert guano[0] == entry1
 
     def test_getitem_second(self, guano):
-        guano.entries = ["entry1", "entry2"]
-        assert guano[1] == "entry2"
+        from datetime import datetime
+
+        from swifttools.swift_too.swift.guano import SwiftGUANOEntry
+
+        entry1 = SwiftGUANOEntry(
+            triggertype="GRB", triggertime=datetime(2023, 1, 1), offset=10.0, duration=5.0, obs_id="00012345001"
+        )
+        entry2 = SwiftGUANOEntry(
+            triggertype="GRB", triggertime=datetime(2023, 1, 2), offset=20.0, duration=6.0, obs_id="00012345002"
+        )
+        guano.entries = [entry1, entry2]
+        assert guano[1] == entry2
 
     def test_len_empty(self, guano):
         assert len(guano) == 0
 
     def test_len_with_entries(self, guano):
-        guano.entries = [1, 2, 3]
+        from datetime import datetime
+
+        from swifttools.swift_too.swift.guano import SwiftGUANOEntry
+
+        entries = [
+            SwiftGUANOEntry(
+                triggertype="GRB",
+                triggertime=datetime(2023, 1, i + 1),
+                offset=10.0 * i,
+                duration=5.0,
+                obs_id=f"0001234500{i}",
+            )
+            for i in range(3)
+        ]
+        guano.entries = entries
         assert len(guano) == 3
 
     def test_validate_with_length(self, guano):
@@ -97,7 +131,7 @@ class TestSwiftGUANO:
             obs_id="00012345001",
             quadsaway=0,
         )
-        entry1.data = type("MockData", (), {"exposure": 5.0, "gti": None})()
+        entry1.data = SwiftGUANOData(exposure=5.0, all_gtis=[])
         guano.entries = [entry1]
         header, table = guano._table
         assert len(table) == 1
@@ -111,7 +145,7 @@ class TestSwiftGUANO:
             obs_id="00012345001",
             quadsaway=0,
         )
-        entry1.data = type("MockData", (), {"exposure": 5.0, "gti": None})()
+        entry1.data = SwiftGUANOData(exposure=5.0, all_gtis=[])
         guano.entries = [entry1]
         header, table = guano._table
         assert table[0][0] == "GRB"
@@ -125,7 +159,7 @@ class TestSwiftGUANO:
             obs_id="00012345001",
             quadsaway=0,
         )
-        entry1.data = type("MockData", (), {"exposure": 5.0, "gti": None})()
+        entry1.data = SwiftGUANOData(exposure=5.0, all_gtis=[])
         guano.entries = [entry1]
         header, table = guano._table
         assert table[0][4] == "00012345001"
@@ -139,7 +173,7 @@ class TestSwiftGUANO:
             obs_id=None,
             quadsaway=2,
         )
-        entry2.data = type("MockData", (), {"exposure": 5.0, "gti": None})()
+        entry2.data = SwiftGUANOData(exposure=5.0, all_gtis=[])
         guano.entries = [entry2]
         header, table = guano._table
         assert table[0][0] == "TEST"
@@ -153,7 +187,7 @@ class TestSwiftGUANO:
             obs_id=None,
             quadsaway=2,
         )
-        entry2.data = type("MockData", (), {"exposure": 5.0, "gti": None})()
+        entry2.data = SwiftGUANOData(exposure=5.0, all_gtis=[])
         guano.entries = [entry2]
         header, table = guano._table
         assert table[0][4] == "Pending Execution"
@@ -167,7 +201,7 @@ class TestSwiftGUANO:
             obs_id=None,
             quadsaway=3,
         )
-        entry3.data = type("MockData", (), {"exposure": 15.0, "gti": None})()
+        entry3.data = SwiftGUANOData(exposure=15.0, all_gtis=[])
         guano.entries = [entry3]
         header, table = guano._table
         assert table[0][4] == "Unknown Status"
@@ -181,7 +215,7 @@ class TestSwiftGUANO:
             obs_id=None,
             quadsaway=0,
         )
-        entry4.data = type("MockData", (), {"exposure": 20.0, "gti": None})()
+        entry4.data = SwiftGUANOData(exposure=20.0, all_gtis=[])
         guano.entries = [entry4]
         header, table = guano._table
         assert table[0][4] == "Pending Data"
@@ -190,6 +224,10 @@ class TestSwiftGUANO:
     def test_post_process_calls_calc_begin_end(self, mock_clock_class, guano, mock_entry):
         mock_clock_instance = mock_clock_class.return_value
         mock_clock_instance.entries = []
+        # Ensure mock_entry has required fields so _calc_begin_end runs safely
+        mock_entry.triggertime = datetime(2023, 1, 1)
+        mock_entry.offset = 10.0
+        mock_entry.duration = 5.0
         guano.entries = [mock_entry]
         guano._post_process()
         # Assuming _calc_begin_end is called, but since it's a lambda, just check length

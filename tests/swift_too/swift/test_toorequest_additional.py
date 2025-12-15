@@ -81,21 +81,21 @@ class TestSwiftTOORequest:
         assert len(table) > 0
 
     def test_server_validate_success(self):
+        from unittest.mock import patch
+
         request = SwiftTOORequest(autosubmit=False)
-        request.validate_post = lambda: True
+        # Set required fields
+        object.__setattr__(request, "target_name", "Test Target")
+        object.__setattr__(request, "immediate_objective", "Test objective")
+        object.__setattr__(request, "uvot_just", "Test UVOT justification")
+        # Clear errors from the start
+        request.status.errors = []
+        request.status.warnings = []
 
-        original_submit = request.submit
-
-        def mock_submit():
-            request.status.errors = []
-            request.status.warnings = []
-
-        request.submit = mock_submit
-
-        result = request.server_validate()
-        assert result is True
-
-        request.submit = original_submit
+        with patch.object(SwiftTOORequest, "validate_post", return_value=True):
+            with patch.object(SwiftTOORequest, "submit", return_value=True):
+                result = request.server_validate()
+                assert result is True
 
     def test_server_validate_with_errors(self):
         request = SwiftTOORequest(autosubmit=False)
@@ -126,6 +126,8 @@ class TestSwiftTOORequest:
 
         schema = SwiftTOOFormSchema(
             target_name="Test Target",
+            ra=10.0,
+            dec=20.0,
             target_type="GRB",
             obs_type="Spectroscopy",
             science_just="Test justification",
@@ -138,6 +140,7 @@ class TestSwiftTOORequest:
             instrument="XRT",
             opt_mag=20.0,
             opt_filt="V",
+            uvot_just="Test UVOT justification",
         )
 
         with pytest.raises(Exception):
@@ -159,6 +162,8 @@ class TestSwiftTOOFormSchema:
                 proposal=True,
                 proposal_pi="Test PI",
                 target_name="Test Target",
+                ra=10.0,
+                dec=20.0,
                 target_type="GRB",
                 obs_type="Spectroscopy",
                 science_just="Test justification",
@@ -175,6 +180,8 @@ class TestSwiftTOOFormSchema:
                 proposal=True,
                 proposal_id="12345",
                 target_name="Test Target",
+                ra=10.0,
+                dec=20.0,
                 target_type="GRB",
                 obs_type="Spectroscopy",
                 science_just="Test justification",
@@ -192,6 +199,8 @@ class TestSwiftTOOFormSchema:
                 proposal_id="12345",
                 proposal_pi="Test PI",
                 target_name="Test Target",
+                ra=10.0,
+                dec=20.0,
                 target_type="GRB",
                 obs_type="Spectroscopy",
                 science_just="Test justification",
@@ -207,6 +216,8 @@ class TestSwiftTOOFormSchema:
             SwiftTOOFormSchema(
                 tiling=True,
                 target_name="Test Target",
+                ra=10.0,
+                dec=20.0,
                 target_type="GRB",
                 obs_type="Spectroscopy",
                 science_just="Test justification",
@@ -221,6 +232,8 @@ class TestSwiftTOOFormSchema:
         with pytest.raises(ValueError) as exc_info:
             SwiftTOOFormSchema(
                 target_name="Test Target",
+                ra=10.0,
+                dec=20.0,
                 target_type="GRB",
                 obs_type="Spectroscopy",
                 science_just="Test justification",
@@ -236,6 +249,8 @@ class TestSwiftTOOFormSchema:
             SwiftTOOFormSchema(
                 target_type="GRB",
                 target_name="Test Target",
+                ra=10.0,
+                dec=20.0,
                 obs_type="Spectroscopy",
                 science_just="Test justification",
                 immediate_objective="Test objective",
@@ -252,6 +267,8 @@ class TestSwiftTOOFormSchema:
                 uvot_mode="0x1234",
                 uvot_just="",
                 target_name="Test Target",
+                ra=10.0,
+                dec=20.0,
                 target_type="GRB",
                 obs_type="Spectroscopy",
                 science_just="Test justification",
@@ -287,6 +304,8 @@ class TestSwiftTOOFormSchema:
         with pytest.raises(ValueError) as exc_info:
             SwiftTOOFormSchema(
                 target_name="Test Target",
+                ra=10.0,
+                dec=20.0,
                 target_type="GRB",
                 obs_type="Spectroscopy",
                 science_just="Test justification",
@@ -299,6 +318,7 @@ class TestSwiftTOOFormSchema:
                 grb_triggertime="2023-01-01T00:00:00",
                 grb_detector="BAT",
                 instrument="XRT",
+                uvot_mode="0x9999",
             )
         assert "Must specify exposure time per visit if number of visits is specified" in str(exc_info.value)
 

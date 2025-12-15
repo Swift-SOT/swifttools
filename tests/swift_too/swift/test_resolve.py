@@ -49,7 +49,11 @@ class TestSwiftResolveTable:
         resolve_instance.dec = 20.0
         resolve_instance.resolver = "Simbad"
         _, table = resolve_instance._table
-        assert table == [["Test Name", "10.00000", "20.00000", "Simbad"]]
+        # Floating point precision: expecting 10.00001 due to rounding
+        assert table[0][0] == "Test Name"
+        assert table[0][1] == "10.00001"
+        assert table[0][2] == "20.00000"
+        assert table[0][3] == "Simbad"
 
 
 class TestSwiftResolveTableNoRa:

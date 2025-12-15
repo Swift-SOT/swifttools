@@ -29,18 +29,44 @@ class TestSwiftCalendar:
         assert calendar.entries == []
 
     def test_getitem_first(self, calendar):
-        calendar.entries = ["entry1", "entry2"]
-        assert calendar[0] == "entry1"
+        # Use valid `SwiftCalendarEntry` instances instead of raw strings
+        entry1 = SwiftCalendarEntry(
+            typeID=1, duration=3600.0, roll=0.0, target_ID=12345, target_name="Target1", ra=123.456, dec=-45.678, sip=1
+        )
+        entry2 = SwiftCalendarEntry(
+            typeID=1, duration=3600.0, roll=0.0, target_ID=12346, target_name="Target2", ra=123.456, dec=-45.678, sip=1
+        )
+        calendar.entries = [entry1, entry2]
+        assert calendar[0] == calendar.entries[0]
 
     def test_getitem_second(self, calendar):
-        calendar.entries = ["entry1", "entry2"]
-        assert calendar[1] == "entry2"
+        entry1 = SwiftCalendarEntry(
+            typeID=1, duration=3600.0, roll=0.0, target_ID=12345, target_name="Target1", ra=123.456, dec=-45.678, sip=1
+        )
+        entry2 = SwiftCalendarEntry(
+            typeID=1, duration=3600.0, roll=0.0, target_ID=12346, target_name="Target2", ra=123.456, dec=-45.678, sip=1
+        )
+        calendar.entries = [entry1, entry2]
+        assert calendar[1] == calendar.entries[1]
 
     def test_len_empty(self, calendar):
         assert len(calendar) == 0
 
     def test_len_with_entries(self, calendar):
-        calendar.entries = [1, 2, 3]
+        entries = [
+            SwiftCalendarEntry(
+                typeID=1,
+                duration=3600.0,
+                roll=0.0,
+                target_ID=12345 + i,
+                target_name=f"Target{i}",
+                ra=123.456,
+                dec=-45.678,
+                sip=1,
+            )
+            for i in range(3)
+        ]
+        calendar.entries = entries
         assert len(calendar) == 3
 
     def test_table_property_header_empty(self, calendar):

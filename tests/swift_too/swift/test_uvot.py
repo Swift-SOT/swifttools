@@ -42,13 +42,17 @@ class TestSwiftUVOTMode:
 
     def test_getitem_first(self):
         uvot = SwiftUVOTMode(autosubmit=False)
-        uvot.entries = ["entry1", "entry2"]
-        assert uvot[0] == "entry1"
+        entry1 = SwiftUVOTModeEntry(uvot_mode=0x30ED)
+        entry2 = SwiftUVOTModeEntry(uvot_mode=0x30ED)
+        uvot.entries = [entry1, entry2]
+        assert uvot[0] == entry1
 
     def test_getitem_second(self):
         uvot = SwiftUVOTMode(autosubmit=False)
-        uvot.entries = ["entry1", "entry2"]
-        assert uvot[1] == "entry2"
+        entry1 = SwiftUVOTModeEntry(uvot_mode=0x30ED)
+        entry2 = SwiftUVOTModeEntry(uvot_mode=0x30ED)
+        uvot.entries = [entry1, entry2]
+        assert uvot[1] == entry2
 
     def test_len_empty(self):
         uvot = SwiftUVOTMode(autosubmit=False)
@@ -56,7 +60,10 @@ class TestSwiftUVOTMode:
 
     def test_len_three(self):
         uvot = SwiftUVOTMode(autosubmit=False)
-        uvot.entries = [1, 2, 3]
+        entry1 = SwiftUVOTModeEntry(uvot_mode=0x30ED)
+        entry2 = SwiftUVOTModeEntry(uvot_mode=0x30ED)
+        entry3 = SwiftUVOTModeEntry(uvot_mode=0x30ED)
+        uvot.entries = [entry1, entry2, entry3]
         assert len(uvot) == 3
 
     def test_str_empty(self, uvot_mode_empty):
