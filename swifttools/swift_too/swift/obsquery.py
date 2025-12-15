@@ -3,7 +3,8 @@ from typing import Any, Generator, Optional, Union
 
 from pydantic import ConfigDict, computed_field, model_validator
 
-from ..base.common import TOOAPIBackCompat, TOOAPIBaseclass
+from ..base.back_compat import TOOAPIBackCompat
+from ..base.common import TOOAPIBaseclass
 from ..base.schemas import (
     AstropyAngle,
     BaseSchema,

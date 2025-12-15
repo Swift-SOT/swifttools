@@ -3,7 +3,8 @@ from typing import Optional, Union
 
 from pydantic import ConfigDict, Field, model_validator
 
-from ..base.common import TOOAPIBackCompat, TOOAPIBaseclass
+from ..base.back_compat import TOOAPIBackCompat
+from ..base.common import TOOAPIBaseclass
 from ..base.schemas import AstropyAngle, BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
 from ..base.status import TOOStatus
 from .clock import TOOAPIClockCorrect

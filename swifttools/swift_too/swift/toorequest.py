@@ -3,7 +3,8 @@ from typing import Any, Literal, Optional, Union
 
 from pydantic import Field, model_validator
 
-from ..base.common import TOOAPIBackCompat, TOOAPIBaseclass
+from ..base.back_compat import TOOAPIBackCompat
+from ..base.common import TOOAPIBaseclass
 from ..base.repr import TOOAPIReprMixin
 from ..base.schemas import AstropyAngle, BaseSchema, TextLength, UVOTModeType, XRTModeType
 from ..base.status import TOOStatus
@@ -233,8 +234,11 @@ class SwiftTOOPostSchema(SwiftTOOFormSchema):
             "obs_type",
         ]
         for req in requirements:
-            if getattr(data, req, None) is None:
+            # Handle both dict and object inputs
+            value = data.get(req) if isinstance(data, dict) else getattr(data, req, None)
+            if value is None:
                 raise ValueError(f"Missing required field: {req}")
+        return data
 
 
 class SwiftTOORequest(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestSchema):
