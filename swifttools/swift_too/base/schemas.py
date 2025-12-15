@@ -14,6 +14,7 @@ from pydantic import (
     GetCoreSchemaHandler,
     PlainSerializer,
     TypeAdapter,
+    field_validator,
     model_validator,
 )
 from pydantic_core import core_schema
@@ -228,6 +229,14 @@ class OptionalCoordinateSchema(BaseSchema):
     ra: Optional[AstropyAngle] = Field(default=None, description="Right Ascension (degrees)", ge=0, lt=360)
     dec: Optional[AstropyAngle] = Field(default=None, description="Declination (degrees)", ge=-90, le=90)
     skycoord: Optional[SkyCoord] = Field(default=None, exclude=True)
+
+    @field_validator("ra", "dec", mode="before")
+    @classmethod
+    def convert_angle_units(cls, value):
+        """Convert astropy Quantity or Longitude/Latitude to degrees during assignment."""
+        if isinstance(value, (u.Quantity, Longitude, Latitude)):
+            return value.to_value("deg")
+        return value
 
     @model_validator(mode="before")
     @classmethod
