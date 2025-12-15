@@ -3,7 +3,7 @@ from typing import Any, Literal, Optional, Union
 
 from pydantic import Field, model_validator
 
-from ..base.common import TOOAPIBaseclass
+from ..base.common import TOOAPIBackCompat, TOOAPIBaseclass
 from ..base.repr import TOOAPIReprMixin
 from ..base.schemas import AstropyAngle, BaseSchema, TextLength, UVOTModeType, XRTModeType
 from ..base.status import TOOStatus
@@ -13,7 +13,7 @@ from .resolve import TOOAPIAutoResolve
 from .schemas import ObsType
 
 
-class SwiftTOORequestSchema(BaseSchema, TOOAPIReprMixin):
+class SwiftTOORequestSchema(BaseSchema, TOOAPIReprMixin, TOOAPIBackCompat):
     too_id: Optional[int] = None
     timestamp: Optional[datetime] = None
     #    target_name: Optional[str] = None
@@ -134,14 +134,14 @@ class SwiftTOORequestSchema(BaseSchema, TOOAPIReprMixin):
     }
 
 
-class SwiftTOOUserParamsSchema(BaseSchema):
+class SwiftTOOFormSchema(BaseSchema):
     target_name: str = Field(description="Source Name")
     target_type: str = Field(description="Source Type")
-    # ra: float = Field(description="Right Ascension (degrees)", ge=0, le=360)
-    # dec: float = Field(description="Declination (degrees)", ge=-90, le=90)
+    ra: float = Field(description="Right Ascension (degrees)", ge=0, le=360)
+    dec: float = Field(description="Declination (degrees)", ge=-90, le=90)
     poserr: Optional[float] = Field(None, description="Positional Error")
-    instrument: Optional[str]
-    obs_type: str
+    instrument: Literal["XRT", "UVOT", "BAT"] = Field("XRT", description="Primary Instrument")
+    obs_type: ObsType = Field(..., description="Observation Type")
     urgency: UrgencyEnum = Field(UrgencyEnum.MEDIUM, description="TOO Urgency")
     opt_mag: Union[float, str, None] = Field(None, description="Optical Magnitude")
     opt_filt: Optional[str] = Field(None, description="Optical Filter")
@@ -172,8 +172,6 @@ class SwiftTOOUserParamsSchema(BaseSchema):
     num_of_visits: Optional[int] = Field(None, description="Number of Visits")
     monitoring_freq: Optional[TextLength] = Field(None, description="Monitoring Frequency")
 
-
-class SwiftTOOFormSchema(SwiftTOOUserParamsSchema):
     @model_validator(mode="after")
     def check_proposal(self) -> "SwiftTOOFormSchema":
         if self.proposal is True and (self.proposal_id is None or self.proposal_pi is None):
@@ -204,30 +202,18 @@ class SwiftTOOFormSchema(SwiftTOOUserParamsSchema):
         if self.num_of_visits is not None and self.monitoring_freq is None:
             raise ValueError("Must specify monitoring frequency if number of visits is specified.")
 
-        # if self.monitoring_freq is not None:
-        #     if (
-        #         re.match(
-        #             r"\d+(\.\d+)?\s+(day?|week?|month?|orbit?|minute?|second?)(s?)",
-        #             self.monitoring_freq.strip(),
-        #         )
-        #         is None
-        #     ):
-        #         raise ValueError(
-        #             "Monitoring frequency in incorrect format. Must be a number followed by a time unit (day, week, month, orbit, minute, second)."
-        #         )
-
         if self.exp_time_just is None and self.num_of_visits is not None:
             raise ValueError("Must specify exposure time justification if exposure time per visit is specified.")
+
         if self.exp_time_per_visit is None and self.num_of_visits is not None:
             raise ValueError("Must specify exposure time per visit if number of visits is specified.")
+
         if self.num_of_visits is not None and self.num_of_visits > 1 and self.monitoring_freq is None:
             raise ValueError("Must specify monitoring frequency if number of visits is greater than 1.")
         return self
 
 
 class SwiftTOOPostSchema(SwiftTOOFormSchema):
-    obs_type: ObsType = Field(..., description="Observation Type")
-    instrument: Literal["XRT", "UVOT", "BAT"] = Field("XRT", description="Primary Instrument")
     debug: bool = False
     quiet: bool = True
     validate_only: bool = False

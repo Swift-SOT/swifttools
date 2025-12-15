@@ -124,17 +124,6 @@ class TOOAPIAutoResolve(OptionalCoordinateSchema):
         """Set the target name, which is an alias for `name`."""
         self.name = value
 
-    @computed_field  # type: ignore[prop-decorator]
-    @property
-    def source_name(self) -> Optional[str]:
-        """Alias for `name`."""
-        return self._name
-
-    @source_name.setter
-    def source_name(self, value: Optional[str]):
-        """Set the target name, which is an alias for `name`."""
-        self.name = value
-
     @model_validator(mode="before")
     def validate_name(cls, values):
         """If you set a name, use `SwiftResolve` to retrieve its `ra` and `dec`."""
