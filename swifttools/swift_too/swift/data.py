@@ -294,6 +294,7 @@ class SwiftData(TOOAPIBaseclass, SwiftDataSchema):
                 warnings.warn(f"{dfile.filename} exists and not overwritten (set clobber=True to override this).")
             elif not dfile.download(outdir=self.outdir, s3=self._s3):
                 self.status.error(f"Error downloading {dfile.filename}")
+                self.status.status = "Rejected"
                 return False
 
         # Everything worked we assume so return True
