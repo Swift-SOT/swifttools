@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from typing import Any, Literal, Optional, Union
 
-from pydantic import Field, PrivateAttr, field_validator, model_validator
+from pydantic import Field, computed_field, field_validator, model_validator
 
 from ..base.back_compat import TOOAPIBackCompat
 from ..base.common import TOOAPIBaseclass
@@ -62,11 +62,22 @@ class SwiftTOORequestSchema(BaseSchema, TOOAPIReprMixin, TOOAPIBackCompat):
     l_name: Optional[str] = None
     num_of_visits: int = 1
     exp_time_per_visit: Optional[int] = None
-    exposure: Optional[int] = None
     status: TOOStatus = TOOStatus()
 
-    # Private attribute to track if exposure was explicitly set
-    _exposure_explicit: bool = PrivateAttr(default=False)
+    # Internal storage for computed exposure
+    _exposure: int | None = None
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def exposure(self) -> int | None:
+        if self._exposure is None:
+            if self.exp_time_per_visit is not None and self.num_of_visits is not None:
+                self._exposure = self.exp_time_per_visit * self.num_of_visits
+        return self._exposure
+
+    @exposure.setter
+    def exposure(self, v: int | float):
+        self._exposure = int(v)
 
     # English Descriptions of all the variables
     _varnames: dict[str, str] = {
@@ -140,10 +151,8 @@ class SwiftTOORequestSchema(BaseSchema, TOOAPIReprMixin, TOOAPIBackCompat):
 
     @field_validator("exposure", mode="after")
     def validate_exposure(cls, value, info):
-        exp_time_per_visit = info.data.get("exp_time_per_visit")
-        num_of_visits = info.data.get("num_of_visits")
-        if value is None and exp_time_per_visit is not None and num_of_visits is not None:
-            return exp_time_per_visit * num_of_visits
+        if value is None and cls.exp_time_per_visit is not None and cls.num_of_visits is not None:
+            return cls.exp_time_per_visit * cls.num_of_visits
 
         return value
 
@@ -265,39 +274,6 @@ class SwiftTOORequest(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestSchema)
     validate_only: bool = False
     debug: bool = False
 
-    def __setattr__(self, name, value):
-        """Override to track explicit exposure setting and compute it from components if needed."""
-        if name == "exposure" and value is not None:
-            # Mark that exposure was explicitly set
-            object.__setattr__(self, "_exposure_explicit", True)
-        super().__setattr__(name, value)
-
-    def __getattribute__(self, name):
-        """Override to compute exposure from components if not explicitly set."""
-        if name == "exposure":
-            # Check if exposure was explicitly set
-            try:
-                explicit = object.__getattribute__(self, "_exposure_explicit")
-            except AttributeError:
-                explicit = False
-
-            # Get the actual exposure value
-            exposure_val = object.__getattribute__(self, "__dict__").get("exposure")
-
-            # If not explicitly set and is None, try to compute from components
-            if not explicit and exposure_val is None:
-                try:
-                    exp_time = object.__getattribute__(self, "exp_time_per_visit")
-                    num_visits = object.__getattribute__(self, "num_of_visits")
-                    if exp_time is not None and num_visits is not None:
-                        return int(exp_time * num_visits)
-                except AttributeError:
-                    pass
-
-            return exposure_val
-
-        return super().__getattribute__(name)
-
     @property
     def obs_types(self) -> list[ObsType]:
         return [obs for obs in ObsType]
@@ -370,6 +346,7 @@ class SwiftTOORequest(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestSchema)
 
     def validate(self) -> bool:  # type: ignore[override]
         """Validate the TOO request locally."""
+        self.status.clear()
         return super().validate_post()
 
     def server_validate(self) -> bool:

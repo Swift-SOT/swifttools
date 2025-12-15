@@ -11,6 +11,7 @@ from ..base.constants import (
     HTTP_BAD_REQUEST,
     HTTP_OK,
     HTTP_SERVER_ERROR,
+    HTTP_UNPROCESSABLE_ENTITY,
     SESSION_COOKIE_NAME,
     STATUS_PENDING,
 )
@@ -18,6 +19,87 @@ from .repr import TOOAPIReprMixin
 
 # Always show deprecation warnings
 warnings.simplefilter("always", DeprecationWarning)
+
+
+def _parse_422_error(response_text: str) -> list[str]:
+    """
+    Parse a 422 Unprocessable Entity response into clean error messages.
+
+    The API typically returns validation errors in JSON format with a 'detail' field
+    containing an array of error objects with 'loc', 'msg', and 'type' fields.
+
+    Parameters
+    ----------
+    response_text : str
+        The raw response text from the API.
+
+    Returns
+    -------
+    list[str]
+        A list of formatted error messages.
+    """
+    import json
+
+    try:
+        data = json.loads(response_text)
+        errors = []
+
+        # Handle FastAPI/Pydantic validation error format
+        if isinstance(data, dict) and "detail" in data:
+            detail = data["detail"]
+
+            # If detail is a string, return it directly
+            if isinstance(detail, str):
+                return [detail]
+
+            # If detail is a list of validation errors
+            if isinstance(detail, list):
+                for error in detail:
+                    if isinstance(error, dict):
+                        # Extract field location (e.g., ['body', 'field_name'])
+                        loc = error.get("loc", [])
+                        # Get the field name (usually the last item in loc)
+                        field = loc[-1] if loc else "unknown field"
+                        # Get the error message
+                        msg = error.get("msg", "validation error")
+
+                        # Format as "field: message"
+                        errors.append(f"{field}: {msg}")
+                    else:
+                        errors.append(str(error))
+
+                return errors if errors else ["Validation error"]
+
+        # Fallback: return the whole response as a single error
+        return [response_text]
+
+    except (json.JSONDecodeError, KeyError, IndexError):
+        # If we can't parse it, return the raw text
+        return [response_text]
+
+
+def _format_422_errors(errors: list[str]) -> str:
+    """
+    Format a list of 422 validation errors into a readable string.
+
+    Parameters
+    ----------
+    errors : list[str]
+        List of error messages.
+
+    Returns
+    -------
+    str
+        Formatted error string.
+    """
+    if not errors:
+        return "Validation error"
+
+    if len(errors) == 1:
+        return errors[0]
+
+    # Multiple errors: format as a bulleted list
+    return "Validation errors:\n" + "\n".join(f"  • {err}" for err in errors)
 
 
 # Make Warnings a little less weird
@@ -227,7 +309,7 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
             self.__set_error(f"Login failed: {e}")
             return False
 
-        self.__set_error(f"Login failed with status code: {resp.status_code}")
+        self.__set_error("Login failed with status code. Please check your credentials.")
         return False
 
     def submit_get(self) -> bool:
@@ -265,9 +347,9 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
 
         # Prepare request arguments
         args = self._post_schema.model_validate(self.model_dump(exclude={"__pydantic_extra__"})).model_dump(
-            exclude_none=True
+            exclude_none=True, mode="json"
         )
-
+        print(args)
         with httpx.Client(cookies=cookie_jar) as client:
             if not self._ensure_authenticated(client):
                 return False
@@ -275,7 +357,7 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
             try:
                 response = client.post(
                     self.submit_url,
-                    json=args,
+                    data=args,
                     timeout=self._timeout,
                     follow_redirects=True,
                 )
@@ -309,6 +391,13 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
                 self.__set_error("Error validating response: maximum recursion depth exceeded")
             except Exception as e:
                 self.__set_error(f"Error validating response: {e}")
+        elif response.status_code == HTTP_UNPROCESSABLE_ENTITY:
+            # Parse 422 validation errors into clean format
+            errors = _parse_422_error(response.text)
+            error_msg = _format_422_errors(errors)
+            self.__set_error(error_msg)
+        elif response.status_code == 401:
+            self.__set_error("Authentication failed: Invalid username or shared secret.")
         elif HTTP_BAD_REQUEST <= response.status_code < HTTP_SERVER_ERROR:
             self.__set_error(f"Client error {response.status_code}: {response.text}")
         else:
