@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Annotated, Any, Optional, Union
 
 import astropy.units as u  # type: ignore[import-untyped]
-from astropy.coordinates import Latitude, Longitude, SkyCoord  # type: ignore[import-untyped]
+from astropy.coordinates import SkyCoord  # type: ignore[import-untyped]
 from astropy.time import Time, TimeDelta  # type: ignore[import-untyped]
 from pydantic import (
     AfterValidator,
@@ -308,16 +308,10 @@ class CoordinateSchema(BaseSchema):
         dec = values.get("dec")
         skycoord = values.get("skycoord")
 
-        # Check if RA/Dec are quatities or Latitude/Longitude
-        if isinstance(ra, (u.Quantity, Longitude)):
-            ra = ra.to_value("deg")
-        if isinstance(dec, (u.Quantity, Latitude)):
-            dec = dec.to_value("deg")
-
         # If only a SkyCoord is provided
         if skycoord is not None and isinstance(skycoord, SkyCoord):
-            ra = skycoord.fk5.ra.deg
-            dec = skycoord.fk5.dec.deg
+            ra = float(skycoord.fk5.ra.deg)
+            dec = float(skycoord.fk5.dec.deg)
 
         # Check if both RA and Dec or SkyCoord are provided
         if (ra is None or dec is None) and skycoord is None:
