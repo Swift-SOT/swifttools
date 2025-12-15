@@ -1,4 +1,3 @@
-import re
 from datetime import date, datetime
 from typing import Any, Literal, Optional, Union
 
@@ -9,7 +8,7 @@ from pydantic import (
 
 from ..base.common import TOOAPIBaseclass
 from ..base.repr import TOOAPIReprMixin
-from ..base.schemas import AstropyAngle, BaseSchema
+from ..base.schemas import AstropyAngle, BaseSchema, TextLength
 from ..base.status import TOOStatus
 from .calendar import SwiftCalendarSchema
 from .enums import UrgencyEnum, XRTModeEnum
@@ -39,7 +38,7 @@ class SwiftTOORequestSchema(BaseSchema, TOOAPIReprMixin):
     exp_time_just: Optional[str] = None
     exp_time_per_visit_approved: Optional[int] = None
     num_of_visits_approved: Optional[int] = None
-    monitoring_freq: Optional[str] = None
+    monitoring_freq: Optional[TextLength] = None
     proposal: bool = False
     proposal_id: Optional[str] = None
     proposal_trigger_just: Optional[str] = None
@@ -174,7 +173,7 @@ class SwiftTOOUserParamsSchema(BaseSchema):
     exp_time_just: str = Field(..., description="Exposure Time Justification")
     exp_time_per_visit: Optional[float] = Field(None, description="Exposure Time per Visit")
     num_of_visits: Optional[int] = Field(None, description="Number of Visits")
-    monitoring_freq: Optional[str] = Field(None, description="Monitoring Frequency")
+    monitoring_freq: Optional[TextLength] = Field(None, description="Monitoring Frequency")
 
 
 class SwiftTOOFormSchema(SwiftTOOUserParamsSchema):
@@ -208,17 +207,17 @@ class SwiftTOOFormSchema(SwiftTOOUserParamsSchema):
         if self.num_of_visits is not None and self.monitoring_freq is None:
             raise ValueError("Must specify monitoring frequency if number of visits is specified.")
 
-        if self.monitoring_freq is not None:
-            if (
-                re.match(
-                    r"\d+(\.\d+)?\s+(day?|week?|month?|orbit?|minute?|second?)(s?)",
-                    self.monitoring_freq.strip(),
-                )
-                is None
-            ):
-                raise ValueError(
-                    "Monitoring frequency in incorrect format. Must be a number followed by a time unit (day, week, month, orbit, minute, second)."
-                )
+        # if self.monitoring_freq is not None:
+        #     if (
+        #         re.match(
+        #             r"\d+(\.\d+)?\s+(day?|week?|month?|orbit?|minute?|second?)(s?)",
+        #             self.monitoring_freq.strip(),
+        #         )
+        #         is None
+        #     ):
+        #         raise ValueError(
+        #             "Monitoring frequency in incorrect format. Must be a number followed by a time unit (day, week, month, orbit, minute, second)."
+        #         )
 
         if self.exp_time_just is None and self.num_of_visits is not None:
             raise ValueError("Must specify exposure time justification if exposure time per visit is specified.")

@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Union
 
 from astropy import units as u  # type: ignore[import-untyped]
+from astropy.time import TimeDelta  # type: ignore[import-untyped]
 
 
 def utcnow():
@@ -83,3 +84,28 @@ def _tablefy(table, header=None):
         tab += "</tr>"
     tab += "</table>"
     return tab
+
+
+def validate_monitoring_cadence(value: str | u.Quantity | timedelta) -> str:
+    if type(value) is str:
+        if (
+            re.match(
+                r"\d+(\.\d+)?\s+(day?|week?|month?|orbit?|minute?|second?)(s?)",
+                value.strip(),
+            )
+            is None
+        ):
+            raise ValueError(
+                "Monitoring frequency in incorrect format. Must be a number followed by a time unit (day, week, month, orbit, minute, second)."
+            )
+        return value.strip()
+
+    if type(value) is timedelta:
+        value = u.Quantity(value.total_seconds(), u.second)
+
+    if type(value) is u.Quantity or isinstance(value, TimeDelta):
+        if value.to(u.day).value >= (1 * u.day).value:
+            return f"{value.to(u.day).value} days"
+        else:
+            return f"{value.to(u.hour).value} hours"
+    raise ValueError("Monitoring frequency in incorrect format.")

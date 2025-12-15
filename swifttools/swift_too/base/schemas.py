@@ -19,7 +19,7 @@ from pydantic import (
 )
 from pydantic_core import core_schema
 
-from .functions import convert_from_timedelta, utcnow
+from .functions import convert_from_timedelta, utcnow, validate_monitoring_cadence
 
 # Custom Types
 NaiveUTCDatetime = Annotated[
@@ -64,6 +64,8 @@ AstropyAngle = Annotated[
 ]
 
 AstropyDayLength = Annotated[Union[float, int, "u.Quantity", timedelta], PlainSerializer(convert_from_timedelta)]
+
+TextLength = Annotated[Union[str, "u.Quantity", timedelta], PlainSerializer(validate_monitoring_cadence)]
 
 
 class BaseSchema(BaseModel):
