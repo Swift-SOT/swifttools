@@ -1,10 +1,48 @@
 from datetime import datetime
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 
 from swifttools.swift_too.base.schemas import BaseSchema
-from swifttools.swift_too.swift.clock import SwiftClock, SwiftClockGetSchema, SwiftDateTimeSchema, TOOAPIClockCorrect
+from swifttools.swift_too.swift.clock import (
+    SwiftClock,
+    SwiftClockGetSchema,
+    SwiftDateTimeSchema,
+    TOOAPIClockCorrect,
+    index_datetimes,
+)
+from swifttools.swift_too.swift.datetime import swiftdatetime
+
+
+@pytest.fixture
+def mock_clock_correct():
+    """Fixture for MockClockCorrect instance."""
+    return MockClockCorrect(test_datetime=datetime(2023, 1, 1))
+
+
+@pytest.fixture
+def swift_clock():
+    """Fixture for SwiftClock instance with autosubmit=False."""
+    return SwiftClock(autosubmit=False)
+
+
+@pytest.fixture
+def swift_datetime_schema():
+    """Fixture for SwiftDateTimeSchema instance."""
+    return SwiftDateTimeSchema(met=123456789.0, utcf=10.0, isutc=False)
+
+
+@pytest.fixture
+def swift_clock_with_entry(swift_clock):
+    """Fixture for SwiftClock with a mock entry."""
+    entry = SwiftDateTimeSchema(met=123456789.0, utcf=0.0, isutc=False)
+    object.__setattr__(
+        entry,
+        "_table",
+        [["MET", "Swift Time", "UTC Time"], [123456789.0, datetime(2023, 1, 1), datetime(2023, 1, 1)]],
+    )
+    swift_clock.entries = [entry]
+    return swift_clock
 
 
 class MockClockCorrect(BaseSchema, TOOAPIClockCorrect):
@@ -13,257 +51,247 @@ class MockClockCorrect(BaseSchema, TOOAPIClockCorrect):
     test_datetime: datetime
 
 
-def test_swift_clock_init_with_met():
-    """Test SwiftClock initialization with MET"""
-    clock = SwiftClock(met=123456789.0, autosubmit=False)
-    assert clock.met == 123456789.0  # Single value before post-processing
+class TestSwiftClock:
+    def test_init_with_met(self):
+        clock = SwiftClock(met=123456789.0, autosubmit=False)
+        assert clock.met == 123456789.0
+
+    def test_init_with_utctime(self):
+        dt = datetime(2023, 1, 1, 12, 0, 0)
+        clock = SwiftClock(utctime=dt, autosubmit=False)
+        assert clock.utctime == dt
+
+    def test_init_with_swifttime(self):
+        dt = datetime(2023, 1, 1, 12, 0, 0)
+        clock = SwiftClock(swifttime=dt, autosubmit=False)
+        assert clock.swifttime == dt
+
+    def test_to_utctime_conversion(self):
+        dt = datetime(2023, 1, 1, 12, 0, 0)
+        clock = SwiftClock(swifttime=dt, autosubmit=False)
+        clock.entries = [swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)]
+        clock.to_utctime()
+        assert len(clock.entries) == 1
+
+    def test_to_utctime_isutc_flag(self):
+        dt = datetime(2023, 1, 1, 12, 0, 0)
+        clock = SwiftClock(swifttime=dt, autosubmit=False)
+        clock.entries = [swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)]
+        clock.to_utctime()
+        assert clock.entries[0].isutc is True
+
+    def test_to_swifttime_conversion(self):
+        dt = datetime(2023, 1, 1, 12, 0, 0)
+        clock = SwiftClock(utctime=dt, autosubmit=False)
+        clock.entries = [swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=True)]
+        clock.to_swifttime()
+        assert len(clock.entries) == 1
+
+    def test_to_swifttime_isutc_flag(self):
+        dt = datetime(2023, 1, 1, 12, 0, 0)
+        clock = SwiftClock(utctime=dt, autosubmit=False)
+        clock.entries = [swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=True)]
+        clock.to_swifttime()
+        assert clock.entries[0].isutc is False
+
+    def test_len_empty(self, swift_clock):
+        assert len(swift_clock) == 0
+
+    def test_len_with_entries(self, swift_clock):
+        object.__setattr__(swift_clock, "entries", [1, 2, 3])
+        assert len(swift_clock) == 3
+
+    def test_getitem_first(self, swift_clock):
+        entry1 = SwiftDateTimeSchema(met=1.0, utcf=0.0, isutc=False)
+        entry2 = SwiftDateTimeSchema(met=2.0, utcf=0.0, isutc=False)
+        swift_clock.entries = [entry1, entry2]
+        assert swift_clock[0] == entry1
+
+    def test_getitem_second(self, swift_clock):
+        entry1 = SwiftDateTimeSchema(met=1.0, utcf=0.0, isutc=False)
+        entry2 = SwiftDateTimeSchema(met=2.0, utcf=0.0, isutc=False)
+        swift_clock.entries = [entry1, entry2]
+        assert swift_clock[1] == entry2
+
+    def test_table_property_empty(self, swift_clock):
+        swift_clock.entries = []
+        header, data = swift_clock._table
+        assert header == []
+
+    def test_table_data_empty(self, swift_clock):
+        swift_clock.entries = []
+        header, data = swift_clock._table
+        assert data == []
+
+    def test_table_property_with_entries_header(self, swift_clock_with_entry):
+        header, data = swift_clock_with_entry._table
+        assert header == ["MET", "Swift Time", "UTC Time"]
+
+    def test_table_property_with_entries_data_length(self, swift_clock_with_entry):
+        header, data = swift_clock_with_entry._table
+        assert len(data) == 1
+
+    def test_post_process_met_type(self, swift_clock):
+        mock_entry = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
+        swift_clock.entries = [mock_entry]
+        swift_clock._post_process()
+        assert isinstance(swift_clock.met, list)
+
+    def test_post_process_swifttime_type(self, swift_clock):
+        mock_entry = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
+        swift_clock.entries = [mock_entry]
+        swift_clock._post_process()
+        assert isinstance(swift_clock.swifttime, list)
+
+    def test_post_process_utctime_type(self, swift_clock):
+        mock_entry = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
+        swift_clock.entries = [mock_entry]
+        swift_clock._post_process()
+        assert isinstance(swift_clock.utctime, list)
+
+    def test_post_process_met_length(self, swift_clock):
+        mock_entry = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
+        swift_clock.entries = [mock_entry]
+        swift_clock._post_process()
+        assert len(swift_clock.met) == 1
+
+    def test_post_process_swifttime_length(self, swift_clock):
+        mock_entry = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
+        swift_clock.entries = [mock_entry]
+        swift_clock._post_process()
+        assert len(swift_clock.swifttime) == 1
+
+    def test_post_process_utctime_length(self, swift_clock):
+        mock_entry = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
+        swift_clock.entries = [mock_entry]
+        swift_clock._post_process()
+        assert len(swift_clock.utctime) == 1
 
 
-def test_swift_clock_init_with_utctime():
-    """Test SwiftClock initialization with UTC time"""
-    dt = datetime(2023, 1, 1, 12, 0, 0)
-    clock = SwiftClock(utctime=dt, autosubmit=False)
-    assert clock.utctime == dt
+class TestTOOAPIClockCorrect:
+    def test_to_utctime_calls_clock_method(self, mock_clock_correct):
+        clock_mock = Mock()
+        clock_mock.entries = [datetime(2023, 1, 2)]
+        object.__setattr__(mock_clock_correct, "_clock", clock_mock)
+        object.__setattr__(mock_clock_correct, "_datetime_refs", [([("model", "test_datetime")], datetime(2023, 1, 1))])
+        mock_clock_correct.to_utctime()
+        clock_mock.to_utctime.assert_called_once()
+
+    def test_to_swifttime_calls_clock_method(self, mock_clock_correct):
+        clock_mock = Mock()
+        clock_mock.entries = [datetime(2023, 1, 2)]
+        object.__setattr__(mock_clock_correct, "_clock", clock_mock)
+        object.__setattr__(mock_clock_correct, "_datetime_refs", [([("model", "test_datetime")], datetime(2023, 1, 1))])
+        mock_clock_correct.to_swifttime()
+        clock_mock.to_swifttime.assert_called_once()
+
+    def test_header_title_utc(self, mock_clock_correct):
+        mock_clock_correct._varnames = {"test_datetime": "Test DateTime"}
+        mock_clock_correct.test_datetime = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=True)
+        title = mock_clock_correct._header_title("test_datetime")
+        assert "UTC" in title
+
+    def test_header_title_swift(self, mock_clock_correct):
+        mock_clock_correct._varnames = {"test_datetime": "Test DateTime"}
+        mock_clock_correct.test_datetime = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
+        title = mock_clock_correct._header_title("test_datetime")
+        assert "Swift" in title
+
+    def test_clock_correct_creates_clock(self, mock_clock_correct):
+        mock_clock_correct.nested_dict = {"inner_date": datetime(2023, 1, 1)}
+        mock_clock_correct.nested_list = [datetime(2023, 1, 1)]
+        mock_clock_correct.nested_schema = BaseSchema(nested_date=datetime(2023, 1, 1))
+        mock_clock_correct.clock_instance = SwiftClock(autosubmit=False)
+        with patch("swifttools.swift_too.swift.clock.Clock") as mock_clock_class:
+            mock_clock_instance = mock_clock_class.return_value
+            mock_clock_instance.entries = [
+                datetime(2023, 1, 2),
+                datetime(2023, 1, 3),
+                datetime(2023, 1, 4),
+                datetime(2023, 1, 5),
+            ]
+            mock_clock_correct.clock_correct()
+            mock_clock_class.assert_called_once()
 
 
-def test_swift_clock_init_with_swifttime():
-    """Test SwiftClock initialization with Swift time"""
-    dt = datetime(2023, 1, 1, 12, 0, 0)
-    clock = SwiftClock(swifttime=dt, autosubmit=False)
-    assert clock.swifttime == dt
+class TestSwiftDateTimeSchema:
+    def test_swifttime_type(self, swift_datetime_schema):
+        swifttime = swift_datetime_schema.swifttime
+        assert isinstance(swifttime, datetime)
+
+    def test_utctime_type(self, swift_datetime_schema):
+        utctime = swift_datetime_schema.utctime
+        assert isinstance(utctime, datetime)
 
 
-def test_swift_clock_to_utctime():
-    """Test converting clock entries to UTC time"""
-    dt = datetime(2023, 1, 1, 12, 0, 0)
-    clock = SwiftClock(swifttime=dt, autosubmit=False)
-    # Mock some entries
-    from swifttools.swift_too.swift.datetime import swiftdatetime
+class TestSwiftClockGetSchema:
+    def test_valid_met(self):
+        schema = SwiftClockGetSchema(met=123456789.0)
+        assert schema.met == 123456789.0
 
-    clock.entries = [swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)]
-    clock.to_utctime()
-    assert len(clock.entries) == 1
-    # Check that the entry was converted
-    assert clock.entries[0].isutc is True
+    def test_invalid_no_fields(self):
+        with pytest.raises(ValueError, match="Exactly one of 'met', 'utctime', or 'swifttime' must be provided"):
+            SwiftClockGetSchema()
 
+    def test_invalid_multiple_fields(self):
+        with pytest.raises(ValueError, match="Exactly one of 'met', 'utctime', or 'swifttime' must be provided"):
+            SwiftClockGetSchema(met=123456789.0, utctime=datetime(2023, 1, 1))
 
-def test_swift_clock_to_swifttime():
-    """Test converting clock entries to Swift time"""
-    dt = datetime(2023, 1, 1, 12, 0, 0)
-    clock = SwiftClock(utctime=dt, autosubmit=False)
-    # Mock some entries
-    from swifttools.swift_too.swift.datetime import swiftdatetime
+    def test_validate_exactly_one_field(self):
+        class MockValues:
+            def __init__(self):
+                self.met = 123456789.0
+                self.utctime = None
+                self.swifttime = None
 
-    clock.entries = [swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=True)]
-    clock.to_swifttime()
-    assert len(clock.entries) == 1
-    # Check that the entry was converted
-    assert clock.entries[0].isutc is False
+        result = SwiftClockGetSchema.validate_exactly_one_field(MockValues())
+        assert result["met"] == 123456789.0
 
 
-def test_swift_clock_len():
-    """Test len() method"""
-    clock = SwiftClock(autosubmit=False)
-    assert len(clock) == 0
-    # Mock entries
-    object.__setattr__(clock, "entries", [1, 2, 3])
-    assert len(clock) == 3
+class TestIndexDatetimes:
+    def test_with_mock_object_count(self):
+        test_obj = Mock()
+        test_obj.date = datetime(2023, 1, 1)
+        test_obj.model_dump.return_value = {"date": datetime(2023, 1, 1)}
+        i, values = index_datetimes(test_obj)
+        assert i == 1
 
+    def test_with_mock_object_values(self):
+        test_obj = Mock()
+        test_obj.date = datetime(2023, 1, 1)
+        test_obj.model_dump.return_value = {"date": datetime(2023, 1, 1)}
+        i, values = index_datetimes(test_obj)
+        assert len(values) == 1
 
-def test_swift_clock_getitem():
-    """Test indexing"""
-    from swifttools.swift_too.swift.clock import SwiftDateTimeSchema
+    def test_with_mock_object_value_content(self):
+        test_obj = Mock()
+        test_obj.date = datetime(2023, 1, 1)
+        test_obj.model_dump.return_value = {"date": datetime(2023, 1, 1)}
+        i, values = index_datetimes(test_obj)
+        assert values[0] == datetime(2023, 1, 1)
 
-    clock = SwiftClock(autosubmit=False)
-    entry1 = SwiftDateTimeSchema(met=1.0, utcf=0.0, isutc=False)
-    entry2 = SwiftDateTimeSchema(met=2.0, utcf=0.0, isutc=False)
-    clock.entries = [entry1, entry2]
-    assert clock[0] == entry1
-    assert clock[1] == entry2
+    def test_with_dict_count(self):
+        test_dict = {"date": datetime(2023, 1, 1)}
+        i, values = index_datetimes(test_dict)
+        assert i == 1
 
+    def test_with_dict_values(self):
+        test_dict = {"date": datetime(2023, 1, 1)}
+        i, values = index_datetimes(test_dict)
+        assert len(values) == 1
 
-def test_swift_clock_table_property():
-    """Test _table property"""
-    clock = SwiftClock(autosubmit=False)
-    clock.entries = []
-    header, data = clock._table
-    assert header == []
-    assert data == []
+    def test_with_dict_value_content(self):
+        test_dict = {"date": datetime(2023, 1, 1)}
+        i, values = index_datetimes(test_dict)
+        assert values[0] == datetime(2023, 1, 1)
 
+    def test_setvals_with_dict(self):
+        test_dict = {"date": datetime(2023, 1, 1)}
+        new_dates = [datetime(2024, 1, 1)]
+        index_datetimes(test_dict, setvals=new_dates)
+        assert test_dict["date"] == datetime(2024, 1, 1)
 
-def test_swift_clock_table_property_with_entries():
-    """Test _table property with entries"""
-    clock = SwiftClock(autosubmit=False)
-    # Create a real SwiftDateTimeSchema entry with _table property
-    from swifttools.swift_too.swift.clock import SwiftDateTimeSchema
-
-    entry = SwiftDateTimeSchema(met=123456789.0, utcf=0.0, isutc=False)
-    # Add _table attribute using object.__setattr__ to bypass Pydantic validation
-    object.__setattr__(
-        entry,
-        "_table",
-        [["MET", "Swift Time", "UTC Time"], [123456789.0, datetime(2023, 1, 1), datetime(2023, 1, 1)]],
-    )
-    clock.entries = [entry]
-
-    header, data = clock._table
-    assert header == ["MET", "Swift Time", "UTC Time"]
-    assert len(data) == 1
-
-
-def test_tooapi_clock_correct_to_utctime():
-    """Test TOOAPIClockCorrect to_utctime method"""
-
-    mock = MockClockCorrect(test_datetime=datetime(2023, 1, 1))
-    # Create the _clock and _datetime_refs that clock_correct() will use
-    clock_mock = Mock()
-    clock_mock.entries = [datetime(2023, 1, 2)]
-    object.__setattr__(mock, "_clock", clock_mock)
-    object.__setattr__(mock, "_datetime_refs", [([("model", "test_datetime")], datetime(2023, 1, 1))])
-    # Don't patch clock_correct - let it run naturally
-    mock.to_utctime()
-    # Verify _clock.to_utctime was called
-    clock_mock.to_utctime.assert_called_once()
-
-
-def test_tooapi_clock_correct_to_swifttime():
-    """Test TOOAPIClockCorrect to_swifttime method"""
-
-    mock = MockClockCorrect(test_datetime=datetime(2023, 1, 1))
-    # Create the _clock and _datetime_refs that clock_correct() will use
-    clock_mock = Mock()
-    clock_mock.entries = [datetime(2023, 1, 2)]
-    object.__setattr__(mock, "_clock", clock_mock)
-    object.__setattr__(mock, "_datetime_refs", [([("model", "test_datetime")], datetime(2023, 1, 1))])
-    # Don't patch clock_correct - let it run naturally
-    mock.to_swifttime()
-    # Verify _clock.to_swifttime was called
-    clock_mock.to_swifttime.assert_called_once()
-
-
-def test_swift_datetime_schema():
-    """Test SwiftDateTimeSchema computed fields"""
-    schema = SwiftDateTimeSchema(met=123456789.0, utcf=10.0, isutc=False)
-    # Access computed fields
-    swifttime = schema.swifttime
-    utctime = schema.utctime
-    assert isinstance(swifttime, datetime)
-    assert isinstance(utctime, datetime)
-
-
-def test_swift_clock_get_schema_validator():
-    """Test SwiftClockGetSchema validator"""
-    # Test valid case: exactly one field
-    schema = SwiftClockGetSchema(met=123456789.0)
-    assert schema.met == 123456789.0
-
-    # Test invalid case: no fields
-    with pytest.raises(ValueError, match="Exactly one of 'met', 'utctime', or 'swifttime' must be provided"):
-        SwiftClockGetSchema()
-
-    # Test invalid case: multiple fields
-    with pytest.raises(ValueError, match="Exactly one of 'met', 'utctime', or 'swifttime' must be provided"):
-        SwiftClockGetSchema(met=123456789.0, utctime=datetime(2023, 1, 1))
-
-    # Test validator with non-dict (to cover the isinstance check)
-    class MockValues:
-        def __init__(self):
-            self.met = 123456789.0
-            self.utctime = None
-            self.swifttime = None
-
-    result = SwiftClockGetSchema.validate_exactly_one_field(MockValues())
-    assert result["met"] == 123456789.0
-
-
-def test_swift_clock_post_process():
-    """Test _post_process method"""
-    clock = SwiftClock(autosubmit=False)
-    # Mock entries as SwiftDateTimeSchema
-    from swifttools.swift_too.swift.datetime import swiftdatetime
-
-    mock_entry = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
-    clock.entries = [mock_entry]
-    clock._post_process()
-    assert isinstance(clock.met, list)
-    assert isinstance(clock.swifttime, list)
-    assert isinstance(clock.utctime, list)
-    assert len(clock.met) == 1
-    assert len(clock.swifttime) == 1
-    assert len(clock.utctime) == 1
-
-
-def test_index_datetimes():
-    """Test index_datetimes function"""
-    from unittest.mock import Mock
-
-    from swifttools.swift_too.swift.clock import index_datetimes
-
-    # Create a mock object with datetime attribute
-    test_obj = Mock()
-    test_obj.date = datetime(2023, 1, 1)
-    test_obj.model_dump.return_value = {"date": datetime(2023, 1, 1)}
-
-    i, values = index_datetimes(test_obj)
-    assert i == 1
-    assert len(values) == 1
-    assert values[0] == datetime(2023, 1, 1)
-
-    # Test with dict
-    test_dict = {"date": datetime(2023, 1, 1)}
-    i, values = index_datetimes(test_dict)
-    assert i == 1
-    assert len(values) == 1
-    assert values[0] == datetime(2023, 1, 1)
-
-    # Test setvals with dict
-    new_dates = [datetime(2024, 1, 1)]
-    i, values = index_datetimes(test_dict, setvals=new_dates)
-    assert test_dict["date"] == datetime(2024, 1, 1)
-
-
-def test_tooapi_clock_correct_header_title():
-    """Test TOOAPIClockCorrect _header_title method"""
-    mock = MockClockCorrect(test_datetime=datetime(2023, 1, 1))
-    mock._varnames = {"test_datetime": "Test DateTime"}
-    # Mock swiftdatetime
-    from swifttools.swift_too.swift.datetime import swiftdatetime
-
-    mock.test_datetime = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=True)
-    title = mock._header_title("test_datetime")
-    assert "UTC" in title
-
-    # Test Swift time
-    mock.test_datetime = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
-    title = mock._header_title("test_datetime")
-    assert "Swift" in title
-
-
-def test_tooapi_clock_correct_clock_correct():
-    """Test TOOAPIClockCorrect clock_correct method with actual execution"""
-    from unittest.mock import patch
-
-    mock = MockClockCorrect(test_datetime=datetime(2023, 1, 1))
-    # Add complex nested structures to cover all branches
-    mock.nested_dict = {"inner_date": datetime(2023, 1, 1)}
-    mock.nested_list = [datetime(2023, 1, 1)]
-    mock.nested_schema = BaseSchema(nested_date=datetime(2023, 1, 1))
-    mock.clock_instance = SwiftClock(autosubmit=False)  # To cover SwiftClock skip
-    # This should create a clock and apply corrections
-    with patch("swifttools.swift_too.swift.clock.Clock") as mock_clock_class:
-        mock_clock_instance = mock_clock_class.return_value
-        mock_clock_instance.entries = [
-            datetime(2023, 1, 2),
-            datetime(2023, 1, 3),
-            datetime(2023, 1, 4),
-            datetime(2023, 1, 5),
-        ]
-        mock.clock_correct()
-
-    def test_index_datetimes_object_attributes_and_dictrecursion():
-        """Test index_datetimes iterates object attributes and __dict__ recursion"""
-        from swifttools.swift_too.swift.clock import index_datetimes
-
+    def test_with_simple_object_count(self):
         class SimpleObj:
             def __init__(self):
                 self.date = datetime(2026, 1, 1)
@@ -271,9 +299,21 @@ def test_tooapi_clock_correct_clock_correct():
         obj = SimpleObj()
         i, values = index_datetimes(obj)
         assert i == 1
+
+    def test_with_simple_object_value(self):
+        class SimpleObj:
+            def __init__(self):
+                self.date = datetime(2026, 1, 1)
+
+        obj = SimpleObj()
+        i, values = index_datetimes(obj)
         assert values[0] == datetime(2026, 1, 1)
 
-        # Test recursion via __dict__ for nested object
+    def test_with_container_count(self):
+        class SimpleObj:
+            def __init__(self):
+                self.date = datetime(2026, 1, 1)
+
         class Container:
             def __init__(self):
                 self.nested = SimpleObj()
@@ -281,39 +321,42 @@ def test_tooapi_clock_correct_clock_correct():
         c = Container()
         i, values = index_datetimes(c)
         assert i == 1
+
+    def test_with_container_value(self):
+        class SimpleObj:
+            def __init__(self):
+                self.date = datetime(2026, 1, 1)
+
+        class Container:
+            def __init__(self):
+                self.nested = SimpleObj()
+
+        c = Container()
+        i, values = index_datetimes(c)
         assert values[0] == datetime(2026, 1, 1)
 
-    def test_index_datetimes_skips_swiftclock_instances():
-        """Ensure SwiftClock instances are skipped when indexing"""
-        from swifttools.swift_too.swift.clock import SwiftClock, index_datetimes
-
+    def test_skips_swiftclock_count(self):
         container = {"clock": SwiftClock(autosubmit=False)}
         i, values = index_datetimes(container)
         assert i == 0
+
+    def test_skips_swiftclock_values(self):
+        container = {"clock": SwiftClock(autosubmit=False)}
+        i, values = index_datetimes(container)
         assert values == []
 
-    def test_clock_correct_assertion_on_incorrect_path_types():
-        """Trigger assertion branches when path expects list or dict but finds others"""
-        from unittest.mock import Mock
 
-        mock = MockClockCorrect(test_datetime=datetime(2023, 1, 1))
-        # Prevent creation of a new Clock
-        mock._clock = Mock()
-
-        # List assertion: path indicates list but current is not a list
-        mock._datetime_refs = [([("list", 0)], datetime(2023, 1, 1))]
-        mock._clock.entries = [datetime(2023, 1, 2)]
+class TestClockCorrectAssertion:
+    def test_assertion_on_list_path(self, mock_clock_correct):
+        mock_clock_correct._clock = Mock()
+        mock_clock_correct._datetime_refs = [([("list", 0)], datetime(2023, 1, 1))]
+        mock_clock_correct._clock.entries = [datetime(2023, 1, 2)]
         with pytest.raises(AssertionError, match="Expected list but got"):
-            mock.clock_correct()
+            mock_clock_correct.clock_correct()
 
-        # Dict assertion: path indicates dict but current is not a dict
-        mock._datetime_refs = [([("dict", "k")], datetime(2023, 1, 1))]
-        mock._clock.entries = [datetime(2023, 1, 2)]
+    def test_assertion_on_dict_path(self, mock_clock_correct):
+        mock_clock_correct._clock = Mock()
+        mock_clock_correct._datetime_refs = [([("dict", "k")], datetime(2023, 1, 1))]
+        mock_clock_correct._clock.entries = [datetime(2023, 1, 2)]
         with pytest.raises(AssertionError, match="Expected dict but got"):
-            mock.clock_correct()
-        # Should have created a clock
-        mock_clock_class.assert_called_once()
-        assert mock._clock is not None
-        assert mock._datetime_refs is not None
-        # Call again to cover the else branch
-        mock.clock_correct()
+            mock_clock_correct.clock_correct()
