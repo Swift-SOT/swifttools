@@ -1,5 +1,6 @@
 import http.cookiejar
 import warnings
+from http import HTTPStatus
 from typing import Any, Optional, Type
 
 import httpx
@@ -8,10 +9,6 @@ from pydantic import BaseModel, ValidationError
 from ..base.constants import (
     API_URL,
     COOKIE_JAR_PATH,
-    HTTP_BAD_REQUEST,
-    HTTP_OK,
-    HTTP_SERVER_ERROR,
-    HTTP_UNPROCESSABLE_ENTITY,
     SESSION_COOKIE_NAME,
     STATUS_PENDING,
 )
@@ -302,7 +299,7 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         # Perform login
         try:
             resp = client.post(f"{API_URL}/login", json={"username": self.username, "password": self.shared_secret})
-            if resp.status_code == HTTP_OK:
+            if resp.status_code == HTTPStatus.OK:
                 cookie_jar.save(ignore_discard=True)
                 return True
         except Exception as e:
@@ -380,7 +377,7 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         bool
             True if response was handled successfully, False otherwise.
         """
-        if response.status_code == HTTP_OK:
+        if response.status_code == HTTPStatus.OK:
             try:
                 data = self.model_validate(response.json())  # type: ignore[attr-defined]
                 for key, value in dict(data).items():
@@ -391,17 +388,23 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
                 self.__set_error("Error validating response: maximum recursion depth exceeded")
             except Exception as e:
                 self.__set_error(f"Error validating response: {e}")
-        elif response.status_code == HTTP_UNPROCESSABLE_ENTITY:
+        elif response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY:
             # Parse 422 validation errors into clean format
             errors = _parse_422_error(response.text)
             error_msg = _format_422_errors(errors)
             self.__set_error(error_msg)
-        elif response.status_code == 401:
+        elif response.status_code == HTTPStatus.UNAUTHORIZED:
             self.__set_error("Authentication failed: Invalid username or shared secret.")
-        elif HTTP_BAD_REQUEST <= response.status_code < HTTP_SERVER_ERROR:
+        elif (
+            isinstance(response.status_code, int)
+            and HTTPStatus.BAD_REQUEST <= response.status_code < HTTPStatus.INTERNAL_SERVER_ERROR
+        ):
             self.__set_error(f"Client error {response.status_code}: {response.text}")
-        else:
+        elif isinstance(response.status_code, int):
             self.__set_error(f"Server error {response.status_code}: {response.text}")
+        else:
+            # Handle non-integer status codes (e.g., mocks)
+            self.__set_error(f"Error: {response.text}")
 
         return False
 

@@ -41,12 +41,6 @@ API_VERSION = f"{version_tuple[0]}.{version_tuple[1]}"
 API_URL = f"https://www.swift.psu.edu/api/v{API_VERSION}"
 API_URL = f"http://localhost:8000/api/v{API_VERSION}"  # For local testing
 
-# HTTP Status codes
-HTTP_OK = 200
-HTTP_BAD_REQUEST = 400
-HTTP_UNPROCESSABLE_ENTITY = 422
-HTTP_SERVER_ERROR = 500
-
 # Magic strings
 STATUS_PENDING = "Pending"
 SESSION_COOKIE_NAME = "session"

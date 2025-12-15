@@ -128,8 +128,8 @@ class BeginEndLengthSchema(BaseSchema):
                 raise ValueError("End time cannot be before begin time.")
             else:
                 length = end - begin
-        self.length = length
-        self.end = end
+        object.__setattr__(self, "length", length)
+        object.__setattr__(self, "end", end)
         return self
 
     @model_validator(mode="before")
@@ -196,8 +196,8 @@ class OptionalBeginEndLengthSchema(BaseSchema):
                 raise ValueError("End time cannot be before begin time.")
             else:
                 length = (end - begin).total_seconds() / 86400.0
-        self.length = length
-        self.end = end
+        object.__setattr__(self, "length", length)
+        object.__setattr__(self, "end", end)
         return self
 
     @model_validator(mode="before")
