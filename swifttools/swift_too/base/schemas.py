@@ -68,7 +68,9 @@ AstropyDayLength = Annotated[Union[float, int, "u.Quantity", timedelta], PlainSe
 class BaseSchema(BaseModel):
     """Just define from_attributes for every Schema"""
 
-    model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True, extra="allow")
+    model_config = ConfigDict(
+        from_attributes=True, arbitrary_types_allowed=True, extra="allow", validate_assignment=True
+    )
 
 
 class BeginEndLengthSchema(BaseSchema):
@@ -265,17 +267,17 @@ class OptionalCoordinateSchema(BaseSchema):
 
     @model_validator(mode="after")
     def check_coordinates_after(self) -> "OptionalCoordinateSchema":
-        # Check that RA and Dec are both the same type
-        if (self.ra is None) != (self.dec is None):
-            raise ValueError("Both RA and Dec must be provided or neither.")
+        # If skycoord is set but ra/dec are not, populate ra/dec from skycoord first
+        if self.skycoord is not None and (self.ra is None or self.dec is None):
+            object.__setattr__(self, "ra", self.skycoord.fk5.ra.deg)
+            object.__setattr__(self, "dec", self.skycoord.fk5.dec.deg)
+
+        # If ra/dec are set but skycoord is not, create skycoord
         if self.ra is not None and self.dec is not None and self.skycoord is None:
             try:
-                self.skycoord = SkyCoord(ra=self.ra, dec=self.dec, unit="deg").fk5
+                object.__setattr__(self, "skycoord", SkyCoord(ra=self.ra, dec=self.dec, unit="deg").fk5)
             except Exception as e:
                 raise ValueError(f"Invalid coordinates: {e}")
-        if self.skycoord is not None:
-            self.ra = self.skycoord.fk5.ra.deg
-            self.dec = self.skycoord.fk5.dec.deg
 
         return self
 

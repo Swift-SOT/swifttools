@@ -74,24 +74,23 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
                         kwargs[key] = kwargs[value]
                     del kwargs[value]
 
-        # Convert positional arguments to keyword arguments
-        if len(args) > 0:
-            schema = None
-            if hasattr(self.__class__, "_get_schema") and hasattr(self.__class__()._get_schema, "model_fields"):
-                schema = self.__class__()._get_schema
-            elif hasattr(self.__class__, "_post_schema") and hasattr(self.__class__()._post_schema, "model_fields"):
-                schema = self.__class__()._post_schema
+        # Convert positional arguments to keyword arguments based on schema field order
+        if args:
+            schema_attr = getattr(self.__class__, "_get_schema", None) or getattr(self.__class__, "_post_schema", None)
+            # Handle schema that might be wrapped in a descriptor/default
+            if hasattr(schema_attr, "default"):
+                schema = schema_attr.default
+            else:
+                schema = schema_attr
 
-            if schema and len(args) > 0:
-                # If a single positional argument is provided and the schema
-                # defines a primary identifying field (e.g. `uvot_mode`), map
-                # that positional argument directly to it. This preserves the
-                # intuitive behaviour of calling `UVOTMode(too.uvot_mode)`.
-                for i, key in enumerate(schema.model_fields.keys()):
-                    if i < len(args):
-                        kwargs[key] = args[i]
-                    else:
-                        break
+            if schema and hasattr(schema, "model_fields"):
+                field_names = list(schema.model_fields.keys())
+                for i, arg in enumerate(args):
+                    if i < len(field_names):
+                        field_name = field_names[i]
+                        if field_name not in kwargs:
+                            kwargs[field_name] = arg
+
         super().__init__(**kwargs)
 
     def __set_error(self, newerror):
@@ -197,7 +196,7 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
                 timeout=self._timeout,
                 follow_redirects=True,
             )
-        print(response.url)
+
         # If the request was successful, parse the response
         if response.status_code == 200:
             # Parse the response and update the class attributes
@@ -205,6 +204,9 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
                 data = self.model_validate(response.json())  # type: ignore[attr-defined]
                 for key, value in dict(data).items():
                     setattr(self, key, value)
+            except RecursionError:
+                self.__set_error("Error validating response: maximum recursion depth exceeded")
+                return False
             except Exception as e:
                 self.__set_error(f"Error validating response: {e}")
                 return False

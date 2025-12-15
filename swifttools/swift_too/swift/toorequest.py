@@ -265,7 +265,7 @@ class SwiftTOORequest(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestSchema)
 
     @property
     def obs_types(self) -> list[ObsType]:
-        return [obs.value for obs in ObsType]
+        return [obs for obs in ObsType]
 
     @property
     def _table(self):

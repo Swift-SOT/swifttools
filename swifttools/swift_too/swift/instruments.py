@@ -2,7 +2,9 @@
 import re
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import Field, model_validator
+
+from swifttools.swift_too.base.schemas import BaseSchema
 
 XRTMODES = {
     0: "Auto",
@@ -37,7 +39,7 @@ MODESXRT = {
 }
 
 
-class TOOAPIInstruments(BaseModel):
+class TOOAPIInstruments(BaseSchema):
     """Pydantic schema for XRT / UVOT / BAT mode display and capture"""
 
     uvot_mode: Optional[Any] = Field(default=None, description="UVOT mode, stored as int or str")
