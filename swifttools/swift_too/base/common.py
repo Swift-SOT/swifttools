@@ -1,12 +1,19 @@
 import http.cookiejar
 import warnings
-from pathlib import Path
-from typing import Any
+from typing import Any, Optional, Type
 
 import httpx
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
-from ..version import version_tuple
+from ..base.constants import (
+    API_URL,
+    COOKIE_JAR_PATH,
+    HTTP_BAD_REQUEST,
+    HTTP_OK,
+    HTTP_SERVER_ERROR,
+    SESSION_COOKIE_NAME,
+    STATUS_PENDING,
+)
 from .repr import TOOAPIReprMixin
 
 # Always show deprecation warnings
@@ -19,14 +26,7 @@ warnings.formatwarning = lambda message, category, filename, lineno, line=None: 
     message, category, filename, lineno, line=""
 )
 
-# Define the API version
-API_VERSION = f"{version_tuple[0]}.{version_tuple[1]}"
-
-# Submission URL
-API_URL = f"https://www.swift.psu.edu/api/v{API_VERSION}"
-
-# Create and optionally load cookies
-COOKIE_JAR_PATH = Path.home() / ".swift_too" / "cookies.txt"
+# Ensure cookie jar directory exists, and set up cookie jar
 COOKIE_JAR_PATH.parent.mkdir(parents=True, exist_ok=True)
 cookie_jar = http.cookiejar.LWPCookieJar(COOKIE_JAR_PATH)
 try:
@@ -41,6 +41,7 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
 
     username: str = "anonymous"
     shared_secret: str = "anonymous"
+
     # Submission timeout
     _timeout: int = 120  # 2 mins
     # API base URL
@@ -65,33 +66,42 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
     }
 
     def __init__(self, *args, **kwargs):
-        # Check if any of the arguments are in the back compatibility list, and
-        # convert them to the correct keyword arguments.
-        for key, values in self._back_compat_args.items():
-            for value in values:
-                if value in kwargs:
-                    if key not in kwargs:
-                        kwargs[key] = kwargs[value]
-                    del kwargs[value]
-
-        # Convert positional arguments to keyword arguments based on schema field order
-        if args:
-            schema_attr = getattr(self.__class__, "_get_schema", None) or getattr(self.__class__, "_post_schema", None)
-            # Handle schema that might be wrapped in a descriptor/default
-            if hasattr(schema_attr, "default"):
-                schema = schema_attr.default
-            else:
-                schema = schema_attr
-
-            if schema and hasattr(schema, "model_fields"):
-                field_names = list(schema.model_fields.keys())
-                for i, arg in enumerate(args):
-                    if i < len(field_names):
-                        field_name = field_names[i]
-                        if field_name not in kwargs:
-                            kwargs[field_name] = arg
-
+        # Handle backward compatibility and positional arguments
+        kwargs = self._handle_back_compat_args(kwargs)
+        kwargs = self._convert_positional_args(args, kwargs)
         super().__init__(**kwargs)
+
+    def _handle_back_compat_args(self, kwargs: dict) -> dict:
+        """Convert deprecated argument names to current names."""
+        for key, deprecated_names in self._back_compat_args.items():
+            for deprecated in deprecated_names:
+                if deprecated in kwargs and key not in kwargs:
+                    kwargs[key] = kwargs.pop(deprecated)
+                elif deprecated in kwargs:
+                    kwargs.pop(deprecated)
+        return kwargs
+
+    def _convert_positional_args(self, args: tuple, kwargs: dict) -> dict:
+        """Convert positional arguments to keyword arguments based on schema."""
+        if not args:
+            return kwargs
+
+        schema = self._get_schema_for_init()
+        if schema and hasattr(schema, "model_fields"):
+            field_names = list(schema.model_fields.keys())
+            for i, arg in enumerate(args):
+                if i < len(field_names):
+                    field_name = field_names[i]
+                    if field_name not in kwargs:
+                        kwargs[field_name] = arg
+        return kwargs
+
+    def _get_schema_for_init(self) -> Optional[Type[BaseModel]]:
+        """Get the appropriate schema for initialization."""
+        schema_attr = getattr(self.__class__, "_get_schema", None) or getattr(self.__class__, "_post_schema", None)
+        if hasattr(schema_attr, "default"):
+            return schema_attr.default  # type: ignore[union-attr]
+        return schema_attr
 
     def __set_error(self, newerror):
         if hasattr(self, "status"):
@@ -101,6 +111,37 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
                 self.status.error(newerror)
         else:
             print(f"ERROR: {newerror}")
+
+    @staticmethod
+    def _format_validation_error(error: ValidationError) -> str:
+        """Format a Pydantic ValidationError into a concise message.
+
+        Parameters
+        ----------
+        error : ValidationError
+            The validation error to format.
+
+        Returns
+        -------
+        str
+            A concise error message.
+        """
+        errors = error.errors()
+        if len(errors) == 1:
+            err = errors[0]
+            field = " -> ".join(str(loc) for loc in err["loc"]) if err["loc"] else "root"
+            msg = err["msg"]
+            return f"{field}: {msg}"
+        else:
+            # Multiple errors - list them concisely
+            error_msgs = []
+            for err in errors[:5]:  # Limit to first 5 errors
+                field = " -> ".join(str(loc) for loc in err["loc"]) if err["loc"] else "root"
+                error_msgs.append(f"{field}: {err['msg']}")
+            result = "; ".join(error_msgs)
+            if len(errors) > 5:
+                result += f" (and {len(errors) - 5} more)"
+            return result
 
     @property
     def submit_url(self):
@@ -118,18 +159,17 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         is to perform a GET request on instantiation of the class, if the
         status is "Pending" and the class has a `_get_schema` attribute.
         """
-
-        # If, ands and buts...
-        if (
-            hasattr(self, "status")
-            and hasattr(self.status, "status")
-            and not isinstance(self.status, str)
-            and self.status.status == "Pending"
-            and hasattr(self, "_get_schema")
-            and self.autosubmit is True
-        ):
+        if self._should_autosubmit():
             if self.validate_get(set_error=False):
                 self.submit_get()
+
+    def _should_autosubmit(self) -> bool:
+        """Check if automatic submission should occur."""
+        if not self.autosubmit or not hasattr(self, "_get_schema"):
+            return False
+        if not hasattr(self, "status") or isinstance(self.status, str):
+            return False
+        return hasattr(self.status, "status") and self.status.status == STATUS_PENDING  # type: ignore[attr-defined]
 
     def submit(self):
         """
@@ -155,151 +195,177 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
                 return False
         return False
 
-    def login(self, client: httpx.Client) -> bool:
+    def _ensure_authenticated(self, client: httpx.Client) -> bool:
         """
-        Login to the server and set the session cookie.
+        Ensure the client is authenticated. Login if needed.
 
         Parameters
         ----------
         client : httpx.Client
             The HTTP client to use for the request.
+
+        Returns
+        -------
+        bool
+            True if authenticated successfully, False otherwise.
         """
-        # Log into the API server using the username and shared secret.
-        resp = client.post(f"{API_URL}/login", json={"username": self.username, "password": self.shared_secret})
-        if resp.status_code != 200:
+        # Skip login for anonymous users
+        if self.username == "anonymous":
+            return True
+
+        # Check if we have a valid session cookie
+        if any(c.name == SESSION_COOKIE_NAME and not c.is_expired() for c in cookie_jar):
+            return True
+
+        # Perform login
+        try:
+            resp = client.post(f"{API_URL}/login", json={"username": self.username, "password": self.shared_secret})
+            if resp.status_code == HTTP_OK:
+                cookie_jar.save(ignore_discard=True)
+                return True
+        except Exception as e:
+            self.__set_error(f"Login failed: {e}")
             return False
-        return True
+
+        self.__set_error(f"Login failed with status code: {resp.status_code}")
+        return False
 
     def submit_get(self) -> bool:
         """Perform an API GET request to the server."""
-        assert hasattr(self, "_schema"), "GET schema not defined for this API class."
+        assert hasattr(self, "_get_schema"), "GET schema not defined for this API class."
         assert hasattr(self, "model_dump"), "Not a Pydantic model."
+
+        # Prepare request arguments
         args = self._get_schema.model_validate(self.model_dump(exclude={"__pydantic_extra__"})).model_dump(
             exclude_none=True
         )
-        # Remove status from the arguments, as it is not needed for the GET request
         args.pop("status", None)
 
         with httpx.Client(cookies=cookie_jar) as client:
-            # Login if no valid session cookie exists
-            if not any(c.name == "session" and not c.is_expired() for c in cookie_jar) and self.username != "anonymous":
-                if not self.login(client):
-                    self.__set_error("Login failed. Please check your username and shared_secret.")
-                    return False
-                # Save the cookies to the cookie jar
-                cookie_jar.save(ignore_discard=True)
+            if not self._ensure_authenticated(client):
+                return False
 
-            # Perform the GET request
-            response = client.get(
-                self.submit_url,
-                params=args,
-                timeout=self._timeout,
-                follow_redirects=True,
-            )
-
-        # If the request was successful, parse the response
-        if response.status_code == 200:
-            # Parse the response and update the class attributes
             try:
-                data = self.model_validate(response.json())  # type: ignore[attr-defined]
-                for key, value in dict(data).items():
-                    setattr(self, key, value)
-            except RecursionError:
-                self.__set_error("Error validating response: maximum recursion depth exceeded")
-                return False
+                response = client.get(
+                    self.submit_url,
+                    params=args,
+                    timeout=self._timeout,
+                    follow_redirects=True,
+                )
             except Exception as e:
-                self.__set_error(f"Error validating response: {e}")
+                self.__set_error(f"Request failed: {e}")
                 return False
 
-            # Perform processing of the response
-            self._post_process()
-            return True
-        elif response.status_code >= 400 and response.status_code < 500:
-            # Assume that errors codes in the 400s will return status
-            print("Sad trombone: ", response.status_code, response.text)
-            self.__set_error(f"Error: {response.status_code} - {response.text}")
-        else:
-            # Catch all other errors
-            print("Sad trombone: ", response.status_code, response.text)
-            self.__set_error(f"Error: {response.status_code} - {response.text}")
-        return False
+        return self._handle_response(response)
 
-    def submit_post(self):
+    def submit_post(self) -> bool:
         """Perform an API POST request to the server."""
-        # DEBUG: submit_post called
+        assert hasattr(self, "_post_schema"), "POST schema not defined for this API class."
+        assert hasattr(self, "model_dump"), "Not a Pydantic model."
+
+        # Prepare request arguments
         args = self._post_schema.model_validate(self.model_dump(exclude={"__pydantic_extra__"})).model_dump(
             exclude_none=True
         )
 
         with httpx.Client(cookies=cookie_jar) as client:
-            # Login if no valid session cookie exists
-            if not any(c.name == "session" and not c.is_expired() for c in cookie_jar) and self.username != "anonymous":
-                if not self.login(client):
-                    self.__set_error("Login failed. Please check your username and shared_secret.")
-                    return False
-                # Save the cookies to the cookie jar
-                cookie_jar.save(ignore_discard=True)
+            if not self._ensure_authenticated(client):
+                return False
 
-            # Perform the POST request
-            response = client.post(
-                self.submit_url,
-                json=args,
-                timeout=self._timeout,
-                follow_redirects=True,
-            )
-
-        # If the request was successful, parse the response
-        if response.status_code == 200:
             try:
-                data = self.model_validate(response.json())
+                response = client.post(
+                    self.submit_url,
+                    json=args,
+                    timeout=self._timeout,
+                    follow_redirects=True,
+                )
+            except Exception as e:
+                self.__set_error(f"Request failed: {e}")
+                return False
+
+        return self._handle_response(response)
+
+    def _handle_response(self, response: httpx.Response) -> bool:
+        """Handle API response and update object state.
+
+        Parameters
+        ----------
+        response : httpx.Response
+            The HTTP response to process.
+
+        Returns
+        -------
+        bool
+            True if response was handled successfully, False otherwise.
+        """
+        if response.status_code == HTTP_OK:
+            try:
+                data = self.model_validate(response.json())  # type: ignore[attr-defined]
                 for key, value in dict(data).items():
                     setattr(self, key, value)
+                self._post_process()
+                return True
+            except RecursionError:
+                self.__set_error("Error validating response: maximum recursion depth exceeded")
             except Exception as e:
                 self.__set_error(f"Error validating response: {e}")
-                return False
+        elif HTTP_BAD_REQUEST <= response.status_code < HTTP_SERVER_ERROR:
+            self.__set_error(f"Client error {response.status_code}: {response.text}")
         else:
-            print("Sad trombone: ", response.status_code)
-            #            self.__set_error(f"Error: {response.status_code} - {response.text}")
-            return False
+            self.__set_error(f"Server error {response.status_code}: {response.text}")
 
-        # Perform processing of the response
-        self._post_process()
-        # DEBUG: submit_post returning True
+        return False
 
-        return True
+    def _validate_with_schema(self, schema: Type[BaseModel], set_error: bool = True) -> bool:
+        """Validate data against a schema.
 
-    def validate_get(self, set_error=True):
-        """Validate API submission before submit
-
-        Returns
-        -------
-        bool
-            Was validation successful?
-        """
-
-        try:
-            self._get_schema.model_validate(self.model_dump())
-        except ValidationError as e:
-            if set_error:
-                # Set error message if validation fails
-                self.__set_error(f"Validation failed: {e}")
-            return False
-        return True
-
-    def validate_post(self, set_error=True):
-        """Validate API submission before submit
+        Parameters
+        ----------
+        schema : Type[BaseModel]
+            The Pydantic schema to validate against.
+        set_error : bool, optional
+            Whether to set error message on validation failure.
 
         Returns
         -------
         bool
-            Was validation successful?
+            True if validation succeeded, False otherwise.
         """
-
         try:
-            self._post_schema.model_validate(self.model_dump())
+            schema.model_validate(self.model_dump())  # type: ignore[attr-defined]
+            return True
         except ValidationError as e:
             if set_error:
-                # Set error message if validation fails
-                self.__set_error(f"Validation failed: {e}")
+                concise_error = self._format_validation_error(e)
+                self.__set_error(concise_error)
             return False
-        return True
+
+    def validate_get(self, set_error: bool = True) -> bool:
+        """Validate for GET request.
+
+        Parameters
+        ----------
+        set_error : bool, optional
+            Whether to set error message on validation failure.
+
+        Returns
+        -------
+        bool
+            True if validation succeeded, False otherwise.
+        """
+        return self._validate_with_schema(self._get_schema, set_error)
+
+    def validate_post(self, set_error: bool = True) -> bool:
+        """Validate for POST request.
+
+        Parameters
+        ----------
+        set_error : bool, optional
+            Whether to set error message on validation failure.
+
+        Returns
+        -------
+        bool
+            True if validation succeeded, False otherwise.
+        """
+        return self._validate_with_schema(self._post_schema, set_error)

@@ -254,7 +254,7 @@ class SwiftTOORequest(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestSchema)
         return [obs for obs in ObsType]
 
     @property
-    def _table(self):
+    def _table(self) -> tuple[list[str], list[list[Any]]]:
         tab = list()
         if self.decision is not None:
             _parameters = [
@@ -319,7 +319,11 @@ class SwiftTOORequest(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestSchema)
             header = []
         return header, tab
 
-    def server_validate(self):
+    def validate(self) -> bool:  # type: ignore[override]
+        """Validate the TOO request locally."""
+        return super().validate_post()
+
+    def server_validate(self) -> bool:
         """Validate the TOO request with the TOO API server."""
 
         # Do a server side validation

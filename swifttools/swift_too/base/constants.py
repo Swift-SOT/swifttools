@@ -1,3 +1,7 @@
+from pathlib import Path
+
+from swifttools.swift_too.version import version_tuple
+
 XRTMODES = {
     0: "Auto",
     1: "Null",
@@ -29,3 +33,21 @@ MODESXRT = {
     "PC_200": 200,
     "Manual": 255,
 }
+
+# Define the API version
+API_VERSION = f"{version_tuple[0]}.{version_tuple[1]}"
+
+# Submission URL
+API_URL = f"https://www.swift.psu.edu/api/v{API_VERSION}"
+
+# HTTP Status codes
+HTTP_OK = 200
+HTTP_BAD_REQUEST = 400
+HTTP_SERVER_ERROR = 500
+
+# Magic strings
+STATUS_PENDING = "Pending"
+SESSION_COOKIE_NAME = "session"
+
+# Create and optionally load cookies
+COOKIE_JAR_PATH = Path.home() / ".cache/swift_too" / "cookies.txt"
