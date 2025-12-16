@@ -134,7 +134,7 @@ class TOOAPIAutoResolve(OptionalCoordinateSchema):
             values["name"] = target_name
             name = target_name
 
-        if name is not None and isinstance(name, str):
+        if name is not None and isinstance(name, str) and values.get("ra") is None and values.get("dec") is None:
             r = SwiftResolve(name=name)
             if len(r.status.warnings) == 0 and len(r.status.errors) == 0:
                 values["ra"] = float(r.ra)
