@@ -381,22 +381,9 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         if response.status_code == HTTPStatus.OK:
             try:
                 data = self.model_validate(response.json())  # type: ignore[attr-defined]
-                # Prefer model_dump if available (Pydantic model), otherwise accept a dict
-                if hasattr(data, "model_dump"):
-                    payload = data.model_dump()
-                elif isinstance(data, dict):
-                    payload = data
-                else:
-                    # Defensive: unexpected type (e.g., list) — report a clearer error
-                    self.__set_error(f"Error validating response: unexpected validated type {type(data)}")
-                    return False
-
-                for key, value in payload.items():
-                    setattr(self, key, value)
+                self.__dict__ = data.__dict__
                 self._post_process()
                 return True
-            except RecursionError:
-                self.__set_error("Error validating response: maximum recursion depth exceeded")
             except Exception as e:
                 self.__set_error(f"Error validating response: {e}")
         elif response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY:
