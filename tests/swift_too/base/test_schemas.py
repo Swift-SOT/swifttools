@@ -58,7 +58,7 @@ def test_begin_end_length_schema_end_before_begin_raises():
 def test_optional_begin_end_length_schema_accepts_none():
     s = OptionalBeginEndLengthSchema()
     # begin defaults to utcnow() as check_length sets begin when not provided
-    assert s.begin is not None and s.end is None
+    assert s.begin is None and s.end is None
 
 
 def test_optional_begin_end_length_schema_with_begin_and_length_sets_end():

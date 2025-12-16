@@ -13,7 +13,7 @@ from ..base.schemas import (
     OptionalCoordinateSchema,
 )
 from ..base.status import TOOStatus
-from .clock import TOOAPIClockCorrect
+from .clock import SwiftDateTimeSchema, TOOAPIClockCorrect
 from .data import TOOAPIDownloadData
 from .resolve import TOOAPIAutoResolve
 from .schemas import ObsIDSDC
@@ -159,7 +159,7 @@ class SwiftAFSTSchema(OptionalCoordinateSchema, OptionalBeginEndLengthSchema):
     radius: AstropyAngle = 0.19666666666666668
     target_id: Union[int, list[int], None] = None
     obs_id: Union[ObsIDSDC, list[ObsIDSDC], None] = None
-    afstmax: Optional[datetime] = None
+    afstmax: Optional[datetime | SwiftDateTimeSchema] = None
     entries: list[SwiftAFSTEntry] = []
     status: TOOStatus = TOOStatus()
 

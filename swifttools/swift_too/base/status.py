@@ -40,6 +40,7 @@ class SwiftTOOStatus(BaseSchema, TOOAPIReprMixin):
         """Add an error to the list of errors"""
         if error not in self.errors:
             self.errors.append(error)
+        self.status = "Rejected"
 
     def warning(self, warning):
         """Add a warning to the list of warnings"""
