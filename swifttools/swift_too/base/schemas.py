@@ -19,7 +19,7 @@ from pydantic import (
 )
 from pydantic_core import core_schema
 
-from .functions import convert_from_timedelta, utcnow, uvot_mode_convert, validate_monitoring_cadence, xrt_mode_convert
+from .functions import convert_from_timedelta, uvot_mode_convert, validate_monitoring_cadence, xrt_mode_convert
 
 # Custom Types
 NaiveUTCDatetime = Annotated[
@@ -102,7 +102,7 @@ class BeginEndLengthSchema(BaseSchema):
     Only one of 'end' or 'length' should be provided.
     """
 
-    begin: AstropyDateTime = Field(default_factory=utcnow)
+    begin: Optional[AstropyDateTime] = Field(default=None, description="Start time (UTC)")
     end: Optional[AstropyDateTime] = Field(default=None, description="End time (UTC)")
     length: Optional[AstropyDayLength] = Field(
         default=timedelta(days=1),
@@ -117,7 +117,7 @@ class BeginEndLengthSchema(BaseSchema):
         length = self.length
 
         if end and length:
-            if end != begin + timedelta(days=convert_from_timedelta(length)):
+            if begin is not None and end != begin + timedelta(days=convert_from_timedelta(length)):
                 raise ValueError("Only one of 'end', or 'length' should be provided.")
         if not (begin or end or length):
             raise ValueError("At least 'begin' and 'end' or 'length' must be provided.")
@@ -139,7 +139,7 @@ class BeginEndLengthSchema(BaseSchema):
             values = values.__dict__
 
         # Retrieve values and convert to datetime
-        begin = TypeAdapter(AstropyDateTime).validate_python(values.get("begin", utcnow()))
+        begin = TypeAdapter(AstropyDateTime).validate_python(values.get("begin"))
         end = TypeAdapter(AstropyDateTime).validate_python(values.get("end"))
         length = values.get("length")
 
@@ -209,7 +209,7 @@ class OptionalBeginEndLengthSchema(BaseSchema):
             values = values.__dict__
 
         # Retrieve values and convert to datetime
-        begin = values.get("begin", utcnow())
+        begin = values.get("begin")
         end = values.get("end")
         if begin is not None:
             begin = TypeAdapter(AstropyDateTime).validate_python(begin)

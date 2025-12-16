@@ -333,8 +333,9 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
                 )
             except Exception as e:
                 self.__set_error(f"Request failed: {e}")
+                print(response.url)
                 return False
-
+            print(response.url)
         return self._handle_response(response)
 
     def submit_post(self) -> bool:
@@ -380,7 +381,17 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         if response.status_code == HTTPStatus.OK:
             try:
                 data = self.model_validate(response.json())  # type: ignore[attr-defined]
-                for key, value in dict(data).items():
+                # Prefer model_dump if available (Pydantic model), otherwise accept a dict
+                if hasattr(data, "model_dump"):
+                    payload = data.model_dump()
+                elif isinstance(data, dict):
+                    payload = data
+                else:
+                    # Defensive: unexpected type (e.g., list) — report a clearer error
+                    self.__set_error(f"Error validating response: unexpected validated type {type(data)}")
+                    return False
+
+                for key, value in payload.items():
                     setattr(self, key, value)
                 self._post_process()
                 return True
