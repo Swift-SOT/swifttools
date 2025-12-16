@@ -333,7 +333,6 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
                 )
             except Exception as e:
                 self.__set_error(f"Request failed: {e}")
-                print(response.url)
                 return False
             print(response.url)
         return self._handle_response(response)
