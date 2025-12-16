@@ -19,7 +19,7 @@ from pydantic import (
 )
 from pydantic_core import core_schema
 
-from .functions import convert_from_timedelta, uvot_mode_convert, validate_monitoring_cadence, xrt_mode_convert
+from .functions import convert_from_timedelta, utcnow, uvot_mode_convert, validate_monitoring_cadence, xrt_mode_convert
 
 # Custom Types
 NaiveUTCDatetime = Annotated[
@@ -139,9 +139,9 @@ class BeginEndLengthSchema(BaseSchema):
             values = values.__dict__
 
         # Retrieve values and convert to datetime
-        begin = TypeAdapter(AstropyDateTime).validate_python(values.get("begin"))
-        end = TypeAdapter(AstropyDateTime).validate_python(values.get("end"))
-        length = values.get("length")
+        begin = TypeAdapter(AstropyDateTime).validate_python(values.get("begin", None))
+        end = TypeAdapter(AstropyDateTime).validate_python(values.get("end", None))
+        length = values.get("length", None)
 
         # Support for astropy TimeDelta and Quantity objects
         if isinstance(length, (TimeDelta, u.Quantity)):
@@ -150,6 +150,10 @@ class BeginEndLengthSchema(BaseSchema):
         # Support for float/int days
         if isinstance(length, (int, float)):
             length = timedelta(days=length)
+
+        # if length only is provided, set begin to be now
+        if begin is None and end is None and length is not None:
+            begin = Time.now()
 
         # Set end if length is provided
         if begin is not None and end is None and length is not None:
@@ -226,6 +230,10 @@ class OptionalBeginEndLengthSchema(BaseSchema):
         # Support for timedelta objects
         if isinstance(length, timedelta):
             length = length.total_seconds() / 86400.0
+
+        # if length only is provided, set begin to be now
+        if begin is None and end is None and length is not None:
+            begin = utcnow()
 
         # Support for float/int days
         if end is None and begin is not None and length is not None:
