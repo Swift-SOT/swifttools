@@ -65,7 +65,11 @@ AstropyAngle = Annotated[
     PlainValidator(lambda x: float(x.to_value(u.deg)) if hasattr(x, "unit") else float(x)),
 ]
 
-AstropyDayLength = Annotated[Union[float, int, u.Quantity, timedelta], PlainSerializer(convert_from_timedelta)]
+AstropyDayLength = Annotated[
+    Union[float, int, u.Quantity, timedelta],
+    PlainSerializer(convert_from_timedelta),
+    PlainValidator(convert_from_timedelta),
+]
 
 # Define as a type that validates monitoring cadence strings
 TextLength = Annotated[
@@ -110,28 +114,6 @@ class BeginEndLengthSchema(BaseSchema):
         exclude=True,  # We don't want to include length in the output
     )
 
-    @model_validator(mode="after")
-    def check_begin_end_length(self) -> "BeginEndLengthSchema":
-        begin = self.begin
-        end = self.end
-        length = self.length
-
-        if end and length:
-            if begin is not None and end != begin + timedelta(days=convert_from_timedelta(length)):
-                raise ValueError("Only one of 'end', or 'length' should be provided.")
-        if not (begin or end or length):
-            raise ValueError("At least 'begin' and 'end' or 'length' must be provided.")
-        if begin and length:
-            end = begin + timedelta(days=convert_from_timedelta(length))
-        if end and begin:
-            if end < begin:
-                raise ValueError("End time cannot be before begin time.")
-            else:
-                length = end - begin
-        object.__setattr__(self, "length", length)
-        object.__setattr__(self, "end", end)
-        return self
-
     @model_validator(mode="before")
     @classmethod
     def check_length(cls, values: dict[str, Any]) -> dict[str, Any]:
@@ -159,6 +141,10 @@ class BeginEndLengthSchema(BaseSchema):
         if begin is not None and end is None and length is not None:
             end = begin + length
 
+        # Set length if begin and end are provided
+        if begin is not None and end is not None:
+            length = end - begin
+
         values["length"] = length
         values["end"] = end
         values["begin"] = begin
@@ -180,30 +166,6 @@ class OptionalBeginEndLengthSchema(BaseSchema):
         exclude=True,  # We don't want to include length in the output
     )
 
-    @model_validator(mode="after")
-    def check_begin_end_length(self) -> "OptionalBeginEndLengthSchema":
-        begin = self.begin
-        end = self.end
-        length = self.length
-
-        if not (begin or end or length):
-            return self
-        if not begin:
-            return self
-        if end and length:
-            if end != begin + timedelta(days=convert_from_timedelta(length)):
-                raise ValueError("Only one of 'end', or 'length' should be provided.")
-        if begin and length:
-            end = begin + timedelta(days=convert_from_timedelta(length))
-        if end and begin:
-            if end < begin:
-                raise ValueError("End time cannot be before begin time.")
-            else:
-                length = (end - begin).total_seconds() / 86400.0
-        object.__setattr__(self, "length", length)
-        object.__setattr__(self, "end", end)
-        return self
-
     @model_validator(mode="before")
     @classmethod
     def check_length(cls, values: dict[str, Any]) -> dict[str, Any]:
@@ -215,11 +177,14 @@ class OptionalBeginEndLengthSchema(BaseSchema):
         # Retrieve values and convert to datetime
         begin = values.get("begin")
         end = values.get("end")
+        length = values.get("length")
         if begin is not None:
             begin = TypeAdapter(AstropyDateTime).validate_python(begin)
         if end is not None:
             end = TypeAdapter(AstropyDateTime).validate_python(end)
-        length = values.get("length")
+        if length is not None:
+            length = TypeAdapter(AstropyDayLength).validate_python(values.get("length"))
+
         if length is None and end is None:
             length = cls.model_fields["length"].default
 
@@ -238,6 +203,11 @@ class OptionalBeginEndLengthSchema(BaseSchema):
         # Support for float/int days
         if end is None and begin is not None and length is not None:
             end = begin + timedelta(days=length)
+
+        # Support for setting length and overriding end
+        if length is not None and begin is not None:
+            length = timedelta(days=length)
+            end = begin + length
 
         values["length"] = length
         values["end"] = end
