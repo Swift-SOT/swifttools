@@ -1,7 +1,10 @@
+from datetime import datetime, timedelta
+
+from pydantic import computed_field
+
 from ..base.common import TOOAPIBaseclass
 from ..base.schemas import (
-    BeginEndLengthSchema,
-    CoordinateSchema,
+    BaseSchema,
     OptionalBeginEndLengthSchema,
     OptionalCoordinateSchema,
 )
@@ -10,7 +13,7 @@ from .clock import TOOAPIClockCorrect
 from .resolve import TOOAPIAutoResolve
 
 
-class SwiftVisWindow(BeginEndLengthSchema, TOOAPIClockCorrect):
+class SwiftVisWindow(BaseSchema, TOOAPIClockCorrect):
     """
     Simple class to define a Visibility window. Begin and End of window can
     either be accessed as self.begin or self.end, or as self[0] or self[1].
@@ -25,11 +28,20 @@ class SwiftVisWindow(BeginEndLengthSchema, TOOAPIClockCorrect):
         length of window
     """
 
+    begin: datetime
+    end: datetime
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def length(self) -> timedelta:
+        """Length of visibility window as timedelta"""
+        return self.end - self.begin
+
     _varnames = {"begin": "Begin Time", "end": "End Time", "length": "Window length"}
 
     @property
     def _table(self):
-        header = [self._header_title(row) for row in self.__class__.model_fields]
+        header = [self._header_title(row) for row in ["begin", "end", "length"]]
         return header, [[self.begin, self.end, self.length]]
 
     def __str__(self):
@@ -50,7 +62,7 @@ class SwiftVisQuerySchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema
     status: TOOStatus = TOOStatus()
 
 
-class SwiftVisQueryGetSchema(BeginEndLengthSchema, CoordinateSchema):
+class SwiftVisQueryGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
     hires: bool = False
 
 
