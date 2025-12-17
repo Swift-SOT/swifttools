@@ -282,6 +282,37 @@ class TestMockTOOAPIBaseclass:
             result = mock_base_class.submit()
             assert result is False
 
+    def test_queue_get_success(self, mock_cookie_jar, mock_client, mock_base_class):
+        import time
+        from unittest.mock import patch
+
+        mock_base_class.status.status = "Pending"
+        object.__setattr__(mock_base_class, "complete", False)
+        assert mock_base_class.complete is False
+
+        # Mock the schema validation
+        mock_validated = Mock()
+        mock_validated.model_dump.return_value = {"param": "value"}
+        with patch.object(MockSchema, "model_validate", return_value=mock_validated):
+            mock_response = Mock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {"status": "success"}
+
+            mock_client.return_value.__enter__.return_value.get.return_value = mock_response
+            mock_client.return_value.__enter__.return_value.post.return_value = Mock(status_code=200)
+
+            # Mock model_validate
+            def mock_model_validate(data):
+                mock_base_class.status.status = "success"
+                return mock_base_class
+
+            with patch.object(MockTOOAPIBaseclass, "model_validate", side_effect=mock_model_validate):
+                result = mock_base_class.queue()
+                assert result is True
+                # Wait a bit for the thread to complete
+                time.sleep(0.1)
+                assert mock_base_class.complete is True
+
 
 class MockBackCompat(TOOAPIBackCompat):
     def __init__(self):
