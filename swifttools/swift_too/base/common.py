@@ -1,4 +1,5 @@
 import http.cookiejar
+import threading
 import warnings
 from http import HTTPStatus
 from typing import Any, Optional, Type
@@ -149,6 +150,7 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         kwargs = self._handle_back_compat_args(kwargs)
         kwargs = self._convert_positional_args(args, kwargs)
         super().__init__(**kwargs)
+        object.__setattr__(self, "complete", False)
 
     def _handle_back_compat_args(self, kwargs: dict) -> dict:
         """Convert deprecated argument names to current names."""
@@ -274,6 +276,31 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
                 return False
         return False
 
+    def queue(self):
+        """
+        Queue the API request to the server asynchronously. This method returns
+        immediately after starting the request in a background thread. Once the
+        response arrives, the object is updated with the results and the `complete`
+        property is set to True.
+
+        Returns
+        -------
+        bool
+            True if the request was queued successfully, False otherwise.
+        """
+        if self.status.status == "Pending":
+            if hasattr(self, "_get_schema"):
+                if self.validate_get():
+                    threading.Thread(target=self._submit_get_async).start()
+                    return True
+                return False
+            elif hasattr(self, "_post_schema"):
+                if self.validate_post():
+                    threading.Thread(target=self._submit_post_async).start()
+                    return True
+                return False
+        return False
+
     def _ensure_authenticated(self, client: httpx.Client) -> bool:
         """
         Ensure the client is authenticated. Login if needed.
@@ -364,6 +391,77 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
 
         return self._handle_response(response)
 
+    def _submit_get_async(self) -> None:
+        """Perform an asynchronous API GET request to the server."""
+        assert hasattr(self, "_get_schema"), "GET schema not defined for this API class."
+        assert hasattr(self, "model_dump"), "Not a Pydantic model."
+        print("Starting async GET submission")
+        # Prepare request arguments
+        args = self._get_schema.model_validate(self.model_dump(exclude={"__pydantic_extra__"})).model_dump(
+            exclude_none=True
+        )
+        args.pop("status", None)
+        print(args)
+
+        with httpx.Client(cookies=cookie_jar) as client:
+            if not self._ensure_authenticated(client):
+                object.__setattr__(self, "complete", True)
+                return
+
+            try:
+                response = client.get(
+                    self.submit_url,
+                    params=args,
+                    timeout=self._timeout,
+                    follow_redirects=True,
+                )
+            except Exception as e:
+                self.__set_error(f"Request failed: {e}")
+                object.__setattr__(self, "complete", True)
+                return
+            print(response.url)
+        self._handle_response_async(response)
+
+    def _submit_post_async(self) -> None:
+        """Perform an asynchronous API POST request to the server."""
+        assert hasattr(self, "_post_schema"), "POST schema not defined for this API class."
+        assert hasattr(self, "model_dump"), "Not a Pydantic model."
+
+        # Prepare request arguments
+        args = self._post_schema.model_validate(self.model_dump(exclude={"__pydantic_extra__"})).model_dump(
+            exclude_none=True, mode="json"
+        )
+        print(args)
+        with httpx.Client(cookies=cookie_jar) as client:
+            if not self._ensure_authenticated(client):
+                object.__setattr__(self, "complete", True)
+                return
+
+            try:
+                response = client.post(
+                    self.submit_url,
+                    data=args,
+                    timeout=self._timeout,
+                    follow_redirects=True,
+                )
+            except Exception as e:
+                self.__set_error(f"Request failed: {e}")
+                object.__setattr__(self, "complete", True)
+                return
+
+        self._handle_response_async(response)
+
+    def _handle_response_async(self, response: httpx.Response):
+        """Handle API response asynchronously and update object state.
+
+        Parameters
+        ----------
+        response : httpx.Response
+            The HTTP response to process.
+        """
+        self._handle_response(response)
+        object.__setattr__(self, "complete", True)
+
     def _handle_response(self, response: httpx.Response) -> bool:
         """Handle API response and update object state.
 
@@ -421,7 +519,7 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
             True if validation succeeded, False otherwise.
         """
         try:
-            schema.model_validate(self.model_dump())  # type: ignore[attr-defined]
+            schema.model_validate(self.model_dump(include=set(schema.model_fields.keys())))  # type: ignore[attr-defined]
             return True
         except ValidationError as e:
             if set_error:
