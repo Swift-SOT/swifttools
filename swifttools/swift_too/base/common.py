@@ -395,13 +395,12 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         """Perform an asynchronous API GET request to the server."""
         assert hasattr(self, "_get_schema"), "GET schema not defined for this API class."
         assert hasattr(self, "model_dump"), "Not a Pydantic model."
-        print("Starting async GET submission")
+
         # Prepare request arguments
         args = self._get_schema.model_validate(self.model_dump(exclude={"__pydantic_extra__"})).model_dump(
             exclude_none=True
         )
         args.pop("status", None)
-        print(args)
 
         with httpx.Client(cookies=cookie_jar) as client:
             if not self._ensure_authenticated(client):
