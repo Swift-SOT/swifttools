@@ -88,7 +88,7 @@ def _tablefy(table, header=None):
     return tab
 
 
-def validate_monitoring_cadence(value: str | u.Quantity | timedelta) -> str:
+def validate_monitoring_cadence(value: Union[str, u.Quantity, timedelta]) -> str:
     if type(value) is str:
         if (
             re.match(

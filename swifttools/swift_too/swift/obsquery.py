@@ -1,5 +1,6 @@
+from collections.abc import Generator
 from datetime import datetime, timedelta
-from typing import Any, Generator, Optional, Union
+from typing import Any, Optional, Union
 
 from pydantic import ConfigDict, computed_field, model_validator
 
@@ -159,7 +160,7 @@ class SwiftAFSTSchema(OptionalCoordinateSchema, OptionalBeginEndLengthSchema):
     radius: AstropyAngle = 0.19666666666666668
     target_id: Union[int, list[int], None] = None
     obs_id: Union[ObsIDSDC, list[ObsIDSDC], None] = None
-    afstmax: Optional[datetime | SwiftDateTimeSchema] = None
+    afstmax: Union[datetime, SwiftDateTimeSchema, None] = None
     entries: list[SwiftAFSTEntry] = []
     status: TOOStatus = TOOStatus()
 
@@ -437,8 +438,7 @@ class SwiftAFST(
         return len(self.entries)
 
     def __iter__(self) -> Generator:
-        for entry in self.entries:
-            yield entry
+        yield from self.entries
 
     def append(self, value: SwiftAFSTEntry) -> None:
         self.entries.append(value)

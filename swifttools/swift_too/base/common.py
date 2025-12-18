@@ -2,7 +2,7 @@ import http.cookiejar
 import threading
 import warnings
 from http import HTTPStatus
-from typing import Any, Optional, Type
+from typing import Any, Optional
 
 import httpx
 from pydantic import BaseModel, ValidationError
@@ -177,7 +177,7 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
                         kwargs[field_name] = arg
         return kwargs
 
-    def _get_schema_for_init(self) -> Optional[Type[BaseModel]]:
+    def _get_schema_for_init(self) -> Optional[type[BaseModel]]:
         """Get the appropriate schema for initialization."""
         schema_attr = getattr(self.__class__, "_get_schema", None) or getattr(self.__class__, "_post_schema", None)
         if hasattr(schema_attr, "default"):
@@ -502,7 +502,7 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
 
         return False
 
-    def _validate_with_schema(self, schema: Type[BaseModel], set_error: bool = True) -> bool:
+    def _validate_with_schema(self, schema: type[BaseModel], set_error: bool = True) -> bool:
         """Validate data against a schema.
 
         Parameters

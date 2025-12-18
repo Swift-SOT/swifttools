@@ -65,18 +65,18 @@ class SwiftTOORequestSchema(BaseSchema, TOOAPIReprMixin, TOOAPIBackCompat):
     status: TOOStatus = TOOStatus()
 
     # Internal storage for computed exposure
-    _exposure: int | None = None
+    _exposure: Optional[int] = None
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def exposure(self) -> int | None:
+    def exposure(self) -> Optional[int]:
         if self._exposure is None:
             if self.exp_time_per_visit is not None and self.num_of_visits is not None:
                 self._exposure = self.exp_time_per_visit * self.num_of_visits
         return self._exposure
 
     @exposure.setter
-    def exposure(self, v: int | float):
+    def exposure(self, v: Union[int, float]) -> None:
         self._exposure = int(v)
 
     # English Descriptions of all the variables
