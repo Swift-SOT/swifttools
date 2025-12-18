@@ -250,6 +250,14 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
             return False
         if not hasattr(self, "status") or isinstance(self.status, str):
             return False
+
+        # Check if data validates against the get schema
+        if hasattr(self, "_get_schema"):
+            try:
+                self._get_schema.model_validate(self.model_dump(exclude={"__pydantic_extra__"}))  # type: ignore[attr-defined]
+            except ValidationError:
+                return False
+
         return hasattr(self.status, "status") and self.status.status == STATUS_PENDING  # type: ignore[attr-defined]
 
     def submit(self):
@@ -342,9 +350,9 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         assert hasattr(self, "model_dump"), "Not a Pydantic model."
 
         # Prepare request arguments
-        args = self._get_schema.model_validate(self.model_dump(exclude={"__pydantic_extra__"})).model_dump(
-            exclude_none=True
-        )
+        args = self._get_schema.model_validate(
+            self.model_dump(exclude={"__pydantic_extra__"}, exclude_none=True)
+        ).model_dump(exclude_none=True)
         args.pop("status", None)
 
         with httpx.Client(cookies=cookie_jar) as client:
@@ -518,7 +526,7 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
             True if validation succeeded, False otherwise.
         """
         try:
-            schema.model_validate(self.model_dump(include=set(schema.model_fields.keys())))  # type: ignore[attr-defined]
+            schema.model_validate(self.model_dump(include=set(schema.model_fields.keys()), exclude_none=True))  # type: ignore[attr-defined]
             return True
         except ValidationError as e:
             if set_error:
