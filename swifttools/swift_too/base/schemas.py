@@ -17,9 +17,9 @@ from pydantic import (
     TypeAdapter,
     model_validator,
 )
-from pydantic_core import core_schema
+from pydantic_core import PydanticUndefinedType, core_schema
 
-from .functions import convert_from_timedelta, utcnow, uvot_mode_convert, validate_monitoring_cadence, xrt_mode_convert
+from .functions import convert_from_timedelta, uvot_mode_convert, validate_monitoring_cadence, xrt_mode_convert
 
 # Custom Types
 NaiveUTCDatetime = Annotated[
@@ -197,15 +197,15 @@ class OptionalBeginEndLengthSchema(BaseSchema):
             length = length.total_seconds() / 86400.0
 
         # if length only is provided, set begin to be now
-        if begin is None and end is None and length is not None:
-            begin = utcnow()
+        # if begin is None and end is None and length is not None:
+        #    begin = utcnow()
 
         # Support for float/int days
-        if end is None and begin is not None and length is not None:
+        if end is None and begin is not None and length is not None and not isinstance(length, PydanticUndefinedType):
             end = begin + timedelta(days=length)
 
         # Support for setting length and overriding end
-        if length is not None and begin is not None:
+        if length is not None and begin is not None and not isinstance(length, PydanticUndefinedType):
             length = timedelta(days=length)
             end = begin + length
 

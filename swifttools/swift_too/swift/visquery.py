@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import Optional
 
 from pydantic import BaseModel, Field, computed_field
 
@@ -7,6 +8,7 @@ from swifttools.swift_too.base.functions import utcnow
 from ..base.common import TOOAPIBaseclass
 from ..base.schemas import (
     AstropyAngle,
+    AstropyDateTime,
     AstropyDayLength,
     BaseSchema,
     OptionalBeginEndLengthSchema,
@@ -61,6 +63,7 @@ class SwiftVisWindow(BaseSchema, TOOAPIClockCorrect):
 
 
 class SwiftVisQuerySchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
+    length: AstropyDayLength
     hires: bool = False
     windows: list[SwiftVisWindow] = []
     status: TOOStatus = TOOStatus()
@@ -72,7 +75,8 @@ class SwiftVisQueryGetSchema(BaseModel):
 
     ra: AstropyAngle
     dec: AstropyAngle
-    begin: datetime = Field(default_factory=utcnow)
+    begin: AstropyDateTime = Field(default_factory=utcnow)
+    end: Optional[AstropyDateTime] = None
     length: AstropyDayLength = 7
     hires: bool = False
 

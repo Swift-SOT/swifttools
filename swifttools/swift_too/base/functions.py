@@ -4,6 +4,7 @@ from typing import Union
 
 from astropy import units as u  # type: ignore[import-untyped]
 from astropy.time import TimeDelta  # type: ignore[import-untyped]
+from pydantic_core import PydanticUndefinedType
 
 from .constants import MODESXRT, XRTMODES
 
@@ -13,8 +14,10 @@ def utcnow():
     return datetime.now(tz=timezone.utc).replace(tzinfo=None)
 
 
-def convert_from_timedelta(value: Union[float, int, u.Quantity, timedelta]) -> float:
+def convert_from_timedelta(value: Union[float, int, u.Quantity, timedelta]) -> Union[float, PydanticUndefinedType]:
     """Convert a value to a timedelta in days."""
+    if isinstance(value, PydanticUndefinedType):
+        return value
     if isinstance(value, u.Quantity):
         return value.to(u.day).value
     elif isinstance(value, (int, float)):
