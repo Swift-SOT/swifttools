@@ -1,14 +1,14 @@
 from datetime import datetime, timedelta
 
-from pydantic import Field, computed_field
+from pydantic import BaseModel, Field, computed_field
 
 from swifttools.swift_too.base.functions import utcnow
 
 from ..base.common import TOOAPIBaseclass
 from ..base.schemas import (
+    AstropyAngle,
     AstropyDayLength,
     BaseSchema,
-    CoordinateSchema,
     OptionalBeginEndLengthSchema,
     OptionalCoordinateSchema,
 )
@@ -66,7 +66,12 @@ class SwiftVisQuerySchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema
     status: TOOStatus = TOOStatus()
 
 
-class SwiftVisQueryGetSchema(CoordinateSchema):
+class SwiftVisQueryGetSchema(BaseModel):
+    """Defined the GET schema for SwiftVisQuery requests. Strict definition,
+    just the args."""
+
+    ra: AstropyAngle
+    dec: AstropyAngle
     begin: datetime = Field(default_factory=utcnow)
     length: AstropyDayLength = 7
     hires: bool = False

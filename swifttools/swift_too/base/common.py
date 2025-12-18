@@ -255,7 +255,7 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         if hasattr(self, "_get_schema"):
             try:
                 self._get_schema.model_validate(self.model_dump(exclude={"__pydantic_extra__"}))  # type: ignore[attr-defined]
-            except ValidationError:
+            except (ValidationError, TypeError):
                 return False
 
         return hasattr(self.status, "status") and self.status.status == STATUS_PENDING  # type: ignore[attr-defined]
@@ -354,6 +354,8 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
             self.model_dump(exclude={"__pydantic_extra__"}, exclude_none=True)
         ).model_dump(exclude_none=True)
         args.pop("status", None)
+
+        print(args)
 
         with httpx.Client(cookies=cookie_jar) as client:
             if not self._ensure_authenticated(client):
