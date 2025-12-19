@@ -17,7 +17,7 @@ from .schemas import ObsType
 class SwiftTOORequestSchema(BaseSchema, TOOAPIReprMixin, TOOAPIBackCompat):
     too_id: Optional[int] = None
     timestamp: Optional[datetime] = None
-    #    target_name: Optional[str] = None
+    # target_name: Optional[str] = None
     target_type: Optional[str] = None
     ra: Optional[AstropyAngle] = None
     dec: Optional[AstropyAngle] = None

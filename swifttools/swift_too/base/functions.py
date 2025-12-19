@@ -1,6 +1,6 @@
 import re
 from datetime import datetime, timedelta, timezone
-from typing import Union
+from typing import Optional, Union
 
 from astropy import units as u  # type: ignore[import-untyped]
 from astropy.time import TimeDelta  # type: ignore[import-untyped]
@@ -91,7 +91,11 @@ def _tablefy(table, header=None):
     return tab
 
 
-def validate_monitoring_cadence(value: Union[str, u.Quantity, timedelta]) -> str:
+def validate_monitoring_cadence(value: Union[str, u.Quantity, timedelta, None]) -> Optional[str]:
+    # Check for empty values
+    if value is None or (isinstance(value, str) and value.strip() == ""):
+        return None
+
     if type(value) is str:
         if (
             re.match(
