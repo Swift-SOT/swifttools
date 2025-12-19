@@ -2,12 +2,14 @@ from collections.abc import Generator
 from datetime import datetime, timedelta
 from typing import Any, Optional, Union
 
-from pydantic import ConfigDict, computed_field, model_validator
+from pydantic import BaseModel, ConfigDict, computed_field, model_validator
 
 from ..base.back_compat import TOOAPIBackCompat
 from ..base.common import TOOAPIBaseclass
 from ..base.schemas import (
     AstropyAngle,
+    AstropyDateTime,
+    AstropyDayLength,
     BaseSchema,
     CoordinateSchema,
     OptionalBeginEndLengthSchema,
@@ -134,8 +136,13 @@ class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect, TOOAPIBaseclass, TOOA
         ]
 
 
-class SwiftAFSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
-    radius: AstropyAngle = 0.19666666666666668
+class SwiftAFSTGetSchema(BaseModel):
+    ra: Optional[AstropyAngle] = None
+    dec: Optional[AstropyAngle] = None
+    begin: Optional[AstropyDateTime] = None
+    end: Optional[AstropyDateTime] = None
+    length: Optional[AstropyDayLength] = None
+    radius: Optional[AstropyAngle] = None
     target_id: Union[int, list[int], None] = None
     obs_id: Union[ObsIDSDC, list[ObsIDSDC], None] = None
 
@@ -148,7 +155,7 @@ class SwiftAFSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema)
         params = cls.model_fields.keys()
         provided_fields = [field for field in params if values.get(field) is not None]
 
-        if provided_fields == ["radius"]:
+        if provided_fields == []:
             raise ValueError(
                 "At least one of 'begin', 'end', 'length', 'ra', 'dec',  'target_id', or 'obs_id' must be provided"
             )
@@ -157,12 +164,23 @@ class SwiftAFSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema)
 
 
 class SwiftAFSTSchema(OptionalCoordinateSchema, OptionalBeginEndLengthSchema):
-    radius: AstropyAngle = 0.19666666666666668
+    radius: Optional[AstropyAngle] = None
     target_id: Union[int, list[int], None] = None
     obs_id: Union[ObsIDSDC, list[ObsIDSDC], None] = None
     afstmax: Union[datetime, SwiftDateTimeSchema, None] = None
     entries: list[SwiftAFSTEntry] = []
     status: TOOStatus = TOOStatus()
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_radius(cls, values: Any) -> dict[str, Any]:
+        """Validator to set a default radius if ra and dec are provided but radius is not."""
+        values = values.__dict__ if not isinstance(values, dict) else values
+
+        # If ra and dec are provided, but not radius, set a default radius
+        if values.get("ra") is not None and values.get("dec") is not None and values.get("radius") is None:
+            values["radius"] = 12 / 60  # Default radius of 12 arcmin
+        return values
 
 
 class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, TOOAPIBackCompat, BaseSchema):

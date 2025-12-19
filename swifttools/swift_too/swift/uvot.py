@@ -1,9 +1,10 @@
 from typing import Optional
 
+from pydantic import BaseModel
 from tabulate import tabulate
 
 from ..base.common import TOOAPIBaseclass
-from ..base.schemas import BaseSchema, OptionalCoordinateSchema
+from ..base.schemas import AstropyAngle, BaseSchema
 from ..base.status import TOOStatus
 from .instruments import TOOAPIInstruments
 from .resolve import TOOAPIAutoResolve
@@ -13,7 +14,10 @@ class UVOTModeSchema(BaseSchema):
     uvot_mode: int
 
 
-class SwiftUVOTModeGetSchema(OptionalCoordinateSchema, UVOTModeSchema): ...
+class SwiftUVOTModeGetSchema(BaseModel):
+    uvot_mode: int
+    ra: Optional[AstropyAngle] = None
+    dec: Optional[AstropyAngle] = None
 
 
 class SwiftUVOTModeEntry(BaseSchema):
