@@ -25,7 +25,7 @@ The basic `swifttools.ukssdc.data` module provides just two functions, described
 
 ## Observation data
 
-There are only two things we can do with the top-level `data` module. We can download observation data by specifying an obsid (or a list of them), or by specifying a targetID, and I will demonstrate these below. 
+There are only two things we can do with the top-level `data` module. We can download observation data by specifying an obsid (or a list of them), or by specifying a targetID, and I will demonstrate these below.
 
 Just to clarify from the off, by 'observation data', I mean the set of data you get on the archive or quick-look site for an observation, like you can see [here](https://www.swift.ac.uk/archive/browsedata.php?oid=00030366099&source=obs).
 
@@ -86,13 +86,13 @@ The first parameter, the obsid, I gave as a string; it could instead have been a
 
 The two named parameters I gave appear in a lot of places, so it's worth getting to know them.
 
-* `destDir` appears in any function that saves things to disk. It specifies the top-level directory in which to save. It is always assigned a default value, relative to the current directory so you don't *need* it, but ask yourself this: who knows better where to save your data, you or me? (I'm flattered, but not, it's not me). 
-* `silent` is `True` by default and basically supresses all output except important warnings or errors. When running interactively, like in this tutorial, I like to set `silent=False` because I get some feedback on what's happening, but in standalone scripts, you probably want to leave this as `True`. 
+* `destDir` appears in any function that saves things to disk. It specifies the top-level directory in which to save. It is always assigned a default value, relative to the current directory so you don't *need* it, but ask yourself this: who knows better where to save your data, you or me? (I'm flattered, but not, it's not me).
+* `silent` is `True` by default and basically supresses all output except important warnings or errors. When running interactively, like in this tutorial, I like to set `silent=False` because I get some feedback on what's happening, but in standalone scripts, you probably want to leave this as `True`.
 * `verbose` does not appear above, but is also present in almost every function. This parameter (which defaults to `False`), causes extra output to appear on your console. The idea was the `silent` would turn of all messages, whereas `verbose` would add a load of extra ones. I freely confess that the judgement about what is classed as `verbose` is somewhat arbitrary.
 
 
 
-This simple demonstration shows the basic functionality but it's somewhat limited. What if I only wanted the XRT data? Or what if I want to choose where I get it from? 
+This simple demonstration shows the basic functionality but it's somewhat limited. What if I only wanted the XRT data? Or what if I want to choose where I get it from?
 
 
 ```python
@@ -123,7 +123,7 @@ These new arguments should be fairly self-explanatory.
 * `instruments` specifies which instruments' data to get. It can be the string 'all' or a list. So, as shown above, when I only want one instrument I still need to supply a list (or tuple) just with a single entry.
 * `source` specifies where I want to get the data from. It must be one of ("uk", "us", "italy", "uk_reproc"). The first three entries refer to the archive/quicklook areas supplied by the UK, US or Italy (bet you didn't guess that). The default, "reproc", is the UK-provided site where the XRT data have been locally reprocessed, using a recent (normally the newest) release of HEASoft and the CALDB.
 
-You may be wondering why, given that we only asked for XRT data, the 'auxil' directory was downloaded. The reason is that 'auxil', and indeed 'tdrss' and 'log', are not actually instruments so aren't included in the `instruments` parameter. Instead they are controlled by three parameters: `getAuxil`, `getTDRSS` and `getLog`. By default `getAuxil` is `True` (because you usually need this for any analysis) while the others are `False` (because you don't). 
+You may be wondering why, given that we only asked for XRT data, the 'auxil' directory was downloaded. The reason is that 'auxil', and indeed 'tdrss' and 'log', are not actually instruments so aren't included in the `instruments` parameter. Instead they are controlled by three parameters: `getAuxil`, `getTDRSS` and `getLog`. By default `getAuxil` is `True` (because you usually need this for any analysis) while the others are `False` (because you don't).
 
 There are also two parameters which I will not demonstrate here, which let you filter specific file type if you want. These can take either a string, or a list/tuples of strings. They are:
 
@@ -172,7 +172,7 @@ ud.downloadObsData((221755001,282445000),
 
 A a side-effect here, I've pointed out that `instruments` can be an empty list, if for some reason you only want the 'auxil' (or 'log' or 'tdrss') data; here I've done that just to speed up the download for this demo.
 
-If you've been paying careful attention you will have realised that I have used a different `destDir` each time. If I had not done so, I would have generated an error in the second and third downloads, complaining that the destination directory already existed. If I didn't care and wanted to overwrite it I could have added `clobber=True` to the function call. 
+If you've been paying careful attention you will have realised that I have used a different `destDir` each time. If I had not done so, I would have generated an error in the second and third downloads, complaining that the destination directory already existed. If I didn't care and wanted to overwrite it I could have added `clobber=True` to the function call.
 
 `clobber` is another parameter that turns up quite a lot, it always defaults to `False`, so that you shouldn't ever be able to overwrite something accidentally.
 

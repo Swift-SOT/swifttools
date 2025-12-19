@@ -238,7 +238,7 @@ ul['ULData'].columns.tolist()
 
 This time, the `DataFrame` has extra columns. 'Total_Rate', 'Total_RatePos' and 'Total_RateNeg' columns are are NaN when the source is undetected, otherwise contains the rate and 1-sigma error. There is also a column 'Total_IsDetected' which is a boolean column indicating whether or not the source was detected in each dataset (a source is 'detected' if the lower-limit on its count rate is &gt;0, at the confidence level set by the `detThresh` parameter, above).
 
-We're nearly done, but there are two more things to mention. 
+We're nearly done, but there are two more things to mention.
 
 First, let's come back to those 'Resolved' keys in the returned dict:
 
@@ -364,7 +364,7 @@ uds.getFullTable(table='sources',
 
 In the above I also turned off silent output, and specified the directory in which to save things.
 
-`getFullTable()` is one of the functions that takes the options `saveData` and `returnData`. In the above I explicitly gave `saveData=True` even though this is the default. 
+`getFullTable()` is one of the functions that takes the options `saveData` and `returnData`. In the above I explicitly gave `saveData=True` even though this is the default.
 
 We could instead have given `returnData=True` which actually downloads the file, reads it into a `DataFrame` and then (unless `saveData=True`), deletes it. By default (unless you specify the `destDir` argument) this file will be briefly stored in a temporary directory. Let's explore this:
 
@@ -401,7 +401,7 @@ data
 There are a few other options, which you can read about via the `help()` function:
 
 * `format` - defaults to 'csv' but can be changed to 'fits', provided that `returnData=False`.
-* `subset` - some tables have subsets (e.g. the sources table has a 'clean' and 'ultra-clean' subset). You can request these. 
+* `subset` - some tables have subsets (e.g. the sources table has a 'clean' and 'ultra-clean' subset). You can request these.
 
 So:
 
@@ -849,241 +849,241 @@ data
      'Detections': {'NumStacks': 0,
       'NumObservations': 8,
       'Observations':    ObsSourceID  DatasetID  LSXPS_ID  OSNum  UsedCorrectedPosition  \
-      0        20588       3681    129723     18                      0   
-      1        27526       5076    129723      4                      0   
-      2        95523      22539    129723      6                      0   
-      3       222435      69055    129723     13                      0   
-      4       259658      87005    129723      9                      0   
-      5       404884     163302    129723     15                      0   
-      6       429562     178529    129723      9                      0   
-      7       458370     195511    129723      9                      0   
-      
+      0        20588       3681    129723     18                      0
+      1        27526       5076    129723      4                      0
+      2        95523      22539    129723      6                      0
+      3       222435      69055    129723     13                      0
+      4       259658      87005    129723      9                      0
+      5       404884     163302    129723     15                      0
+      6       429562     178529    129723      9                      0
+      7       458370     195511    129723      9                      0
+
          NearestNeighbour  NearestOKNeighbour     Exposure       HR1   HR1_pos  ...  \
-      0         65.570452        1.000000e+80  1527.104234  0.000243  0.520389  ...   
-      1        111.849930        1.000000e+80  1244.026913  0.190570  0.809429  ...   
-      2        203.195404        1.000000e+80  1257.150513       NaN       NaN  ...   
-      3        125.186743        1.000000e+80   912.569375       NaN       NaN  ...   
-      4        120.654107        1.000000e+80   860.139964       NaN       NaN  ...   
-      5         84.879518        1.000000e+80   823.178839       NaN       NaN  ...   
-      6        146.730525        1.000000e+80   787.462875       NaN       NaN  ...   
-      7        182.487489        1.000000e+80   881.307697       NaN       NaN  ...   
-      
+      0         65.570452        1.000000e+80  1527.104234  0.000243  0.520389  ...
+      1        111.849930        1.000000e+80  1244.026913  0.190570  0.809429  ...
+      2        203.195404        1.000000e+80  1257.150513       NaN       NaN  ...
+      3        125.186743        1.000000e+80   912.569375       NaN       NaN  ...
+      4        120.654107        1.000000e+80   860.139964       NaN       NaN  ...
+      5         84.879518        1.000000e+80   823.178839       NaN       NaN  ...
+      6        146.730525        1.000000e+80   787.462875       NaN       NaN  ...
+      7        182.487489        1.000000e+80   881.307697       NaN       NaN  ...
+
          IsObsoleteStack  BestDetFlag  \
-      0                0            6   
-      1                0            6   
-      2                0            6   
-      3                0            5   
-      4                0            6   
-      5                0           22   
-      6                0           22   
-      7                0           22   
-      
+      0                0            6
+      1                0            6
+      2                0            6
+      3                0            5
+      4                0            6
+      5                0           22
+      6                0           22
+      7                0           22
+
                                                 Total_Info  HasBlindDetection_band0  \
-      0  {'sourceID': 129723, 'dsID': 3681, 'band': 0, ...                        0   
-      1  {'DetectionID': 52041, 'DatasetID': 5076, 'Ban...                        1   
-      2  {'sourceID': 129723, 'dsID': 22539, 'band': 0,...                        0   
-      3  {'DetectionID': 436402, 'DatasetID': 69055, 'B...                        1   
-      4  {'DetectionID': 511904, 'DatasetID': 87005, 'B...                        1   
-      5  {'sourceID': 129723, 'dsID': 163302, 'band': 0...                        0   
-      6  {'DetectionID': 860630, 'DatasetID': 178529, '...                        1   
-      7  {'DetectionID': 918329, 'DatasetID': 195511, '...                        1   
-      
+      0  {'sourceID': 129723, 'dsID': 3681, 'band': 0, ...                        0
+      1  {'DetectionID': 52041, 'DatasetID': 5076, 'Ban...                        1
+      2  {'sourceID': 129723, 'dsID': 22539, 'band': 0,...                        0
+      3  {'DetectionID': 436402, 'DatasetID': 69055, 'B...                        1
+      4  {'DetectionID': 511904, 'DatasetID': 87005, 'B...                        1
+      5  {'sourceID': 129723, 'dsID': 163302, 'band': 0...                        0
+      6  {'DetectionID': 860630, 'DatasetID': 178529, '...                        1
+      7  {'DetectionID': 918329, 'DatasetID': 195511, '...                        1
+
                                                  Soft_Info HasBlindDetection_band1  \
-      0  {'sourceID': 129723, 'dsID': 3681, 'band': 1, ...                       0   
-      1  {'sourceID': 129723, 'dsID': 5076, 'band': 1, ...                       0   
-      2  {'sourceID': 129723, 'dsID': 22539, 'band': 1,...                       0   
-      3  {'sourceID': 129723, 'dsID': 69055, 'band': 1,...                       0   
-      4  {'sourceID': 129723, 'dsID': 87005, 'band': 1,...                       0   
-      5  {'sourceID': 129723, 'dsID': 163302, 'band': 1...                       0   
-      6  {'sourceID': 129723, 'dsID': 178529, 'band': 1...                       0   
-      7  {'sourceID': 129723, 'dsID': 195511, 'band': 1...                       0   
-      
+      0  {'sourceID': 129723, 'dsID': 3681, 'band': 1, ...                       0
+      1  {'sourceID': 129723, 'dsID': 5076, 'band': 1, ...                       0
+      2  {'sourceID': 129723, 'dsID': 22539, 'band': 1,...                       0
+      3  {'sourceID': 129723, 'dsID': 69055, 'band': 1,...                       0
+      4  {'sourceID': 129723, 'dsID': 87005, 'band': 1,...                       0
+      5  {'sourceID': 129723, 'dsID': 163302, 'band': 1...                       0
+      6  {'sourceID': 129723, 'dsID': 178529, 'band': 1...                       0
+      7  {'sourceID': 129723, 'dsID': 195511, 'band': 1...                       0
+
                                                Medium_Info  HasBlindDetection_band2  \
-      0  {'sourceID': 129723, 'dsID': 3681, 'band': 2, ...                        0   
-      1  {'sourceID': 129723, 'dsID': 5076, 'band': 2, ...                        0   
-      2  {'sourceID': 129723, 'dsID': 22539, 'band': 2,...                        0   
-      3  {'sourceID': 129723, 'dsID': 69055, 'band': 2,...                        0   
-      4  {'sourceID': 129723, 'dsID': 87005, 'band': 2,...                        0   
-      5  {'sourceID': 129723, 'dsID': 163302, 'band': 2...                        0   
-      6  {'sourceID': 129723, 'dsID': 178529, 'band': 2...                        0   
-      7  {'sourceID': 129723, 'dsID': 195511, 'band': 2...                        0   
-      
-                                                 Hard_Info  HasBlindDetection_band3  
-      0  {'DetectionID': 39231, 'DatasetID': 3681, 'Ban...                        1  
-      1  {'sourceID': 129723, 'dsID': 5076, 'band': 3, ...                        0  
-      2  {'DetectionID': 180923, 'DatasetID': 22539, 'B...                        1  
-      3  {'DetectionID': 436414, 'DatasetID': 69055, 'B...                        1  
-      4  {'DetectionID': 511913, 'DatasetID': 87005, 'B...                        1  
-      5  {'DetectionID': 810646, 'DatasetID': 163302, '...                        1  
-      6  {'DetectionID': 860639, 'DatasetID': 178529, '...                        1  
-      7  {'sourceID': 129723, 'dsID': 195511, 'band': 3...                        0  
-      
+      0  {'sourceID': 129723, 'dsID': 3681, 'band': 2, ...                        0
+      1  {'sourceID': 129723, 'dsID': 5076, 'band': 2, ...                        0
+      2  {'sourceID': 129723, 'dsID': 22539, 'band': 2,...                        0
+      3  {'sourceID': 129723, 'dsID': 69055, 'band': 2,...                        0
+      4  {'sourceID': 129723, 'dsID': 87005, 'band': 2,...                        0
+      5  {'sourceID': 129723, 'dsID': 163302, 'band': 2...                        0
+      6  {'sourceID': 129723, 'dsID': 178529, 'band': 2...                        0
+      7  {'sourceID': 129723, 'dsID': 195511, 'band': 2...                        0
+
+                                                 Hard_Info  HasBlindDetection_band3
+      0  {'DetectionID': 39231, 'DatasetID': 3681, 'Ban...                        1
+      1  {'sourceID': 129723, 'dsID': 5076, 'band': 3, ...                        0
+      2  {'DetectionID': 180923, 'DatasetID': 22539, 'B...                        1
+      3  {'DetectionID': 436414, 'DatasetID': 69055, 'B...                        1
+      4  {'DetectionID': 511913, 'DatasetID': 87005, 'B...                        1
+      5  {'DetectionID': 810646, 'DatasetID': 163302, '...                        1
+      6  {'DetectionID': 860639, 'DatasetID': 178529, '...                        1
+      7  {'sourceID': 129723, 'dsID': 195511, 'band': 3...                        0
+
       [8 rows x 71 columns]},
      'NonDetections': {'NumStacks': 12,
       'NumObservations': 3021,
       'Stacks':           ObsID  DatasetID  IsStackedImage  \
-      0   10000024081     224562               1   
-      1   10000024086     224720               1   
-      2   10000024340     224800               1   
-      3   10000024087     224852               1   
-      4   10000024502     224854               1   
-      5   10000024503     224887               1   
-      6   10000024881     225061               1   
-      7   10000024216     225219               1   
-      8   10000024881     225481               1   
-      9   10000024502     225492               1   
-      10  10000024216     226661               1   
-      11  10000024881     226665               1   
-      
+      0   10000024081     224562               1
+      1   10000024086     224720               1
+      2   10000024340     224800               1
+      3   10000024087     224852               1
+      4   10000024502     224854               1
+      5   10000024503     224887               1
+      6   10000024881     225061               1
+      7   10000024216     225219               1
+      8   10000024881     225481               1
+      9   10000024502     225492               1
+      10  10000024216     226661               1
+      11  10000024881     226665               1
+
                                                  Total_Info  \
-      0   {'sourceID': 129723, 'dsID': 224562, 'band': 0...   
-      1   {'sourceID': 129723, 'dsID': 224720, 'band': 0...   
-      2   {'sourceID': 129723, 'dsID': 224800, 'band': 0...   
-      3   {'sourceID': 129723, 'dsID': 224852, 'band': 0...   
-      4   {'sourceID': 129723, 'dsID': 224854, 'band': 0...   
-      5   {'sourceID': 129723, 'dsID': 224887, 'band': 0...   
-      6   {'sourceID': 129723, 'dsID': 225061, 'band': 0...   
-      7   {'sourceID': 129723, 'dsID': 225219, 'band': 0...   
-      8   {'sourceID': 129723, 'dsID': 225481, 'band': 0...   
-      9   {'sourceID': 129723, 'dsID': 225492, 'band': 0...   
-      10  {'sourceID': 129723, 'dsID': 226661, 'band': 0...   
-      11  {'sourceID': 129723, 'dsID': 226665, 'band': 0...   
-      
+      0   {'sourceID': 129723, 'dsID': 224562, 'band': 0...
+      1   {'sourceID': 129723, 'dsID': 224720, 'band': 0...
+      2   {'sourceID': 129723, 'dsID': 224800, 'band': 0...
+      3   {'sourceID': 129723, 'dsID': 224852, 'band': 0...
+      4   {'sourceID': 129723, 'dsID': 224854, 'band': 0...
+      5   {'sourceID': 129723, 'dsID': 224887, 'band': 0...
+      6   {'sourceID': 129723, 'dsID': 225061, 'band': 0...
+      7   {'sourceID': 129723, 'dsID': 225219, 'band': 0...
+      8   {'sourceID': 129723, 'dsID': 225481, 'band': 0...
+      9   {'sourceID': 129723, 'dsID': 225492, 'band': 0...
+      10  {'sourceID': 129723, 'dsID': 226661, 'band': 0...
+      11  {'sourceID': 129723, 'dsID': 226665, 'band': 0...
+
                                                   Soft_Info  \
-      0   {'sourceID': 129723, 'dsID': 224562, 'band': 1...   
-      1   {'sourceID': 129723, 'dsID': 224720, 'band': 1...   
-      2   {'sourceID': 129723, 'dsID': 224800, 'band': 1...   
-      3   {'sourceID': 129723, 'dsID': 224852, 'band': 1...   
-      4   {'sourceID': 129723, 'dsID': 224854, 'band': 1...   
-      5   {'sourceID': 129723, 'dsID': 224887, 'band': 1...   
-      6   {'sourceID': 129723, 'dsID': 225061, 'band': 1...   
-      7   {'sourceID': 129723, 'dsID': 225219, 'band': 1...   
-      8   {'sourceID': 129723, 'dsID': 225481, 'band': 1...   
-      9   {'sourceID': 129723, 'dsID': 225492, 'band': 1...   
-      10  {'sourceID': 129723, 'dsID': 226661, 'band': 1...   
-      11  {'sourceID': 129723, 'dsID': 226665, 'band': 1...   
-      
+      0   {'sourceID': 129723, 'dsID': 224562, 'band': 1...
+      1   {'sourceID': 129723, 'dsID': 224720, 'band': 1...
+      2   {'sourceID': 129723, 'dsID': 224800, 'band': 1...
+      3   {'sourceID': 129723, 'dsID': 224852, 'band': 1...
+      4   {'sourceID': 129723, 'dsID': 224854, 'band': 1...
+      5   {'sourceID': 129723, 'dsID': 224887, 'band': 1...
+      6   {'sourceID': 129723, 'dsID': 225061, 'band': 1...
+      7   {'sourceID': 129723, 'dsID': 225219, 'band': 1...
+      8   {'sourceID': 129723, 'dsID': 225481, 'band': 1...
+      9   {'sourceID': 129723, 'dsID': 225492, 'band': 1...
+      10  {'sourceID': 129723, 'dsID': 226661, 'band': 1...
+      11  {'sourceID': 129723, 'dsID': 226665, 'band': 1...
+
                                                 Medium_Info  \
-      0   {'sourceID': 129723, 'dsID': 224562, 'band': 2...   
-      1   {'sourceID': 129723, 'dsID': 224720, 'band': 2...   
-      2   {'sourceID': 129723, 'dsID': 224800, 'band': 2...   
-      3   {'sourceID': 129723, 'dsID': 224852, 'band': 2...   
-      4   {'sourceID': 129723, 'dsID': 224854, 'band': 2...   
-      5   {'sourceID': 129723, 'dsID': 224887, 'band': 2...   
-      6   {'sourceID': 129723, 'dsID': 225061, 'band': 2...   
-      7   {'sourceID': 129723, 'dsID': 225219, 'band': 2...   
-      8   {'sourceID': 129723, 'dsID': 225481, 'band': 2...   
-      9   {'sourceID': 129723, 'dsID': 225492, 'band': 2...   
-      10  {'sourceID': 129723, 'dsID': 226661, 'band': 2...   
-      11  {'sourceID': 129723, 'dsID': 226665, 'band': 2...   
-      
-                                                  Hard_Info  
-      0   {'sourceID': 129723, 'dsID': 224562, 'band': 3...  
-      1   {'sourceID': 129723, 'dsID': 224720, 'band': 3...  
-      2   {'sourceID': 129723, 'dsID': 224800, 'band': 3...  
-      3   {'sourceID': 129723, 'dsID': 224852, 'band': 3...  
-      4   {'sourceID': 129723, 'dsID': 224854, 'band': 3...  
-      5   {'sourceID': 129723, 'dsID': 224887, 'band': 3...  
-      6   {'sourceID': 129723, 'dsID': 225061, 'band': 3...  
-      7   {'sourceID': 129723, 'dsID': 225219, 'band': 3...  
-      8   {'sourceID': 129723, 'dsID': 225481, 'band': 3...  
-      9   {'sourceID': 129723, 'dsID': 225492, 'band': 3...  
-      10  {'sourceID': 129723, 'dsID': 226661, 'band': 3...  
+      0   {'sourceID': 129723, 'dsID': 224562, 'band': 2...
+      1   {'sourceID': 129723, 'dsID': 224720, 'band': 2...
+      2   {'sourceID': 129723, 'dsID': 224800, 'band': 2...
+      3   {'sourceID': 129723, 'dsID': 224852, 'band': 2...
+      4   {'sourceID': 129723, 'dsID': 224854, 'band': 2...
+      5   {'sourceID': 129723, 'dsID': 224887, 'band': 2...
+      6   {'sourceID': 129723, 'dsID': 225061, 'band': 2...
+      7   {'sourceID': 129723, 'dsID': 225219, 'band': 2...
+      8   {'sourceID': 129723, 'dsID': 225481, 'band': 2...
+      9   {'sourceID': 129723, 'dsID': 225492, 'band': 2...
+      10  {'sourceID': 129723, 'dsID': 226661, 'band': 2...
+      11  {'sourceID': 129723, 'dsID': 226665, 'band': 2...
+
+                                                  Hard_Info
+      0   {'sourceID': 129723, 'dsID': 224562, 'band': 3...
+      1   {'sourceID': 129723, 'dsID': 224720, 'band': 3...
+      2   {'sourceID': 129723, 'dsID': 224800, 'band': 3...
+      3   {'sourceID': 129723, 'dsID': 224852, 'band': 3...
+      4   {'sourceID': 129723, 'dsID': 224854, 'band': 3...
+      5   {'sourceID': 129723, 'dsID': 224887, 'band': 3...
+      6   {'sourceID': 129723, 'dsID': 225061, 'band': 3...
+      7   {'sourceID': 129723, 'dsID': 225219, 'band': 3...
+      8   {'sourceID': 129723, 'dsID': 225481, 'band': 3...
+      9   {'sourceID': 129723, 'dsID': 225492, 'band': 3...
+      10  {'sourceID': 129723, 'dsID': 226661, 'band': 3...
       11  {'sourceID': 129723, 'dsID': 226665, 'band': 3...  ,
       'Observations':          ObsID  DatasetID  IsStackedImage  \
-      0     35063001       3259               0   
-      1     35063002       3265               0   
-      2     35063003       3273               0   
-      3     35063004       3284               0   
-      4     35063005       3292               0   
-      ...        ...        ...             ...   
-      3016  96726007     227364               0   
-      3017  96721116     227713               0   
-      3018  96721117     227825               0   
-      3019  96721118     227881               0   
-      3020  96721119     227998               0   
-      
+      0     35063001       3259               0
+      1     35063002       3265               0
+      2     35063003       3273               0
+      3     35063004       3284               0
+      4     35063005       3292               0
+      ...        ...        ...             ...
+      3016  96726007     227364               0
+      3017  96721116     227713               0
+      3018  96721117     227825               0
+      3019  96721118     227881               0
+      3020  96721119     227998               0
+
                                                    Total_Info  \
-      0     {'sourceID': 129723, 'dsID': 3259, 'band': 0, ...   
-      1     {'sourceID': 129723, 'dsID': 3265, 'band': 0, ...   
-      2     {'sourceID': 129723, 'dsID': 3273, 'band': 0, ...   
-      3     {'sourceID': 129723, 'dsID': 3284, 'band': 0, ...   
-      4     {'sourceID': 129723, 'dsID': 3292, 'band': 0, ...   
-      ...                                                 ...   
-      3016  {'sourceID': 129723, 'dsID': 227364, 'band': 0...   
-      3017  {'sourceID': 129723, 'dsID': 227713, 'band': 0...   
-      3018  {'sourceID': 129723, 'dsID': 227825, 'band': 0...   
-      3019  {'sourceID': 129723, 'dsID': 227881, 'band': 0...   
-      3020  {'sourceID': 129723, 'dsID': 227998, 'band': 0...   
-      
+      0     {'sourceID': 129723, 'dsID': 3259, 'band': 0, ...
+      1     {'sourceID': 129723, 'dsID': 3265, 'band': 0, ...
+      2     {'sourceID': 129723, 'dsID': 3273, 'band': 0, ...
+      3     {'sourceID': 129723, 'dsID': 3284, 'band': 0, ...
+      4     {'sourceID': 129723, 'dsID': 3292, 'band': 0, ...
+      ...                                                 ...
+      3016  {'sourceID': 129723, 'dsID': 227364, 'band': 0...
+      3017  {'sourceID': 129723, 'dsID': 227713, 'band': 0...
+      3018  {'sourceID': 129723, 'dsID': 227825, 'band': 0...
+      3019  {'sourceID': 129723, 'dsID': 227881, 'band': 0...
+      3020  {'sourceID': 129723, 'dsID': 227998, 'band': 0...
+
                                                     Soft_Info  \
-      0     {'sourceID': 129723, 'dsID': 3259, 'band': 1, ...   
-      1     {'sourceID': 129723, 'dsID': 3265, 'band': 1, ...   
-      2     {'sourceID': 129723, 'dsID': 3273, 'band': 1, ...   
-      3     {'sourceID': 129723, 'dsID': 3284, 'band': 1, ...   
-      4     {'sourceID': 129723, 'dsID': 3292, 'band': 1, ...   
-      ...                                                 ...   
-      3016  {'sourceID': 129723, 'dsID': 227364, 'band': 1...   
-      3017  {'sourceID': 129723, 'dsID': 227713, 'band': 1...   
-      3018  {'sourceID': 129723, 'dsID': 227825, 'band': 1...   
-      3019  {'sourceID': 129723, 'dsID': 227881, 'band': 1...   
-      3020  {'sourceID': 129723, 'dsID': 227998, 'band': 1...   
-      
+      0     {'sourceID': 129723, 'dsID': 3259, 'band': 1, ...
+      1     {'sourceID': 129723, 'dsID': 3265, 'band': 1, ...
+      2     {'sourceID': 129723, 'dsID': 3273, 'band': 1, ...
+      3     {'sourceID': 129723, 'dsID': 3284, 'band': 1, ...
+      4     {'sourceID': 129723, 'dsID': 3292, 'band': 1, ...
+      ...                                                 ...
+      3016  {'sourceID': 129723, 'dsID': 227364, 'band': 1...
+      3017  {'sourceID': 129723, 'dsID': 227713, 'band': 1...
+      3018  {'sourceID': 129723, 'dsID': 227825, 'band': 1...
+      3019  {'sourceID': 129723, 'dsID': 227881, 'band': 1...
+      3020  {'sourceID': 129723, 'dsID': 227998, 'band': 1...
+
                                                   Medium_Info  \
-      0     {'sourceID': 129723, 'dsID': 3259, 'band': 2, ...   
-      1     {'sourceID': 129723, 'dsID': 3265, 'band': 2, ...   
-      2     {'sourceID': 129723, 'dsID': 3273, 'band': 2, ...   
-      3     {'sourceID': 129723, 'dsID': 3284, 'band': 2, ...   
-      4     {'sourceID': 129723, 'dsID': 3292, 'band': 2, ...   
-      ...                                                 ...   
-      3016  {'sourceID': 129723, 'dsID': 227364, 'band': 2...   
-      3017  {'sourceID': 129723, 'dsID': 227713, 'band': 2...   
-      3018  {'sourceID': 129723, 'dsID': 227825, 'band': 2...   
-      3019  {'sourceID': 129723, 'dsID': 227881, 'band': 2...   
-      3020  {'sourceID': 129723, 'dsID': 227998, 'band': 2...   
-      
-                                                    Hard_Info  
-      0     {'sourceID': 129723, 'dsID': 3259, 'band': 3, ...  
-      1     {'sourceID': 129723, 'dsID': 3265, 'band': 3, ...  
-      2     {'sourceID': 129723, 'dsID': 3273, 'band': 3, ...  
-      3     {'sourceID': 129723, 'dsID': 3284, 'band': 3, ...  
-      4     {'sourceID': 129723, 'dsID': 3292, 'band': 3, ...  
-      ...                                                 ...  
-      3016  {'sourceID': 129723, 'dsID': 227364, 'band': 3...  
-      3017  {'sourceID': 129723, 'dsID': 227713, 'band': 3...  
-      3018  {'sourceID': 129723, 'dsID': 227825, 'band': 3...  
-      3019  {'sourceID': 129723, 'dsID': 227881, 'band': 3...  
-      3020  {'sourceID': 129723, 'dsID': 227998, 'band': 3...  
-      
+      0     {'sourceID': 129723, 'dsID': 3259, 'band': 2, ...
+      1     {'sourceID': 129723, 'dsID': 3265, 'band': 2, ...
+      2     {'sourceID': 129723, 'dsID': 3273, 'band': 2, ...
+      3     {'sourceID': 129723, 'dsID': 3284, 'band': 2, ...
+      4     {'sourceID': 129723, 'dsID': 3292, 'band': 2, ...
+      ...                                                 ...
+      3016  {'sourceID': 129723, 'dsID': 227364, 'band': 2...
+      3017  {'sourceID': 129723, 'dsID': 227713, 'band': 2...
+      3018  {'sourceID': 129723, 'dsID': 227825, 'band': 2...
+      3019  {'sourceID': 129723, 'dsID': 227881, 'band': 2...
+      3020  {'sourceID': 129723, 'dsID': 227998, 'band': 2...
+
+                                                    Hard_Info
+      0     {'sourceID': 129723, 'dsID': 3259, 'band': 3, ...
+      1     {'sourceID': 129723, 'dsID': 3265, 'band': 3, ...
+      2     {'sourceID': 129723, 'dsID': 3273, 'band': 3, ...
+      3     {'sourceID': 129723, 'dsID': 3284, 'band': 3, ...
+      4     {'sourceID': 129723, 'dsID': 3292, 'band': 3, ...
+      ...                                                 ...
+      3016  {'sourceID': 129723, 'dsID': 227364, 'band': 3...
+      3017  {'sourceID': 129723, 'dsID': 227713, 'band': 3...
+      3018  {'sourceID': 129723, 'dsID': 227825, 'band': 3...
+      3019  {'sourceID': 129723, 'dsID': 227881, 'band': 3...
+      3020  {'sourceID': 129723, 'dsID': 227998, 'band': 3...
+
       [3021 rows x 7 columns]},
      'CrossMatch':     LSXPS_ID   Distance               ExtCat_ID  Catalogue      Ext_RA  \
-     0     129723   2.310000             0609.286946      2MASS  266.362268   
-     1     129723   3.408908   2CXO J174527.2-290214       2CSC  266.363700   
-     2     129723   4.535610   4XMM J174526.7-290217  4XMM_DR10  266.361561   
-     3     129723   6.070000            0609.0602516     USNOB1  266.361128   
-     4     129723   6.386022   2CXO J174526.7-290220       2CSC  266.361300   
-     5     129723   6.634397   2CXO J174526.6-290216       2CSC  266.360900   
-     6     129723   7.300000             0609.286973      2MASS  266.363915   
-     7     129723   7.400000             0609.286923      2MASS  266.361073   
-     8     129723   8.473705   2CXO J174526.6-290223       2CSC  266.361100   
-     9     129723   8.768994   2CXO J174527.3-290208       2CSC  266.363800   
-     10    129723   9.590000             0609.286907      2MASS  266.360623   
-     11    129723   9.763594   2CXO J174526.3-290216       2CSC  266.359900   
-     12    129723  15.764050  2SXPS J174526.7-290202      2SXPS  266.361508   
-     
-          Ext_Decl  Ext_Err90  
-     0  -29.038139        NaN  
-     1  -29.037380   0.681888  
-     2  -29.038142   3.415725  
-     3  -29.037700        NaN  
-     4  -29.039070   0.614541  
-     5  -29.037960   0.681888  
-     6  -29.039967        NaN  
-     7  -29.036928        NaN  
-     8  -29.039770   0.622960  
-     9  -29.035770   0.698725  
-     10 -29.039768        NaN  
-     11 -29.038050   0.648215  
+     0     129723   2.310000             0609.286946      2MASS  266.362268
+     1     129723   3.408908   2CXO J174527.2-290214       2CSC  266.363700
+     2     129723   4.535610   4XMM J174526.7-290217  4XMM_DR10  266.361561
+     3     129723   6.070000            0609.0602516     USNOB1  266.361128
+     4     129723   6.386022   2CXO J174526.7-290220       2CSC  266.361300
+     5     129723   6.634397   2CXO J174526.6-290216       2CSC  266.360900
+     6     129723   7.300000             0609.286973      2MASS  266.363915
+     7     129723   7.400000             0609.286923      2MASS  266.361073
+     8     129723   8.473705   2CXO J174526.6-290223       2CSC  266.361100
+     9     129723   8.768994   2CXO J174527.3-290208       2CSC  266.363800
+     10    129723   9.590000             0609.286907      2MASS  266.360623
+     11    129723   9.763594   2CXO J174526.3-290216       2CSC  266.359900
+     12    129723  15.764050  2SXPS J174526.7-290202      2SXPS  266.361508
+
+          Ext_Decl  Ext_Err90
+     0  -29.038139        NaN
+     1  -29.037380   0.681888
+     2  -29.038142   3.415725
+     3  -29.037700        NaN
+     4  -29.039070   0.614541
+     5  -29.037960   0.681888
+     6  -29.039967        NaN
+     7  -29.036928        NaN
+     8  -29.039770   0.622960
+     9  -29.035770   0.698725
+     10 -29.039768        NaN
+     11 -29.038050   0.648215
      12 -29.033924   9.850933  }
 
 
@@ -1444,32 +1444,32 @@ data['LSXPS J163700.6+073914']
      'Detections': {'NumStacks': 0,
       'NumObservations': 1,
       'Observations':    ObsSourceID  DatasetID  LSXPS_ID  OSNum  UsedCorrectedPosition  \
-      0            2         25         1      1                      0   
-      
+      0            2         25         1      1                      0
+
          NearestNeighbour  NearestOKNeighbour     Exposure       HR1   HR1_pos  ...  \
-      0         265.30963           265.30963  2658.674246  0.379183  0.620816  ...   
-      
+      0         265.30963           265.30963  2658.674246  0.379183  0.620816  ...
+
          IsObsoleteStack  BestDetFlag  \
-      0                0            0   
-      
+      0                0            0
+
                                                 Total_Info  HasBlindDetection_band0  \
-      0  {'DetectionID': 4, 'DatasetID': 25, 'Band': 0,...                        1   
-      
+      0  {'DetectionID': 4, 'DatasetID': 25, 'Band': 0,...                        1
+
                                                  Soft_Info HasBlindDetection_band1  \
-      0  {'sourceID': 1, 'dsID': 25, 'band': 1, 'C': 2,...                       0   
-      
+      0  {'sourceID': 1, 'dsID': 25, 'band': 1, 'C': 2,...                       0
+
                                                Medium_Info  HasBlindDetection_band2  \
-      0  {'sourceID': 1, 'dsID': 25, 'band': 2, 'C': 3,...                        0   
-      
-                                                 Hard_Info  HasBlindDetection_band3  
-      0  {'sourceID': 1, 'dsID': 25, 'band': 3, 'C': 3,...                        0  
-      
+      0  {'sourceID': 1, 'dsID': 25, 'band': 2, 'C': 3,...                        0
+
+                                                 Hard_Info  HasBlindDetection_band3
+      0  {'sourceID': 1, 'dsID': 25, 'band': 3, 'C': 3,...                        0
+
       [1 rows x 71 columns]},
      'NonDetections': {'NumStacks': 0, 'NumObservations': 0},
      'CrossMatch':    LSXPS_ID  Distance               ExtCat_ID Catalogue      Ext_RA  Ext_Decl  \
-     0         1  0.019439  2SXPS J163700.6+073914     2SXPS  249.252535  7.653919   
-     
-        Ext_Err90  
+     0         1  0.019439  2SXPS J163700.6+073914     2SXPS  249.252535  7.653919
+
+        Ext_Err90
      0   5.405237  }
 
 
@@ -1546,14 +1546,14 @@ for sid in (209851, 209220):
     Source 209851:
       * Targets: ['00221755']
       * Observations: ['00221755000', '00221755001', '00221755002', '00221755003', '00221755004', '00221755005', '00221755006', '00221755007', '00221755008', '00221755009', '00221755010', '00221755011', '00221755012', '00221755013', '00221755014', '00221755015', '00221755016', '00221755017', '00221755018', '00221755020', '00221755022', '00221755023', '00221755024', '00221755025', '00221755026', '00221755027', '00221755028', '00221755029', '00221755030', '00221755031', '00221755032', '00221755033', '00221755034', '00221755035', '00221755036', '00221755037', '00221755038', '00221755041', '00221755043', '00221755044']
-    
-    
+
+
     Source 209220:
     No blind detections found, getting allCat
       * Targets: ['00031635']
       * Observations: ['00031635001', '00031635002', '00031635003', '00031635004']
-    
-    
+
+
 
 
 #### Downloading the obs data
@@ -1717,7 +1717,7 @@ lcs['Datasets']
 
 
 
-Hopefully these names are fairly self-explanatory; there are the four SXPS bands and then either '\_rates' or '\_UL'. The former contain count-rate bins and 1-sigma errors, the latter contain 3-sigma upper limits. 
+Hopefully these names are fairly self-explanatory; there are the four SXPS bands and then either '\_rates' or '\_UL'. The former contain count-rate bins and 1-sigma errors, the latter contain 3-sigma upper limits.
 
 Let's have a quick look at one each of these:
 
@@ -1793,7 +1793,7 @@ For the hardness ratio the situation is a little different as we don't run sourc
 
 As well as choosing how each class of bin is returned, you can decide whether you want to group all rates and ULs together (the default) or not. i.e. in the example we showed above which used all the defaults, there was a single 'Total_rates' light curve and this contained both blind and retrospective detections, but you may well want to keep those separate.
 
-You can control these factors through a set of boolean arguments to `getLightCurves()`. 
+You can control these factors through a set of boolean arguments to `getLightCurves()`.
 
 The easiest is `getAllTypes`. If this is `True` then you will get all possible light curves, and all kept separately. That is, blind detections will be rates in their own dataset. Retrospective detections will be returned as rates, separate to the blind detections, *and* returned a second time, as upper limits. The same will be true of the non-detections, which will also be kept separate from the retrospective ones (this will make more sense when I demonstrate in a moment). `getAllTypes` is `False` by default.
 
@@ -1816,7 +1816,7 @@ Before I move on to some examples, let me quickly outline three more arguments y
 
 If you don't know what these mean, you'll have to read the SXPS documentation, or accept the defaults and trust me.
 
-Right, assuming you are still conscious, enthusiastic and ready to go, let's try a few of these options. For ease, I'm always only going to get the total band data in these examples. 
+Right, assuming you are still conscious, enthusiastic and ready to go, let's try a few of these options. For ease, I'm always only going to get the total band data in these examples.
 
 Let's start with `getAllTypes`, as it shows us everything!
 
@@ -1863,7 +1863,7 @@ lcs = uds.getLightCurves(sourceName='LSXPS J051152.3-621925',
                          saveData=False,
                          returnData=True,
                          retroAsUL = True,
-                         groupULs = False                         
+                         groupULs = False
                         )
 ```
 
@@ -1905,7 +1905,7 @@ lcs = uds.getLightCurves(sourceName='LSXPS J051152.3-621925',
                          saveData=False,
                          returnData=True,
                          retroAsUL = True,
-                         groupULs = True, ## This is the default, but I'm being explicit                         
+                         groupULs = True, ## This is the default, but I'm being explicit
                         )
 lcs['Datasets']
 ```
@@ -1954,9 +1954,9 @@ fig, ax = plotLightCurve(lcs, whichCurves=('Total_rates',),
 
 
 
-    
+
 ![png](SXPS_LC1.png)
-    
+
 
 
 And I'll take this chance to show you something about that function; as well as returning `fig, ax` it can *receive* them if you want to add to the plot. So I may want to plot upper limits as well:
@@ -1978,9 +1978,9 @@ fig
 
 
 
-    
+
 ![png](SXPS_LC2.png)
-    
+
 
 
 
@@ -2026,7 +2026,7 @@ This function actually doesn't do very much itself, most of the work is done by 
 [`saveLightCurveFromDict()`](https://www.swift.ac.uk/API/ukssdc/commonFunc.md#savelightcurvefromdict), and most of the arguments
 you may pass to `saveLightCurves()` are just keyword arguments that will get passed straight through. The
 `uds.getLightCuvres` function will override the default values for the `timeFormatInFname` and `binningInFname`
-arguments for `saveLightCurveFromDict()`, setting them both to ``False`` unless you explicitly specify them. 
+arguments for `saveLightCurveFromDict()`, setting them both to ``False`` unless you explicitly specify them.
 
 As well as the arguments we pass to [`saveLightCurveFromDict()`](https://www.swift.ac.uk/API/ukssdc/commonFunc.md#savelightcurvefromdict),
 we can use all of those complicated controls over how data are grouped and formatted that we discussed earlier as well, for example:
@@ -2307,7 +2307,7 @@ uds.saveLightCurves(lcs,
     Writing file: `/tmp/APIDemo_SXPS_LC5/LSXPS J062131.8-622213/HR2_retro_MJD_Observation.dat`
 
 
-I turned on verbosity so you can see what its doing. 
+I turned on verbosity so you can see what its doing.
 
 Just a few things to note:
 
@@ -2377,8 +2377,8 @@ uds.getSpectra(sourceName='LSXPS J221755.4-082100',
     models/interval0pc_pow.xcm
     interval0pc_apec_fit.fit
     interval0pc_pow_fit.fit
-    
-    
+
+
     Removing file /tmp/APIDemo_SXPS_spec/interval0.tar.gz
     Downloading file `/tmp/APIDemo_SXPS_spec/interval0pc_pow_plot.gif`
     Saving file `/tmp/APIDemo_SXPS_spec/interval0pc_pow_plot.gif`
@@ -2424,8 +2424,8 @@ uds.getSpectra(sourceName=('LSXPS J221755.4-082100', 'LSXPS J033112.0+435414'),
     models/interval0pc_pow.xcm
     interval0pc_apec_fit.fit
     interval0pc_pow_fit.fit
-    
-    
+
+
     Removing file /tmp/APIDemo_SXPS_spec2/LSXPS J221755.4-082100/interval0.tar.gz
     Downloading file `/tmp/APIDemo_SXPS_spec2/LSXPS J221755.4-082100/interval0pc_pow_plot.gif`
     Saving file `/tmp/APIDemo_SXPS_spec2/LSXPS J221755.4-082100/interval0pc_pow_plot.gif`
@@ -2449,8 +2449,8 @@ uds.getSpectra(sourceName=('LSXPS J221755.4-082100', 'LSXPS J033112.0+435414'),
     models/interval0pc_pow.xcm
     interval0pc_apec_fit.fit
     interval0pc_pow_fit.fit
-    
-    
+
+
     Removing file /tmp/APIDemo_SXPS_spec2/LSXPS J033112.0+435414/interval0.tar.gz
     Downloading file `/tmp/APIDemo_SXPS_spec2/LSXPS J033112.0+435414/interval0pc_pow_plot.gif`
     Saving file `/tmp/APIDemo_SXPS_spec2/LSXPS J033112.0+435414/interval0pc_pow_plot.gif`
@@ -2556,8 +2556,8 @@ uds.saveSpectra(specData,
     models/interval0pc_pow.xcm
     interval0pc_apec_fit.fit
     interval0pc_pow_fit.fit
-    
-    
+
+
     Removing file /tmp/APIDemo_SXPS_spec3/LSXPS J051152.3-621925/interval0.tar.gz
     Downloading file `/tmp/APIDemo_SXPS_spec3/LSXPS J051152.3-621925/interval0pc_pow_plot.gif`
     Saving file `/tmp/APIDemo_SXPS_spec3/LSXPS J051152.3-621925/interval0pc_pow_plot.gif`
@@ -2581,8 +2581,8 @@ uds.saveSpectra(specData,
     models/interval0pc_pow.xcm
     interval0pc_apec_fit.fit
     interval0pc_pow_fit.fit
-    
-    
+
+
     Removing file /tmp/APIDemo_SXPS_spec3/LSXPS J221755.4-082100/interval0.tar.gz
     Downloading file `/tmp/APIDemo_SXPS_spec3/LSXPS J221755.4-082100/interval0pc_pow_plot.gif`
     Saving file `/tmp/APIDemo_SXPS_spec3/LSXPS J221755.4-082100/interval0pc_pow_plot.gif`
@@ -2673,7 +2673,7 @@ Note the "Saving file" lines - all the files went into the same directory, but w
 <a id='xpr'></a>
 ### XRTProductRequest objects for sources
 
-You may want to build some custom products of a given SXPS source, using the `XRTProductRequest` object in the [`swifttools.ukssdc.xrt_prods` module](../xrt_prods.md). To aid in this, there is a function `makeProductRequest()`, which will generate `XRTProductRequest`s for you, supplying what information it can from the catalogue. 
+You may want to build some custom products of a given SXPS source, using the `XRTProductRequest` object in the [`swifttools.ukssdc.xrt_prods` module](../xrt_prods.md). To aid in this, there is a function `makeProductRequest()`, which will generate `XRTProductRequest`s for you, supplying what information it can from the catalogue.
 
 **NOTE** The function aims to return a submittable `XRTProductRequest` object for you, based on the catalogue information. This means that if you don't specify the T0 or observation list via the arguments below, the global parameters `getT0` or `getTargs` will be set to `True`. Obviously, the `XRTProductRequest` can be manipulated before submission. If you don't know what I'm talking about, you should read the [xrt_prods documentation](../xrt_prods.md) before using this function.
 
@@ -2688,7 +2688,7 @@ The information automatically applied to the product request is some subset of:
 * TargetID list
 * Observation list
 
-The first two of these are self-explanatory. 
+The first two of these are self-explanatory.
 
 "Whether to centroid" is set to `False`, since the position determined from the catalogue should be the best position (the analysis tools will still check for snapshot-to-snapshot variability).
 
@@ -2701,7 +2701,7 @@ For T0, you have a few options, which are controlled by the `T0` parameter to `m
 
 The targetID list and observation list are correlated, they determine which data should be used to build the product. This can be controlled by the `useObs` argument to `makeProductRequest()`. The behaviour of this is slightly more complex than T0. It sets the `getTargs` and `targ` global parameters in the `XRTProductRequest`, and it will also set the `whichData` and `useObs` arguments of any products you request (discussed in a minute). **But please note** those keys are only set for products you request in the `makeProductRequest()` call. If you then edit the returned `XRTProductRequest` object to add more products, those parameters will not be set, you will have to do this yourself (I will note how, below).
 
-If not specified, the `useObs` argument is set to "all". This is the easiest case, and SXPS data are basically not used, because "all" means "use all data, including any not in SXPS". In this case the `getTargs` global parameter in the `XRTProductRequest` is set to `True`, and the `targ` value will be unset. All requested products will have `whichData` set to "all". 
+If not specified, the `useObs` argument is set to "all". This is the easiest case, and SXPS data are basically not used, because "all" means "use all data, including any not in SXPS". In this case the `getTargs` global parameter in the `XRTProductRequest` is set to `True`, and the `targ` value will be unset. All requested products will have `whichData` set to "all".
 
 For all of the other `useObs` values, `getTargs` will be set to `False`, `targ` will be set to specific values, and for the requested products, `whichData` will be "user" and the product's `useObs` parameter will be set to the string giving the requested observations.
 
@@ -2716,7 +2716,7 @@ I have mentioned products several times; by default the `XRTProductRequest` will
 
 If you do not specify products, or don't specify all of them, then the "useObs" parameter is essentially pointless if it is not "all" (the default), since the restricted obs list is only applied to products. However, I have given an argument `returnObsList`. This is `False` by default, but if set to `True` then instead of returning an `XRTProductRequest` object, `makeProductRequest()` will return a `dict` with two keys: `request` will be the `XRTProductRequest` object, and `useObs` will be the string to pass to any products' `useObs` parameter if you add parameters.
 
-Of course, the requests are not submitted, so you can view and play with them. And, like with all of these functions, you can supply a single sourceID (or name) and get back a single `XRTProductRequest`, or you can supply a list of IDs (or names) and get back a `dict`, indexed by ID or name. 
+Of course, the requests are not submitted, so you can view and play with them. And, like with all of these functions, you can supply a single sourceID (or name) and get back a single `XRTProductRequest`, or you can supply a list of IDs (or names) and get back a `dict`, indexed by ID or name.
 
 Right, that is comprehensively far too much talk, so let's get to some demos:
 
@@ -2761,7 +2761,7 @@ myReq.getGlobalPars()
 ```
 
     XRTProductRequest object for user `MY_EMAIL_ADDRESS`, with the following products requested:
-    
+
 
 
 
@@ -2790,7 +2790,7 @@ myReq = uds.makeProductRequest('MY_EMAIL_ADDRESS',
                                T0='firstBlindDet',
                                useObs='blind',
                                addProds=['LightCurve', 'StandardPos'],
-                               silent=True, 
+                               silent=True,
                               )
 print(myReq)
 print(f"Globals: {myReq.getGlobalPars()}\n")
@@ -2801,9 +2801,9 @@ for p in myReq.productList:
     XRTProductRequest object for user `MY_EMAIL_ADDRESS`, with the following products requested:
     * light curve
     * standard position
-    
+
     Globals: {'name': 'LSXPS J132527.7-430212', 'targ': '00050950,00031312,00034314,00088977', 'T0': 129528000.0, 'RA': 201.365762, 'Dec': -43.03672808, 'centroid': False, 'posErr': 1, 'useSXPS': True, 'getTargs': False, 'getT0': False}
-    
+
     lc:	{'whichData': 'user', 'useObs': '00050950004,00050950006,00031312122,00034314001,00034314003,00088977001'}
     psf:	{'whichData': 'user', 'useObs': '00050950004,00050950006,00031312122,00034314001,00034314003,00088977001'}
 
@@ -2852,7 +2852,7 @@ myReq = uds.makeProductRequest('MY_EMAIL_ADDRESS',
                                T0='firstBlindDet',
                                useObs='blind',
                                addProds=['LightCurve','Spectrum', 'StandardPos'],
-                               silent=True, 
+                               silent=True,
                               )
 print(myReq)
 print(f"Globals: {myReq.getGlobalPars()}\n")
@@ -2864,9 +2864,9 @@ for p in myReq.productList:
     * light curve
     * spectrum
     * standard position
-    
+
     Globals: {'name': 'LSXPS J132527.7-430212', 'targ': '00050950,00031312,00034314,00088977', 'T0': 129528000.0, 'RA': 201.365762, 'Dec': -43.03672808, 'centroid': False, 'posErr': 1, 'useSXPS': True, 'getTargs': False, 'getT0': False}
-    
+
     lc:	{'whichData': 'user', 'useObs': '00050950004,00050950006,00031312122,00034314001,00034314003,00088977001'}
     spec:	{'deltaFitStat': 2.706, 'whichData': 'user', 'useObs': '00050950004,00050950006,00031312122,00034314001,00034314003,00088977001'}
     psf:	{'whichData': 'user', 'useObs': '00050950004,00050950006,00031312122,00034314001,00034314003,00088977001'}
@@ -2891,7 +2891,7 @@ rlist = uds.makeProductRequest('MY_EMAIL_ADDRESS',
                                T0='firstBlindDet',
                                useObs='blind',
                                addProds=['LightCurve'],
-                               silent=False, 
+                               silent=False,
                                verbose=False
                               )
 ```
@@ -2942,23 +2942,23 @@ for sourceID in rlist.keys():
 
 ```
 
-    
+
     17092
     ======
     XRTProductRequest object for user `MY_EMAIL_ADDRESS`, with the following products requested:
     * light curve
-    
+
     Globals: {'name': 'LSXPS J132527.7-430212', 'targ': '00050950,00031312,00034314,00088977', 'T0': 129528000.0, 'RA': 201.365762, 'Dec': -43.03672808, 'centroid': False, 'posErr': 1, 'useSXPS': True, 'getTargs': False, 'getT0': False}
-    
+
     lc:	{'whichData': 'user', 'useObs': '00050950004,00050950006,00031312122,00034314001,00034314003,00088977001'}
-    
+
     128791
     ======
     XRTProductRequest object for user `MY_EMAIL_ADDRESS`, with the following products requested:
     * light curve
-    
+
     Globals: {'name': 'LSXPS J130059.3+275850', 'targ': '00015016', 'T0': 663928360.997203, 'RA': 195.2473611251, 'Dec': 27.9805846866, 'centroid': False, 'posErr': 1, 'useSXPS': True, 'getTargs': False, 'getT0': False}
-    
+
     lc:	{'whichData': 'user', 'useObs': '00015016002'}
 
 
@@ -3056,289 +3056,289 @@ dsInfo
      'NumAllSources': 74,
      'OK': 1,
      'Sources':     ObsSourceID  DatasetID  LSXPS_ID  OSNum  UsedCorrectedPosition  \
-     0         46570       9725    209540      1                      1   
-     1         46571       9725    209541      2                      1   
-     2         46572       9725    209542      3                      1   
-     3         46573       9725    209543      4                      1   
-     4         46574       9725    209545      5                      1   
-     5         46575       9725    209546      6                      1   
-     6         46576       9725    209547      7                      1   
-     7         46577       9725    209549      8                      1   
-     8         46578       9725    209559      9                      1   
-     9         46579       9725    209548     10                      1   
-     10        46580       9725    209555     11                      1   
-     11        46581       9725    209554     12                      1   
-     12        46582       9725    209560     13                      1   
-     13        46583       9725    209563     14                      1   
-     14        46584       9725    209550     15                      1   
-     15        46585       9725     18290     16                      1   
-     16        46586       9725    209558     17                      1   
-     17        46587       9725    209597     18                      1   
-     18        46588       9725    209589     19                      1   
-     19        46589       9725    209557     20                      1   
-     20        46590       9725     18293     21                      1   
-     21        46591       9725    209592     22                      1   
-     22        46592       9725    209562     23                      1   
-     23        46593       9725    209565     24                      1   
-     24        46594       9725     18301     25                      1   
-     25        46595       9725    209551     26                      1   
-     26        46596       9725    209591     27                      1   
-     27        46597       9725     18299     28                      1   
-     28        46598       9725    209564     29                      1   
-     
+     0         46570       9725    209540      1                      1
+     1         46571       9725    209541      2                      1
+     2         46572       9725    209542      3                      1
+     3         46573       9725    209543      4                      1
+     4         46574       9725    209545      5                      1
+     5         46575       9725    209546      6                      1
+     6         46576       9725    209547      7                      1
+     7         46577       9725    209549      8                      1
+     8         46578       9725    209559      9                      1
+     9         46579       9725    209548     10                      1
+     10        46580       9725    209555     11                      1
+     11        46581       9725    209554     12                      1
+     12        46582       9725    209560     13                      1
+     13        46583       9725    209563     14                      1
+     14        46584       9725    209550     15                      1
+     15        46585       9725     18290     16                      1
+     16        46586       9725    209558     17                      1
+     17        46587       9725    209597     18                      1
+     18        46588       9725    209589     19                      1
+     19        46589       9725    209557     20                      1
+     20        46590       9725     18293     21                      1
+     21        46591       9725    209592     22                      1
+     22        46592       9725    209562     23                      1
+     23        46593       9725    209565     24                      1
+     24        46594       9725     18301     25                      1
+     25        46595       9725    209551     26                      1
+     26        46596       9725    209591     27                      1
+     27        46597       9725     18299     28                      1
+     28        46598       9725    209564     29                      1
+
          NearestNeighbour  NearestOKNeighbour      Exposure       HR1   HR1_pos  \
-     0         110.101900          110.101900  32102.128118  0.516215  0.042264   
-     1          89.995404          201.328988  33061.088535 -0.597976  0.095367   
-     2         222.880233          222.880233  28478.506739  0.405930  0.212163   
-     3         150.160784          150.160784  26745.223986 -0.233273  0.158398   
-     4          77.397100           77.397100  21595.810139 -0.231272  0.168748   
-     5          72.059941           72.059941  21984.717057 -0.375948  0.184374   
-     6         135.690083          201.029179  31446.808901  0.358638  0.235176   
-     7         122.507402          122.507402  29171.375936  0.726274  0.273726   
-     8          77.397100           77.397100  22326.967995 -0.313068  0.200934   
-     9         159.421949          159.421949  26993.766380  0.447692  0.552305   
-     10         63.232022           63.232022  31872.987296  0.675949  0.324051   
-     11         60.132402           60.132402  31978.553625  0.811390  0.188610   
-     12         60.143177           60.143177  30606.106041  0.499421  0.500579   
-     13         60.143177           60.143177  29394.399412  0.331574  0.668426   
-     14        150.160784          150.160784  28791.075780  0.523849  0.476151   
-     15         89.995404           89.995404  32725.469768  0.385756  0.614244   
-     16        166.674287          166.674287  32459.877461  0.641984  0.358016   
-     17        110.101900          110.101900  29683.549978 -0.376178  0.191742   
-     18         39.510825           39.510825  26408.051620 -0.894065  0.005309   
-     19        127.275033          127.275033  29718.765098  0.046989  0.953007   
-     20         39.510825           39.510825  25872.578658 -0.387948  0.165393   
-     21         91.749766           91.749766  32507.058046  0.371633  0.628367   
-     22         72.059941           72.059941  19784.732284 -0.525536  0.116494   
-     23        236.886571          236.886571  27733.857594  0.349695  0.650305   
-     24        127.275033          231.297224  31562.068196  0.232981  0.767019   
-     25         60.132402           60.132402  31077.930362  0.706806  0.293194   
-     26        104.380965          104.380965  26880.390981 -0.717652  0.046959   
-     27        135.690083          135.690083  27212.816935  0.681760  0.318240   
-     28        233.366200          233.366200  27573.874754  0.553807  0.446193   
-     
+     0         110.101900          110.101900  32102.128118  0.516215  0.042264
+     1          89.995404          201.328988  33061.088535 -0.597976  0.095367
+     2         222.880233          222.880233  28478.506739  0.405930  0.212163
+     3         150.160784          150.160784  26745.223986 -0.233273  0.158398
+     4          77.397100           77.397100  21595.810139 -0.231272  0.168748
+     5          72.059941           72.059941  21984.717057 -0.375948  0.184374
+     6         135.690083          201.029179  31446.808901  0.358638  0.235176
+     7         122.507402          122.507402  29171.375936  0.726274  0.273726
+     8          77.397100           77.397100  22326.967995 -0.313068  0.200934
+     9         159.421949          159.421949  26993.766380  0.447692  0.552305
+     10         63.232022           63.232022  31872.987296  0.675949  0.324051
+     11         60.132402           60.132402  31978.553625  0.811390  0.188610
+     12         60.143177           60.143177  30606.106041  0.499421  0.500579
+     13         60.143177           60.143177  29394.399412  0.331574  0.668426
+     14        150.160784          150.160784  28791.075780  0.523849  0.476151
+     15         89.995404           89.995404  32725.469768  0.385756  0.614244
+     16        166.674287          166.674287  32459.877461  0.641984  0.358016
+     17        110.101900          110.101900  29683.549978 -0.376178  0.191742
+     18         39.510825           39.510825  26408.051620 -0.894065  0.005309
+     19        127.275033          127.275033  29718.765098  0.046989  0.953007
+     20         39.510825           39.510825  25872.578658 -0.387948  0.165393
+     21         91.749766           91.749766  32507.058046  0.371633  0.628367
+     22         72.059941           72.059941  19784.732284 -0.525536  0.116494
+     23        236.886571          236.886571  27733.857594  0.349695  0.650305
+     24        127.275033          231.297224  31562.068196  0.232981  0.767019
+     25         60.132402           60.132402  31077.930362  0.706806  0.293194
+     26        104.380965          104.380965  26880.390981 -0.717652  0.046959
+     27        135.690083          135.690083  27212.816935  0.681760  0.318240
+     28        233.366200          233.366200  27573.874754  0.553807  0.446193
+
          ...     Err90                              Soft_DetectionDetails  \
-     0   ...  2.840053  {'DetectionID': 87018, 'Rate': 0.00640934, 'Ra...   
-     1   ...  3.262042  {'DetectionID': 87019, 'Rate': 0.00216024, 'Ra...   
-     2   ...  3.604375                                                NaN   
-     3   ...  4.074014  {'DetectionID': 87020, 'Rate': 0.000903818, 'R...   
-     4   ...  4.726320  {'DetectionID': 87021, 'Rate': 0.000928608, 'R...   
-     5   ...  3.728157  {'DetectionID': 87022, 'Rate': 0.0008459, 'Rat...   
-     6   ...  4.049135  {'DetectionID': 87024, 'Rate': 0.000242089, 'R...   
-     7   ...  4.511424                                                NaN   
-     8   ...  5.102136  {'DetectionID': 87023, 'Rate': 0.000621925, 'R...   
-     9   ...  4.740798                                                NaN   
-     10  ...  4.919220                                                NaN   
-     11  ...  5.828070                                                NaN   
-     12  ...  6.870564                                                NaN   
-     13  ...  5.034856                                                NaN   
-     14  ...  5.274784                                                NaN   
-     15  ...  6.437954                                                NaN   
-     16  ...  5.835620                                                NaN   
-     17  ...  5.408675                                                NaN   
-     18  ...  7.209561                                                NaN   
-     19  ...  5.525174                                                NaN   
-     20  ...  7.030090                                                NaN   
-     21  ...  6.270896                                                NaN   
-     22  ...  5.268523  {'DetectionID': 87025, 'Rate': 0.000397444, 'R...   
-     23  ...  4.984001                                                NaN   
-     24  ...  6.398952                                                NaN   
-     25  ...  6.288322                                                NaN   
-     26  ...  5.595802                                                NaN   
-     27  ...  7.311984                                                NaN   
-     28  ...  5.606083                                                NaN   
-     
+     0   ...  2.840053  {'DetectionID': 87018, 'Rate': 0.00640934, 'Ra...
+     1   ...  3.262042  {'DetectionID': 87019, 'Rate': 0.00216024, 'Ra...
+     2   ...  3.604375                                                NaN
+     3   ...  4.074014  {'DetectionID': 87020, 'Rate': 0.000903818, 'R...
+     4   ...  4.726320  {'DetectionID': 87021, 'Rate': 0.000928608, 'R...
+     5   ...  3.728157  {'DetectionID': 87022, 'Rate': 0.0008459, 'Rat...
+     6   ...  4.049135  {'DetectionID': 87024, 'Rate': 0.000242089, 'R...
+     7   ...  4.511424                                                NaN
+     8   ...  5.102136  {'DetectionID': 87023, 'Rate': 0.000621925, 'R...
+     9   ...  4.740798                                                NaN
+     10  ...  4.919220                                                NaN
+     11  ...  5.828070                                                NaN
+     12  ...  6.870564                                                NaN
+     13  ...  5.034856                                                NaN
+     14  ...  5.274784                                                NaN
+     15  ...  6.437954                                                NaN
+     16  ...  5.835620                                                NaN
+     17  ...  5.408675                                                NaN
+     18  ...  7.209561                                                NaN
+     19  ...  5.525174                                                NaN
+     20  ...  7.030090                                                NaN
+     21  ...  6.270896                                                NaN
+     22  ...  5.268523  {'DetectionID': 87025, 'Rate': 0.000397444, 'R...
+     23  ...  4.984001                                                NaN
+     24  ...  6.398952                                                NaN
+     25  ...  6.288322                                                NaN
+     26  ...  5.595802                                                NaN
+     27  ...  7.311984                                                NaN
+     28  ...  5.606083                                                NaN
+
                                    Medium_DetectionDetails  \
-     0   {'DetectionID': 87026, 'Rate': 0.0200874, 'Rat...   
-     1   {'DetectionID': 87027, 'Rate': 0.000512571, 'R...   
-     2   {'DetectionID': 87028, 'Rate': 0.000627753, 'R...   
-     3   {'DetectionID': 87029, 'Rate': 0.000580526, 'R...   
-     4   {'DetectionID': 87031, 'Rate': 0.000562418, 'R...   
-     5   {'DetectionID': 87033, 'Rate': 0.000343186, 'R...   
-     6   {'DetectionID': 87030, 'Rate': 0.000542825, 'R...   
-     7   {'DetectionID': 87034, 'Rate': 0.000241131, 'R...   
-     8                                                 NaN   
-     9   {'DetectionID': 87032, 'Rate': 0.000300101, 'R...   
-     10                                                NaN   
-     11                                                NaN   
-     12                                                NaN   
-     13  {'DetectionID': 87036, 'Rate': 0.000143923, 'R...   
-     14                                                NaN   
-     15                                                NaN   
-     16  {'DetectionID': 87038, 'Rate': 0.000207209, 'R...   
-     17                                                NaN   
-     18                                                NaN   
-     19                                                NaN   
-     20                                                NaN   
-     21                                                NaN   
-     22                                                NaN   
-     23                                                NaN   
-     24                                                NaN   
-     25  {'DetectionID': 87035, 'Rate': 0.000227899, 'R...   
-     26                                                NaN   
-     27  {'DetectionID': 87037, 'Rate': 0.000224495, 'R...   
-     28                                                NaN   
-     
+     0   {'DetectionID': 87026, 'Rate': 0.0200874, 'Rat...
+     1   {'DetectionID': 87027, 'Rate': 0.000512571, 'R...
+     2   {'DetectionID': 87028, 'Rate': 0.000627753, 'R...
+     3   {'DetectionID': 87029, 'Rate': 0.000580526, 'R...
+     4   {'DetectionID': 87031, 'Rate': 0.000562418, 'R...
+     5   {'DetectionID': 87033, 'Rate': 0.000343186, 'R...
+     6   {'DetectionID': 87030, 'Rate': 0.000542825, 'R...
+     7   {'DetectionID': 87034, 'Rate': 0.000241131, 'R...
+     8                                                 NaN
+     9   {'DetectionID': 87032, 'Rate': 0.000300101, 'R...
+     10                                                NaN
+     11                                                NaN
+     12                                                NaN
+     13  {'DetectionID': 87036, 'Rate': 0.000143923, 'R...
+     14                                                NaN
+     15                                                NaN
+     16  {'DetectionID': 87038, 'Rate': 0.000207209, 'R...
+     17                                                NaN
+     18                                                NaN
+     19                                                NaN
+     20                                                NaN
+     21                                                NaN
+     22                                                NaN
+     23                                                NaN
+     24                                                NaN
+     25  {'DetectionID': 87035, 'Rate': 0.000227899, 'R...
+     26                                                NaN
+     27  {'DetectionID': 87037, 'Rate': 0.000224495, 'R...
+     28                                                NaN
+
                                      Hard_DetectionDetails  RA_sexagesimal  \
-     0   {'DetectionID': 87039, 'Rate': 0.0146539, 'Rat...     02 08 36.30   
-     1                                                 NaN     02 08 35.79   
-     2   {'DetectionID': 87040, 'Rate': 0.000877273, 'R...     02 08 09.10   
-     3                                                 NaN     02 08 17.73   
-     4                                                 NaN     02 07 42.71   
-     5                                                 NaN     02 09 55.63   
-     6                                                 NaN     02 09 29.04   
-     7   {'DetectionID': 87043, 'Rate': 0.000457565, 'R...     02 09 40.73   
-     8                                                 NaN     02 07 35.48   
-     9                                                 NaN     02 09 41.96   
-     10  {'DetectionID': 87041, 'Rate': 0.00047556, 'Ra...     02 09 09.59   
-     11  {'DetectionID': 87042, 'Rate': 0.000443849, 'R...     02 09 02.45   
-     12                                                NaN     02 08 24.55   
-     13                                                NaN     02 08 27.63   
-     14                                                NaN     02 08 10.33   
-     15                                                NaN     02 08 42.02   
-     16                                                NaN     02 08 50.37   
-     17  {'DetectionID': 87044, 'Rate': 0.000351108, 'R...     02 08 49.74   
-     18                                                NaN     02 09 05.77   
-     19                                                NaN     02 08 21.16   
-     20                                                NaN     02 09 06.00   
-     21                                                NaN     02 09 01.11   
-     22                                                NaN     02 09 57.08   
-     23                                                NaN     02 07 44.10   
-     24  {'DetectionID': 87045, 'Rate': 0.000258448, 'R...     02 08 05.82   
-     25                                                NaN     02 09 05.44   
-     26                                                NaN     02 08 40.15   
-     27                                                NaN     02 09 41.22   
-     28  {'DetectionID': 87046, 'Rate': 0.000218285, 'R...     02 08 15.85   
-     
+     0   {'DetectionID': 87039, 'Rate': 0.0146539, 'Rat...     02 08 36.30
+     1                                                 NaN     02 08 35.79
+     2   {'DetectionID': 87040, 'Rate': 0.000877273, 'R...     02 08 09.10
+     3                                                 NaN     02 08 17.73
+     4                                                 NaN     02 07 42.71
+     5                                                 NaN     02 09 55.63
+     6                                                 NaN     02 09 29.04
+     7   {'DetectionID': 87043, 'Rate': 0.000457565, 'R...     02 09 40.73
+     8                                                 NaN     02 07 35.48
+     9                                                 NaN     02 09 41.96
+     10  {'DetectionID': 87041, 'Rate': 0.00047556, 'Ra...     02 09 09.59
+     11  {'DetectionID': 87042, 'Rate': 0.000443849, 'R...     02 09 02.45
+     12                                                NaN     02 08 24.55
+     13                                                NaN     02 08 27.63
+     14                                                NaN     02 08 10.33
+     15                                                NaN     02 08 42.02
+     16                                                NaN     02 08 50.37
+     17  {'DetectionID': 87044, 'Rate': 0.000351108, 'R...     02 08 49.74
+     18                                                NaN     02 09 05.77
+     19                                                NaN     02 08 21.16
+     20                                                NaN     02 09 06.00
+     21                                                NaN     02 09 01.11
+     22                                                NaN     02 09 57.08
+     23                                                NaN     02 07 44.10
+     24  {'DetectionID': 87045, 'Rate': 0.000258448, 'R...     02 08 05.82
+     25                                                NaN     02 09 05.44
+     26                                                NaN     02 08 40.15
+     27                                                NaN     02 09 41.22
+     28  {'DetectionID': 87046, 'Rate': 0.000218285, 'R...     02 08 15.85
+
         Decl_sexagesimal                           Hard_NonDetectionDetails  \
-     0       +56 56 44.6                                                NaN   
-     1       +56 53 23.3  {'sourceID': 209541, 'dsID': 9725, 'band': 3, ...   
-     2       +56 52 40.3                                                NaN   
-     3       +57 05 19.8  {'sourceID': 209543, 'dsID': 9725, 'band': 3, ...   
-     4       +56 49 48.5  {'sourceID': 209545, 'dsID': 9725, 'band': 3, ...   
-     5       +57 00 10.9  {'sourceID': 209546, 'dsID': 9725, 'band': 3, ...   
-     6       +56 57 27.8  {'sourceID': 209547, 'dsID': 9725, 'band': 3, ...   
-     7       +57 00 24.7                                                NaN   
-     8       +56 50 38.2  {'sourceID': 209559, 'dsID': 9725, 'band': 3, ...   
-     9       +57 03 03.8  {'sourceID': 209548, 'dsID': 9725, 'band': 3, ...   
-     10      +56 51 48.2                                                NaN   
-     11      +56 51 24.4                                                NaN   
-     12      +57 01 12.9  {'sourceID': 209560, 'dsID': 9725, 'band': 3, ...   
-     13      +57 00 18.2  {'sourceID': 209563, 'dsID': 9725, 'band': 3, ...   
-     14      +57 03 02.3  {'sourceID': 209550, 'dsID': 9725, 'band': 3, ...   
-     15      +56 54 37.4  {'sourceID': 18290, 'dsID': 9725, 'band': 3, '...   
-     16      +57 00 02.7  {'sourceID': 209558, 'dsID': 9725, 'band': 3, ...   
-     17      +56 56 50.2                                                NaN   
-     18      +57 01 52.0  {'sourceID': 209589, 'dsID': 9725, 'band': 3, ...   
-     19      +56 57 29.3  {'sourceID': 209557, 'dsID': 9725, 'band': 3, ...   
-     20      +57 02 31.4  {'sourceID': 18293, 'dsID': 9725, 'band': 3, '...   
-     21      +56 52 55.5  {'sourceID': 209592, 'dsID': 9725, 'band': 3, ...   
-     22      +56 58 59.8  {'sourceID': 209562, 'dsID': 9725, 'band': 3, ...   
-     23      +56 55 14.2  {'sourceID': 209565, 'dsID': 9725, 'band': 3, ...   
-     24      +56 57 50.9                                                NaN   
-     25      +56 50 29.5  {'sourceID': 209551, 'dsID': 9725, 'band': 3, ...   
-     26      +56 51 45.2  {'sourceID': 209591, 'dsID': 9725, 'band': 3, ...   
-     27      +56 55 55.8  {'sourceID': 18299, 'dsID': 9725, 'band': 3, '...   
-     28      +56 48 53.6                                                NaN   
-     
+     0       +56 56 44.6                                                NaN
+     1       +56 53 23.3  {'sourceID': 209541, 'dsID': 9725, 'band': 3, ...
+     2       +56 52 40.3                                                NaN
+     3       +57 05 19.8  {'sourceID': 209543, 'dsID': 9725, 'band': 3, ...
+     4       +56 49 48.5  {'sourceID': 209545, 'dsID': 9725, 'band': 3, ...
+     5       +57 00 10.9  {'sourceID': 209546, 'dsID': 9725, 'band': 3, ...
+     6       +56 57 27.8  {'sourceID': 209547, 'dsID': 9725, 'band': 3, ...
+     7       +57 00 24.7                                                NaN
+     8       +56 50 38.2  {'sourceID': 209559, 'dsID': 9725, 'band': 3, ...
+     9       +57 03 03.8  {'sourceID': 209548, 'dsID': 9725, 'band': 3, ...
+     10      +56 51 48.2                                                NaN
+     11      +56 51 24.4                                                NaN
+     12      +57 01 12.9  {'sourceID': 209560, 'dsID': 9725, 'band': 3, ...
+     13      +57 00 18.2  {'sourceID': 209563, 'dsID': 9725, 'band': 3, ...
+     14      +57 03 02.3  {'sourceID': 209550, 'dsID': 9725, 'band': 3, ...
+     15      +56 54 37.4  {'sourceID': 18290, 'dsID': 9725, 'band': 3, '...
+     16      +57 00 02.7  {'sourceID': 209558, 'dsID': 9725, 'band': 3, ...
+     17      +56 56 50.2                                                NaN
+     18      +57 01 52.0  {'sourceID': 209589, 'dsID': 9725, 'band': 3, ...
+     19      +56 57 29.3  {'sourceID': 209557, 'dsID': 9725, 'band': 3, ...
+     20      +57 02 31.4  {'sourceID': 18293, 'dsID': 9725, 'band': 3, '...
+     21      +56 52 55.5  {'sourceID': 209592, 'dsID': 9725, 'band': 3, ...
+     22      +56 58 59.8  {'sourceID': 209562, 'dsID': 9725, 'band': 3, ...
+     23      +56 55 14.2  {'sourceID': 209565, 'dsID': 9725, 'band': 3, ...
+     24      +56 57 50.9                                                NaN
+     25      +56 50 29.5  {'sourceID': 209551, 'dsID': 9725, 'band': 3, ...
+     26      +56 51 45.2  {'sourceID': 209591, 'dsID': 9725, 'band': 3, ...
+     27      +56 55 55.8  {'sourceID': 18299, 'dsID': 9725, 'band': 3, '...
+     28      +56 48 53.6                                                NaN
+
                                   Soft_NonDetectionDetails  \
-     0                                                 NaN   
-     1                                                 NaN   
-     2   {'sourceID': 209542, 'dsID': 9725, 'band': 1, ...   
-     3                                                 NaN   
-     4                                                 NaN   
-     5                                                 NaN   
-     6                                                 NaN   
-     7   {'sourceID': 209549, 'dsID': 9725, 'band': 1, ...   
-     8                                                 NaN   
-     9   {'sourceID': 209548, 'dsID': 9725, 'band': 1, ...   
-     10  {'sourceID': 209555, 'dsID': 9725, 'band': 1, ...   
-     11  {'sourceID': 209554, 'dsID': 9725, 'band': 1, ...   
-     12  {'sourceID': 209560, 'dsID': 9725, 'band': 1, ...   
-     13  {'sourceID': 209563, 'dsID': 9725, 'band': 1, ...   
-     14  {'sourceID': 209550, 'dsID': 9725, 'band': 1, ...   
-     15  {'sourceID': 18290, 'dsID': 9725, 'band': 1, '...   
-     16  {'sourceID': 209558, 'dsID': 9725, 'band': 1, ...   
-     17  {'sourceID': 209597, 'dsID': 9725, 'band': 1, ...   
-     18  {'sourceID': 209589, 'dsID': 9725, 'band': 1, ...   
-     19  {'sourceID': 209557, 'dsID': 9725, 'band': 1, ...   
-     20  {'sourceID': 18293, 'dsID': 9725, 'band': 1, '...   
-     21  {'sourceID': 209592, 'dsID': 9725, 'band': 1, ...   
-     22                                                NaN   
-     23  {'sourceID': 209565, 'dsID': 9725, 'band': 1, ...   
-     24  {'sourceID': 18301, 'dsID': 9725, 'band': 1, '...   
-     25  {'sourceID': 209551, 'dsID': 9725, 'band': 1, ...   
-     26  {'sourceID': 209591, 'dsID': 9725, 'band': 1, ...   
-     27  {'sourceID': 18299, 'dsID': 9725, 'band': 1, '...   
-     28  {'sourceID': 209564, 'dsID': 9725, 'band': 1, ...   
-     
+     0                                                 NaN
+     1                                                 NaN
+     2   {'sourceID': 209542, 'dsID': 9725, 'band': 1, ...
+     3                                                 NaN
+     4                                                 NaN
+     5                                                 NaN
+     6                                                 NaN
+     7   {'sourceID': 209549, 'dsID': 9725, 'band': 1, ...
+     8                                                 NaN
+     9   {'sourceID': 209548, 'dsID': 9725, 'band': 1, ...
+     10  {'sourceID': 209555, 'dsID': 9725, 'band': 1, ...
+     11  {'sourceID': 209554, 'dsID': 9725, 'band': 1, ...
+     12  {'sourceID': 209560, 'dsID': 9725, 'band': 1, ...
+     13  {'sourceID': 209563, 'dsID': 9725, 'band': 1, ...
+     14  {'sourceID': 209550, 'dsID': 9725, 'band': 1, ...
+     15  {'sourceID': 18290, 'dsID': 9725, 'band': 1, '...
+     16  {'sourceID': 209558, 'dsID': 9725, 'band': 1, ...
+     17  {'sourceID': 209597, 'dsID': 9725, 'band': 1, ...
+     18  {'sourceID': 209589, 'dsID': 9725, 'band': 1, ...
+     19  {'sourceID': 209557, 'dsID': 9725, 'band': 1, ...
+     20  {'sourceID': 18293, 'dsID': 9725, 'band': 1, '...
+     21  {'sourceID': 209592, 'dsID': 9725, 'band': 1, ...
+     22                                                NaN
+     23  {'sourceID': 209565, 'dsID': 9725, 'band': 1, ...
+     24  {'sourceID': 18301, 'dsID': 9725, 'band': 1, '...
+     25  {'sourceID': 209551, 'dsID': 9725, 'band': 1, ...
+     26  {'sourceID': 209591, 'dsID': 9725, 'band': 1, ...
+     27  {'sourceID': 18299, 'dsID': 9725, 'band': 1, '...
+     28  {'sourceID': 209564, 'dsID': 9725, 'band': 1, ...
+
                                 Medium_NonDetectionDetails  \
-     0                                                 NaN   
-     1                                                 NaN   
-     2                                                 NaN   
-     3                                                 NaN   
-     4                                                 NaN   
-     5                                                 NaN   
-     6                                                 NaN   
-     7                                                 NaN   
-     8   {'sourceID': 209559, 'dsID': 9725, 'band': 2, ...   
-     9                                                 NaN   
-     10  {'sourceID': 209555, 'dsID': 9725, 'band': 2, ...   
-     11  {'sourceID': 209554, 'dsID': 9725, 'band': 2, ...   
-     12  {'sourceID': 209560, 'dsID': 9725, 'band': 2, ...   
-     13                                                NaN   
-     14  {'sourceID': 209550, 'dsID': 9725, 'band': 2, ...   
-     15  {'sourceID': 18290, 'dsID': 9725, 'band': 2, '...   
-     16                                                NaN   
-     17  {'sourceID': 209597, 'dsID': 9725, 'band': 2, ...   
-     18  {'sourceID': 209589, 'dsID': 9725, 'band': 2, ...   
-     19  {'sourceID': 209557, 'dsID': 9725, 'band': 2, ...   
-     20  {'sourceID': 18293, 'dsID': 9725, 'band': 2, '...   
-     21  {'sourceID': 209592, 'dsID': 9725, 'band': 2, ...   
-     22  {'sourceID': 209562, 'dsID': 9725, 'band': 2, ...   
-     23  {'sourceID': 209565, 'dsID': 9725, 'band': 2, ...   
-     24  {'sourceID': 18301, 'dsID': 9725, 'band': 2, '...   
-     25                                                NaN   
-     26  {'sourceID': 209591, 'dsID': 9725, 'band': 2, ...   
-     27                                                NaN   
-     28  {'sourceID': 209564, 'dsID': 9725, 'band': 2, ...   
-     
-                                 Total_NonDetectionDetails  
-     0                                                 NaN  
-     1                                                 NaN  
-     2                                                 NaN  
-     3                                                 NaN  
-     4                                                 NaN  
-     5                                                 NaN  
-     6                                                 NaN  
-     7                                                 NaN  
-     8                                                 NaN  
-     9                                                 NaN  
-     10                                                NaN  
-     11                                                NaN  
-     12                                                NaN  
-     13                                                NaN  
-     14                                                NaN  
-     15                                                NaN  
-     16                                                NaN  
-     17  {'sourceID': 209597, 'dsID': 9725, 'band': 0, ...  
-     18                                                NaN  
-     19                                                NaN  
-     20                                                NaN  
-     21                                                NaN  
-     22                                                NaN  
-     23                                                NaN  
-     24                                                NaN  
-     25  {'sourceID': 209551, 'dsID': 9725, 'band': 0, ...  
-     26                                                NaN  
-     27  {'sourceID': 18299, 'dsID': 9725, 'band': 0, '...  
-     28  {'sourceID': 209564, 'dsID': 9725, 'band': 0, ...  
-     
+     0                                                 NaN
+     1                                                 NaN
+     2                                                 NaN
+     3                                                 NaN
+     4                                                 NaN
+     5                                                 NaN
+     6                                                 NaN
+     7                                                 NaN
+     8   {'sourceID': 209559, 'dsID': 9725, 'band': 2, ...
+     9                                                 NaN
+     10  {'sourceID': 209555, 'dsID': 9725, 'band': 2, ...
+     11  {'sourceID': 209554, 'dsID': 9725, 'band': 2, ...
+     12  {'sourceID': 209560, 'dsID': 9725, 'band': 2, ...
+     13                                                NaN
+     14  {'sourceID': 209550, 'dsID': 9725, 'band': 2, ...
+     15  {'sourceID': 18290, 'dsID': 9725, 'band': 2, '...
+     16                                                NaN
+     17  {'sourceID': 209597, 'dsID': 9725, 'band': 2, ...
+     18  {'sourceID': 209589, 'dsID': 9725, 'band': 2, ...
+     19  {'sourceID': 209557, 'dsID': 9725, 'band': 2, ...
+     20  {'sourceID': 18293, 'dsID': 9725, 'band': 2, '...
+     21  {'sourceID': 209592, 'dsID': 9725, 'band': 2, ...
+     22  {'sourceID': 209562, 'dsID': 9725, 'band': 2, ...
+     23  {'sourceID': 209565, 'dsID': 9725, 'band': 2, ...
+     24  {'sourceID': 18301, 'dsID': 9725, 'band': 2, '...
+     25                                                NaN
+     26  {'sourceID': 209591, 'dsID': 9725, 'band': 2, ...
+     27                                                NaN
+     28  {'sourceID': 209564, 'dsID': 9725, 'band': 2, ...
+
+                                 Total_NonDetectionDetails
+     0                                                 NaN
+     1                                                 NaN
+     2                                                 NaN
+     3                                                 NaN
+     4                                                 NaN
+     5                                                 NaN
+     6                                                 NaN
+     7                                                 NaN
+     8                                                 NaN
+     9                                                 NaN
+     10                                                NaN
+     11                                                NaN
+     12                                                NaN
+     13                                                NaN
+     14                                                NaN
+     15                                                NaN
+     16                                                NaN
+     17  {'sourceID': 209597, 'dsID': 9725, 'band': 0, ...
+     18                                                NaN
+     19                                                NaN
+     20                                                NaN
+     21                                                NaN
+     22                                                NaN
+     23                                                NaN
+     24                                                NaN
+     25  {'sourceID': 209551, 'dsID': 9725, 'band': 0, ...
+     26                                                NaN
+     27  {'sourceID': 18299, 'dsID': 9725, 'band': 0, '...
+     28  {'sourceID': 209564, 'dsID': 9725, 'band': 0, ...
+
      [29 rows x 34 columns]}
 
 
 
-As you can see from the above, this is largely a `dict` containing the information that is provided in the dataset web pages (in fact, those web pages are built from this `dict`). Let's explore a few of the entries here. 
+As you can see from the above, this is largely a `dict` containing the information that is provided in the dataset web pages (in fact, those web pages are built from this `dict`). Let's explore a few of the entries here.
 
 If you scroll down in the above you'll see one thing that look like a tables -- 'Sources'. This is indeed a table (the list of sources in the dataset you can see on the webpage) and this has been converted into a `DataFrame`:
 
@@ -3423,7 +3423,7 @@ Let's start with a quick demo:
 ```python
 uds.saveDatasetImages(ObsID='00282445000',
                       cat='LSXPS',
-                      destDir='/tmp/APIDemo_SXPS_Im', 
+                      destDir='/tmp/APIDemo_SXPS_Im',
                       verbose=True,
                       getRegions=True)
 ```
@@ -3487,7 +3487,7 @@ Let's do one more quick demo, exploting these features and reminding you that yo
 ```python
 uds.saveDatasetImages(ObsID=('00282445000','00221755001'),
                       cat='LSXPS',
-                      destDir='/tmp/APIDemo_SXPS_Im2', 
+                      destDir='/tmp/APIDemo_SXPS_Im2',
                       types=('image','backgroundmap'),
                       bands=('total', 'soft'),
                       verbose=True,
@@ -3539,7 +3539,7 @@ First, we have to remember that there are two types of superseded stacks:
 1. Those which, being superseded, have been removed from the catalogue.
 1. Those which, although superseded, are the only dataset in which a source was detected, so are retained but marked as 'obsolete'.
 
-What happens if you try to access one of these images depends on which function you called. 
+What happens if you try to access one of these images depends on which function you called.
 
 `saveDatasetImages()` has no return type, so if you try to get a non-existent dataset (including a superseded stack) you will just get an error. If you try to get an obsolete stacked image then you will get the data, but with a warning message.
 
@@ -3553,7 +3553,7 @@ Let's start by getting images. I'm going to request an image which I know is a s
 ```python
 uds.saveDatasetImages(ObsID='10000000668',
                       cat='LSXPS',
-                      destDir='/tmp/APIDemo_SXPS_Im3', 
+                      destDir='/tmp/APIDemo_SXPS_Im3',
                       verbose=True,
                       getRegions=True)
 ```
@@ -3589,7 +3589,7 @@ uds.saveDatasetImages(ObsID='10000000668',
         148         if "ERRORTEXT" in ret:
         149             msg = msg + f" Message: `{ret['ERRORTEXT']}`"
     --> 150         raise RuntimeError(msg)
-        151 
+        151
         152     if "OK" not in ret and not skipErrors:
 
 
@@ -3602,7 +3602,7 @@ As predicted, I got an error, and the error message tells me that the dataset ca
 ```python
 uds.saveDatasetImages(ObsID='10000000189',
                       cat='LSXPS',
-                      destDir='/tmp/APIDemo_SXPS_Im3', 
+                      destDir='/tmp/APIDemo_SXPS_Im3',
                       verbose=True,
                       getRegions=True)
 ```
@@ -3610,9 +3610,9 @@ uds.saveDatasetImages(ObsID='10000000189',
     Getting data for ObsID = `10000000189`
     Uploading data to https://www.swift.ac.uk/API/main.php
     Returned keys: dict_keys(['SupersededBy', 'Total', 'Soft', 'Medium', 'Hard', 'Missingexpmap', 'OK', 'APIVersion'])
-    
-     ** WARNING: This dataset is an obsolete stack ** 
-    
+
+     ** WARNING: This dataset is an obsolete stack **
+
     Making directory /tmp/APIDemo_SXPS_Im3/10000000189
     No Image image exists for the Total band for `10000000189`.
     No BackgroundMap image exists for the Total band for `10000000189`.
@@ -4093,186 +4093,186 @@ data
      'Detections': {'NumStacks': 2,
       'NumObservations': 9,
       'Stacks':    ObsSourceID  DatasetID  LSXPS_ID  OSNum  UsedCorrectedPosition  \
-      0       792138     228142    366116      3                      1   
-      1       792027     228141    366116      3                      1   
-      
+      0       792138     228142    366116      3                      1
+      1       792027     228141    366116      3                      1
+
          NearestNeighbour  NearestOKNeighbour      Exposure       HR1   HR1_pos  \
-      0         85.500933           85.500933  54256.347768  0.383896  0.092297   
-      1         30.154481           85.224263  51216.215002  0.408530  0.099186   
-      
+      0         85.500933           85.500933  54256.347768  0.383896  0.092297
+      1         30.154481           85.224263  51216.215002  0.408530  0.099186
+
          ...  IsObsoleteStack  BestDetFlag  \
-      0  ...                0            0   
-      1  ...                0            0   
-      
+      0  ...                0            0
+      1  ...                0            0
+
                                                 Total_Info  HasBlindDetection_band0  \
-      0  {'DetectionID': 1523307, 'DatasetID': 228142, ...                        1   
-      1  {'DetectionID': 1523065, 'DatasetID': 228141, ...                        1   
-      
+      0  {'DetectionID': 1523307, 'DatasetID': 228142, ...                        1
+      1  {'DetectionID': 1523065, 'DatasetID': 228141, ...                        1
+
                                                  Soft_Info HasBlindDetection_band1  \
-      0  {'DetectionID': 1523341, 'DatasetID': 228142, ...                       1   
-      1  {'DetectionID': 1523091, 'DatasetID': 228141, ...                       1   
-      
+      0  {'DetectionID': 1523341, 'DatasetID': 228142, ...                       1
+      1  {'DetectionID': 1523091, 'DatasetID': 228141, ...                       1
+
                                                Medium_Info  HasBlindDetection_band2  \
-      0  {'DetectionID': 1523352, 'DatasetID': 228142, ...                        1   
-      1  {'DetectionID': 1523100, 'DatasetID': 228141, ...                        1   
-      
-                                                 Hard_Info  HasBlindDetection_band3  
-      0  {'DetectionID': 1523361, 'DatasetID': 228142, ...                        1  
-      1  {'DetectionID': 1523105, 'DatasetID': 228141, ...                        1  
-      
+      0  {'DetectionID': 1523352, 'DatasetID': 228142, ...                        1
+      1  {'DetectionID': 1523100, 'DatasetID': 228141, ...                        1
+
+                                                 Hard_Info  HasBlindDetection_band3
+      0  {'DetectionID': 1523361, 'DatasetID': 228142, ...                        1
+      1  {'DetectionID': 1523105, 'DatasetID': 228141, ...                        1
+
       [2 rows x 71 columns],
       'Observations':    ObsSourceID  DatasetID  LSXPS_ID  OSNum  UsedCorrectedPosition  \
-      0       749043     220793    366116      1                      0   
-      1       749096     220833    366116      1                      0   
-      2       749258     220907    366116      1                      0   
-      3       749425     220995    366116      1                      0   
-      4       749465     221033    366116      2                      0   
-      5       749720     221279    366116      3                      0   
-      6       749690     221250    366116      3                      0   
-      7       750043     221515    366116      4                      0   
-      8       750955     221951    366116      1                      0   
-      
+      0       749043     220793    366116      1                      0
+      1       749096     220833    366116      1                      0
+      2       749258     220907    366116      1                      0
+      3       749425     220995    366116      1                      0
+      4       749465     221033    366116      2                      0
+      5       749720     221279    366116      3                      0
+      6       749690     221250    366116      3                      0
+      7       750043     221515    366116      4                      0
+      8       750955     221951    366116      1                      0
+
          NearestNeighbour  NearestOKNeighbour     Exposure       HR1   HR1_pos  ...  \
-      0      1.000000e+80        1.000000e+80   814.007556  0.327592  0.360160  ...   
-      1      3.823000e+02        3.823000e+02  3148.517415  0.337117  0.209317  ...   
-      2      4.277373e+02        4.423895e+02  4838.287365  0.714705  0.285295  ...   
-      3      3.395647e+02        3.395647e+02  3959.676065  0.458438  0.214943  ...   
-      4      3.335399e+02        3.335399e+02  4017.034048  0.470151  0.328438  ...   
-      5      3.455588e+02        3.455588e+02  4988.235127  0.205528  0.386526  ...   
-      6      7.922934e+01        7.922934e+01  2750.272421  0.650255  0.349745  ...   
-      7      3.414023e+02        3.414023e+02  3953.420273  0.113588  0.459811  ...   
-      8      5.492380e+02        5.492380e+02  4298.483700 -0.224153  0.245883  ...   
-      
+      0      1.000000e+80        1.000000e+80   814.007556  0.327592  0.360160  ...
+      1      3.823000e+02        3.823000e+02  3148.517415  0.337117  0.209317  ...
+      2      4.277373e+02        4.423895e+02  4838.287365  0.714705  0.285295  ...
+      3      3.395647e+02        3.395647e+02  3959.676065  0.458438  0.214943  ...
+      4      3.335399e+02        3.335399e+02  4017.034048  0.470151  0.328438  ...
+      5      3.455588e+02        3.455588e+02  4988.235127  0.205528  0.386526  ...
+      6      7.922934e+01        7.922934e+01  2750.272421  0.650255  0.349745  ...
+      7      3.414023e+02        3.414023e+02  3953.420273  0.113588  0.459811  ...
+      8      5.492380e+02        5.492380e+02  4298.483700 -0.224153  0.245883  ...
+
          IsObsoleteStack  BestDetFlag  \
-      0                0            0   
-      1                0            0   
-      2                0            0   
-      3                0            0   
-      4                0            0   
-      5                0            0   
-      6                0            0   
-      7                0            0   
-      8                0            0   
-      
+      0                0            0
+      1                0            0
+      2                0            0
+      3                0            0
+      4                0            0
+      5                0            0
+      6                0            0
+      7                0            0
+      8                0            0
+
                                                 Total_Info  HasBlindDetection_band0  \
-      0  {'DetectionID': 1447508, 'DatasetID': 220793, ...                        1   
-      1  {'DetectionID': 1447603, 'DatasetID': 220833, ...                        1   
-      2  {'DetectionID': 1447891, 'DatasetID': 220907, ...                        1   
-      3  {'DetectionID': 1448199, 'DatasetID': 220995, ...                        1   
-      4  {'DetectionID': 1448296, 'DatasetID': 221033, ...                        1   
-      5  {'DetectionID': 1448841, 'DatasetID': 221279, ...                        1   
-      6  {'DetectionID': 1448773, 'DatasetID': 221250, ...                        1   
-      7  {'DetectionID': 1449441, 'DatasetID': 221515, ...                        1   
-      8  {'DetectionID': 1451392, 'DatasetID': 221951, ...                        1   
-      
+      0  {'DetectionID': 1447508, 'DatasetID': 220793, ...                        1
+      1  {'DetectionID': 1447603, 'DatasetID': 220833, ...                        1
+      2  {'DetectionID': 1447891, 'DatasetID': 220907, ...                        1
+      3  {'DetectionID': 1448199, 'DatasetID': 220995, ...                        1
+      4  {'DetectionID': 1448296, 'DatasetID': 221033, ...                        1
+      5  {'DetectionID': 1448841, 'DatasetID': 221279, ...                        1
+      6  {'DetectionID': 1448773, 'DatasetID': 221250, ...                        1
+      7  {'DetectionID': 1449441, 'DatasetID': 221515, ...                        1
+      8  {'DetectionID': 1451392, 'DatasetID': 221951, ...                        1
+
                                                  Soft_Info HasBlindDetection_band1  \
-      0  {'sourceID': 366116, 'dsID': 220793, 'band': 1...                       0   
-      1  {'DetectionID': 1447607, 'DatasetID': 220833, ...                       1   
-      2  {'sourceID': 366116, 'dsID': 220907, 'band': 1...                       0   
-      3  {'DetectionID': 1448203, 'DatasetID': 220995, ...                       1   
-      4  {'sourceID': 366116, 'dsID': 221033, 'band': 1...                       0   
-      5  {'sourceID': 366116, 'dsID': 221279, 'band': 1...                       0   
-      6  {'sourceID': 366116, 'dsID': 221250, 'band': 1...                       0   
-      7  {'sourceID': 366116, 'dsID': 221515, 'band': 1...                       0   
-      8  {'sourceID': 366116, 'dsID': 221951, 'band': 1...                       0   
-      
+      0  {'sourceID': 366116, 'dsID': 220793, 'band': 1...                       0
+      1  {'DetectionID': 1447607, 'DatasetID': 220833, ...                       1
+      2  {'sourceID': 366116, 'dsID': 220907, 'band': 1...                       0
+      3  {'DetectionID': 1448203, 'DatasetID': 220995, ...                       1
+      4  {'sourceID': 366116, 'dsID': 221033, 'band': 1...                       0
+      5  {'sourceID': 366116, 'dsID': 221279, 'band': 1...                       0
+      6  {'sourceID': 366116, 'dsID': 221250, 'band': 1...                       0
+      7  {'sourceID': 366116, 'dsID': 221515, 'band': 1...                       0
+      8  {'sourceID': 366116, 'dsID': 221951, 'band': 1...                       0
+
                                                Medium_Info  HasBlindDetection_band2  \
-      0  {'DetectionID': 1447509, 'DatasetID': 220793, ...                        1   
-      1  {'DetectionID': 1447608, 'DatasetID': 220833, ...                        1   
-      2  {'DetectionID': 1447899, 'DatasetID': 220907, ...                        1   
-      3  {'DetectionID': 1448204, 'DatasetID': 220995, ...                        1   
-      4  {'DetectionID': 1448302, 'DatasetID': 221033, ...                        1   
-      5  {'DetectionID': 1448845, 'DatasetID': 221279, ...                        1   
-      6  {'DetectionID': 1448777, 'DatasetID': 221250, ...                        1   
-      7  {'sourceID': 366116, 'dsID': 221515, 'band': 2...                        0   
-      8  {'sourceID': 366116, 'dsID': 221951, 'band': 2...                        0   
-      
-                                                 Hard_Info  HasBlindDetection_band3  
-      0  {'sourceID': 366116, 'dsID': 220793, 'band': 3...                        0  
-      1  {'DetectionID': 1447609, 'DatasetID': 220833, ...                        1  
-      2  {'DetectionID': 1447901, 'DatasetID': 220907, ...                        1  
-      3  {'sourceID': 366116, 'dsID': 220995, 'band': 3...                        0  
-      4  {'DetectionID': 1448304, 'DatasetID': 221033, ...                        1  
-      5  {'sourceID': 366116, 'dsID': 221279, 'band': 3...                        0  
-      6  {'sourceID': 366116, 'dsID': 221250, 'band': 3...                        0  
-      7  {'sourceID': 366116, 'dsID': 221515, 'band': 3...                        0  
-      8  {'sourceID': 366116, 'dsID': 221951, 'band': 3...                        0  
-      
+      0  {'DetectionID': 1447509, 'DatasetID': 220793, ...                        1
+      1  {'DetectionID': 1447608, 'DatasetID': 220833, ...                        1
+      2  {'DetectionID': 1447899, 'DatasetID': 220907, ...                        1
+      3  {'DetectionID': 1448204, 'DatasetID': 220995, ...                        1
+      4  {'DetectionID': 1448302, 'DatasetID': 221033, ...                        1
+      5  {'DetectionID': 1448845, 'DatasetID': 221279, ...                        1
+      6  {'DetectionID': 1448777, 'DatasetID': 221250, ...                        1
+      7  {'sourceID': 366116, 'dsID': 221515, 'band': 2...                        0
+      8  {'sourceID': 366116, 'dsID': 221951, 'band': 2...                        0
+
+                                                 Hard_Info  HasBlindDetection_band3
+      0  {'sourceID': 366116, 'dsID': 220793, 'band': 3...                        0
+      1  {'DetectionID': 1447609, 'DatasetID': 220833, ...                        1
+      2  {'DetectionID': 1447901, 'DatasetID': 220907, ...                        1
+      3  {'sourceID': 366116, 'dsID': 220995, 'band': 3...                        0
+      4  {'DetectionID': 1448304, 'DatasetID': 221033, ...                        1
+      5  {'sourceID': 366116, 'dsID': 221279, 'band': 3...                        0
+      6  {'sourceID': 366116, 'dsID': 221250, 'band': 3...                        0
+      7  {'sourceID': 366116, 'dsID': 221515, 'band': 3...                        0
+      8  {'sourceID': 366116, 'dsID': 221951, 'band': 3...                        0
+
       [9 rows x 71 columns]},
      'NonDetections': {'NumStacks': 1,
       'NumObservations': 10,
       'Stacks':          ObsID  DatasetID  IsStackedImage  \
-      0  10000019357     212110               1   
-      
+      0  10000019357     212110               1
+
                                                 Total_Info  \
-      0  {'sourceID': 366116, 'dsID': 212110, 'band': 0...   
-      
+      0  {'sourceID': 366116, 'dsID': 212110, 'band': 0...
+
                                                  Soft_Info  \
-      0  {'sourceID': 366116, 'dsID': 212110, 'band': 1...   
-      
+      0  {'sourceID': 366116, 'dsID': 212110, 'band': 1...
+
                                                Medium_Info  \
-      0  {'sourceID': 366116, 'dsID': 212110, 'band': 2...   
-      
-                                                 Hard_Info  
+      0  {'sourceID': 366116, 'dsID': 212110, 'band': 2...
+
+                                                 Hard_Info
       0  {'sourceID': 366116, 'dsID': 212110, 'band': 3...  ,
       'Observations':         ObsID  DatasetID  IsStackedImage  \
-      0    86462001     114866               0   
-      1  3102486001     127139               0   
-      2  3102486002     144796               0   
-      3  3102486003     144830               0   
-      4    15190008     221320               0   
-      5    15190009     221435               0   
-      6    15190011     221593               0   
-      7    15190013     222189               0   
-      8    15190014     222465               0   
-      9    15190015     222727               0   
-      
+      0    86462001     114866               0
+      1  3102486001     127139               0
+      2  3102486002     144796               0
+      3  3102486003     144830               0
+      4    15190008     221320               0
+      5    15190009     221435               0
+      6    15190011     221593               0
+      7    15190013     222189               0
+      8    15190014     222465               0
+      9    15190015     222727               0
+
                                                 Total_Info  \
-      0  {'sourceID': 366116, 'dsID': 114866, 'band': 0...   
-      1  {'sourceID': 366116, 'dsID': 127139, 'band': 0...   
-      2  {'sourceID': 366116, 'dsID': 144796, 'band': 0...   
-      3  {'sourceID': 366116, 'dsID': 144830, 'band': 0...   
-      4  {'sourceID': 366116, 'dsID': 221320, 'band': 0...   
-      5  {'sourceID': 366116, 'dsID': 221435, 'band': 0...   
-      6  {'sourceID': 366116, 'dsID': 221593, 'band': 0...   
-      7  {'sourceID': 366116, 'dsID': 222189, 'band': 0...   
-      8  {'sourceID': 366116, 'dsID': 222465, 'band': 0...   
-      9  {'sourceID': 366116, 'dsID': 222727, 'band': 0...   
-      
+      0  {'sourceID': 366116, 'dsID': 114866, 'band': 0...
+      1  {'sourceID': 366116, 'dsID': 127139, 'band': 0...
+      2  {'sourceID': 366116, 'dsID': 144796, 'band': 0...
+      3  {'sourceID': 366116, 'dsID': 144830, 'band': 0...
+      4  {'sourceID': 366116, 'dsID': 221320, 'band': 0...
+      5  {'sourceID': 366116, 'dsID': 221435, 'band': 0...
+      6  {'sourceID': 366116, 'dsID': 221593, 'band': 0...
+      7  {'sourceID': 366116, 'dsID': 222189, 'band': 0...
+      8  {'sourceID': 366116, 'dsID': 222465, 'band': 0...
+      9  {'sourceID': 366116, 'dsID': 222727, 'band': 0...
+
                                                  Soft_Info  \
-      0  {'sourceID': 366116, 'dsID': 114866, 'band': 1...   
-      1  {'sourceID': 366116, 'dsID': 127139, 'band': 1...   
-      2  {'sourceID': 366116, 'dsID': 144796, 'band': 1...   
-      3  {'sourceID': 366116, 'dsID': 144830, 'band': 1...   
-      4  {'sourceID': 366116, 'dsID': 221320, 'band': 1...   
-      5  {'sourceID': 366116, 'dsID': 221435, 'band': 1...   
-      6  {'sourceID': 366116, 'dsID': 221593, 'band': 1...   
-      7  {'sourceID': 366116, 'dsID': 222189, 'band': 1...   
-      8  {'sourceID': 366116, 'dsID': 222465, 'band': 1...   
-      9  {'sourceID': 366116, 'dsID': 222727, 'band': 1...   
-      
+      0  {'sourceID': 366116, 'dsID': 114866, 'band': 1...
+      1  {'sourceID': 366116, 'dsID': 127139, 'band': 1...
+      2  {'sourceID': 366116, 'dsID': 144796, 'band': 1...
+      3  {'sourceID': 366116, 'dsID': 144830, 'band': 1...
+      4  {'sourceID': 366116, 'dsID': 221320, 'band': 1...
+      5  {'sourceID': 366116, 'dsID': 221435, 'band': 1...
+      6  {'sourceID': 366116, 'dsID': 221593, 'band': 1...
+      7  {'sourceID': 366116, 'dsID': 222189, 'band': 1...
+      8  {'sourceID': 366116, 'dsID': 222465, 'band': 1...
+      9  {'sourceID': 366116, 'dsID': 222727, 'band': 1...
+
                                                Medium_Info  \
-      0  {'sourceID': 366116, 'dsID': 114866, 'band': 2...   
-      1  {'sourceID': 366116, 'dsID': 127139, 'band': 2...   
-      2  {'sourceID': 366116, 'dsID': 144796, 'band': 2...   
-      3  {'sourceID': 366116, 'dsID': 144830, 'band': 2...   
-      4  {'sourceID': 366116, 'dsID': 221320, 'band': 2...   
-      5  {'sourceID': 366116, 'dsID': 221435, 'band': 2...   
-      6  {'sourceID': 366116, 'dsID': 221593, 'band': 2...   
-      7  {'sourceID': 366116, 'dsID': 222189, 'band': 2...   
-      8  {'sourceID': 366116, 'dsID': 222465, 'band': 2...   
-      9  {'sourceID': 366116, 'dsID': 222727, 'band': 2...   
-      
-                                                 Hard_Info  
-      0  {'sourceID': 366116, 'dsID': 114866, 'band': 3...  
-      1  {'sourceID': 366116, 'dsID': 127139, 'band': 3...  
-      2  {'sourceID': 366116, 'dsID': 144796, 'band': 3...  
-      3  {'sourceID': 366116, 'dsID': 144830, 'band': 3...  
-      4  {'sourceID': 366116, 'dsID': 221320, 'band': 3...  
-      5  {'sourceID': 366116, 'dsID': 221435, 'band': 3...  
-      6  {'sourceID': 366116, 'dsID': 221593, 'band': 3...  
-      7  {'sourceID': 366116, 'dsID': 222189, 'band': 3...  
-      8  {'sourceID': 366116, 'dsID': 222465, 'band': 3...  
+      0  {'sourceID': 366116, 'dsID': 114866, 'band': 2...
+      1  {'sourceID': 366116, 'dsID': 127139, 'band': 2...
+      2  {'sourceID': 366116, 'dsID': 144796, 'band': 2...
+      3  {'sourceID': 366116, 'dsID': 144830, 'band': 2...
+      4  {'sourceID': 366116, 'dsID': 221320, 'band': 2...
+      5  {'sourceID': 366116, 'dsID': 221435, 'band': 2...
+      6  {'sourceID': 366116, 'dsID': 221593, 'band': 2...
+      7  {'sourceID': 366116, 'dsID': 222189, 'band': 2...
+      8  {'sourceID': 366116, 'dsID': 222465, 'band': 2...
+      9  {'sourceID': 366116, 'dsID': 222727, 'band': 2...
+
+                                                 Hard_Info
+      0  {'sourceID': 366116, 'dsID': 114866, 'band': 3...
+      1  {'sourceID': 366116, 'dsID': 127139, 'band': 3...
+      2  {'sourceID': 366116, 'dsID': 144796, 'band': 3...
+      3  {'sourceID': 366116, 'dsID': 144830, 'band': 3...
+      4  {'sourceID': 366116, 'dsID': 221320, 'band': 3...
+      5  {'sourceID': 366116, 'dsID': 221435, 'band': 3...
+      6  {'sourceID': 366116, 'dsID': 221593, 'band': 3...
+      7  {'sourceID': 366116, 'dsID': 222189, 'band': 3...
+      8  {'sourceID': 366116, 'dsID': 222465, 'band': 3...
       9  {'sourceID': 366116, 'dsID': 222727, 'band': 3...  },
      'CrossMatch': Empty DataFrame
      Columns: []
@@ -4524,15 +4524,15 @@ for p in myReq.productList:
 
     XRTProductRequest object for user `MY_EMAIL_ADDRESS`, with the following products requested:
     * light curve
-    
+
     Globals: {'name': 'Swift J073006.8-193709', 'targ': '15190,44002,1110865,3103197,3103545', 'T0': 675591242.228083, 'RA': 112.5284106332, 'Dec': -19.6192622721, 'centroid': False, 'posErr': 1, 'useSXPS': True, 'getTargs': False, 'getT0': False}
-    
+
     lc:	{'whichData': 'user', 'useObs': '00015190001,00015190002,00015190003,00015190005,00015190006,00015190007,00015190008,00015190009,00015190010,00015190011,00015190012,00015190013,00015190014,00015190015,00044002095,01110865000,03103197001,03103545001'}
 
 
 Where, above, we created an XRTProductRequest with a light curve.
 
-The two (optional) parameters to set the T0 and observation list differ slightly for transients compared to for sources. 
+The two (optional) parameters to set the T0 and observation list differ slightly for transients compared to for sources.
 
 `T0` can only be 'Discovery' or `None` (the default): 'Discovery' this will set it to the start time of the observation in which the transient was discovered, `None` will not set the T0 in the `XRTProductRequest`.
 

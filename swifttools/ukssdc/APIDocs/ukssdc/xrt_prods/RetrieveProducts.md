@@ -41,7 +41,7 @@ There are several optional parameters you can also pass, to control the download
 So, here are some examples:
 
 ```python
-In [2]: myReq.downloadProducts('/my/safe/place/' what=('LightCurve',), format='zip') 
+In [2]: myReq.downloadProducts('/my/safe/place/' what=('LightCurve',), format='zip')
 ...
 
 In [3]: myReq.downloadProducts('/my/safe/place/', clobber=True, stem='my_test_run_')
@@ -49,7 +49,7 @@ In [3]: myReq.downloadProducts('/my/safe/place/', clobber=True, stem='my_test_ru
 ...
 ```
 
-**Important note**: If you are requesting only a single product (e.g. a light curve in the first example above), you must ensure that you give a trailing comma inside the parentheses (or use square brackets), or Python will interpret the 
+**Important note**: If you are requesting only a single product (e.g. a light curve in the first example above), you must ensure that you give a trailing comma inside the parentheses (or use square brackets), or Python will interpret the
 argument as a single string, not a tuple. (My thanks to Greg Sivakoff for identifying this error in my original documentation).
 
 ---
@@ -116,7 +116,7 @@ does not mean that the fit is appropriate or good. Inspection of the spectrum an
 (This feature was added in v1.10 of the `xrt_prods` module).
 
 In addition to the generic `downloadProducts()` function, there is a function tailored purely to obtaining
-the spectral files: `saveSpectralData()`. This was added as part of `swifttools` v3.0, and is really just a wrapper to 
+the spectral files: `saveSpectralData()`. This was added as part of `swifttools` v3.0, and is really just a wrapper to
 the `saveSpectrum()` function common to the `swifttools.ukssdc` module, and documented in the
 [Module-level Functions documentation](https://www.swift.ac.uk/API/ukssdc/commonFunc.md). Note that
 before calling this function you must get the spectral fit files with `retrieveSpectralFits()`, above.
@@ -134,16 +134,16 @@ details of the position using the three functions:
 
 which will attempt to retrieve the position type implied in the function name. Each of these stores the data
 in a class variable: `standardPos`, `enhancedPos`, or `astromPos`, and they take the optional `returnData` boolean
-argument (which defaults to `False`) if you want them to also return the 
+argument (which defaults to `False`) if you want them to also return the
 
 This returns a dictionary object, they keys of which depend on the status of the position. There will always be
 a key `GotPos` which is a `bool`, indicating whether or not a position is available.
 
 If `GotPos` is `False` then the only other key will be `Reason` which is a string, giving some information about
-why no position was available. 
+why no position was available.
 
 If `GotPos` is `True` then keys `RA`, `Dec` and `Err90` exist, giving the position (in decimal degrees, J2000) and 90% confidence
-radial position error (in arcsec). 
+radial position error (in arcsec).
 
 For the standard and astrometric positions there is also the boolean key `FromSXPS` and, if this is `True`,
 a key `WhichSXPS`, indicating whether the position was taken from one of the SXPS catalogues, and if so, which one.

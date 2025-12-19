@@ -43,7 +43,7 @@ sub saveSection($$)
   # Do some cleaning up.
   # Need to make lists render properly, i.e. no blank lines between list elements,
   #  otherwise PHP makes it stupid.
-  # Ensure that my parameters etc appear as definition lists. 
+  # Ensure that my parameters etc appear as definition lists.
   # Do not want things appearing as preformat blocks, so lose all leading whitespace.
 
   my @op=split(/\n/, $op);
@@ -91,9 +91,9 @@ sub saveSection($$)
       {
         push @newOp, "";
       }
-      
+
       $lastBlank=0;
-      
+
     }
     elsif ($line!~/./) # Blank line
     {
@@ -106,7 +106,7 @@ sub saveSection($$)
     }
     elsif ($inPar)
     {
-      
+
       # Par may be a list, but I don't want it to be any more, so lose it:
       $line=~s/^\*\s+//;
       # May read "None"
@@ -133,7 +133,7 @@ sub saveSection($$)
       }
       $lastBlank=0;
     }
-    # Not a blank line AND doesn't start with an asterisc, 
+    # Not a blank line AND doesn't start with an asterisc,
     elsif ($inList and $lastBlank) # End of the list
     {
       $lastBlank=0;
@@ -141,7 +141,7 @@ sub saveSection($$)
       # Put a blank line after the list
       push @newOp, "";
     }
-    
+
     else
     {
       $lastBlank=0;
@@ -190,8 +190,8 @@ sub saveSection($$)
   #   {
   #     $op[$ix] = "\n$op[$ix]";
   #   }
-    
-    
+
+
 
   #   push @newOp, $op[$ix];
   # }

@@ -248,12 +248,10 @@ variables and others didn't, and so on. I also realised that there were things I
 which the `xrt_prods` module didn't support -- such as the `incbad='both'` option for getting light curves, and for the reasons above
 it made sense to port these options to the `xrt_prods` module as well. For spectra, the SXPS catalogues contain two different
 spectral model fits, so the structure in which these fits are returned needed adjusting. I did consider not porting this
-new structure to `xrt_prods`, but instead took the opportunity to implement a long-promised feature for the product generator: 
+new structure to `xrt_prods`, but instead took the opportunity to implement a long-promised feature for the product generator:
 the ability to fit more than just power-laws. Having done this, it was obviously essential that `xrt_prods` uses the new structure.
 
 Having persuaded myself that these changes were justified, I have made considerable effort not to immediately break anyone's scripts,
 by adding a ridiculous amount of code and the front and back ends to ensure that users still on v1.9 or earlier get back from the server
 the data format they were expecting, and users on v1.10 can request the "deprecated mode", in which case the new-format data
 come back from the server, and then are internally "rewritten" to the old format.
-
-
