@@ -1,17 +1,28 @@
 from datetime import datetime
 from typing import Optional
 
+from pydantic import BaseModel
+
 from ..base.common import TOOAPIBaseclass
 from ..base.repr import TOOAPIReprMixin
-from ..base.schemas import AstropyAngle, BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
+from ..base.schemas import (
+    AstropyAngle,
+    AstropyDateTime,
+    AstropyDayLength,
+    BaseSchema,
+)
 from ..base.status import TOOStatus
 from .clock import TOOAPIClockCorrect
-from .resolve import TOOAPIAutoResolve
 
 
-class SwiftCalendarGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
+class SwiftCalendarGetSchema(BaseModel):
+    begin: Optional[AstropyDateTime] = None
+    end: Optional[AstropyDateTime] = None
+    length: Optional[AstropyDayLength] = None
+    ra: Optional[AstropyAngle] = None
+    dec: Optional[AstropyAngle] = None
     too_id: Optional[int] = None
-    radius: Optional[float] = 12 / 60.0
+    radius: Optional[AstropyAngle] = 12 / 60.0
     targetid: Optional[int] = None
     status: TOOStatus = TOOStatus()
 
@@ -21,10 +32,10 @@ class SwiftCalendarEntry(BaseSchema, TOOAPIClockCorrect):
 
     Attributes
     ----------
-    start : datetime
-        start time of calendar entry
-    stop : datetime
-        stop time of calendar entry
+    begin : datetime
+        begin time of calendar entry
+    end : datetime
+        end time of calendar entry
     xrt_mode : str
         XRT mode of calendar entry
     uvot_mode : str
@@ -45,8 +56,8 @@ class SwiftCalendarEntry(BaseSchema, TOOAPIClockCorrect):
         Declination of pointing in J2000 (decimal degrees)
     """
 
-    start: Optional[datetime] = None
-    stop: Optional[datetime] = None
+    begin: Optional[datetime] = None
+    end: Optional[datetime] = None
     type: str = "TOO"
     pi_name: str = ""
     co_point: Optional[str] = None
@@ -64,24 +75,25 @@ class SwiftCalendarEntry(BaseSchema, TOOAPIClockCorrect):
     roll_constrained: Optional[bool] = None
     visibility_time: Optional[float] = None
     extended_ephem: Optional[str] = None
-    typeID: Optional[int]
-    duration: Optional[float]
-    roll: Optional[float]
-    target_ID: Optional[int]
-    target_name: Optional[str]
-    ra: Optional[AstropyAngle]
-    dec: Optional[AstropyAngle]
-    sip: Optional[int]
+    type_id: Optional[int] = None
+    duration: Optional[float] = None
+    roll: Optional[float] = None
+    target_id: Optional[int] = None
+    target_name: Optional[str] = None
+    ra: Optional[AstropyAngle] = None
+    dec: Optional[AstropyAngle] = None
+    sip: Optional[int] = None
     sip_uvot_mode: int = 39321
     sip_SSmin: int = 300
     xrt_mode: int = 7
     bat_mode: int = 0
     uvot_mode: int = 39321
+    asflown: Optional[float] = None
 
     # Variable names
     _varnames: dict[str, str] = {
-        "start": "Start",
-        "stop": "Stop",
+        "begin": "Begin",
+        "end": "End",
         "xrt_mode": "XRT Mode",
         "bat_mode": "BAT Mode",
         "uvot_mode": "UVOT Mode",
@@ -99,7 +111,7 @@ class SwiftCalendarEntry(BaseSchema, TOOAPIClockCorrect):
 
     @property
     def _table(self):
-        parameters = ["start", "stop", "xrt_mode", "uvot_mode", "duration", "asflown"]
+        parameters = ["begin", "end", "xrt_mode", "uvot_mode", "duration", "asflown"]
         header = [self._varnames[row] for row in parameters]
         return header, [[getattr(self, row) for row in parameters]]
 
@@ -119,7 +131,7 @@ class SwiftCalendarSchema(BaseSchema, TOOAPIReprMixin):
 class SwiftCalendar(
     TOOAPIBaseclass,
     TOOAPIClockCorrect,
-    TOOAPIAutoResolve,
+    #    TOOAPIAutoResolve,
     SwiftCalendarSchema,
 ):
     """Class that fetches entries in the Swift Planning Calendar, which
