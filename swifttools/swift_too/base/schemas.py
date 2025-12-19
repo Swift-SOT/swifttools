@@ -66,14 +66,14 @@ AstropyAngle = Annotated[
 ]
 
 AstropyDayLength = Annotated[
-    Union[float, int, u.Quantity, timedelta],
+    Union[float, int, u.Quantity, timedelta, TimeDelta],
     PlainSerializer(convert_from_timedelta),
     PlainValidator(convert_from_timedelta),
 ]
 
 # Define as a type that validates monitoring cadence strings
 TextLength = Annotated[
-    Union[str, u.Quantity, timedelta, None],
+    Union[str, u.Quantity, timedelta, TimeDelta, None],
     PlainSerializer(validate_monitoring_cadence),
     PlainValidator(validate_monitoring_cadence),
 ]

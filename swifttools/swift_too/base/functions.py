@@ -14,11 +14,13 @@ def utcnow():
     return datetime.now(tz=timezone.utc).replace(tzinfo=None)
 
 
-def convert_from_timedelta(value: Union[float, int, u.Quantity, timedelta]) -> Union[float, PydanticUndefinedType]:
+def convert_from_timedelta(
+    value: Union[float, int, u.Quantity, timedelta, TimeDelta],
+) -> Union[float, PydanticUndefinedType]:
     """Convert a value to a timedelta in days."""
     if isinstance(value, PydanticUndefinedType):
         return value
-    if isinstance(value, u.Quantity):
+    if isinstance(value, u.Quantity) or isinstance(value, TimeDelta):
         return value.to(u.day).value
     elif isinstance(value, (int, float)):
         return float(value)
@@ -91,7 +93,7 @@ def _tablefy(table, header=None):
     return tab
 
 
-def validate_monitoring_cadence(value: Union[str, u.Quantity, timedelta, None]) -> Optional[str]:
+def validate_monitoring_cadence(value: Union[str, u.Quantity, timedelta, TimeDelta, None]) -> Optional[str]:
     # Check for empty values
     if value is None or (isinstance(value, str) and value.strip() == ""):
         return None
