@@ -213,7 +213,7 @@ class Swift_UVOTMode(TOOAPI_Baseclass, TOOAPI_Instruments, TOOAPI_SkyCoord, TOOA
                     html += '<tr">'
                 for col in table_cols:
                     html += "<td>"
-                    html += f"{getattr(entry,col)}"
+                    html += f"{getattr(entry, col)}"
                     html += "</td>"
 
                 html += "</tr>"

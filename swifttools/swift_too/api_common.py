@@ -259,7 +259,7 @@ class TOOAPI_Baseclass:
         name = self.__class__.__name__
         args = ",".join(
             [
-                f"{row}='{getattr(self,row)}'"
+                f"{row}='{getattr(self, row)}'"
                 for row in self._parameters
                 if getattr(self, row) is not None and getattr(self, row) != []
             ]
