@@ -62,10 +62,10 @@ print(f"Available tables in this catalogue: {q.tables}\n")
 
     Selected catalogue: LSXPS
     Selected table: sources
-    
+
     Available catalogues: ['LSXPS', '2SXPS']
     Available tables in this catalogue: ['sources', 'datasets', 'detections', 'obssources', 'xcorr', 'transients', 'oldstacks']
-    
+
 
 
 The table and catalogue can be specified in the constructor, or by setting the relevant variables, for example:
@@ -125,7 +125,7 @@ print(f"Now it is {q.subset}")
     Now it is None
 
 
-One small note here: this `subset` variable belonging to the `SXPSQuery` class, should not be confused with the [`subsets` argument](../query.md#subsets) that you can pass to the various [functions to get products](#prods). In this case here, `subsets` is a *property of the catalogue* and relates to a predefined subset of catalogue results, so your query is on this catalogue subset. In the latter case, which we will encounter below, 
+One small note here: this `subset` variable belonging to the `SXPSQuery` class, should not be confused with the [`subsets` argument](../query.md#subsets) that you can pass to the various [functions to get products](#prods). In this case here, `subsets` is a *property of the catalogue* and relates to a predefined subset of catalogue results, so your query is on this catalogue subset. In the latter case, which we will encounter below,
 we are telling a function that gets products for our query results to return products for a subset *of the results we have already obtained* (the reuse of name is unfortunate, but a sensible alternative has failed to present itself to my mind. No doubt one will occur 13.2 seconds after release of this module).
 
 So, let's put all of this together and make an example query, just to remind you of the syntax. I am going to request a cone search to find all datasets near GK Per, with at least 5ks of exposure.
@@ -305,8 +305,8 @@ q.sourceDetails.keys()
 
     Cleared stored `sourceDetails` data.
     sourceDetails is: None
-    
-    
+
+
     Saved source information as sourceDetails varable.
 
 
@@ -517,7 +517,7 @@ q.getLightCurves(byID=True,
         784                 timeFormat = self._lctimeformat
         785             if (binning != self._lcbinning) or (timeFormat != self._lctimeformat):
     --> 786                 raise ValueError("Cannot get more light curves with different binning / timeformat.")
-        787 
+        787
         788         useTrans = False
 
 
@@ -677,9 +677,9 @@ fig, ax = q.plotLightCurves(209851,
 
 
 
-    
+
 ![png](SXPS_LC1.png)
-    
+
 
 
 And having captured `fig` and `ax` if I wanted to add another dataset:
@@ -702,9 +702,9 @@ fig
 
 
 
-    
+
 ![png](SXPS_LC2.png)
-    
+
 
 
 
@@ -824,8 +824,8 @@ q.verbose=False
     models/interval0pc_pow.xcm
     interval0pc_apec_fit.fit
     interval0pc_pow_fit.fit
-    
-    
+
+
     Removing file /tmp/APIDemo_SXPSq_spec/209851/interval0.tar.gz
     Downloading file `/tmp/APIDemo_SXPSq_spec/209851/interval0pc_pow_plot.gif`
     Saving file `/tmp/APIDemo_SXPSq_spec/209851/interval0pc_pow_plot.gif`
@@ -1131,28 +1131,28 @@ for k, v in rlist.items():
     print(f"LC Pars: {v.getLightCurvePars()}")
 ```
 
-    209851: 
+    209851:
     XRTProductRequest object for user `MY_EMAIL_ADDRESS`, with the following products requested:
     * light curve
     * spectrum
     * standard position
-    
+
     Global Pars: {'name': 'LSXPS J062131.8-622213', 'targ': '00221755', 'T0': 175893506.972863, 'RA': 95.38255019, 'Dec': -62.3702951, 'centroid': False, 'posErr': 1, 'useSXPS': True, 'getTargs': False, 'getT0': False}
     LC Pars: {'whichData': 'user', 'useObs': '00221755000,00221755001,00221755002,00221755003,00221755004,00221755005,00221755006,00221755007,00221755008,00221755009,00221755010,00221755011,00221755012,00221755013,00221755014,00221755015,00221755016,00221755017,00221755018,00221755020,00221755022,00221755023,00221755024,00221755025,00221755026,00221755027,00221755028,00221755029,00221755030,00221755031,00221755032,00221755033,00221755034,00221755035,00221755036,00221755037,00221755038,00221755041,00221755043,00221755044'}
-    209920: 
+    209920:
     XRTProductRequest object for user `MY_EMAIL_ADDRESS`, with the following products requested:
     * light curve
     * spectrum
     * standard position
-    
+
     Global Pars: {'name': 'LSXPS J062126.9-622317', 'targ': '', 'T0': 175894000.0, 'RA': 95.36212207, 'Dec': -62.38828768, 'centroid': False, 'posErr': 1, 'useSXPS': True, 'getTargs': False, 'getT0': False}
     LC Pars: {'whichData': 'user', 'useObs': ''}
-    209872: 
+    209872:
     XRTProductRequest object for user `MY_EMAIL_ADDRESS`, with the following products requested:
     * light curve
     * spectrum
     * standard position
-    
+
     Global Pars: {'name': 'LSXPS J062141.6-622120', 'targ': '00221755', 'T0': 175894000.0, 'RA': 95.42369715, 'Dec': -62.35566404, 'centroid': False, 'posErr': 1, 'useSXPS': True, 'getTargs': False, 'getT0': False}
     LC Pars: {'whichData': 'user', 'useObs': '00221755001,00221755004,00221755007,00221755020,00221755025,00221755031,00221755034,00221755035,00221755041,00221755043,00221755074'}
 
@@ -1420,103 +1420,103 @@ q.sourceDetails[209920]
      'Detections': {'NumStacks': 1,
       'NumObservations': 0,
       'Stacks':    ObsSourceID  DatasetID  LSXPS_ID  OSNum  UsedCorrectedPosition  \
-      0       552835     202500    209920     74                      1   
-      
+      0       552835     202500    209920     74                      1
+
          NearestNeighbour  NearestOKNeighbour      Exposure   HR1 HR1_pos  ...  \
-      0         73.198667           73.198667  1.048591e+06  None    None  ...   
-      
+      0         73.198667           73.198667  1.048591e+06  None    None  ...
+
         IsObsoleteStack BestDetFlag  \
-      0               0           0   
-      
+      0               0           0
+
                                                 Total_Info HasBlindDetection_band0  \
-      0  {'DetectionID': 1095646, 'DatasetID': 202500, ...                       1   
-      
+      0  {'DetectionID': 1095646, 'DatasetID': 202500, ...                       1
+
                                                  Soft_Info HasBlindDetection_band1  \
-      0  {'sourceID': 209920, 'dsID': 202500, 'band': 1...                       0   
-      
+      0  {'sourceID': 209920, 'dsID': 202500, 'band': 1...                       0
+
                                                Medium_Info  HasBlindDetection_band2  \
-      0  {'sourceID': 209920, 'dsID': 202500, 'band': 2...                        0   
-      
-                                                 Hard_Info  HasBlindDetection_band3  
-      0  {'DetectionID': 1095941, 'DatasetID': 202500, ...                        1  
-      
+      0  {'sourceID': 209920, 'dsID': 202500, 'band': 2...                        0
+
+                                                 Hard_Info  HasBlindDetection_band3
+      0  {'DetectionID': 1095941, 'DatasetID': 202500, ...                        1
+
       [1 rows x 71 columns]},
      'NonDetections': {'NumStacks': 0,
       'NumObservations': 95,
       'Observations':         ObsID  DatasetID  IsStackedImage  \
-      0   221755000       4946               0   
-      1   221755001       4947               0   
-      2   221755002       4962               0   
-      3   221755003       4974               0   
-      4   221755004       4987               0   
-      ..        ...        ...             ...   
-      90  221755100       6789               0   
-      91  221755101       6805               0   
-      92  221755102       6822               0   
-      93  221755103       6836               0   
-      94  221755104       6901               0   
-      
+      0   221755000       4946               0
+      1   221755001       4947               0
+      2   221755002       4962               0
+      3   221755003       4974               0
+      4   221755004       4987               0
+      ..        ...        ...             ...
+      90  221755100       6789               0
+      91  221755101       6805               0
+      92  221755102       6822               0
+      93  221755103       6836               0
+      94  221755104       6901               0
+
                                                  Total_Info  \
-      0   {'sourceID': 209920, 'dsID': 4946, 'band': 0, ...   
-      1   {'sourceID': 209920, 'dsID': 4947, 'band': 0, ...   
-      2   {'sourceID': 209920, 'dsID': 4962, 'band': 0, ...   
-      3   {'sourceID': 209920, 'dsID': 4974, 'band': 0, ...   
-      4   {'sourceID': 209920, 'dsID': 4987, 'band': 0, ...   
-      ..                                                ...   
-      90  {'sourceID': 209920, 'dsID': 6789, 'band': 0, ...   
-      91  {'sourceID': 209920, 'dsID': 6805, 'band': 0, ...   
-      92  {'sourceID': 209920, 'dsID': 6822, 'band': 0, ...   
-      93  {'sourceID': 209920, 'dsID': 6836, 'band': 0, ...   
-      94  {'sourceID': 209920, 'dsID': 6901, 'band': 0, ...   
-      
+      0   {'sourceID': 209920, 'dsID': 4946, 'band': 0, ...
+      1   {'sourceID': 209920, 'dsID': 4947, 'band': 0, ...
+      2   {'sourceID': 209920, 'dsID': 4962, 'band': 0, ...
+      3   {'sourceID': 209920, 'dsID': 4974, 'band': 0, ...
+      4   {'sourceID': 209920, 'dsID': 4987, 'band': 0, ...
+      ..                                                ...
+      90  {'sourceID': 209920, 'dsID': 6789, 'band': 0, ...
+      91  {'sourceID': 209920, 'dsID': 6805, 'band': 0, ...
+      92  {'sourceID': 209920, 'dsID': 6822, 'band': 0, ...
+      93  {'sourceID': 209920, 'dsID': 6836, 'band': 0, ...
+      94  {'sourceID': 209920, 'dsID': 6901, 'band': 0, ...
+
                                                   Soft_Info  \
-      0   {'sourceID': 209920, 'dsID': 4946, 'band': 1, ...   
-      1   {'sourceID': 209920, 'dsID': 4947, 'band': 1, ...   
-      2   {'sourceID': 209920, 'dsID': 4962, 'band': 1, ...   
-      3   {'sourceID': 209920, 'dsID': 4974, 'band': 1, ...   
-      4   {'sourceID': 209920, 'dsID': 4987, 'band': 1, ...   
-      ..                                                ...   
-      90  {'sourceID': 209920, 'dsID': 6789, 'band': 1, ...   
-      91  {'sourceID': 209920, 'dsID': 6805, 'band': 1, ...   
-      92  {'sourceID': 209920, 'dsID': 6822, 'band': 1, ...   
-      93  {'sourceID': 209920, 'dsID': 6836, 'band': 1, ...   
-      94  {'sourceID': 209920, 'dsID': 6901, 'band': 1, ...   
-      
+      0   {'sourceID': 209920, 'dsID': 4946, 'band': 1, ...
+      1   {'sourceID': 209920, 'dsID': 4947, 'band': 1, ...
+      2   {'sourceID': 209920, 'dsID': 4962, 'band': 1, ...
+      3   {'sourceID': 209920, 'dsID': 4974, 'band': 1, ...
+      4   {'sourceID': 209920, 'dsID': 4987, 'band': 1, ...
+      ..                                                ...
+      90  {'sourceID': 209920, 'dsID': 6789, 'band': 1, ...
+      91  {'sourceID': 209920, 'dsID': 6805, 'band': 1, ...
+      92  {'sourceID': 209920, 'dsID': 6822, 'band': 1, ...
+      93  {'sourceID': 209920, 'dsID': 6836, 'band': 1, ...
+      94  {'sourceID': 209920, 'dsID': 6901, 'band': 1, ...
+
                                                 Medium_Info  \
-      0   {'sourceID': 209920, 'dsID': 4946, 'band': 2, ...   
-      1   {'sourceID': 209920, 'dsID': 4947, 'band': 2, ...   
-      2   {'sourceID': 209920, 'dsID': 4962, 'band': 2, ...   
-      3   {'sourceID': 209920, 'dsID': 4974, 'band': 2, ...   
-      4   {'sourceID': 209920, 'dsID': 4987, 'band': 2, ...   
-      ..                                                ...   
-      90  {'sourceID': 209920, 'dsID': 6789, 'band': 2, ...   
-      91  {'sourceID': 209920, 'dsID': 6805, 'band': 2, ...   
-      92  {'sourceID': 209920, 'dsID': 6822, 'band': 2, ...   
-      93  {'sourceID': 209920, 'dsID': 6836, 'band': 2, ...   
-      94  {'sourceID': 209920, 'dsID': 6901, 'band': 2, ...   
-      
-                                                  Hard_Info  
-      0   {'sourceID': 209920, 'dsID': 4946, 'band': 3, ...  
-      1   {'sourceID': 209920, 'dsID': 4947, 'band': 3, ...  
-      2   {'sourceID': 209920, 'dsID': 4962, 'band': 3, ...  
-      3   {'sourceID': 209920, 'dsID': 4974, 'band': 3, ...  
-      4   {'sourceID': 209920, 'dsID': 4987, 'band': 3, ...  
-      ..                                                ...  
-      90  {'sourceID': 209920, 'dsID': 6789, 'band': 3, ...  
-      91  {'sourceID': 209920, 'dsID': 6805, 'band': 3, ...  
-      92  {'sourceID': 209920, 'dsID': 6822, 'band': 3, ...  
-      93  {'sourceID': 209920, 'dsID': 6836, 'band': 3, ...  
-      94  {'sourceID': 209920, 'dsID': 6901, 'band': 3, ...  
-      
+      0   {'sourceID': 209920, 'dsID': 4946, 'band': 2, ...
+      1   {'sourceID': 209920, 'dsID': 4947, 'band': 2, ...
+      2   {'sourceID': 209920, 'dsID': 4962, 'band': 2, ...
+      3   {'sourceID': 209920, 'dsID': 4974, 'band': 2, ...
+      4   {'sourceID': 209920, 'dsID': 4987, 'band': 2, ...
+      ..                                                ...
+      90  {'sourceID': 209920, 'dsID': 6789, 'band': 2, ...
+      91  {'sourceID': 209920, 'dsID': 6805, 'band': 2, ...
+      92  {'sourceID': 209920, 'dsID': 6822, 'band': 2, ...
+      93  {'sourceID': 209920, 'dsID': 6836, 'band': 2, ...
+      94  {'sourceID': 209920, 'dsID': 6901, 'band': 2, ...
+
+                                                  Hard_Info
+      0   {'sourceID': 209920, 'dsID': 4946, 'band': 3, ...
+      1   {'sourceID': 209920, 'dsID': 4947, 'band': 3, ...
+      2   {'sourceID': 209920, 'dsID': 4962, 'band': 3, ...
+      3   {'sourceID': 209920, 'dsID': 4974, 'band': 3, ...
+      4   {'sourceID': 209920, 'dsID': 4987, 'band': 3, ...
+      ..                                                ...
+      90  {'sourceID': 209920, 'dsID': 6789, 'band': 3, ...
+      91  {'sourceID': 209920, 'dsID': 6805, 'band': 3, ...
+      92  {'sourceID': 209920, 'dsID': 6822, 'band': 3, ...
+      93  {'sourceID': 209920, 'dsID': 6836, 'band': 3, ...
+      94  {'sourceID': 209920, 'dsID': 6901, 'band': 3, ...
+
       [95 rows x 7 columns]},
      'CrossMatch':    LSXPS_ID  Distance                 ExtCat_ID Catalogue     Ext_RA  \
-     0    209920  0.576230    2SXPS J062126.9-622318     2SXPS  95.362093   
-     1    209920  0.965292     2CXO J062127.0-622317      2CSC  95.362700   
-     2    209920  2.526034  SWIFTFT J062126.5-6223.3   SwiftFT  95.360642   
-     
-         Ext_Decl  Ext_Err90  
-     0 -62.388447   2.577001  
-     1 -62.388300   0.597704  
+     0    209920  0.576230    2SXPS J062126.9-622318     2SXPS  95.362093
+     1    209920  0.965292     2CXO J062127.0-622317      2CSC  95.362700
+     2    209920  2.526034  SWIFTFT J062126.5-6223.3   SwiftFT  95.360642
+
+         Ext_Decl  Ext_Err90
+     0 -62.388447   2.577001
+     1 -62.388300   0.597704
      2 -62.388435   4.008078  }
 
 
@@ -1720,7 +1720,7 @@ As with `getSourceDetails`, if we decide to get more dataset information, withou
 ```python
 q.getDatasetDetails(byDatasetID=True,
                     subset=q.results['ExposureUsed']<300)
- 
+
 q.datasetDetails.keys()
 ```
 
@@ -2319,18 +2319,18 @@ for k, v in rlist.items():
     print(v)
 ```
 
-    1: 
+    1:
     XRTProductRequest object for user `MY_EMAIL_ADDRESS`, with the following products requested:
     * light curve
-    
-    10: 
+
+    10:
     XRTProductRequest object for user `MY_EMAIL_ADDRESS`, with the following products requested:
     * light curve
-    
-    30: 
+
+    30:
     XRTProductRequest object for user `MY_EMAIL_ADDRESS`, with the following products requested:
     * light curve
-    
+
 
 
 
@@ -2368,4 +2368,3 @@ q.fullTable
 
 
 <div style='width: 95%; max-height: 200px; overflow: scroll;'><style scoped>    .dataframe tbody tr th:only-of-type {        vertical-align: middle;    }    .dataframe tbody tr th {        vertical-align: top;    }    .dataframe thead th {        text-align: right;    }</style><table border="1" class="dataframe">  <thead>    <tr style="text-align: right;">      <th></th>      <th>ObsSourceID</th>      <th>DatasetID</th>      <th>LSXPS_ID</th>      <th>OSNum</th>      <th>UsedCorrectedPosition</th>      <th>NearestNeighbour</th>      <th>NearestOKNeighbour</th>      <th>Exposure</th>      <th>HR1</th>      <th>HR1_pos</th>      <th>HR1_neg</th>      <th>HR2</th>      <th>HR2_pos</th>      <th>HR2_neg</th>      <th>BestBand</th>      <th>PileupWarning</th>      <th>BestDetectionID</th>      <th>IsOrphanSource</th>    </tr>  </thead>  <tbody>    <tr>      <th>0</th>      <td>240</td>      <td>1</td>      <td>190601</td>      <td>1</td>      <td>0</td>      <td>81.09</td>      <td>81.09</td>      <td>25838</td>      <td>0.111</td>      <td>0.1365</td>      <td>-0.1412</td>      <td>-0.260</td>      <td>0.1526</td>      <td>-0.1409</td>      <td>0</td>      <td>NaN</td>      <td>471</td>      <td>0</td>    </tr>    <tr>      <th>1</th>      <td>242</td>      <td>1</td>      <td>190604</td>      <td>2</td>      <td>0</td>      <td>112.32</td>      <td>112.32</td>      <td>24489</td>      <td>-0.280</td>      <td>0.1223</td>      <td>-0.1501</td>      <td>-0.255</td>      <td>0.1967</td>      <td>-0.2051</td>      <td>0</td>      <td>NaN</td>      <td>472</td>      <td>0</td>    </tr>    <tr>      <th>2</th>      <td>243</td>      <td>1</td>      <td>190602</td>      <td>3</td>      <td>0</td>      <td>35.82</td>      <td>106.41</td>      <td>24928</td>      <td>0.087</td>      <td>0.1530</td>      <td>-0.1448</td>      <td>-0.286</td>      <td>0.1432</td>      <td>-0.1774</td>      <td>0</td>      <td>NaN</td>      <td>473</td>      <td>0</td>    </tr>    <tr>      <th>3</th>      <td>244</td>      <td>1</td>      <td>190603</td>      <td>4</td>      <td>0</td>      <td>260.71</td>      <td>260.71</td>      <td>22939</td>      <td>-0.095</td>      <td>0.1292</td>      <td>-0.1488</td>      <td>-0.584</td>      <td>0.1616</td>      <td>-0.1960</td>      <td>0</td>      <td>NaN</td>      <td>474</td>      <td>0</td>    </tr>    <tr>      <th>4</th>      <td>245</td>      <td>1</td>      <td>190605</td>      <td>5</td>      <td>0</td>      <td>87.54</td>      <td>147.26</td>      <td>24295</td>      <td>0.821</td>      <td>0.1792</td>      <td>-0.0475</td>      <td>0.276</td>      <td>0.1777</td>      <td>-0.1409</td>      <td>0</td>      <td>NaN</td>      <td>475</td>      <td>0</td>    </tr>    <tr>      <th>...</th>      <td>...</td>      <td>...</td>      <td>...</td>      <td>...</td>      <td>...</td>      <td>...</td>      <td>...</td>      <td>...</td>      <td>...</td>      <td>...</td>      <td>...</td>      <td>...</td>      <td>...</td>      <td>...</td>      <td>...</td>      <td>...</td>      <td>...</td>      <td>...</td>    </tr>    <tr>      <th>752582</th>      <td>808319</td>      <td>229723</td>      <td>288584</td>      <td>25</td>      <td>0</td>      <td>68.40</td>      <td>68.40</td>      <td>39699</td>      <td>-0.760</td>      <td>-0.0372</td>      <td>-0.2398</td>      <td>0.447</td>      <td>0.5532</td>      <td>-0.0969</td>      <td>1</td>      <td>NaN</td>      <td>1553491</td>      <td>0</td>    </tr>    <tr>      <th>752583</th>      <td>808320</td>      <td>229723</td>      <td>372176</td>      <td>26</td>      <td>0</td>      <td>28.92</td>      <td>28.92</td>      <td>28607</td>      <td>0.179</td>      <td>0.5304</td>      <td>-0.5062</td>      <td>0.076</td>      <td>0.3948</td>      <td>-0.3914</td>      <td>0</td>      <td>NaN</td>      <td>1553481</td>      <td>0</td>    </tr>    <tr>      <th>752584</th>      <td>808321</td>      <td>229723</td>      <td>372177</td>      <td>27</td>      <td>0</td>      <td>121.74</td>      <td>121.74</td>      <td>11936</td>      <td>-0.879</td>      <td>0.0060</td>      <td>-0.1214</td>      <td>0.484</td>      <td>0.5160</td>      <td>-0.1136</td>      <td>1</td>      <td>NaN</td>      <td>1553492</td>      <td>0</td>    </tr>    <tr>      <th>752585</th>      <td>808322</td>      <td>229723</td>      <td>288586</td>      <td>28</td>      <td>0</td>      <td>200.57</td>      <td>448.39</td>      <td>12352</td>      <td>0.709</td>      <td>0.2912</td>      <td>-0.0720</td>      <td>-0.546</td>      <td>0.1240</td>      <td>-0.4543</td>      <td>2</td>      <td>NaN</td>      <td>1553503</td>      <td>0</td>    </tr>    <tr>      <th>752586</th>      <td>808323</td>      <td>229723</td>      <td>372178</td>      <td>29</td>      <td>0</td>      <td>123.92</td>      <td>123.92</td>      <td>33317</td>      <td>-0.707</td>      <td>-0.0033</td>      <td>-0.2934</td>      <td>0.299</td>      <td>0.7012</td>      <td>-0.2558</td>      <td>1</td>      <td>NaN</td>      <td>1553493</td>      <td>0</td>    </tr>  </tbody></table><p>752587 rows × 18 columns</p></div>
-

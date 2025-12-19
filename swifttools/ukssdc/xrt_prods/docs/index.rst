@@ -7,11 +7,11 @@ XRTProductRequest API
 
 MODULE
 ------
-   
+
 .. automodule:: xrt_prods
   :members:
   :no-undoc-members:
-  
+
 .. autofunction:: listOldJobs
 
 .. autofunction:: countActiveJobs
@@ -19,10 +19,7 @@ MODULE
 
 CLASS
 -----
-   
-   
+
+
 .. autoclass:: xrt_prods.XRTProductRequest
    :members:
-   
-   
-

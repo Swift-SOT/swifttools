@@ -385,7 +385,7 @@ lcData['Datasets']
 
 
 
-As a quick aside, you may wonder why we bother with this array, but we can't just step over the keys in `lcData` - 'Binning', for example, is not a light curve, and maybe in the future we'll want to add other things, so 'Datasets' is handy. 
+As a quick aside, you may wonder why we bother with this array, but we can't just step over the keys in `lcData` - 'Binning', for example, is not a light curve, and maybe in the future we'll want to add other things, so 'Datasets' is handy.
 
 There are a lot of datasets in this example, because we set both `incbad` and `nosys` to "both", so we got all data with/out missing centroids and with/out WT-mode systematics (if you don't know what I'm talking about, see the [the light curve documentation](https://www.swift.ac.uk/user_objects/lc_docs.php#systematics).
 
@@ -470,9 +470,9 @@ fig, ax = plotLightCurve(lcData['GRB 070616'],
 ```
 
 
-    
+
 ![png](GRBLC.png)
-    
+
 
 
 You'll note I captured the return in variable names which will be familiar to users of `pyplot` and can be ignored by everyone else because you'll need to be familiar with `pyplot` to take advantage of the fact that `plotLightCurve` returnes them for you.
@@ -678,7 +678,7 @@ Right, that's it for light curves. Let's move on to spectra.
 <a id='spectra'></a>
 ## Spectra
 
-We get spectra with the `getSpectra()` function. This is actually **not** a common function, even though the name is reused in other places -- the specifics of the use and arguments in each place are so different the functions are not conflated. 
+We get spectra with the `getSpectra()` function. This is actually **not** a common function, even though the name is reused in other places -- the specifics of the use and arguments in each place are so different the functions are not conflated.
 
 I'll follow the same pattern in this section as I did for light curves, but don't worry if you haven't read that section, this one is intended to be standalone.
 
@@ -728,8 +728,8 @@ udg.getSpectra(GRBName="GRB 130925A",
     models/interval0pc.xcm
     interval0wt_fit.fit
     interval0pc_fit.fit
-    
-    
+
+
     Removing file /tmp/APIDemo_GRB_Spec1/interval0.tar.gz
     Downloading file `/tmp/APIDemo_GRB_Spec1/interval0wt_plot.gif`
     Saving file `/tmp/APIDemo_GRB_Spec1/interval0wt_plot.gif`
@@ -749,8 +749,8 @@ udg.getSpectra(GRBName="GRB 130925A",
     GRB_info.txt
     models/late_timepc.xcm
     late_timepc_fit.fit
-    
-    
+
+
     Removing file /tmp/APIDemo_GRB_Spec1/late_time.tar.gz
     Downloading file `/tmp/APIDemo_GRB_Spec1/late_timepc_plot.gif`
     Saving file `/tmp/APIDemo_GRB_Spec1/late_timepc_plot.gif`
@@ -795,8 +795,8 @@ udg.getSpectra(GRBName="GRB 130925A",
     GRB_info.txt
     models/late_timepc.xcm
     late_timepc_fit.fit
-    
-    
+
+
     Removing file /tmp/APIDemo_GRB_Spec2/late_time.tar.gz
     Downloading file `/tmp/APIDemo_GRB_Spec2/late_timepc_plot.gif`
     Saving file `/tmp/APIDemo_GRB_Spec2/late_timepc_plot.gif`
@@ -854,8 +854,8 @@ udg.getSpectra(GRBName=("GRB 130925A", "GRB 071020"),
     models/interval0pc.xcm
     interval0wt_fit.fit
     interval0pc_fit.fit
-    
-    
+
+
     Removing file /tmp/APIDemo_GRB_Spec3/GRB 130925A/interval0.tar.gz
     Downloading file `/tmp/APIDemo_GRB_Spec3/GRB 130925A/interval0wt_plot.gif`
     Saving file `/tmp/APIDemo_GRB_Spec3/GRB 130925A/interval0wt_plot.gif`
@@ -875,8 +875,8 @@ udg.getSpectra(GRBName=("GRB 130925A", "GRB 071020"),
     GRB_info.txt
     models/late_timepc.xcm
     late_timepc_fit.fit
-    
-    
+
+
     Removing file /tmp/APIDemo_GRB_Spec3/GRB 130925A/late_time.tar.gz
     Downloading file `/tmp/APIDemo_GRB_Spec3/GRB 130925A/late_timepc_plot.gif`
     Saving file `/tmp/APIDemo_GRB_Spec3/GRB 130925A/late_timepc_plot.gif`
@@ -905,8 +905,8 @@ udg.getSpectra(GRBName=("GRB 130925A", "GRB 071020"),
     models/interval0pc.xcm
     interval0wt_fit.fit
     interval0pc_fit.fit
-    
-    
+
+
     Removing file /tmp/APIDemo_GRB_Spec3/GRB 071020/interval0.tar.gz
     Downloading file `/tmp/APIDemo_GRB_Spec3/GRB 071020/interval0wt_plot.gif`
     Saving file `/tmp/APIDemo_GRB_Spec3/GRB 071020/interval0wt_plot.gif`
@@ -1033,7 +1033,7 @@ And if we'd done this with `saveData=True` then the data would have been saved i
 
 As with the light curves, there is a third way&dagger; to use the data, you can pull the data into a variable, and then use that to request the files be saved to disk. This option is provided in case you want to filter your set of GRBs before saving (e.g. maybe you wanted to get a dozen spectra, identify those where the intrinsic NH was &lt;10<sup>21</sup> cm<sup>-2</sup>, and then save the spectral files for those).
 
-We do this by calling `getSpectra(returnData=True)` to get the spectral fits, and then we use the `saveSpectra()` function to decide which to save. The arguments to this are essentially the same as when we called `getSpectra(saveData=True)`, indeed the back-end is the  module-level `saveSpectrum()` function, alluded to earlier and [documented here](https://www.swift.ac.uk/API/ukssdc/commonFunc.md#savespectrum). The one, very important, addition is the argument `whichGRBs`. This can either be 'all' (the default) or a list/tuple of which GRBs' spectra to save. The entries in this list/tuple should be valid keys in the `specData` variable we pass to the function. 
+We do this by calling `getSpectra(returnData=True)` to get the spectral fits, and then we use the `saveSpectra()` function to decide which to save. The arguments to this are essentially the same as when we called `getSpectra(saveData=True)`, indeed the back-end is the  module-level `saveSpectrum()` function, alluded to earlier and [documented here](https://www.swift.ac.uk/API/ukssdc/commonFunc.md#savespectrum). The one, very important, addition is the argument `whichGRBs`. This can either be 'all' (the default) or a list/tuple of which GRBs' spectra to save. The entries in this list/tuple should be valid keys in the `specData` variable we pass to the function.
 
 This is all a bit abstract, but it will all become clear (I hope) with the following example:
 
@@ -1088,8 +1088,8 @@ udg.saveSpectra(specData,
     models/interval0pc.xcm
     interval0wt_fit.fit
     interval0pc_fit.fit
-    
-    
+
+
     Removing file /tmp/APIDemo_GRBspec3/GRB 060729/interval0.tar.gz
     Downloading file `/tmp/APIDemo_GRBspec3/GRB 060729/interval0wt_plot.gif`
     Saving file `/tmp/APIDemo_GRBspec3/GRB 060729/interval0wt_plot.gif`
@@ -1117,8 +1117,8 @@ udg.saveSpectra(specData,
     models/interval0pc.xcm
     interval0wt_fit.fit
     interval0pc_fit.fit
-    
-    
+
+
     Removing file /tmp/APIDemo_GRBspec3/GRB 130925A/interval0.tar.gz
     Downloading file `/tmp/APIDemo_GRBspec3/GRB 130925A/interval0wt_plot.gif`
     Saving file `/tmp/APIDemo_GRBspec3/GRB 130925A/interval0wt_plot.gif`
@@ -1242,8 +1242,8 @@ specData = udg.getSpectra(JobID = JobID,
     GRB_info.txt
     models/earlywt.xcm
     earlywt_fit.fit
-    
-    
+
+
     Removing file /tmp/APIDemo_slice_spec/early.tar.gz
     Downloading file `/tmp/APIDemo_slice_spec/earlywt_plot.gif`
     Saving file `/tmp/APIDemo_slice_spec/earlywt_plot.gif`
@@ -1268,8 +1268,8 @@ specData = udg.getSpectra(JobID = JobID,
     models/mixedpc.xcm
     mixedwt_fit.fit
     mixedpc_fit.fit
-    
-    
+
+
     Removing file /tmp/APIDemo_slice_spec/mixed.tar.gz
     Downloading file `/tmp/APIDemo_slice_spec/mixedwt_plot.gif`
     Saving file `/tmp/APIDemo_slice_spec/mixedwt_plot.gif`
@@ -1366,8 +1366,8 @@ The burst analyser `dict` is not too complicated, and in concept is intentionall
 * Instruments
  * [BAT binning & HR Data]
    * Light curves & HR Data
-   
-For obvious reasons, the middle layer is only present for the BAT data, and the different instruments have slighly different contents as we'll see. 
+
+For obvious reasons, the middle layer is only present for the BAT data, and the different instruments have slighly different contents as we'll see.
 
 You can see a detailed schematic in [the data structure documentation](https://www.swift.ac.uk/API/ukssdc/structures.md#the-burst-analyser-dict) but let's instead here explore interatively. First, let's get a single GRB:
 
@@ -1441,7 +1441,7 @@ list(data['BAT'].keys())
 
 It may not be immediately obvious with all the keys, but again this is the same design as the higher level and in other contexts: we have the key 'Binning', which is a list of the different binning methods available, which themselves exist as keys in this `dict`. There is also an entry `HRData` which we will start off with.
 
-The burst analyser works by taking a hardness ratio time series and using it to infer the spectral properties and ECF at a given time. The hardness ratio is created with a fixed binning (and then we interpolate), which is why `HRData` appears at this level. It is simply a `DataFrame` like a light curve, and contains a lot of columns; the hardness ratio and then the various ECFs (to the different energy bands the burst analyser light curves are in) and the photon index. 
+The burst analyser works by taking a hardness ratio time series and using it to infer the spectral properties and ECF at a given time. The hardness ratio is created with a fixed binning (and then we interpolate), which is why `HRData` appears at this level. It is simply a `DataFrame` like a light curve, and contains a lot of columns; the hardness ratio and then the various ECFs (to the different energy bands the burst analyser light curves are in) and the photon index.
 
 Let's look at it:
 
@@ -1720,73 +1720,73 @@ help(udg.saveSingleBurstAn)
 ```
 
     Help on function saveSingleBurstAn in module swifttools.ukssdc.data.GRB:
-    
+
     saveSingleBurstAn(data, destDir='burstAn', prefix='', instruments='all', asQDP=False, header=False, sep=',', suff=None, usePropagatedErrors=False, badBATBins=False, clobber=False, skipErrors=False, silent=True, verbose=False, **kwargs)
         Save downloaded burst analyser data to disk.
-        
+
         This takes a data structure for a previously-downloaded burst
         analyser dataset, and saves it to disk.
-        
+
         NOTE: This is for a **single** object, not a set of objects, i.e if
         you downloaded a set of objects, then you received a dict, with one
         entry per object; a single entry should be passed here as the data
         argument.
-        
+
         Parameters
         ----------
-        
+
         data : dict
             A dictionary of burst analyser data, previously downloaded.
-        
+
         destDir : str
             The directory in which to save the data.
-        
+
         prefix : str, optional
             A string to prepend to the filenames when saving them.
-        
+
         instruments : str or list, optional
             Which instrument data to save. Must be 'all' or a list of
             instruments (from: BAT, XRT, UVOT) (default: 'all').
-        
+
         asQDP : bool, optional
             Whether to save in qdp format. Overrides ``sep``
             (default: ``False``).
-        
+
         header : bool, optional
             Whether to print a header row (default: ``False``).
-        
+
         sep : str, optional
             Separator to use for columns in the file (default: ',').
-        
+
         suff : str
             If specified, the file suffix to use (default: ``.dat``, or
             ``.qdp`` if ``asQDP=True``).
-        
+
         usePropagatedErrors=False : bool, optional
             Whether the flux errors to write to the files are those which
             have had the uncertainty on the ECF propagated (default:
             ``False``) **only effective if ``asQDP=True``**
-        
+
         badBATBins : bool, optional
             Whether to write out BAT bins flagged as 'bad' (default:
             ``False``).
-        
+
         clobber : bool, optional
             Whether to overwrite files if they exist (default: ``False``).
-        
+
         skipErrors : bool, optional
             Whether to continue if a problem occurs with one file
             (default: ``False``).
-        
+
         silent : bool, optional
             Whether to suppress all output (default: ``True``).
-        
+
         verbose : bool, optional
             Whether to write verbose output (default: ``False``).
-        
+
         **kwargs : dict, optional
             Not needed, but stops errors due to the way this can be called.
-    
+
 
 
 Things like `asQDP`, `incbad`, and `nosys` you should already be familiar with from the light curves, but there are a few new ones, which are quite important, to draw your attention to.
@@ -1927,7 +1927,7 @@ And, of course, as with everything in here, we could have supplied `targetID` in
 <a id='obs'></a>
 ## Obs Data
 
-Phew, nearly at the end of this module. There is one last bit of functionality and we are going to deal with this one really, really quickly. 
+Phew, nearly at the end of this module. There is one last bit of functionality and we are going to deal with this one really, really quickly.
 
 If you want to download all of the actual obs data for a GRB we can do that using the function `getObsData`. This is basically a wrapper around `downloadObsData()` in the parent module, which was described in the [parent module documentation](../data.md). It takes the `GRBName` or `targetID` parameter, exactly like everything else in this notebook, it takes `verbose` and `silent`, like everything else everywhere, and any other parameters are just `**kwargs` passed to `downloadObsData`.
 
