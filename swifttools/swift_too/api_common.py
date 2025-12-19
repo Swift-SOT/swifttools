@@ -7,7 +7,7 @@ from time import sleep
 
 import requests
 from dateutil import parser
-from jose import jwt
+import jwt
 from tabulate import tabulate
 
 from .version import version_tuple
