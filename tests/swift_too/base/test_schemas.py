@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta, timezone
-from unittest.mock import patch
 
 import astropy.units as u  # type: ignore[import-untyped]
 import pytest

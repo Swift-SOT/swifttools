@@ -1,4 +1,5 @@
 from typing import Union
+
 from pydantic import BaseModel
 
 from swifttools.swift_too.base.repr import TOOAPIReprMixin
