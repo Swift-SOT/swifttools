@@ -49,6 +49,7 @@ dev = [
     "types-tqdm>=4.67.0.20250809",
     "mock>=5.2.0",
     "jupyter>=1.1.1",
+    "prek>=0.2.23",
 ]
 
 [tool.setuptools]
