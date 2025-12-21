@@ -8,7 +8,7 @@ from swifttools.swift_too.swift.visquery import SwiftVisQuery, SwiftVisWindow
 
 @pytest.fixture
 def vis_query():
-    return SwiftVisQuery(ra=10.0, dec=20.0, begin=datetime(2023, 1, 1), end=datetime(2023, 1, 2), autosubmit=False)
+    return SwiftVisQuery(ra=10.0, dec=20.0, begin=datetime(2023, 1, 1), end=datetime(2023, 1, 2), length=1, autosubmit=False)
 
 
 @pytest.fixture

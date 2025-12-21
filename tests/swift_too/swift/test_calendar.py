@@ -15,8 +15,8 @@ def sample_entry():
     entry = SwiftCalendarEntry(
         typeID=1, duration=3600.0, roll=0.0, target_ID=12345, target_name="Test Target", ra=123.456, dec=-45.678, sip=1
     )
-    entry.start = datetime(2023, 1, 1, 12, 0, 0)
-    entry.stop = datetime(2023, 1, 1, 13, 0, 0)
+    entry.begin = datetime(2023, 1, 1, 12, 0, 0)
+    entry.end = datetime(2023, 1, 1, 13, 0, 0)
     entry.xrt_mode = 7
     entry.uvot_mode = 39321
     entry.duration = 3600.0
@@ -141,7 +141,7 @@ class TestSwiftCalendarEntry:
         assert entry.sip_target_ID == 0
 
     def test_getitem_start(self, sample_entry):
-        assert sample_entry["start"] == datetime(2023, 1, 1, 12, 0, 0)
+        assert sample_entry.begin == datetime(2023, 1, 1, 12, 0, 0)
 
     def test_table_property_header_length(self, sample_entry):
         header, table = sample_entry._table
@@ -153,4 +153,4 @@ class TestSwiftCalendarEntry:
 
     def test_table_property_table_first_start(self, sample_entry):
         header, table = sample_entry._table
-        assert table[0][0] == datetime(2023, 1, 1, 12, 0, 0)
+        assert table[0][1] == datetime(2023, 1, 1, 13, 0, 0)

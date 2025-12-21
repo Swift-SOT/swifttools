@@ -2,6 +2,8 @@ from datetime import datetime, timedelta
 from unittest.mock import patch
 
 import numpy as np
+import pytest
+from pydantic import ValidationError
 
 from swifttools.swift_too.swift.obsquery import (
     AFST,
@@ -314,7 +316,7 @@ class TestSwiftAFST:
         """Test default values."""
         afst = SwiftAFST(autosubmit=False)
 
-        assert np.isclose(afst.radius, 0.19666666666666668)  # Default radius
+        assert afst.radius is None  # Default radius is None when no ra/dec
         assert afst.target_id is None
         assert afst.obs_id is None
         assert afst.entries == []
@@ -462,18 +464,15 @@ class TestAliases:
 
 class TestSchemas:
     def test_swift_afst_get_schema_defaults(self):
-        """Test SwiftAFSTGetSchema default values."""
-
-        schema = SwiftAFSTGetSchema()
-        assert schema.radius == 0.19666666666666668
-        assert schema.target_id is None
-        assert schema.obs_id is None
+        """Test SwiftAFSTGetSchema requires at least one field."""
+        with pytest.raises(ValidationError):
+            SwiftAFSTGetSchema()
 
     def test_swift_afst_schema_defaults(self):
         """Test SwiftAFSTSchema default values."""
 
         schema = SwiftAFSTSchema()
-        assert schema.radius == 0.19666666666666668
+        assert schema.radius is None
         assert schema.target_id is None
         assert schema.obs_id is None
         assert schema.afstmax is None

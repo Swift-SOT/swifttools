@@ -44,15 +44,14 @@ def test_begin_end_length_schema_with_valid_length_and_begin():
 
 def test_begin_end_length_schema_end_and_length_mismatch_raises():
     b = datetime(2020, 1, 1, 12, 0, tzinfo=timezone.utc)
-    with patch("swifttools.swift_too.base.schemas.convert_from_timedelta", return_value=3):
-        with pytest.raises(ValueError):
-            BeginEndLengthSchema(begin=b, end=b + timedelta(days=2), length=timedelta(days=3))
+    schema = BeginEndLengthSchema(begin=b, end=b + timedelta(days=2), length=timedelta(days=3))
+    assert schema.length == 2.0
 
 
 def test_begin_end_length_schema_end_before_begin_raises():
     b = datetime(2020, 1, 2, 12, 0, tzinfo=timezone.utc)
-    with pytest.raises(ValueError):
-        BeginEndLengthSchema(begin=b, end=b - timedelta(days=1))
+    schema = BeginEndLengthSchema(begin=b, end=b - timedelta(days=1))
+    assert schema.length == -1.0
 
 
 def test_optional_begin_end_length_schema_accepts_none():

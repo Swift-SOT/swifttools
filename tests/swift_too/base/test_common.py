@@ -155,6 +155,7 @@ class TestMockTOOAPIBaseclass:
 
     def test_validate_post_success(self, mock_base_class):
         with patch.object(MockTOOAPIBaseclass, "_post_schema", Mock()) as mock_schema:
+            mock_schema.model_fields = {}
             mock_schema.model_validate.return_value = Mock()
             result = mock_base_class.validate_post()
             assert result is True
