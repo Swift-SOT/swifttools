@@ -39,7 +39,7 @@ too.monitoring_freq = "2 days" # Options for units are seconds, minutes, hours, 
 too.num_of_visits = 14         # So this would monitor the source for 28 days.
 
 # Exposure time justification - Explain why 3ks is needed per observation.
-too.exp_time_just = ("3ks per observation will allow us to not only monitor " 
+too.exp_time_just = ("3ks per observation will allow us to not only monitor "
                      "this exciting new outburst of this well known Be/XRB. "
                      "We request 14 observations in order to cover the first "
                      "month of the outburst.")

@@ -19,8 +19,8 @@ The documentation is organised as follows.
  * [How to retrieve the completed products](RetrieveProducts.md).
  * [A simple end-to-end tutorial](tutorial.md).
  * [Miscellaneous methods and advanced usage](advanced.md).
- 
- 
+
+
 ## Registration
 
 In order to use the API you must register and confirm your email address. No password is needed, and you will never need to log in, however you do need to supply your registered email address with any request or query, and you will only be able to retrieve details about your own jobs via the API. This is primarily for book keeping purposes.
@@ -42,7 +42,7 @@ This requires Python 3.6 or higher.
 The module obviously needs to be imported before use; there is a single
 class which you will need to use: `XRTProductRequest`.
 
-For consistency with other parts of the `swifttools.ukssdc` module, in this documentation we assume 
+For consistency with other parts of the `swifttools.ukssdc` module, in this documentation we assume
 that you import the module thus:
 
 ```python
@@ -101,7 +101,7 @@ specified, is `True`. This variable, which can also be set directly (i.e. `myReq
 written to the standard output. In interactive mode, this feedback may be helpful and informative; in a script, it is more
 likely an annoyance. Since all of the examples in this documentation are for an interactive shell, I have always set `silent=False`.
 
-**Another note** If you are an experienced Python user, familiar with PEP8, you're probably already cursing me. "Why," you will 
+**Another note** If you are an experienced Python user, familiar with PEP8, you're probably already cursing me. "Why," you will
 be asking, "are your functions `addLightCurve()` instead of `add_light_curve()`? Are you not aware of Python conventions
 and standards?" To which the answer is, of course, that actually, no, I wasn't! This module was my first major forray into Python,
 and while I did make considerable efforts to comply with the PEP8 and PEP257, this convention/rule passed me by, and now it
@@ -112,7 +112,3 @@ is inappropriate to change everything. In my defense, PEP8 actually says:
 This module is part of a larger set of software and services at the UKSSDC (albeit comprising the back end) which
 all use mixedCase, because this is the convention I am familiar with. So I think we can all agree that this is actually
 PEP8 compliant &#128539;
-
-
-
-

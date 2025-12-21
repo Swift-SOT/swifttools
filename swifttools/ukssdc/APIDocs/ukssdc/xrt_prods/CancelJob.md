@@ -28,7 +28,7 @@ This variable is a list with two entries, thus:
      *  3 = Job not cancelled, reason unknown.
      *  4 = Status unknown: an error occured meaning we can't determine whether or not the job was cancelled.
   * text = A textual description of the status.
-  
+
 
 This is probably best understood by means of some examples. So, here is a case where we requested simply to cancel a light curve, and it was successful. I've actually printed it 3 times below just to help with clarity: the first statement prints the entire object; the second statement just prints the summary code, and the final statement shows the `LightCurve` entry.
 
@@ -68,5 +68,3 @@ Out[10]:
 
 So first I cancelled the light curve, which returned an `OK` value of 1 (success) and the `LightCurve` status and code within `cancelStatus` confirm this.
 Next I cancelled everything. This time, OK came back as 2 (partial success). Looking at the `cancelStatus` dictionary, I can see that the light curve could not be cancelled (not surprising, since we'd already cancelled it) but the standard position was cancelled fine.
-
-

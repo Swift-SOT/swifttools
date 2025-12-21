@@ -148,7 +148,7 @@ Please do note the warning above about converting MET to absolute time systems.
 
 ```python
   'URLs' : {
-  
+
     'WT': 'https://www.swift.ac.uk/xrt_curves/01104343/WTCURVE.qdp',
     'WT_incbad': 'https://www.swift.ac.uk/xrt_curves/01104343/WTCURVE.qdp',
     'PC': 'https://www.swift.ac.uk/xrt_curves/01104343/PCCURVE.qdp',
@@ -234,7 +234,7 @@ print(mySpec['interval0']['WT']['Powerlaw']['Gamma])
 
 This is somewhat more readable (I hope). There are a lot of layers but the layout is clear and, as you may have noticed, the order
 of the keys is just the inverse of the order of my prosaic statement, which, to me at least, seems logical. Of course, if you want something
-beyond a spectral fit parameter then you need to check at what level it is relevant, but hopefully this is also logical (and you can check 
+beyond a spectral fit parameter then you need to check at what level it is relevant, but hopefully this is also logical (and you can check
 it on the list above). For example, the exposure by the "late_time" PC mode spectrum doesn't depend on which model was
 fitted, so this value appears at the "rname/mode" level.
 
@@ -525,7 +525,7 @@ the photon index and ECF inferred from the hardness ratio).
       'BATBand':  <a DataFrame containing the light curve>
     }
     ... more entries, as above, one for each entry in 'Binning'
-  
+
   }, # End of ['BAT']
   'BAT_NoEvolution': {
     'ECFs': {
@@ -565,7 +565,7 @@ the photon index and ECF inferred from the hardness ratio).
   }, # End of ['BAT_NoEvolution']
 
   'XRT': {
-    'HRData_PC': <a DataFrame containing the hardness ratio>      
+    'HRData_PC': <a DataFrame containing the hardness ratio>
     'Datasets': [
       'ObservedFlux_PC_incbad',
       'Density_PC_incbad',
@@ -578,7 +578,7 @@ the photon index and ECF inferred from the hardness ratio).
   }, , # End of ['XRT']
   'UVOT': {
     'Datasets': ['white', 'b', 'u', 'v', 'uvw1', 'uvw2', 'uvm2']
-    'white':  <a DataFrame containing the light curve>, 
+    'white':  <a DataFrame containing the light curve>,
     'b': <a DataFrame containing the light curve>,
     'u': <a DataFrame containing the light curve>,
     'v': <a DataFrame containing the light curve>,

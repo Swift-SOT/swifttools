@@ -40,5 +40,5 @@ don't expect this to inconvenience anyone.
 * [How to query the status of a job](xrt_prods/JobStatus.md).
 * [How to retrieve the completed products](xrt_prods/RetrieveProducts.md).
 * [A simple end-to-end tutorial](xrt_prods/tutorial.md).
-* [Miscellaneous methods and advanced usage](xrt_prods/advanced.md). 
+* [Miscellaneous methods and advanced usage](xrt_prods/advanced.md).
 * [ChangeLog](xrt_prods/ChangeLog.md)

@@ -18,7 +18,7 @@ show [a full python script](#full-python-script) to request the products, monito
 
 ## Build-the-request
 
-First we need to create an `XRTProductRequest` object, and set some global parameters. 
+First we need to create an `XRTProductRequest` object, and set some global parameters.
 By default, the object is created in 'silent' mode: it does not produce any output (unless
 an error is raised). For interactive use such as in this tutorial, the output can be helpful,
 so we will create it with `silent=False`.
@@ -147,10 +147,10 @@ The job has been running for 00:00:10
 
 ```
 
-Hmm, the light curve hasn't got far yet but the standard position is nearly done. 
+Hmm, the light curve hasn't got far yet but the standard position is nearly done.
 
- Normally now we'd poll things periodically, but I can tell you it will take around 5 minutes for everything to complete so instead we'll go and make a cup of tea. 
- 
+ Normally now we'd poll things periodically, but I can tell you it will take around 5 minutes for everything to complete so instead we'll go and make a cup of tea.
+
  Done that? Nice brew? Good. OK, is this complete yet?
 
 ```python
@@ -189,7 +189,7 @@ For the purposes of this tutorial, let's just grab these products and take a loo
 ```python
 In [24]: myReq.retrieveStandardPos()
 In [25]: myReq.standardPos
-Out[25]: 
+Out[25]:
 {'GotPos': True,
  'RA': '335.69849',
  'Dec': '-7.51788',
@@ -198,9 +198,9 @@ Out[25]:
 In [26]: myReq.retrieveEnhancedPos()
 In [27]: myReq.enhancedPos()
 Out[27]:
-{'GotPos': True, 
- 'RA': '335.70008', 
- 'Dec': '-7.51816', 
+{'GotPos': True,
+ 'RA': '335.70008',
+ 'Dec': '-7.51816',
  'Err90': '1.7'}
 In [28]: myReq.retrieveSpectralFits()
 In [29]: myReq.specData
@@ -220,7 +220,7 @@ Out[29]:
     'GammaPos': 0.387164431,
     'GammaNeg': -0.22043750800000028,
    ... etc
-```  
+```
 
 I've truncated the spectrum output here because it goes on for a while, but you can see the basic premise.
 What about a light curve?
@@ -286,5 +286,5 @@ myReq.downloadProducts('/some/where', stem='tutorial_files_', format='zip')
 print("All done")
 ```
 
-Note that in the above script I did not specify `silent=False` when creating `myReq`, so running this won't 
+Note that in the above script I did not specify `silent=False` when creating `myReq`, so running this won't
 put a load of "Successfully created XXXX" type ouput on my screen.

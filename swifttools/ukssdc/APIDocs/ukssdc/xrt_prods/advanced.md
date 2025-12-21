@@ -7,14 +7,14 @@
 * [Copying old requests](#copying-old-requests)
   * [Copying entire requests](#copy-an-entire-request)
   * [Copying specific products](#copy-a-specific-product)
-  * [Reproducing an old request](#reproduce-an-old-request). 
+  * [Reproducing an old request](#reproduce-an-old-request).
   * **[Really big caveat](#really-big-caveat)**
 
 ---
 
 ## Controlling the number of active jobs
 
-The main purpose of this API is to make it easy for you to submit jobs, and to automate this into 
+The main purpose of this API is to make it easy for you to submit jobs, and to automate this into
 your analysis pipelines. **But we ask you to be considerate as you do so.** Submitting vast numbers of
 jobs will monopolise or overload our servers, and we'd really rather you don't. A simple way of managing this
 is to check how many jobs you currently have queued or running, and to throttle your submission rates accordingly.
@@ -99,7 +99,7 @@ while ix < len(productsIwant):
         # Create the new XRTProductRequest
         myReqs.append(ux.XRTProductRequest(my_email))
         # Set its details
-        g = productsIWant[ix].globalPars 
+        g = productsIWant[ix].globalPars
         myReqs[ix].setGlobalPars(**g)
         if productsIWant[ix].hasLightCurve:
           l = productsIWant[ix].lcPars
@@ -172,7 +172,7 @@ In [214]: myNewReq = ux.XRTProductRequest('YOUR_EMAIL_ADDRESS', JSONVals = myJSO
 
 **Important note** If you run this before submitting `myOldReq` you have the same problem as in a direct copy: you are trusting that nothing important will change between submitting `myOldReq` and `myNewReq`. But the above also assumes that when you called `myOldReq.submit()` you let the `updateProds` argument retain its default value of `True`. If you set it to `False`, then the `myOldReq` did not update with the values from the server, so the above assignments only copied the pre-submission data.
 
-This is why `updateProds` is `True` by default. But don't despair: if for some reason you want to set this to false, you can still get hold of the parameters returned by the server, and pass those around. These are stored in the `subRetData['jobPars']` dictionary [set when you submitted the job](ReturnData.md). As 
+This is why `updateProds` is `True` by default. But don't despair: if for some reason you want to set this to false, you can still get hold of the parameters returned by the server, and pass those around. These are stored in the `subRetData['jobPars']` dictionary [set when you submitted the job](ReturnData.md). As
 [discussed elsewhere](ReturnData.md), the names of these parameters don't match those used by the Python API, so if you want to use these values, you need to pass an extra argument when you assign these values: `fromServer=True`, i.e.
 
 ```python
@@ -320,7 +320,7 @@ In [7]: len(gkperJobs)
 Out[7]: 7
 ```
 
-and so on. It is not the purpose of this guide to teach list comprehensions or other methods of filtering Python objects, but to demonstrate that the ``listOldJobs()`` function output can be readily filtered or searched to find what you 
+and so on. It is not the purpose of this guide to teach list comprehensions or other methods of filtering Python objects, but to demonstrate that the ``listOldJobs()`` function output can be readily filtered or searched to find what you
 are looking for.
 
 ---

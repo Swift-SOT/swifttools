@@ -7,7 +7,7 @@ from time import sleep
 
 import requests
 from dateutil import parser
-from jose import jwt
+import jwt
 from tabulate import tabulate
 
 from .version import version_tuple
@@ -259,7 +259,7 @@ class TOOAPI_Baseclass:
         name = self.__class__.__name__
         args = ",".join(
             [
-                f"{row}='{getattr(self,row)}'"
+                f"{row}='{getattr(self, row)}'"
                 for row in self._parameters
                 if getattr(self, row) is not None and getattr(self, row) != []
             ]

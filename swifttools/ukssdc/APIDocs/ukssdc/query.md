@@ -464,8 +464,8 @@ I will unpack these in more detail but an example is probably a better helper so
 filter1 = ('xrt_exposure', '>', 1000, 'OR', '<', 200)
 
 filter2 = {
-    "colName": "ra", 
-    "filter": ">", 
+    "colName": "ra",
+    "filter": ">",
     "val": 123,
     "combiner": "and" ,
     "filter2": "<",
@@ -473,7 +473,7 @@ filter2 = {
 }
 ```
 
-If these filters were converted to SQL they would be written as 
+If these filters were converted to SQL they would be written as
 
 * filter1: `xrt_exposure>1000 OR xrt_exposure<200`
 * filter2: `ra>123 AND ra<200`
@@ -512,7 +512,7 @@ q.addFilter ({
     'filter': 'IS NULL',
     'combiner': 'or',
     'filter2': '<',
-    'val2': 10000    
+    'val2': 10000
 })
 ```
 

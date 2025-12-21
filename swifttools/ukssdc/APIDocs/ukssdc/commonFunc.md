@@ -169,7 +169,7 @@ job and to get the products. These are all wrapped by functions of the same name
 detail the arguments that you set, that get passed through to these functions, and anything they return.
 
 One **important note** before I proceed though: in what follows below I have noted that the request to rebin a curve returns a job ID, and
-that you then have to pass this to the other functions. *This is not true for the `XRTProductRequest` object*. In that case, the 
+that you then have to pass this to the other functions. *This is not true for the `XRTProductRequest` object*. In that case, the
 ID is stored in your object, and passing it around is handled internally by the class wrapper functions to those detailed below.
 
 #### `rebinLightCurve()`
@@ -265,7 +265,7 @@ The codes are:
 * 3  = The job is actually running (progress information may be available)
 * 4  = The job completed OK. Your products are available
 * 5  = [Status code only for astrometric positions]: the astrometry is waiting for the standard PSF position to be produced, and will then correct that.
- 
+
 #### `rebinComplete()`
 
 This function simply tells you whether your rebin job is complete. If takes a single argument,
@@ -324,7 +324,7 @@ etc.
 ### `mergeLightCurveBins()`
 
 This function is used to combine bins within a single "dataset" within a [light curve
-`dict`](structures.md#the-light-curve-dict); for example, you may wish to sum up all upper limits to give the deepest 
+`dict`](structures.md#the-light-curve-dict); for example, you may wish to sum up all upper limits to give the deepest
 possible limit, or combine some bins where the source is faint to give smaller errors etc.
 
 **Note** At the present time, this function only allows combining bins within the same "dataset". That is, if

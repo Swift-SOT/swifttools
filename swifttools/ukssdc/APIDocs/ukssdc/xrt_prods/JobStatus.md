@@ -56,7 +56,7 @@ It can have any of the following values:
  * 3  = The job is actually running (progress information may be available)
  * 4  = The job completed OK. Your products are available
  * 5  = [Status code only for astrometric positions]: the astrometry is waiting for the standard PSF position to be produced, and will then correct that.
- 
+
 Codes -2 and -3 should never exist, and most likely indicate either a transient fault with one of our servers or services, or that one of the executable scripts has become corrupted. **If you get one of these errors please email us immediately on swifthelp@leicester.ac.uk**. It is probable that we already know of the issue, but not certain, so a prompt report of the error will enable us to fix it.
 
 ### Status text
@@ -80,7 +80,7 @@ If you do want to use the `progress` entry directly, then its contents are descr
 
 ## Examples
 
-The output of [the `checkProductStatus()` method](#querying-the-product-status) is described above, but it's much easier to explain with examples. 
+The output of [the `checkProductStatus()` method](#querying-the-product-status) is described above, but it's much easier to explain with examples.
 
 First, let's just get the status of everything, and then print the human-readable summary:
 
@@ -142,5 +142,3 @@ In [8]: prodStatus['Spectrum']['progress']
 
  It isn't so bad (it can get rather more messy than this) but the `statusText` entry had done the job of parsing this for us,
  so for human-readable cases, it makes more sense to use that.
-
-
