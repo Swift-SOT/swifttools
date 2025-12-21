@@ -1,3 +1,4 @@
+from typing import Union
 from pydantic import BaseModel
 
 from swifttools.swift_too.base.repr import TOOAPIReprMixin
@@ -6,9 +7,9 @@ from swifttools.swift_too.base.status import TOOStatus
 
 
 class ReprModel(TOOAPIReprMixin, BaseModel):
-    name: str | None = None
+    name: Union[str, None] = None
     tags: list[str] = []
-    status: TOOStatus | str = TOOStatus()
+    status: Union[TOOStatus, str] = TOOStatus()
 
 
 def test_table_includes_rows_and_status():
