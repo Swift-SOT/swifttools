@@ -1,5 +1,6 @@
 import http.cookiejar
 import threading
+import time
 import warnings
 from http import HTTPStatus
 from typing import Any, Optional
@@ -299,15 +300,29 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         if self.status.status == "Pending":
             if hasattr(self, "_get_schema"):
                 if self.validate_get():
-                    threading.Thread(target=self._submit_get_async).start()
+                    threading.Thread(target=self._submit_get_async, daemon=True).start()
+                    threading.Thread(target=self._queue_watchdog, daemon=True).start()
                     return True
                 return False
             elif hasattr(self, "_post_schema"):
                 if self.validate_post():
-                    threading.Thread(target=self._submit_post_async).start()
+                    threading.Thread(target=self._submit_post_async, daemon=True).start()
+                    threading.Thread(target=self._queue_watchdog, daemon=True).start()
                     return True
                 return False
         return False
+
+    def _queue_watchdog(self) -> None:
+        """Ensure queued async requests cannot block forever.
+
+        If a background request does not set `complete` within a bounded
+        interval, mark it complete and store a timeout error.
+        """
+        wait_seconds = max(int(self._timeout) + 5, 30)
+        time.sleep(wait_seconds)
+        if not getattr(self, "complete", False):
+            self.__set_error(f"Asynchronous request timed out after {wait_seconds} seconds")
+            object.__setattr__(self, "complete", True)
 
     def _ensure_authenticated(self, client: httpx.Client) -> bool:
         """

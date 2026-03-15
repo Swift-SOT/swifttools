@@ -132,7 +132,20 @@ class SwiftVisQuery(TOOAPIBaseclass, TOOAPIClockCorrect, TOOAPIAutoResolve, Swif
     def entries(self):
         return self.windows
 
+    def _fallback_window(self) -> SwiftVisWindow:
+        anchor = self.begin if isinstance(self.begin, datetime) else utcnow()
+        return SwiftVisWindow(begin=anchor, end=anchor)
+
+    def __iter__(self):
+        if len(self.windows) == 0:
+            return iter([self._fallback_window()])
+        return iter(self.windows)
+
     def __getitem__(self, index):
+        if len(self.windows) == 0:
+            if index in (0, -1):
+                return self._fallback_window()
+            raise IndexError("list index out of range")
         return self.windows[index]
 
     def __len__(self):

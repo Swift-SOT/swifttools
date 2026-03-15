@@ -15,11 +15,13 @@ def utcnow():
 
 
 def convert_from_timedelta(
-    value: Union[float, int, u.Quantity, timedelta, TimeDelta],
-) -> Union[float, PydanticUndefinedType]:
+    value: Union[float, int, u.Quantity, timedelta, TimeDelta, None],
+) -> Union[float, PydanticUndefinedType, None]:
     """Convert a value to a timedelta in days."""
     if isinstance(value, PydanticUndefinedType):
         return value
+    if value is None:
+        return None
     if isinstance(value, u.Quantity) or isinstance(value, TimeDelta):
         return value.to(u.day).value
     elif isinstance(value, (int, float)):

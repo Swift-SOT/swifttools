@@ -66,27 +66,31 @@ class SwiftDataFile(BaseSchema, TOOAPIReprMixin):
             key_name = self.url.replace("https://heasarc.gsfc.nasa.gov/FTP/", "")
             s3.download_file("nasa-heasarc", key_name, fullfilepath)
         else:
-            with httpx.stream("GET", self.url, follow_redirects=True) as response:
-                try:
-                    response.raise_for_status()  # Raise error if the request failed
-                except httpx.HTTPStatusError:
-                    return False
+            try:
+                response_ctx = httpx.stream("GET", self.url, follow_redirects=True)
+                with response_ctx as response:
+                    try:
+                        response.raise_for_status()  # Raise error if the request failed
+                    except httpx.HTTPStatusError:
+                        return False
 
-                total = int(response.headers.get("Content-Length", 0))
+                    total = int(response.headers.get("Content-Length", 0))
 
-                with (
-                    open(fullfilepath, "wb") as f,
-                    tqdm(
-                        total=total,
-                        unit="B",
-                        unit_scale=True,
-                        unit_divisor=1024,
-                        desc=os.path.basename(fullfilepath),
-                    ) as progress,
-                ):
-                    for chunk in response.iter_bytes(chunk_size=8192):
-                        f.write(chunk)
-                        progress.update(len(chunk))
+                    with (
+                        open(fullfilepath, "wb") as f,
+                        tqdm(
+                            total=total,
+                            unit="B",
+                            unit_scale=True,
+                            unit_divisor=1024,
+                            desc=os.path.basename(fullfilepath),
+                        ) as progress,
+                    ):
+                        for chunk in response.iter_bytes(chunk_size=8192):
+                            f.write(chunk)
+                            progress.update(len(chunk))
+            except Exception:
+                return False
 
                 self.localpath = fullfilepath
 
@@ -198,6 +202,8 @@ class SwiftData(TOOAPIBaseclass, SwiftDataSchema):
     _s3: Optional[boto3.session.Session.client] = None
 
     def __getitem__(self, i):
+        if len(self.entries) == 0:
+            return None
         return self.entries[i]
 
     @property

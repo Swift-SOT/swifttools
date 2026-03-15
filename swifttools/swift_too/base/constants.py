@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from swifttools.swift_too.version import version_tuple
@@ -38,8 +39,8 @@ MODESXRT = {
 API_VERSION = f"{version_tuple[0]}.{version_tuple[1]}"
 
 # Submission URL
-API_URL = f"https://www.swift.psu.edu/api/v{API_VERSION}"
-API_URL = f"http://localhost:8000/api/v{API_VERSION}"  # For local testing
+# Default to production API; allow explicit override for local/dev testing.
+API_URL = os.getenv("SWIFT_TOO_API_URL", f"https://www.swift.psu.edu/api/v{API_VERSION}")
 
 # Magic strings
 STATUS_PENDING = "Pending"

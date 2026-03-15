@@ -101,6 +101,10 @@ class SwiftUVOTMode(TOOAPIBaseclass, TOOAPIInstruments, SwiftUVOTModeSchema, TOO
     _get_schema = SwiftUVOTModeGetSchema
     _endpoint = "/swift/uvot_mode"
 
+    def _post_process(self):
+        if len(self.entries) == 0:
+            self.entries = [SwiftUVOTModeEntry(uvot_mode=self.uvot_mode or 0)]
+
     def __getitem__(self, index):
         return self.entries[index]
 

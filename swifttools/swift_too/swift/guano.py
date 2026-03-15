@@ -347,8 +347,7 @@ class SwiftGUANO(
         # Calculate begin and end times for all GUANO entries
         [e._calc_begin_end() for e in self.entries]
         # Perform clock correction by default for all dates retrieved
-        # FIXME: Clock correction broken
-        # self.clock_correct()
+        self.clock_correct()
 
 
 # Shorthand alias names

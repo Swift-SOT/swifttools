@@ -101,6 +101,8 @@ class SwiftTOORequests(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestsSchem
     _endpoint = "/swift/too"
 
     def __getitem__(self, index):
+        if len(self.entries) == 0:
+            return SwiftTOORequestSchema()
         return self.entries[index]
 
     def __len__(self):

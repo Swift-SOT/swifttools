@@ -88,10 +88,11 @@ class SwiftClock(TOOAPIBaseclass, SwiftClockSchema):
     _endpoint = "/swift/clock"
 
     def _post_process(self) -> None:
-        self.entries = [swiftdatetime.frommet(e.met, utcf=e.utcf, isutc=e.isutc) for e in self.entries]
-        self.met = [entry.met for entry in self.entries]
-        self.swifttime = [entry.swifttime for entry in self.entries]
-        self.utctime = [entry.utctime for entry in self.entries]
+        converted = [swiftdatetime.frommet(e.met, utcf=e.utcf, isutc=e.isutc) for e in self.entries]
+        object.__setattr__(self, "entries", converted)
+        object.__setattr__(self, "met", [entry.met for entry in converted])
+        object.__setattr__(self, "swifttime", [entry.swifttime for entry in converted])
+        object.__setattr__(self, "utctime", [entry.utctime for entry in converted])
 
     def __getitem__(self, index):
         return self.entries[index]
@@ -115,13 +116,21 @@ class SwiftClock(TOOAPIBaseclass, SwiftClockSchema):
         """Convert all entries to a UTC time base"""
         mets = [entry.met for entry in self.entries]
         utcfs = [entry.utcf for entry in self.entries]
-        self.entries = [swiftdatetime.frommet(mets[i], utcf=utcfs[i], isutc=True) for i in range(len(mets))]
+        object.__setattr__(
+            self,
+            "entries",
+            [swiftdatetime.frommet(mets[i], utcf=utcfs[i], isutc=True) for i in range(len(mets))],
+        )
 
     def to_swifttime(self):
         """Convert all entries to a Swift Time base"""
         mets = [entry.met for entry in self.entries]
         utcfs = [entry.utcf for entry in self.entries]
-        self.entries = [swiftdatetime.frommet(mets[i], utcf=utcfs[i], isutc=False) for i in range(len(mets))]
+        object.__setattr__(
+            self,
+            "entries",
+            [swiftdatetime.frommet(mets[i], utcf=utcfs[i], isutc=False) for i in range(len(mets))],
+        )
 
 
 Swift_Clock = SwiftClock
@@ -245,8 +254,13 @@ class TOOAPIClockCorrect:
         else:
             datetime_refs = self._datetime_refs
 
-        # Step 3: Replace them in place
-        for (path, _), new_value in zip(datetime_refs, self._clock.entries):
+        # Step 3: Replace them in place.
+        # Prefer explicit UTC values, which are swiftdatetime instances.
+        replacement_values = self._clock.entries
+
+        for (path, _), new_value in zip(datetime_refs, replacement_values):
+            if isinstance(new_value, SwiftDateTimeSchema):
+                new_value = new_value.utctime
             current = self
             for kind, key in path[:-1]:
                 if kind == "model":
@@ -259,7 +273,8 @@ class TOOAPIClockCorrect:
                     current = current[key]
             kind, key = path[-1]
             if kind == "model":
-                setattr(current, key, new_value)
+                # Avoid validate-assignment coercing swiftdatetime back into schema objects.
+                object.__setattr__(current, key, new_value)
             elif kind == "list":
                 assert isinstance(current, list), f"Expected list but got {type(current)}"
                 current[key] = new_value
