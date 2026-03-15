@@ -4,6 +4,7 @@ from typing import Optional
 from pydantic import ConfigDict, model_validator
 
 from ..base.common import TOOAPIBaseclass
+from ..base.constants import XRTMODES
 from ..base.schemas import AstropyAngle, BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
 from ..base.status import TOOStatus
 from .resolve import TOOAPIAutoResolve
@@ -123,6 +124,33 @@ class SwiftTOORequests(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestsSchem
         """
         return {t.too_id: t for t in self.entries}[too_id]
 
+    @staticmethod
+    def _format_uvot_mode(mode):
+        if mode is None:
+            return None
+        if isinstance(mode, int):
+            return f"0x{mode:04X}"
+        if isinstance(mode, str):
+            try:
+                parsed = int(mode, 0)
+                return f"0x{parsed:04X}"
+            except ValueError:
+                return mode
+        return mode
+
+    @staticmethod
+    def _format_xrt_mode(mode):
+        if mode is None:
+            return XRTMODES.get(None)
+        if isinstance(mode, str):
+            try:
+                mode = int(mode, 0)
+            except ValueError:
+                return mode
+        if isinstance(mode, int):
+            return XRTMODES.get(mode, str(mode))
+        return mode
+
     @property
     def _table(self):
         table_cols = [
@@ -146,7 +174,10 @@ class SwiftTOORequests(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestsSchem
             header = []
         t = list()
         for e in self.entries:
-            t.append([getattr(e, col) for col in table_cols])
+            row = [getattr(e, col) for col in table_cols]
+            row[5] = self._format_uvot_mode(row[5])
+            row[6] = self._format_xrt_mode(row[6])
+            t.append(row)
         return header, t
 
 

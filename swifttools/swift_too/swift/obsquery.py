@@ -340,21 +340,23 @@ class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, TOOAPIBackCompat, Ba
 
     @property
     def _table(self) -> tuple[list[str], list[list[Any]]]:
-        if len(self.entries) > 0:
-            header = self.entries[0]._table[0]
-        else:
-            header = []
+        if len(self.entries) == 0:
+            return [], []
 
-        return header, [
-            [
-                self.begin,
-                self.end,
-                self.target_name,
-                self.obs_id,
-                self.exposure.seconds if self.exposure else None,
-                self.slewtime.seconds if self.slewtime else None,
-            ]
+        has_slewtime = hasattr(self.entries[0], "slewtime")
+        header = self.entries[0]._table[0]
+
+        row = [
+            self.begin,
+            self.end,
+            self.target_name,
+            self.obs_id,
+            self.exposure.seconds if self.exposure else None,
         ]
+        if has_slewtime:
+            row.append(self.slewtime.seconds if self.slewtime else None)
+
+        return header, [row]
 
 
 class SwiftObservations(dict, TOOAPIBaseclass):

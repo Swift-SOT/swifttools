@@ -92,7 +92,7 @@ class SwiftDataFile(BaseSchema, TOOAPIReprMixin):
             except Exception:
                 return False
 
-                self.localpath = fullfilepath
+            self.localpath = fullfilepath
 
         return True
 

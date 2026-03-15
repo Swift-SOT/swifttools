@@ -163,7 +163,11 @@ class SwiftUVOTMode(TOOAPIBaseclass, TOOAPIInstruments, SwiftUVOTModeSchema, TOO
         ):
             return "<b>Rejected with the following error(s): </b>" + " ".join(self.status.errors)
         elif self.entries is not None:
-            html = f"<h2>UVOT Mode: {self.uvot_mode}</h2>"
+            if isinstance(self.uvot_mode, int):
+                mode_label = f"0x{self.uvot_mode:04x}"
+            else:
+                mode_label = f"{self.uvot_mode}"
+            html = f"<h2>UVOT Mode: {mode_label}</h2>"
             html += "<p>The following table summarizes this mode, ordered by the filter sequence:</p>"
 
             html += '<table id="modelist" cellpadding=4 cellspacing=0>'
