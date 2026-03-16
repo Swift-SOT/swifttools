@@ -8,7 +8,7 @@ from ..base.common import TOOAPIBaseclass
 from ..base.repr import TOOAPIReprMixin
 from ..base.schemas import AstropyAngle, BaseSchema, StrIntFloat, TextLength, UVOTModeType, XRTModeType
 from ..base.status import TOOStatus
-from .calendar import SwiftCalendarSchema
+from .calendar import SwiftCalendar
 from .enums import UrgencyEnum, XRTModeEnum
 from .resolve import TOOAPIAutoResolve
 from .schemas import ObsType
@@ -50,7 +50,7 @@ class SwiftTOORequestSchema(BaseSchema, TOOAPIReprMixin, TOOAPIBackCompat):
     tiling_justification: Optional[str] = None
     obs_n: Union[int, str, None] = None
     obs_type: Optional[ObsType] = None
-    calendar: Optional[SwiftCalendarSchema] = None
+    calendar: Optional[SwiftCalendar] = None
     grb_triggertime: Optional[datetime] = None
     done: Optional[int] = None
     decision: Optional[str] = None

@@ -2,6 +2,7 @@ from datetime import datetime
 
 import pytest
 
+from swifttools.swift_too.swift.calendar import SwiftCalendar
 from swifttools.swift_too.swift.requests import SwiftTOORequests, SwiftTOORequestsGetSchema
 from swifttools.swift_too.swift.toorequest import SwiftTOORequest
 
@@ -69,3 +70,24 @@ class TestSwiftTOORequests:
         swift_requests.entries = [sample_too_request]
         header, data = swift_requests._table
         assert len(data) == 1
+
+    def test_too_request_calendar_is_swiftcalendar(self):
+        req = SwiftTOORequest(
+            too_id=24126,
+            target_name="Test Target",
+            calendar={
+                "too_id": 24126,
+                "entries": [
+                    {
+                        "begin": "2024-01-01T00:00:00",
+                        "end": "2024-01-01T00:10:00",
+                        "xrt_mode": 7,
+                        "uvot_mode": 39321,
+                        "duration": 600,
+                    }
+                ],
+            },
+            autosubmit=False,
+        )
+
+        assert isinstance(req.calendar, SwiftCalendar)
