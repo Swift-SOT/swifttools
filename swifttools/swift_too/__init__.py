@@ -159,6 +159,9 @@ from .swift.uvot import Swift_UVOTMode, SwiftUVOTMode, UVOTMode
 from .swift.visquery import Swift_VisQuery, VisQuery
 from .version import version as __version__
 
+# Legacy alias retained for import compatibility.
+UVOT_Mode = UVOTMode
+
 __all__ = [
     "__version__",
     "Calendar",
