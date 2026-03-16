@@ -332,6 +332,20 @@ class TestTOOAPIDownloadData:
             result = mock_obj.download()
             assert result == mock_instance
 
+    def test_download_does_not_call_download_twice(self):
+        """TOOAPIDownloadData should not manually call download after submit."""
+        mock_obj = MockDownloadData()
+        with patch("swifttools.swift_too.swift.data.SwiftData") as mock_swift_data:
+            mock_instance = MagicMock()
+            mock_swift_data.return_value = mock_instance
+            mock_instance.submit.return_value = None
+            mock_instance.fetch = True
+
+            _ = mock_obj.download()
+
+            mock_instance.submit.assert_called_once()
+            mock_instance.download.assert_not_called()
+
     def test_positional_and_anonymous_username(self):
         class HasObsNoUser(BaseSchema, TOOAPIDownloadData):
             obs_id: str = "000"

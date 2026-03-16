@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import pytest
 
-from swifttools.swift_too.swift.visquery import SwiftVisQuery, SwiftVisWindow
+from swifttools.swift_too.swift.visquery import SwiftVisQuery, SwiftVisQueryGetSchema, SwiftVisWindow
 
 
 @pytest.fixture
@@ -71,6 +71,27 @@ class TestSwiftVisQuery:
 
     def test_getitem(self, vis_query_with_window, vis_window):
         assert vis_query_with_window[0] == vis_window
+
+    def test_get_schema_end_drops_length(self):
+        schema = SwiftVisQueryGetSchema(
+            ra=10.0,
+            dec=20.0,
+            begin=datetime(2023, 1, 1),
+            end=datetime(2023, 1, 2),
+        )
+        payload = schema.model_dump(exclude_none=True)
+        assert "end" in payload
+        assert "length" not in payload
+
+    def test_get_schema_defaults_length_when_no_end(self):
+        schema = SwiftVisQueryGetSchema(
+            ra=10.0,
+            dec=20.0,
+            begin=datetime(2023, 1, 1),
+        )
+        payload = schema.model_dump(exclude_none=True)
+        assert "end" not in payload
+        assert payload["length"] == 7
 
 
 class TestSwiftVisWindow:

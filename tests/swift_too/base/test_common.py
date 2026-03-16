@@ -150,6 +150,34 @@ class TestMockTOOAPIBaseclass:
         assert mock_base_class.status.too_id == 22682
         assert mock_base_class.status.jobnumber == 23472401
 
+    def test_handle_response_400_applies_structured_status_errors(self, mock_base_class):
+        mock_response = Mock()
+        mock_response.status_code = 400
+        mock_response.text = (
+            '{"status":{"username":"anonymous","status":"Rejected","errors":'
+            '["The following UVOT filters are not allowed due to a bright star: u, b, v, uvw1, uvw2, uvm2."],'
+            '"warnings":[]}}'
+        )
+        mock_response.json.return_value = {
+            "status": {
+                "username": "anonymous",
+                "status": "Rejected",
+                "errors": [
+                    "The following UVOT filters are not allowed due to a bright star: u, b, v, uvw1, uvw2, uvm2."
+                ],
+                "warnings": [],
+            }
+        }
+
+        result = mock_base_class._handle_response(mock_response)
+
+        assert result is False
+        assert mock_base_class.status.status == "Rejected"
+        assert mock_base_class.status.errors == [
+            "The following UVOT filters are not allowed due to a bright star: u, b, v, uvw1, uvw2, uvm2."
+        ]
+        assert mock_base_class.status.warnings == []
+
     def test_handle_response_partial_payload_preserves_existing_fields(self, mock_base_class):
         mock_base_class.obs_id = 424242
         mock_response = Mock()
