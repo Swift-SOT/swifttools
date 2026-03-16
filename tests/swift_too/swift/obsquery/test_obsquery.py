@@ -322,10 +322,14 @@ class TestSwiftObservation:
             ),
         ]
 
-    def test_init_empty(self):
-        """Test initialization with no entries."""
+    def test_init_empty_length(self):
+        """Test initialization with no entries - length."""
         obs = SwiftObservation()
         assert len(obs) == 0
+
+    def test_init_empty_entries(self):
+        """Test initialization with no entries - entries."""
+        obs = SwiftObservation()
         assert obs.entries == []
 
     def test_init_with_entries_length(self):
@@ -656,11 +660,16 @@ class TestSwiftAFST:
         swift_afst.append(basic_afst_entry)
         assert swift_afst[0] == basic_afst_entry
 
-    def test_table_property_empty(self, swift_afst):
-        """Test _table property with empty AFST."""
+    def test_table_property_empty_header(self, swift_afst):
+        """Test _table property with empty AFST - header."""
         header, data = swift_afst._table
 
         assert header == []
+
+    def test_table_property_empty_data(self, swift_afst):
+        """Test _table property with empty AFST - data."""
+        header, data = swift_afst._table
+
         assert data == []
 
     def test_table_property_with_entries_header_type(self, swift_afst, full_afst_entry):
@@ -681,11 +690,16 @@ class TestSwiftAFST:
         header, data = swift_afst._table
         assert len(data) == 1
 
-    def test_observations_property_empty(self, swift_afst):
-        """Test observations property with no entries."""
+    def test_observations_property_empty_type(self, swift_afst):
+        """Test observations property with no entries - type."""
         obs = swift_afst.observations
 
         assert isinstance(obs, SwiftObservations)
+
+    def test_observations_property_empty_length(self, swift_afst):
+        """Test observations property with no entries - length."""
+        obs = swift_afst.observations
+
         assert len(obs) == 0
 
     def test_observations_property_with_entries_length(self, swift_afst, sample_afst_entries):

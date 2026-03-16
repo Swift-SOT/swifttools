@@ -101,11 +101,16 @@ def _format_422_errors(errors: list[str]) -> str:
     return "Validation errors:\n" + "\n".join(f"  • {err}" for err in errors)
 
 
-# Make Warnings a little less weird
-formatwarning_orig = warnings.formatwarning
-warnings.formatwarning = lambda message, category, filename, lineno, line=None: formatwarning_orig(
-    message, category, filename, lineno, line=""
-)
+# Make warnings output less noisy while avoiding recursive re-wrapping
+if not hasattr(warnings, "_swifttools_formatwarning_orig"):
+    warnings._swifttools_formatwarning_orig = warnings.formatwarning
+
+
+def _swifttools_formatwarning(message, category, filename, lineno, line=None):
+    return warnings._swifttools_formatwarning_orig(message, category, filename, lineno, line="")
+
+
+warnings.formatwarning = _swifttools_formatwarning
 
 # Ensure cookie jar directory exists, and set up cookie jar
 COOKIE_JAR_PATH.parent.mkdir(parents=True, exist_ok=True)

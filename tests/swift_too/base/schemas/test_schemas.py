@@ -50,12 +50,18 @@ class TestBeginEndLengthSchema:
         schema = BeginEndLengthSchema(begin=b, end=b - timedelta(days=1))
         assert schema.length == -1.0
 
-    def test_check_length_with_object(self, test_datetime):
+    def test_check_length_with_object_type(self, test_datetime):
         b = test_datetime
         inst = BeginEndLengthSchema(begin=b, length=2, end=(b + timedelta(days=2)).isoformat())
         # Call classmethod directly with model instance to exercise non-dict branch
         values = BeginEndLengthSchema.check_length(inst)
         assert isinstance(values, dict)
+
+    def test_check_length_with_object_begin(self, test_datetime):
+        b = test_datetime
+        inst = BeginEndLengthSchema(begin=b, length=2, end=(b + timedelta(days=2)).isoformat())
+        # Call classmethod directly with model instance to exercise non-dict branch
+        values = BeginEndLengthSchema.check_length(inst)
         assert values["begin"] == b.replace(tzinfo=None)
 
 
@@ -81,20 +87,30 @@ class TestOptionalBeginEndLengthSchemaDefaultLength:
 
 
 class TestOptionalCoordinateSchema:
-    def test_with_numbers_creates_skycoord(self):
+    def test_with_numbers_creates_skycoord_type(self):
         s = OptionalCoordinateSchema(ra=10.0, dec=-10.0)
         assert isinstance(s.skycoord, SkyCoord)
+
+    def test_with_numbers_creates_skycoord_ra(self):
+        s = OptionalCoordinateSchema(ra=10.0, dec=-10.0)
         assert abs(s.ra - 10.0) < 1e-4
+
+    def test_with_numbers_creates_skycoord_dec(self):
+        s = OptionalCoordinateSchema(ra=10.0, dec=-10.0)
         assert abs(s.dec - (-10.0)) < 1e-4
 
     def test_with_quantity_values(self):
         s = OptionalCoordinateSchema(ra=10.0 * u.deg, dec=-10.0 * u.deg)
         assert isinstance(s.skycoord, SkyCoord)
 
-    def test_with_skycoord_only(self, test_skycoord):
+    def test_with_skycoord_only_ra(self, test_skycoord):
         sc = test_skycoord
         s = OptionalCoordinateSchema(skycoord=sc)
         assert s.ra == sc.fk5.ra.deg
+
+    def test_with_skycoord_only_dec(self, test_skycoord):
+        sc = test_skycoord
+        s = OptionalCoordinateSchema(skycoord=sc)
         assert s.dec == sc.fk5.dec.deg
 
     def test_with_bad_values_raises(self):

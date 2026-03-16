@@ -2,24 +2,47 @@ from swifttools.swift_too.base.status import TOOStatus
 
 
 class TestTable:
-    def test_includes_rows_and_status(self, repr_model_with_data):
+    def test_includes_rows_and_status_header(self, repr_model_with_data):
         obj = repr_model_with_data
         header, table = obj._table
         assert header == ["Parameter", "Value"]
-        # Ensure name and tags rows exist
+
+    def test_includes_rows_and_status_name_in_params(self, repr_model_with_data):
+        obj = repr_model_with_data
+        header, table = obj._table
         param_names = [r[0] for r in table]
         assert "name" in param_names
+
+    def test_includes_rows_and_status_tags_in_params(self, repr_model_with_data):
+        obj = repr_model_with_data
+        header, table = obj._table
+        param_names = [r[0] for r in table]
         assert "tags" in param_names
-        # status is stored as status string in second column of its row
+
+    def test_includes_rows_and_status_status_value(self, repr_model_with_data):
+        obj = repr_model_with_data
+        header, table = obj._table
         status_row = [r for r in table if r[0] == "status"][0]
         assert status_row[1] == "Pending"
 
-    def test_table(self, mock_repr_class):
+    def test_table_header(self, mock_repr_class):
         obj = mock_repr_class
         header, tab = obj._table
         assert header == ["Parameter", "Value"]
+
+    def test_table_length(self, mock_repr_class):
+        obj = mock_repr_class
+        header, tab = obj._table
         assert len(tab) == 2
+
+    def test_table_field1_row(self, mock_repr_class):
+        obj = mock_repr_class
+        header, tab = obj._table
         assert ["field1", "value1"] in tab
+
+    def test_table_field2_row(self, mock_repr_class):
+        obj = mock_repr_class
+        header, tab = obj._table
         assert ["field2", "42"] in tab
 
 

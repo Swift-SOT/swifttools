@@ -31,12 +31,24 @@ class TestTOOStatusAlias:
 
 
 class TestTOOStatus:
-    def test_init(self, status_obj):
+    def test_init_status(self, status_obj):
         status = status_obj
         assert status.status == "Pending"
+
+    def test_init_errors(self, status_obj):
+        status = status_obj
         assert status.errors == []
+
+    def test_init_warnings(self, status_obj):
+        status = status_obj
         assert status.warnings == []
+
+    def test_init_too_id(self, status_obj):
+        status = status_obj
         assert status.too_id is None
+
+    def test_init_jobnumber(self, status_obj):
+        status = status_obj
         assert status.jobnumber is None
 
     def test_error(self, status_obj, test_error_msg):

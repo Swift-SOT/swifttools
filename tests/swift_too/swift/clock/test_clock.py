@@ -337,13 +337,19 @@ class TestIndexDatetimes:
         i, values = index_datetimes(container)
         assert values == []
 
-    def test_list_recursion_and_setattr(self):
+    def test_list_recursion_and_setattr_list_index(self):
         # List recursion
         d = {"dates": [datetime(2020, 1, 1), datetime(2021, 1, 1)]}
         i, values = index_datetimes(d)
         assert i == 2
+
+    def test_list_recursion_and_setattr_list_length(self):
+        # List recursion
+        d = {"dates": [datetime(2020, 1, 1), datetime(2021, 1, 1)]}
+        i, values = index_datetimes(d)
         assert len(values) == 2
 
+    def test_list_recursion_and_setattr_setattr(self):
         # setattr path when dictionary is an object
         class Obj:
             def __init__(self):
@@ -354,10 +360,14 @@ class TestIndexDatetimes:
         i, values = index_datetimes(o, setvals=new)
         assert o.date == datetime(2030, 1, 1)
 
-    def test_dict_recursion(self):
+    def test_dict_recursion_index(self):
         nested = {"outer": {"inner": datetime(2010, 1, 1)}}
         i, values = index_datetimes(nested)
         assert i == 1
+
+    def test_dict_recursion_values(self):
+        nested = {"outer": {"inner": datetime(2010, 1, 1)}}
+        i, values = index_datetimes(nested)
         assert values[0] == datetime(2010, 1, 1)
 
 

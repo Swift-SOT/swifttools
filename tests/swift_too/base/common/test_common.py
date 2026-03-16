@@ -17,18 +17,28 @@ from swifttools.swift_too.base.status import TOOStatus
 
 
 class TestMockTOOAPIBaseclass:
-    def test_parse_422_error_variants(self):
+    def test_parse_422_error_simple_detail(self):
         assert _parse_422_error('{"detail":"simple"}') == ["simple"]
+
+    def test_parse_422_error_detail_array(self):
         assert _parse_422_error('{"detail":[{"loc":["body","field"],"msg":"bad"},"other"]}') == [
             "field: bad",
             "other",
         ]
+
+    def test_parse_422_error_other_field(self):
         assert _parse_422_error('{"other":"value"}') == ['{"other":"value"}']
+
+    def test_parse_422_error_not_json(self):
         assert _parse_422_error("not-json") == ["not-json"]
 
-    def test_format_422_errors_variants(self):
+    def test_format_422_errors_empty(self):
         assert _format_422_errors([]) == "Validation error"
+
+    def test_format_422_errors_single(self):
         assert _format_422_errors(["one"]) == "one"
+
+    def test_format_422_errors_multiple(self):
         assert _format_422_errors(["one", "two"]).startswith("Validation errors:\n")
 
     def test_reload_module_handles_missing_cookie_jar_file(self, monkeypatch):
@@ -51,10 +61,14 @@ class TestMockTOOAPIBaseclass:
         obj = mock_too_api_baseclass(obsnum=123)
         assert obj.obs_id == 123
 
-    def test_handle_back_compat_args_drops_duplicate_deprecated_key(self, mock_base_class):
+    def test_handle_back_compat_args_drops_duplicate_deprecated_key_obs_id(self, mock_base_class):
         kwargs = {"obs_id": 1, "obsnum": 2}
         out = mock_base_class._handle_back_compat_args(kwargs)
         assert out["obs_id"] == 1
+
+    def test_handle_back_compat_args_drops_duplicate_deprecated_key_no_obsnum(self, mock_base_class):
+        kwargs = {"obs_id": 1, "obsnum": 2}
+        out = mock_base_class._handle_back_compat_args(kwargs)
         assert "obsnum" not in out
 
     def test_handle_back_compat_args_maps_deprecated_when_primary_missing(self, mock_base_class):
@@ -151,7 +165,7 @@ class TestMockTOOAPIBaseclass:
             result = mock_base_class.submit_get()
             assert result is False
 
-    def test_handle_response_normalizes_string_status(self, mock_base_class, mock_too_api_baseclass):
+    def test_handle_response_normalizes_string_status_result(self, mock_base_class, mock_too_api_baseclass):
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"status": "Validated"}
@@ -166,9 +180,24 @@ class TestMockTOOAPIBaseclass:
             result = mock_base_class._handle_response(mock_response)
 
         assert result is True
+
+    def test_handle_response_normalizes_string_status_payload(self, mock_base_class, mock_too_api_baseclass):
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"status": "Validated"}
+
+        captured = {}
+
+        def mock_model_validate(data):
+            captured["payload"] = data
+            return mock_base_class
+
+        with patch.object(mock_too_api_baseclass, "model_validate", side_effect=mock_model_validate):
+            _result = mock_base_class._handle_response(mock_response)
+
         assert captured["payload"]["status"] == {"status": "Validated"}
 
-    def test_handle_response_201_created_is_success(self, mock_base_class):
+    def test_handle_response_201_created_is_success_result(self, mock_base_class):
         mock_response = Mock()
         mock_response.status_code = 201
         mock_response.json.return_value = {
@@ -182,11 +211,53 @@ class TestMockTOOAPIBaseclass:
         result = mock_base_class._handle_response(mock_response)
 
         assert result is True
+
+    def test_handle_response_201_created_is_success_status(self, mock_base_class):
+        mock_response = Mock()
+        mock_response.status_code = 201
+        mock_response.json.return_value = {
+            "status": "Accepted",
+            "too_id": 22682,
+            "jobnumber": 23472401,
+            "errors": [],
+            "warnings": [],
+        }
+
+        _result = mock_base_class._handle_response(mock_response)
+
         assert mock_base_class.status.status == "Accepted"
+
+    def test_handle_response_201_created_is_success_too_id(self, mock_base_class):
+        mock_response = Mock()
+        mock_response.status_code = 201
+        mock_response.json.return_value = {
+            "status": "Accepted",
+            "too_id": 22682,
+            "jobnumber": 23472401,
+            "errors": [],
+            "warnings": [],
+        }
+
+        _result = mock_base_class._handle_response(mock_response)
+
         assert mock_base_class.status.too_id == 22682
+
+    def test_handle_response_201_created_is_success_jobnumber(self, mock_base_class):
+        mock_response = Mock()
+        mock_response.status_code = 201
+        mock_response.json.return_value = {
+            "status": "Accepted",
+            "too_id": 22682,
+            "jobnumber": 23472401,
+            "errors": [],
+            "warnings": [],
+        }
+
+        _result = mock_base_class._handle_response(mock_response)
+
         assert mock_base_class.status.jobnumber == 23472401
 
-    def test_handle_response_400_applies_structured_status_errors(self, mock_base_class):
+    def test_handle_response_400_applies_structured_status_errors_result(self, mock_base_class):
         mock_response = Mock()
         mock_response.status_code = 400
         mock_response.text = (
@@ -208,13 +279,57 @@ class TestMockTOOAPIBaseclass:
         result = mock_base_class._handle_response(mock_response)
 
         assert result is False
+
+    def test_handle_response_400_applies_structured_status_errors_status(self, mock_base_class):
+        mock_response = Mock()
+        mock_response.status_code = 400
+        mock_response.text = (
+            '{"status":{"username":"anonymous","status":"Rejected","errors":'
+            '["The following UVOT filters are not allowed due to a bright star: u, b, v, uvw1, uvw2, uvm2."],'
+            '"warnings":[]}}'
+        )
+        mock_response.json.return_value = {
+            "status": {
+                "username": "anonymous",
+                "status": "Rejected",
+                "errors": [
+                    "The following UVOT filters are not allowed due to a bright star: u, b, v, uvw1, uvw2, uvm2."
+                ],
+                "warnings": [],
+            }
+        }
+
+        _result = mock_base_class._handle_response(mock_response)
+
         assert mock_base_class.status.status == "Rejected"
+
+    def test_handle_response_400_applies_structured_status_errors_errors(self, mock_base_class):
+        mock_response = Mock()
+        mock_response.status_code = 400
+        mock_response.text = (
+            '{"status":{"username":"anonymous","status":"Rejected","errors":'
+            '["The following UVOT filters are not allowed due to a bright star: u, b, v, uvw1, uvw2, uvm2."],'
+            '"warnings":[]}}'
+        )
+        mock_response.json.return_value = {
+            "status": {
+                "username": "anonymous",
+                "status": "Rejected",
+                "errors": [
+                    "The following UVOT filters are not allowed due to a bright star: u, b, v, uvw1, uvw2, uvm2."
+                ],
+                "warnings": [],
+            }
+        }
+
+        _result = mock_base_class._handle_response(mock_response)
+
         assert mock_base_class.status.errors == [
             "The following UVOT filters are not allowed due to a bright star: u, b, v, uvw1, uvw2, uvm2."
         ]
         assert mock_base_class.status.warnings == []
 
-    def test_handle_response_partial_payload_preserves_existing_fields(self, mock_base_class):
+    def test_handle_response_partial_payload_preserves_existing_fields_result(self, mock_base_class):
         mock_base_class.obs_id = 424242
         mock_response = Mock()
         mock_response.status_code = 200
@@ -223,7 +338,25 @@ class TestMockTOOAPIBaseclass:
         result = mock_base_class._handle_response(mock_response)
 
         assert result is True
+
+    def test_handle_response_partial_payload_preserves_existing_fields_obs_id(self, mock_base_class):
+        mock_base_class.obs_id = 424242
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"status": "Validated"}
+
+        _result = mock_base_class._handle_response(mock_response)
+
         assert mock_base_class.obs_id == 424242
+
+    def test_handle_response_partial_payload_preserves_existing_fields_status(self, mock_base_class):
+        mock_base_class.obs_id = 424242
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"status": "Validated"}
+
+        _result = mock_base_class._handle_response(mock_response)
+
         assert mock_base_class.status.status == "Validated"
 
     def test_submit_post_400_error(self, mock_cookie_jar, mock_client, mock_base_class, mock_too_api_baseclass):
@@ -310,13 +443,14 @@ class TestMockTOOAPIBaseclass:
         result = mock_base_class.submit()
         assert result is False
 
-    def test_submit_routes_get_and_post(self, mock_base_class, post_only_model_cls, mock_too_api_baseclass):
+    def test_submit_routes_get_and_post_get_request(self, mock_base_class, mock_too_api_baseclass):
         mock_base_class.status.status = "Pending"
         with patch.object(mock_too_api_baseclass, "validate_get", return_value=True):
             with patch.object(mock_too_api_baseclass, "submit_get", return_value=True) as mget:
                 assert mock_base_class.submit() is True
                 mget.assert_called_once()
 
+    def test_submit_routes_get_and_post_post_request_success(self, post_only_model_cls):
         obj = post_only_model_cls(username="u", shared_secret="s", autosubmit=False)
         obj.status.status = "Pending"
         with patch.object(post_only_model_cls, "validate_post", return_value=True):
@@ -324,6 +458,8 @@ class TestMockTOOAPIBaseclass:
                 assert obj.submit() is True
                 mpost.assert_called_once()
 
+    def test_submit_routes_get_and_post_post_request_validation_failure(self, post_only_model_cls):
+        obj = post_only_model_cls(username="u", shared_secret="s", autosubmit=False)
         obj.status.status = "Pending"
         with patch.object(post_only_model_cls, "validate_post", return_value=False):
             assert obj.submit() is False
@@ -484,7 +620,7 @@ class TestMockTOOAPIBaseclass:
         with patch.object(post_only_model_cls, "validate_post", return_value=False):
             assert obj.queue() is False
 
-    def test_queue_post_success_and_not_pending(self, post_only_model_cls):
+    def test_queue_post_success_and_not_pending_success(self, post_only_model_cls):
         obj = post_only_model_cls(username="u", shared_secret="s", autosubmit=False)
         obj.status.status = "Pending"
         thread_mock = Mock()
@@ -492,25 +628,47 @@ class TestMockTOOAPIBaseclass:
         with patch("swifttools.swift_too.base.common.threading.Thread", return_value=thread_mock):
             with patch.object(post_only_model_cls, "validate_post", return_value=True):
                 assert obj.queue() is True
+
+    def test_queue_post_success_and_not_pending_thread_count(self, post_only_model_cls):
+        obj = post_only_model_cls(username="u", shared_secret="s", autosubmit=False)
+        obj.status.status = "Pending"
+        thread_mock = Mock()
+        thread_mock.start.return_value = None
+        with patch("swifttools.swift_too.base.common.threading.Thread", return_value=thread_mock):
+            with patch.object(post_only_model_cls, "validate_post", return_value=True):
+                obj.queue()
                 assert thread_mock.start.call_count == 2
 
+    def test_queue_post_success_and_not_pending_not_pending(self, post_only_model_cls):
+        obj = post_only_model_cls(username="u", shared_secret="s", autosubmit=False)
         obj.status.status = "Complete"
         assert obj.queue() is False
 
     def test_queue_watchdog_timeout_sets_error_and_complete(self, mock_base_class):
         mock_base_class._timeout = 0
         object.__setattr__(mock_base_class, "complete", False)
+
+    def test_queue_watchdog_timeout_sets_error_and_complete_complete(self, mock_base_class):
+        mock_base_class._timeout = 0
+        object.__setattr__(mock_base_class, "complete", False)
         with patch("swifttools.swift_too.base.common.time.sleep", return_value=None):
             mock_base_class._queue_watchdog()
         assert mock_base_class.complete is True
+
+    def test_queue_watchdog_timeout_sets_error_and_complete_error(self, mock_base_class):
+        mock_base_class._timeout = 0
+        object.__setattr__(mock_base_class, "complete", False)
+        with patch("swifttools.swift_too.base.common.time.sleep", return_value=None):
+            mock_base_class._queue_watchdog()
         assert any("Asynchronous request timed out" in e for e in mock_base_class.status.errors)
 
-    def test_ensure_authenticated_branches(self, mock_base_class, mock_cookie_jar):
+    def test_ensure_authenticated_branches_anonymous(self, mock_base_class):
         client = Mock()
-
         mock_base_class.username = "anonymous"
         assert mock_base_class._ensure_authenticated(client) is True
 
+    def test_ensure_authenticated_branches_user_with_valid_cookie(self, mock_base_class, mock_cookie_jar):
+        client = Mock()
         mock_base_class.username = "user"
         cookie = Mock()
         cookie.name = "session"
@@ -518,9 +676,17 @@ class TestMockTOOAPIBaseclass:
         mock_cookie_jar.__iter__.return_value = [cookie]
         assert mock_base_class._ensure_authenticated(client) is True
 
+    def test_ensure_authenticated_branches_user_with_expired_cookie_exception(self, mock_base_class, mock_cookie_jar):
+        client = Mock()
+        mock_base_class.username = "user"
         mock_cookie_jar.__iter__.return_value = []
         client.post.side_effect = Exception("boom")
         assert mock_base_class._ensure_authenticated(client) is False
+
+    def test_ensure_authenticated_branches_user_with_expired_cookie_403(self, mock_base_class, mock_cookie_jar):
+        client = Mock()
+        mock_base_class.username = "user"
+        mock_cookie_jar.__iter__.return_value = []
         client.post.side_effect = None
         client.post.return_value.status_code = 403
         assert mock_base_class._ensure_authenticated(client) is False
@@ -652,13 +818,17 @@ class TestMockTOOAPIBaseclass:
         r400.json.side_effect = ValueError("bad-json")
         assert mock_base_class._handle_response(r400) is False
 
-    def test_apply_status_from_payload_edge_cases(self, mock_base_class):
+    def test_apply_status_from_payload_edge_cases_not_dict(self, mock_base_class):
         assert mock_base_class._apply_status_from_payload("not-dict") is False
+
+    def test_apply_status_from_payload_edge_cases_status_not_string(self, mock_base_class):
         assert mock_base_class._apply_status_from_payload({"status": 1}) is False
 
+    def test_apply_status_from_payload_edge_cases_string_status(self, mock_base_class):
         mock_base_class.status = "string-status"
         assert mock_base_class._apply_status_from_payload({"status": "Rejected"}) is False
 
+    def test_apply_status_from_payload_edge_cases_success_result(self, mock_base_class):
         mock_base_class.status = TOOStatus()
         payload = {
             "status": {
@@ -670,7 +840,33 @@ class TestMockTOOAPIBaseclass:
             }
         }
         assert mock_base_class._apply_status_from_payload(payload) is True
+
+    def test_apply_status_from_payload_edge_cases_success_too_id(self, mock_base_class):
+        mock_base_class.status = TOOStatus()
+        payload = {
+            "status": {
+                "status": "Rejected",
+                "errors": ["e1"],
+                "warnings": ["w1"],
+                "too_id": 12,
+                "jobnumber": 34,
+            }
+        }
+        mock_base_class._apply_status_from_payload(payload)
         assert mock_base_class.status.too_id == 12
+
+    def test_apply_status_from_payload_edge_cases_success_jobnumber(self, mock_base_class):
+        mock_base_class.status = TOOStatus()
+        payload = {
+            "status": {
+                "status": "Rejected",
+                "errors": ["e1"],
+                "warnings": ["w1"],
+                "too_id": 12,
+                "jobnumber": 34,
+            }
+        }
+        mock_base_class._apply_status_from_payload(payload)
         assert mock_base_class.status.jobnumber == 34
 
 

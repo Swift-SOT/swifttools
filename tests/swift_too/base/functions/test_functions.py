@@ -7,9 +7,12 @@ from swifttools.swift_too.base.functions import _tablefy, convert_from_timedelta
 
 
 class TestUtcnow:
-    def test_utcnow(self):
+    def test_utcnow_type(self):
         now = utcnow()
         assert isinstance(now, datetime)
+
+    def test_utcnow_tzinfo(self):
+        now = utcnow()
         assert now.tzinfo is None
 
 

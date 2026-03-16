@@ -19,11 +19,14 @@ class TestSwiftTOORequestInit:
 
 
 class TestSwiftTOORequestSubmit:
-    @patch("swifttools.swift_too.base.common.cookie_jar")
-    @patch("httpx.Client")
-    def test_submit_result(self, mock_client, mock_cookie_jar, too_request_base):
+    def test_submit_result_initial_status(self, too_request_base):
         too = too_request_base
         assert too.status.status == "Pending"
+
+    @patch("swifttools.swift_too.base.common.cookie_jar")
+    @patch("httpx.Client")
+    def test_submit_result_status_after_submit(self, mock_client, mock_cookie_jar, too_request_base):
+        too = too_request_base
         too._api_base = API_URL
         # Mock the response
         mock_response = mock_client.return_value.__enter__.return_value.post.return_value
@@ -47,6 +50,33 @@ class TestSwiftTOORequestSubmit:
                 with patch.object(too, "_handle_response", side_effect=mock_handle_response):
                     _ = too.submit()
                     assert too.status.status == "Accepted"
+
+    @patch("swifttools.swift_too.base.common.cookie_jar")
+    @patch("httpx.Client")
+    def test_submit_result_too_id_after_submit(self, mock_client, mock_cookie_jar, too_request_base):
+        too = too_request_base
+        too._api_base = API_URL
+        # Mock the response
+        mock_response = mock_client.return_value.__enter__.return_value.post.return_value
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"status": "Accepted", "too_id": 123}
+
+        # Mock login
+        login_response = mock_client.return_value.__enter__.return_value.post.return_value
+        login_response.status_code = 200
+
+        with patch.object(too, "validate_post", return_value=True):
+            with patch.object(type(too), "_post_schema") as mock_post_schema:
+                mock_post_schema.model_validate.return_value.model_dump.return_value = {"param": "value"}
+
+                def mock_handle_response(response):
+                    # Directly update the object like _handle_response would
+                    too.status.status = "Accepted"
+                    too.too_id = 123
+                    return True
+
+                with patch.object(too, "_handle_response", side_effect=mock_handle_response):
+                    _ = too.submit()
                     assert too.too_id == 123
 
     @patch("swifttools.swift_too.base.common.cookie_jar")
@@ -227,6 +257,29 @@ class TestSwiftTOORequestServerValidateSuccess:
 
         assert too.target_name == original_target_name
         assert too.science_just == original_science_just
+
+    def test_server_validate_status_only_response_preserves_validate_only(self, too_request_base):
+        too = too_request_base
+        too._api_base = API_URL
+        # Set required fields
+        object.__setattr__(too, "target_name", "Test Target")
+        object.__setattr__(too, "immediate_objective", "Test objective")
+        object.__setattr__(too, "uvot_just", "Test UVOT justification")
+
+        # Return a status-only payload through the normal response handler.
+        response = MagicMock()
+        response.status_code = 200
+        response.json.return_value = {"status": "Validated"}
+
+        with patch.object(SwiftTOORequest, "validate_post", return_value=True):
+            with patch.object(
+                SwiftTOORequest,
+                "submit_post",
+                autospec=True,
+                side_effect=lambda this: this._handle_response(response),
+            ):
+                assert too.server_validate() is True
+
         assert too.validate_only is False
 
 

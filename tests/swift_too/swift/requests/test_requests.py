@@ -35,13 +35,17 @@ class TestSwiftTOORequests:
         result = swift_requests.by_id(456)
         assert result == entry2
 
-    def test_table_property_empty(self):
+    def test_table_property_empty_header(self):
         requests = SwiftTOORequests(autosubmit=False)
         header, data = requests._table
         assert header == []
+
+    def test_table_property_empty_data(self):
+        requests = SwiftTOORequests(autosubmit=False)
+        header, data = requests._table
         assert data == []
 
-    def test_table_property_with_entries(self, swift_requests, sample_too_request):
+    def test_table_property_with_entries_header(self, swift_requests, sample_too_request):
         swift_requests.entries = [sample_too_request]
         header, data = swift_requests._table
         expected_header = [
@@ -60,4 +64,8 @@ class TestSwiftTOORequests:
             "Primary Target ID",
         ]
         assert header == expected_header
+
+    def test_table_property_with_entries_data_length(self, swift_requests, sample_too_request):
+        swift_requests.entries = [sample_too_request]
+        header, data = swift_requests._table
         assert len(data) == 1

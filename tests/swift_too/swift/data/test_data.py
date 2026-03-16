@@ -27,25 +27,58 @@ class TestSwiftData:
         data.tdrss = True
         assert data.all is True
 
-    def test_all_setter(self, swift_data_basic):
-        """Test the 'all' property setter"""
+    def test_all_setter_xrt(self, swift_data_basic):
+        """Test the 'all' property setter - xrt"""
         data = swift_data_basic
         data.all = True
         assert data.xrt is True
+
+    def test_all_setter_uvot(self, swift_data_basic):
+        """Test the 'all' property setter - uvot"""
+        data = swift_data_basic
+        data.all = True
         assert data.uvot is True
+
+    def test_all_setter_bat(self, swift_data_basic):
+        """Test the 'all' property setter - bat"""
+        data = swift_data_basic
+        data.all = True
         assert data.bat is True
+
+    def test_all_setter_log(self, swift_data_basic):
+        """Test the 'all' property setter - log"""
+        data = swift_data_basic
+        data.all = True
         assert data.log is True
+
+    def test_all_setter_auxil(self, swift_data_basic):
+        """Test the 'all' property setter - auxil"""
+        data = swift_data_basic
+        data.all = True
         assert data.auxil is True
+
+    def test_all_setter_tdrss(self, swift_data_basic):
+        """Test the 'all' property setter - tdrss"""
+        data = swift_data_basic
+        data.all = True
         assert data.tdrss is True
 
-    def test_getitem(self, swift_data_basic, swift_data_file_basic):
-        """Test indexing"""
+    def test_getitem_first_filename(self, swift_data_basic, swift_data_file_basic):
+        """Test indexing - first filename"""
         data = swift_data_basic
         # Use SwiftDataFile instances for entries
         file1 = swift_data_file_basic
         file2 = SwiftDataFile(filename="file2", path="/", url="http://example.com/file2", type="file")
         data.entries = [file1, file2]
         assert data[0].filename == "test.fits"
+
+    def test_getitem_second_filename(self, swift_data_basic, swift_data_file_basic):
+        """Test indexing - second filename"""
+        data = swift_data_basic
+        # Use SwiftDataFile instances for entries
+        file1 = swift_data_file_basic
+        file2 = SwiftDataFile(filename="file2", path="/", url="http://example.com/file2", type="file")
+        data.entries = [file1, file2]
         assert data[1].filename == "file2"
 
     def test_table_property(self, swift_data_basic):
@@ -114,11 +147,41 @@ class TestSwiftData:
         data.clobber = False
 
         # make download return True
+
+    def test_download_with_clobber_table_length(self, swift_data_basic, tmp_path):
+        out = tmp_path / "data"
+        out.mkdir()
+        file_path = out / "test.fits"
+        file_path.write_bytes(b"abc")
+
+        data = swift_data_basic
+        data.outdir = str(tmp_path)
+        data.entries = [
+            SwiftDataFile(filename="test.fits", path="data", url="http://example.com/test.fits", type="BAT")
+        ]
+        data.clobber = True
+
         with patch.object(SwiftDataFile, "download", return_value=True):
             _ = data.download()
         _, table = data._table
-        print(f"Table: {table}")
         assert len(table) == 1  # We have 1 entry
+
+    def test_download_with_clobber_table_path(self, swift_data_basic, tmp_path):
+        out = tmp_path / "data"
+        out.mkdir()
+        file_path = out / "test.fits"
+        file_path.write_bytes(b"abc")
+
+        data = swift_data_basic
+        data.outdir = str(tmp_path)
+        data.entries = [
+            SwiftDataFile(filename="test.fits", path="data", url="http://example.com/test.fits", type="BAT")
+        ]
+        data.clobber = True
+
+        with patch.object(SwiftDataFile, "download", return_value=True):
+            _ = data.download()
+        _, table = data._table
         assert table[0][0] == "data"  # First file shows full path
 
     def test_download_existing_file_warns_and_localpath_indexing(
@@ -135,7 +198,8 @@ class TestSwiftData:
         data.clobber = False
         data.quiet = False
         # index existing files should set localpath
-        data.download()
+        with pytest.warns(UserWarning, match="test.fits exists and not overwritten"):
+            data.download()
         assert data.entries[0].localpath is not None
 
     def test_download_existing_file_warning(self, swift_data_basic, swift_data_file_basic, tmp_path):
@@ -151,7 +215,8 @@ class TestSwiftData:
         data.quiet = False
         data.clobber = False
         # Call download; should warn and not attempt download
-        data.download()
+        with pytest.warns(UserWarning, match="test.fits exists and not overwritten"):
+            data.download()
         # No exception and method completes
 
     def test_download_file_download_failure(self, swift_data_with_entries, tmp_path):
@@ -190,7 +255,7 @@ class TestSwiftDataFile:
             result = file_obj.download(outdir="/tmp")
             assert result is True
 
-    def test_download_heasarc_s3(self, swift_data_file_heasarc, tmp_path):
+    def test_download_heasarc_s3_result(self, swift_data_file_heasarc, tmp_path):
         # heasarc url with s3 client download_file called
         file_obj = swift_data_file_heasarc
         s3 = MagicMock()
@@ -200,6 +265,16 @@ class TestSwiftDataFile:
         # Call download with s3; should call s3.download_file and return True
         res = file_obj.download(outdir=outdir, s3=s3)
         assert res is True
+
+    def test_download_heasarc_s3_call(self, swift_data_file_heasarc, tmp_path):
+        # heasarc url with s3 client download_file called
+        file_obj = swift_data_file_heasarc
+        s3 = MagicMock()
+        # ensure directory creation works
+        outdir = str(tmp_path)
+
+        # Call download with s3; should call s3.download_file and return True
+        _res = file_obj.download(outdir=outdir, s3=s3)
         # key name should be url replaced prefix
         key_name = file_obj.url.replace("https://heasarc.gsfc.nasa.gov/FTP/", "")
         s3.download_file.assert_called_once_with(
@@ -224,7 +299,7 @@ class TestSwiftDataFile:
         res = file_obj.download(outdir="/tmp")
         assert res is False
 
-    def test_makedirs_and_s3_download(self, swift_data_file_heasarc, monkeypatch, tmp_path):
+    def test_makedirs_and_s3_download_result(self, swift_data_file_heasarc, monkeypatch, tmp_path):
         # Ensure os.makedirs is called when fulldir doesn't exist and s3 branch used
         file_obj = swift_data_file_heasarc
         s3 = MagicMock()
@@ -240,6 +315,22 @@ class TestSwiftDataFile:
 
         res = file_obj.download(outdir=str(tmp_path), s3=s3)
         assert res is True
+
+    def test_makedirs_and_s3_download_called(self, swift_data_file_heasarc, monkeypatch, tmp_path):
+        # Ensure os.makedirs is called when fulldir doesn't exist and s3 branch used
+        file_obj = swift_data_file_heasarc
+        s3 = MagicMock()
+
+        # simulate directory doesn't exist
+        monkeypatch.setattr("swifttools.swift_too.swift.data.os.path.exists", lambda p: False)
+        called = {"makedirs": False}
+
+        def fake_makedirs(p):
+            called["makedirs"] = True
+
+        monkeypatch.setattr("swifttools.swift_too.swift.data.os.makedirs", fake_makedirs)
+
+        _res = file_obj.download(outdir=str(tmp_path), s3=s3)
         assert called["makedirs"] is True
 
     def test_stream_zero_content_length(self, swift_data_file_basic, monkeypatch, tmp_path):
@@ -285,7 +376,7 @@ class TestTOOAPIDownloadData:
             result = mock_obj.download()
             assert result == mock_instance
 
-    def test_download_does_not_call_download_twice(self, mock_download_data):
+    def test_download_does_not_call_download_twice_submit_called(self, mock_download_data):
         """TOOAPIDownloadData should not manually call download after submit."""
         mock_obj = mock_download_data
         with patch("swifttools.swift_too.swift.data.SwiftData") as mock_swift_data:
@@ -297,6 +388,18 @@ class TestTOOAPIDownloadData:
             _ = mock_obj.download()
 
             mock_instance.submit.assert_called_once()
+
+    def test_download_does_not_call_download_twice_download_not_called(self, mock_download_data):
+        """TOOAPIDownloadData should not manually call download after submit."""
+        mock_obj = mock_download_data
+        with patch("swifttools.swift_too.swift.data.SwiftData") as mock_swift_data:
+            mock_instance = MagicMock()
+            mock_swift_data.return_value = mock_instance
+            mock_instance.submit.return_value = None
+            mock_instance.fetch = True
+
+            _ = mock_obj.download()
+
             mock_instance.download.assert_not_called()
 
     def test_positional_and_anonymous_username(self, mock_download_data):
@@ -344,6 +447,49 @@ class TestTOOAPIDownloadData:
             mock_swift_data.assert_called_once()
             # positional arg should set obsid on instance
             assert getattr(inst, "obsid") == "argval"
+
+    def test_positional_and_anonymous_username_anonymous(self, mock_download_data):
+        class HasObsNoUser(BaseSchema, TOOAPIDownloadData):
+            obs_id: str = "000"
+
+        obj = HasObsNoUser()
+        with patch("swifttools.swift_too.swift.data.SwiftData") as mock_swift_data:
+            inst = MagicMock()
+            mock_swift_data.return_value = inst
+            # Set up the mock to have _parameters and _local
+            inst._parameters = [
+                "username",
+                "obsid",
+                "quicklook",
+                "auxil",
+                "bat",
+                "xrt",
+                "uvot",
+                "subthresh",
+                "log",
+                "tdrss",
+                "uksdc",
+                "itsdc",
+            ]
+            inst._local = [
+                "outdir",
+                "clobber",
+                "obs_id",
+                "targetid",
+                "target_id",
+                "seg",
+                "segment",
+                "shared_secret",
+                "fetch",
+                "match",
+                "quiet",
+                "aws",
+            ]
+            inst.fetch = True
+            inst.download.return_value = None
+            inst.submit.return_value = None
+
+            obj.download("argval")
             # username should be anonymous when not provided
             assert inst.username == "anonymous"
 
