@@ -20,6 +20,13 @@ from .repr import TOOAPIReprMixin
 warnings.simplefilter("always", DeprecationWarning)
 
 
+# Make Warnings a little less weird
+formatwarning_orig = warnings.formatwarning
+warnings.formatwarning = lambda message, category, filename, lineno, line=None: formatwarning_orig(
+    message, category, filename, lineno, line=""
+)
+
+
 def _parse_422_error(response_text: str) -> list[str]:
     """
     Parse a 422 Unprocessable Entity response into clean error messages.
