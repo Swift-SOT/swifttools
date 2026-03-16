@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional
 
-from pydantic import BaseModel, Field, computed_field
+from pydantic import BaseModel, Field, computed_field, model_validator
 
 from swifttools.swift_too.base.functions import utcnow
 
@@ -77,8 +77,23 @@ class SwiftVisQueryGetSchema(BaseModel):
     dec: AstropyAngle
     begin: AstropyDateTime = Field(default_factory=utcnow)
     end: Optional[AstropyDateTime] = None
-    length: AstropyDayLength = 7
+    length: Optional[AstropyDayLength] = 7
     hires: bool = False
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_end_length(cls, values: dict) -> dict:
+        if not isinstance(values, dict):
+            values = values.__dict__
+
+        # API requires either end or length; if end is explicitly provided,
+        # do not send length.
+        if values.get("end") is not None:
+            values["length"] = None
+        elif values.get("length") is None:
+            values["length"] = 7
+
+        return values
 
 
 class SwiftVisQuery(TOOAPIBaseclass, TOOAPIClockCorrect, TOOAPIAutoResolve, SwiftVisQuerySchema):
