@@ -22,10 +22,17 @@ warnings.simplefilter("always", DeprecationWarning)
 
 
 # Make Warnings a little less weird
-formatwarning_orig = warnings.formatwarning
-warnings.formatwarning = lambda message, category, filename, lineno, line=None: formatwarning_orig(
-    message, category, filename, lineno, line=""
-)
+if getattr(warnings, "_swifttools_formatwarning_original", None) is None:
+    warnings._swifttools_formatwarning_original = warnings.formatwarning  # type: ignore[attr-defined]
+
+
+def _swifttools_formatwarning(message, category, filename, lineno, line=None):
+    formatwarning_orig = warnings._swifttools_formatwarning_original  # type: ignore[attr-defined]
+    return formatwarning_orig(message, category, filename, lineno, line="")
+
+
+if warnings.formatwarning is not _swifttools_formatwarning:
+    warnings.formatwarning = _swifttools_formatwarning
 
 
 def _parse_422_error(response_text: str) -> list[str]:
