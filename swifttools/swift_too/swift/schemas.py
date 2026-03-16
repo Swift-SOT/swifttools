@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from enum import Enum
 from time import tzset
-from typing import Annotated, Optional
+from typing import Annotated
 
 from pydantic import (
     BeforeValidator,
@@ -35,31 +35,31 @@ class ObsType(str, Enum):
 
 
 class SwiftTOOStatusGetSchema(BaseSchema):
-    jobnumber: Optional[int] = None
+    jobnumber: int | None = None
 
 
 class SwiftObservationSchema(BaseSchema):
-    begin: Optional[AstropyDateTime] = None
-    end: Optional[AstropyDateTime] = None
-    obstype: Optional[str] = None
-    target_name: Optional[str] = None
-    roll: Optional[float] = None
-    target_id: Optional[int] = None
-    segment: Optional[int] = None
-    obs_id: Optional[ObsIDSDC] = None
-    bat: Optional[int] = None
-    xrt: Optional[int] = None
-    uvot: Optional[int] = None
-    fom: Optional[int] = None
-    comment: Optional[str] = None
-    timetarget: Optional[int] = None
-    timeobs: Optional[int] = None
-    flag: Optional[int] = None
-    mvdfwpos: Optional[int] = None
-    targettype: Optional[str] = None
-    sunha: Optional[float] = None
-    ra_point: Optional[float] = None
-    dec_point: Optional[float] = None
+    begin: AstropyDateTime | None = None
+    end: AstropyDateTime | None = None
+    obstype: str | None = None
+    target_name: str | None = None
+    roll: float | None = None
+    target_id: int | None = None
+    segment: int | None = None
+    obs_id: ObsIDSDC | None = None
+    bat: int | None = None
+    xrt: int | None = None
+    uvot: int | None = None
+    fom: int | None = None
+    comment: str | None = None
+    timetarget: int | None = None
+    timeobs: int | None = None
+    flag: int | None = None
+    mvdfwpos: int | None = None
+    targettype: str | None = None
+    sunha: float | None = None
+    ra_point: float | None = None
+    dec_point: float | None = None
 
     @property
     def exposure(self):

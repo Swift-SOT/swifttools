@@ -1,14 +1,13 @@
 from datetime import datetime, timedelta
-from typing import Optional, Union
 
 
 class swiftdatetime(datetime):
     """Extend datetime to store met, utcf and swifttime. Default value is UTC"""
 
-    _utctime: Union[datetime, None]
-    _swifttime: Union[datetime, None]
-    _met: Union[float, None]
-    _utcf: Union[float, None]
+    _utctime: datetime | None
+    _swifttime: datetime | None
+    _met: float | None
+    _utcf: float | None
     _isutc: bool
 
     def __new__(self, *args, **kwargs):
@@ -83,7 +82,7 @@ class swiftdatetime(datetime):
         self._met = met
 
     @property
-    def utctime(self) -> Optional[datetime]:
+    def utctime(self) -> datetime | None:
         if self._utctime is None:
             if self.isutc:
                 self._utctime = datetime(
@@ -116,7 +115,7 @@ class swiftdatetime(datetime):
             self._utctime = utc
 
     @property
-    def swifttime(self) -> Optional[datetime]:
+    def swifttime(self) -> datetime | None:
         if self._swifttime is None:
             if not self.isutc:
                 self._swifttime = datetime(

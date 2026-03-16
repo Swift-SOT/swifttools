@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 from pydantic import ConfigDict, model_validator
 
@@ -12,12 +11,12 @@ from .toorequest import SwiftTOORequestSchema
 
 
 class SwiftTOORequestsGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
-    limit: Optional[int] = None
-    page: Optional[int] = None
-    year: Optional[int] = None
+    limit: int | None = None
+    page: int | None = None
+    year: int | None = None
     detail: bool = False
-    too_id: Optional[int] = None
-    radius: Optional[float] = None
+    too_id: int | None = None
+    radius: float | None = None
     debug: bool = False
 
     @model_validator(mode="before")
@@ -46,15 +45,15 @@ class SwiftTOORequestsGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinate
 
 
 class SwiftTOORequestsSchema(BaseSchema):
-    begin: Optional[datetime] = None
-    length: Optional[float] = None
-    limit: Optional[int] = None
-    year: Optional[int] = None
+    begin: datetime | None = None
+    length: float | None = None
+    limit: int | None = None
+    year: int | None = None
     detail: bool = False
-    too_id: Optional[int] = None
-    ra: Optional[AstropyAngle] = None
-    dec: Optional[AstropyAngle] = None
-    radius: Optional[AstropyAngle] = None
+    too_id: int | None = None
+    ra: AstropyAngle | None = None
+    dec: AstropyAngle | None = None
+    radius: AstropyAngle | None = None
     debug: bool = False
     entries: list[SwiftTOORequestSchema] = []
     status: TOOStatus = TOOStatus()

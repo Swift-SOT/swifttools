@@ -1,5 +1,3 @@
-from typing import Optional
-
 from ..swift.schemas import BaseSchema
 from .repr import TOOAPIReprMixin
 
@@ -22,8 +20,8 @@ class SwiftTOOStatus(BaseSchema, TOOAPIReprMixin):
     """
 
     status: str = "Pending"
-    too_id: Optional[int] = None
-    jobnumber: Optional[int] = None
+    too_id: int | None = None
+    jobnumber: int | None = None
     errors: list = []
     warnings: list = []
 

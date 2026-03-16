@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional, Union
 
 from pydantic import ConfigDict, Field, model_validator
 
@@ -16,9 +15,9 @@ from .schemas import ObsIDSDC
 
 
 class SwiftPPSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
-    radius: Optional[AstropyAngle] = None
-    target_id: Union[int, list[int], None] = None
-    obs_id: Union[ObsIDSDC, list[ObsIDSDC], None] = None
+    radius: AstropyAngle | None = None
+    target_id: int | list[int] | None = None
+    obs_id: ObsIDSDC | list[ObsIDSDC] | None = None
 
     model_config = ConfigDict(extra="ignore")
 
@@ -71,22 +70,22 @@ class SwiftPPSTEntry(BaseSchema, TOOAPIClockCorrect, TOOAPIBackCompat, TOOAPIRep
         Target name of the primary target of the observation
     """
 
-    target_name: Optional[str] = Field(default=None, alias="target_name")
-    ra: Optional[float] = None
-    dec: Optional[float] = None
-    roll: Optional[float] = None
-    begin: Optional[datetime] = None
-    end: Optional[datetime] = None
-    target_id: Optional[int] = None
-    segment: Optional[int] = None
-    obs_id: Optional[ObsIDSDC] = None
-    bat_mode: Optional[int] = None
-    xrt_mode: Optional[int] = None
-    uvot_mode: Optional[int] = None
-    fom: Optional[float] = None
-    comment: Optional[str] = None
-    timetarg: Optional[int] = None
-    takodb: Optional[str] = None
+    target_name: str | None = Field(default=None, alias="target_name")
+    ra: float | None = None
+    dec: float | None = None
+    roll: float | None = None
+    begin: datetime | None = None
+    end: datetime | None = None
+    target_id: int | None = None
+    segment: int | None = None
+    obs_id: ObsIDSDC | None = None
+    bat_mode: int | None = None
+    xrt_mode: int | None = None
+    uvot_mode: int | None = None
+    fom: float | None = None
+    comment: str | None = None
+    timetarg: int | None = None
+    takodb: str | None = None
 
     _varnames = {
         "begin": "Begin Time",
@@ -120,10 +119,10 @@ class SwiftPPSTEntry(BaseSchema, TOOAPIClockCorrect, TOOAPIBackCompat, TOOAPIRep
 class SwiftPPSTSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
     """Schema for Swift Pre-Planned Science Timeline (PPST) API."""
 
-    radius: Optional[AstropyAngle] = None
-    target_id: Union[int, list[int], None] = None
-    obs_id: Union[ObsIDSDC, list[ObsIDSDC], None] = None
-    ppstmax: Optional[datetime] = None
+    radius: AstropyAngle | None = None
+    target_id: int | list[int] | None = None
+    obs_id: ObsIDSDC | list[ObsIDSDC] | None = None
+    ppstmax: datetime | None = None
     entries: list[SwiftPPSTEntry] = []
     status: TOOStatus = TOOStatus()
 

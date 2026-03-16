@@ -106,9 +106,9 @@ class BeginEndLengthSchema(BaseSchema):
     Only one of 'end' or 'length' should be provided.
     """
 
-    begin: Optional[AstropyDateTime] = Field(default=None, description="Start time (UTC)")
-    end: Optional[AstropyDateTime] = Field(default=None, description="End time (UTC)")
-    length: Optional[AstropyDayLength] = Field(
+    begin: AstropyDateTime | None = Field(default=None, description="Start time (UTC)")
+    end: AstropyDateTime | None = Field(default=None, description="End time (UTC)")
+    length: AstropyDayLength | None = Field(
         default=timedelta(days=1),
         description="Length of requested time period (days)",
         exclude=True,  # We don't want to include length in the output
@@ -158,9 +158,9 @@ class OptionalBeginEndLengthSchema(BaseSchema):
     Only one of 'end' or 'length' should be provided.
     """
 
-    begin: Optional[AstropyDateTime] = Field(default=None, description="Start time (UTC)")
-    end: Optional[AstropyDateTime] = Field(default=None, description="End time (UTC)")
-    length: Optional[AstropyDayLength] = Field(
+    begin: AstropyDateTime | None = Field(default=None, description="Start time (UTC)")
+    end: AstropyDateTime | None = Field(default=None, description="End time (UTC)")
+    length: AstropyDayLength | None = Field(
         default=None,
         description="Length of requested time period (days)",
         exclude=True,  # We don't want to include length in the output
@@ -218,7 +218,7 @@ class OptionalBeginEndLengthSchema(BaseSchema):
 class OptionalBeginEndLengthSchemaDefaultLength(OptionalBeginEndLengthSchema):
     """Schema for SAA with default length of 1 day"""
 
-    length: Optional[AstropyDayLength] = Field(
+    length: AstropyDayLength | None = Field(
         default=1.0,
         description="Length of requested time period (days)",
         exclude=True,  # We don't want to include length in the output
@@ -226,13 +226,13 @@ class OptionalBeginEndLengthSchemaDefaultLength(OptionalBeginEndLengthSchema):
 
 
 class OptionalCoordinateSchema(BaseSchema):
-    ra: Optional[AstropyAngle] = Field(default=None, description="Right Ascension (degrees)", ge=0, lt=360)
-    dec: Optional[AstropyAngle] = Field(default=None, description="Declination (degrees)", ge=-90, le=90)
-    skycoord: Optional[SkyCoord] = Field(default=None, exclude=True)
+    ra: AstropyAngle | None = Field(default=None, description="Right Ascension (degrees)", ge=0, lt=360)
+    dec: AstropyAngle | None = Field(default=None, description="Declination (degrees)", ge=-90, le=90)
+    skycoord: SkyCoord | None = Field(default=None, exclude=True)
 
     @model_validator(mode="before")
     @classmethod
-    def check_coordinates(cls, values: dict[str, Union[float, SkyCoord]]) -> dict[str, float]:
+    def check_coordinates(cls, values: dict[str, float | SkyCoord]) -> dict[str, float]:
         if not isinstance(values, dict):
             values = values.__dict__
 
@@ -261,7 +261,7 @@ class OptionalCoordinateSchema(BaseSchema):
         return values
 
     @model_validator(mode="after")
-    def check_coordinates_after(self) -> "OptionalCoordinateSchema":
+    def check_coordinates_after(self) -> OptionalCoordinateSchema:
         # If skycoord is set but ra/dec are not, populate ra/dec from skycoord first
         if self.skycoord is not None and (self.ra is None or self.dec is None):
             object.__setattr__(self, "ra", self.skycoord.fk5.ra.deg)
@@ -284,7 +284,7 @@ class CoordinateSchema(BaseSchema):
 
     @model_validator(mode="before")
     @classmethod
-    def check_coordinates(cls, values: dict[str, Union[float, SkyCoord]]) -> dict[str, float]:
+    def check_coordinates(cls, values: dict[str, float | SkyCoord]) -> dict[str, float]:
         if not isinstance(values, dict):
             values = values.__dict__
 

@@ -4,7 +4,7 @@ import threading
 import time
 import warnings
 from http import HTTPStatus
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 from pydantic import BaseModel, ValidationError
@@ -234,7 +234,7 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
 
         return payload
 
-    def _get_schema_for_init(self) -> Optional[type[BaseModel]]:
+    def _get_schema_for_init(self) -> type[BaseModel] | None:
         """Get the appropriate schema for initialization."""
         schema_attr = getattr(self.__class__, "_get_schema", None) or getattr(self.__class__, "_post_schema", None)
         if hasattr(schema_attr, "default"):
@@ -463,7 +463,7 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         args.pop("status", None)
         return args
 
-    def _build_post_args(self) -> Optional[dict[str, Any]]:
+    def _build_post_args(self) -> dict[str, Any] | None:
         """Build validated POST request payload."""
         assert hasattr(self, "_post_schema"), "POST schema not defined for this API class."
         assert hasattr(self, "model_dump"), "Not a Pydantic model."
@@ -479,9 +479,9 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         self,
         method: str,
         *,
-        params: Optional[dict[str, Any]] = None,
-        data: Optional[dict[str, Any]] = None,
-    ) -> Optional[httpx.Response]:
+        params: dict[str, Any] | None = None,
+        data: dict[str, Any] | None = None,
+    ) -> httpx.Response | None:
         """Execute a GET/POST request with shared auth and error handling."""
         with httpx.Client(cookies=cookie_jar) as client:
             if not self._ensure_authenticated(client):
@@ -510,9 +510,9 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         self,
         method: str,
         *,
-        params: Optional[dict[str, Any]] = None,
-        data: Optional[dict[str, Any]] = None,
-    ) -> Optional[httpx.Response]:
+        params: dict[str, Any] | None = None,
+        data: dict[str, Any] | None = None,
+    ) -> httpx.Response | None:
         """Execute an async GET/POST request with shared auth and error handling."""
         async with httpx.AsyncClient(cookies=cookie_jar) as client:
             if not await self._ensure_authenticated_async(client):

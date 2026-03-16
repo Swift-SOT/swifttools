@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import BaseModel
 from tabulate import tabulate
 
@@ -17,8 +15,8 @@ class UVOTModeSchema(BaseSchema):
 
 class SwiftUVOTModeGetSchema(BaseModel):
     uvot_mode: int
-    ra: Optional[AstropyAngle] = None
-    dec: Optional[AstropyAngle] = None
+    ra: AstropyAngle | None = None
+    dec: AstropyAngle | None = None
 
 
 class SwiftUVOTModeEntry(BaseSchema, TOOAPIReprMixin):
@@ -53,24 +51,24 @@ class SwiftUVOTModeEntry(BaseSchema, TOOAPIReprMixin):
     """
 
     uvot_mode: int = 0
-    filter_num: Optional[int] = None
-    min_exposure: Optional[int] = None
-    filter_pos: Optional[int] = None
-    filter_seqid: Optional[int] = None
-    eventmode: Optional[int] = None
-    field_of_view: Optional[int] = None
-    binning: Optional[int] = None
-    max_exposure: Optional[int] = None
-    weight: Optional[int] = None
-    special: Optional[int] = None
-    comment: Optional[str] = None
-    filter_name: Optional[str] = None
+    filter_num: int | None = None
+    min_exposure: int | None = None
+    filter_pos: int | None = None
+    filter_seqid: int | None = None
+    eventmode: int | None = None
+    field_of_view: int | None = None
+    binning: int | None = None
+    max_exposure: int | None = None
+    weight: int | None = None
+    special: int | None = None
+    comment: str | None = None
+    filter_name: str | None = None
 
 
 class SwiftUVOTModeSchema(BaseSchema):
-    uvot_mode: Optional[int] = None
-    ra: Optional[float] = None
-    dec: Optional[float] = None
+    uvot_mode: int | None = None
+    ra: float | None = None
+    dec: float | None = None
     entries: list[SwiftUVOTModeEntry] = []
     status: TOOStatus = TOOStatus()
 

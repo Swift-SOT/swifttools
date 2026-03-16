@@ -1,6 +1,6 @@
 # Lookup table for XRT modes
 import re
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import Field, model_validator
 
@@ -11,11 +11,11 @@ from ..base.schemas import BaseSchema
 class TOOAPIInstruments(BaseSchema):
     """Pydantic schema for XRT / UVOT / BAT mode display and capture"""
 
-    uvot_mode: Optional[Any] = Field(default=None, description="UVOT mode, stored as int or str")
-    xrt_mode: Optional[Any] = Field(default=None, description="XRT mode, stored as int or str")
-    bat_mode: Optional[Any] = Field(default=None, description="BAT mode, stored as int or str")
-    uvot_mode_approved: Optional[Any] = Field(default=None, description="Approved UVOT mode")
-    xrt_mode_approved: Optional[Any] = Field(default=None, description="Approved XRT mode")
+    uvot_mode: Any | None = Field(default=None, description="UVOT mode, stored as int or str")
+    xrt_mode: Any | None = Field(default=None, description="XRT mode, stored as int or str")
+    bat_mode: Any | None = Field(default=None, description="BAT mode, stored as int or str")
+    uvot_mode_approved: Any | None = Field(default=None, description="Approved UVOT mode")
+    xrt_mode_approved: Any | None = Field(default=None, description="Approved XRT mode")
 
     @model_validator(mode="before")
     def convert_modes(cls, values):

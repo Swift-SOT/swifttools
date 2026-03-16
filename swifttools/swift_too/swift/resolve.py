@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import ConfigDict, computed_field, model_validator
 
 from ..base.common import TOOAPIBaseclass
@@ -13,8 +11,8 @@ class SwiftResolveGetSchema(BaseSchema):
 
 
 class SwiftResolveSchema(OptionalCoordinateSchema):
-    name: Optional[str] = None
-    resolver: Optional[str] = None
+    name: str | None = None
+    resolver: str | None = None
     status: TOOStatus = TOOStatus()
 
 
@@ -94,17 +92,17 @@ class TOOAPIAutoResolve(OptionalCoordinateSchema):
         fails, updates the status accordingly.
     """
 
-    _name: Optional[str] = None
-    resolve: Optional[SwiftResolve] = None
+    _name: str | None = None
+    resolve: SwiftResolve | None = None
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def name(self) -> Optional[str]:
+    def name(self) -> str | None:
         """Name of the astronomical source to resolve."""
         return self._name
 
     @name.setter
-    def name(self, value: Optional[str]):
+    def name(self, value: str | None):
         """Set the name of the astronomical source."""
         self._name = value
         self.resolve = SwiftResolve(name=value)
@@ -115,12 +113,12 @@ class TOOAPIAutoResolve(OptionalCoordinateSchema):
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def target_name(self) -> Optional[str]:
+    def target_name(self) -> str | None:
         """Alias for `name`."""
         return self._name
 
     @target_name.setter
-    def target_name(self, value: Optional[str]):
+    def target_name(self, value: str | None):
         """Set the target name, which is an alias for `name`."""
         self.name = value
 

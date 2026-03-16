@@ -1,7 +1,7 @@
 import os
 import warnings
 from fnmatch import fnmatch
-from typing import Any, Optional, Union
+from typing import Any
 
 import boto3  # type: ignore[import-untyped]
 import boto3.session  # type: ignore[import-untyped]
@@ -38,7 +38,7 @@ class SwiftDataFile(BaseSchema, TOOAPIReprMixin):
     url: str
     quicklook: bool = False
     type: str
-    localpath: Optional[str] = None
+    localpath: str | None = None
 
     @property
     def size(self):
@@ -50,7 +50,7 @@ class SwiftDataFile(BaseSchema, TOOAPIReprMixin):
     def download(
         self,
         outdir: str = ".",
-        s3: Optional[Any] = None,
+        s3: Any | None = None,
     ):
         """Download the file into a given `outdir`"""
         # Make the directories for the full path if they don't exist
@@ -98,7 +98,7 @@ class SwiftDataFile(BaseSchema, TOOAPIReprMixin):
 
 
 class SwiftDataSchema(BaseSchema):
-    obs_id: Optional[str] = None
+    obs_id: str | None = None
     auxil: bool = True
     bat: bool = False
     xrt: bool = False
@@ -196,10 +196,10 @@ class SwiftData(TOOAPIBaseclass, SwiftDataSchema):
     outdir: str = "."
     clobber: bool = False
     fetch: bool = True
-    match: Union[str, list[str], None] = None
+    match: str | list[str] | None = None
     quiet: bool = False
     aws: bool = False
-    _s3: Optional[boto3.session.Session.client] = None
+    _s3: boto3.session.Session.client | None = None
 
     def __getitem__(self, i):
         if len(self.entries) == 0:

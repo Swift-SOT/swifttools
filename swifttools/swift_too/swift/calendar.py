@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel
 
@@ -16,14 +15,14 @@ from .clock import TOOAPIClockCorrect
 
 
 class SwiftCalendarGetSchema(BaseModel):
-    begin: Optional[AstropyDateTime] = None
-    end: Optional[AstropyDateTime] = None
-    length: Optional[AstropyDayLength] = None
-    ra: Optional[AstropyAngle] = None
-    dec: Optional[AstropyAngle] = None
-    too_id: Optional[int] = None
-    radius: Optional[AstropyAngle] = 12 / 60.0
-    targetid: Optional[int] = None
+    begin: AstropyDateTime | None = None
+    end: AstropyDateTime | None = None
+    length: AstropyDayLength | None = None
+    ra: AstropyAngle | None = None
+    dec: AstropyAngle | None = None
+    too_id: int | None = None
+    radius: AstropyAngle | None = 12 / 60.0
+    targetid: int | None = None
     status: TOOStatus = TOOStatus()
 
 
@@ -56,39 +55,39 @@ class SwiftCalendarEntry(BaseSchema, TOOAPIClockCorrect, TOOAPIReprMixin):
         Declination of pointing in J2000 (decimal degrees)
     """
 
-    begin: Optional[datetime] = None
-    end: Optional[datetime] = None
+    begin: datetime | None = None
+    end: datetime | None = None
     type: str = "TOO"
     pi_name: str = ""
-    co_point: Optional[str] = None
-    seg_comment: Optional[str] = None
+    co_point: str | None = None
+    seg_comment: str | None = None
     sip_target_ID: int = 0
-    sun_constrained: Optional[bool] = None
-    enter_sun_constraint: Optional[datetime] = None
-    exit_sun_constraint: Optional[datetime] = None
-    moon_constrained: Optional[bool] = None
-    enter_moon_constraint: Optional[datetime] = None
-    exit_moon_constraint: Optional[datetime] = None
-    pole_constrained: Optional[bool] = None
-    enter_pole_constraint: Optional[datetime] = None
-    exit_pole_constraint: Optional[datetime] = None
-    roll_constrained: Optional[bool] = None
-    visibility_time: Optional[float] = None
-    extended_ephem: Optional[str] = None
-    type_id: Optional[int] = None
-    duration: Optional[float] = None
-    roll: Optional[float] = None
-    target_id: Optional[int] = None
-    target_name: Optional[str] = None
-    ra: Optional[AstropyAngle] = None
-    dec: Optional[AstropyAngle] = None
-    sip: Optional[int] = None
+    sun_constrained: bool | None = None
+    enter_sun_constraint: datetime | None = None
+    exit_sun_constraint: datetime | None = None
+    moon_constrained: bool | None = None
+    enter_moon_constraint: datetime | None = None
+    exit_moon_constraint: datetime | None = None
+    pole_constrained: bool | None = None
+    enter_pole_constraint: datetime | None = None
+    exit_pole_constraint: datetime | None = None
+    roll_constrained: bool | None = None
+    visibility_time: float | None = None
+    extended_ephem: str | None = None
+    type_id: int | None = None
+    duration: float | None = None
+    roll: float | None = None
+    target_id: int | None = None
+    target_name: str | None = None
+    ra: AstropyAngle | None = None
+    dec: AstropyAngle | None = None
+    sip: int | None = None
     sip_uvot_mode: int = 39321
     sip_SSmin: int = 300
     xrt_mode: int = 7
     bat_mode: int = 0
     uvot_mode: int = 39321
-    asflown: Optional[float] = None
+    asflown: float | None = None
 
     # Variable names
     _varnames: dict[str, str] = {
@@ -117,13 +116,13 @@ class SwiftCalendarEntry(BaseSchema, TOOAPIClockCorrect, TOOAPIReprMixin):
 
 
 class SwiftCalendarSchema(BaseSchema, TOOAPIReprMixin):
-    begin: Optional[datetime] = None
-    end: Optional[datetime] = None
-    too_id: Optional[int] = None
-    ra: Optional[AstropyAngle] = None
-    dec: Optional[AstropyAngle] = None
-    radius: Optional[AstropyAngle] = None
-    targetid: Optional[int] = None
+    begin: datetime | None = None
+    end: datetime | None = None
+    too_id: int | None = None
+    ra: AstropyAngle | None = None
+    dec: AstropyAngle | None = None
+    radius: AstropyAngle | None = None
+    targetid: int | None = None
     entries: list[SwiftCalendarEntry] = []
     status: TOOStatus = TOOStatus()
 

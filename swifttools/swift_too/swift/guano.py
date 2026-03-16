@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import Optional, Union
 
 from pydantic import ConfigDict, model_validator
 
@@ -35,11 +34,11 @@ class SwiftGUANOGTI(BaseSchema, TOOAPIReprMixin):  # TOOAPIBaseclass, TOOAPICloc
         inaccuracies in the Swift clock and also any leap seconds
     """
 
-    filename: Union[str, list[str], None] = None
-    acs: Optional[str] = None
-    begin: Optional[datetime] = None
-    end: Optional[datetime] = None
-    utcf: Optional[float] = None
+    filename: str | list[str] | None = None
+    acs: str | None = None
+    begin: datetime | None = None
+    end: datetime | None = None
+    utcf: float | None = None
     exposure: timedelta = timedelta(0)
 
     def __str__(self):
@@ -85,15 +84,15 @@ class SwiftGUANOData(BaseSchema, TOOAPIReprMixin):  # , TOOAPIBaseclass, TOOAPIC
         option of Swift_Data (AKA Data)
     """
 
-    obs_id: Optional[str] = None
-    triggertime: Optional[datetime] = None
+    obs_id: str | None = None
+    triggertime: datetime | None = None
     all_gtis: list[SwiftGUANOGTI]
-    filenames: Union[list[str], None] = None
-    acs: Optional[str] = None
-    begin: Optional[datetime] = None
-    end: Optional[datetime] = None
-    gti: Optional[SwiftGUANOGTI] = None
-    exposure: Optional[float] = None
+    filenames: list[str] | None = None
+    acs: str | None = None
+    begin: datetime | None = None
+    end: datetime | None = None
+    gti: SwiftGUANOGTI | None = None
+    exposure: float | None = None
 
     @property
     def utcf(self):
@@ -135,18 +134,18 @@ class SwiftGUANOEntry(BaseSchema, TOOAPIReprMixin, TOOAPIDownloadData):  # , TOO
         status of API request
     """
 
-    triggertype: Optional[str] = None
-    triggertime: Optional[datetime] = None
-    offset: Optional[float] = None
-    duration: Optional[float] = None
-    obs_id: Optional[str] = None
-    exectime: Optional[datetime] = None
-    ra: Optional[float] = None
-    dec: Optional[float] = None
-    data: Optional[SwiftGUANOData] = None
-    quadsaway: Optional[int] = None
-    begin: Optional[datetime] = None
-    end: Optional[datetime] = None
+    triggertype: str | None = None
+    triggertime: datetime | None = None
+    offset: float | None = None
+    duration: float | None = None
+    obs_id: str | None = None
+    exectime: datetime | None = None
+    ra: float | None = None
+    dec: float | None = None
+    data: SwiftGUANOData | None = None
+    quadsaway: int | None = None
+    begin: datetime | None = None
+    end: datetime | None = None
 
     @property
     def executed(self):
@@ -195,10 +194,10 @@ class SwiftGUANOEntry(BaseSchema, TOOAPIReprMixin, TOOAPIDownloadData):  # , TOO
 class SwiftGUANOGetSchema(OptionalBeginEndLengthSchema):
     subthreshold: bool = False
     successful: bool = True
-    triggertime: Optional[datetime] = None
-    limit: Optional[int] = None
-    page: Optional[int] = None
-    triggertype: Optional[str] = None
+    triggertime: datetime | None = None
+    limit: int | None = None
+    page: int | None = None
+    triggertype: str | None = None
 
     model_config = ConfigDict(extra="ignore")
 
@@ -220,15 +219,15 @@ class SwiftGUANOGetSchema(OptionalBeginEndLengthSchema):
 
 
 class SwiftGUANOSchema(BaseSchema):
-    begin: Optional[datetime] = None
-    end: Optional[datetime] = None
+    begin: datetime | None = None
+    end: datetime | None = None
     subthreshold: bool = False
     successful: bool = True
-    triggertime: Optional[datetime] = None
-    limit: Optional[int] = None
-    triggertype: Optional[str] = None
-    lastcommand: Optional[datetime] = None
-    guanostatus: Optional[bool] = None
+    triggertime: datetime | None = None
+    limit: int | None = None
+    triggertype: str | None = None
+    lastcommand: datetime | None = None
+    guanostatus: bool | None = None
     entries: list[SwiftGUANOEntry] = []
     status: TOOStatus = TOOStatus()
 

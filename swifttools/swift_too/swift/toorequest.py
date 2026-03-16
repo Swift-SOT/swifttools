@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import Any, Literal, Optional, Union
+from typing import Any, Literal
 
 from pydantic import Field, computed_field, field_validator, model_validator
 
@@ -15,68 +15,68 @@ from .schemas import ObsType
 
 
 class SwiftTOORequestSchema(BaseSchema, TOOAPIReprMixin, TOOAPIBackCompat):
-    too_id: Optional[int] = None
-    timestamp: Optional[datetime] = None
+    too_id: int | None = None
+    timestamp: datetime | None = None
     # target_name: Optional[str] = None
-    target_type: Optional[str] = None
-    ra: Optional[AstropyAngle] = None
-    dec: Optional[AstropyAngle] = None
-    poserr: Union[float, str, None] = None
-    instrument: Optional[str] = None
-    urgency: Optional[int] = UrgencyEnum.MEDIUM
-    opt_mag: Union[float, str, None] = None
-    opt_filt: Optional[str] = None
-    xrt_countrate: Union[StrIntFloat, None] = None
-    bat_countrate: Union[float, str, None] = None
-    other_brightness: Optional[str] = None
-    grb_detector: Optional[str] = None
-    immediate_objective: Optional[str] = None
-    science_just: Optional[str] = None
-    total_exp_time_approved: Optional[int] = None
-    exp_time_just: Optional[str] = None
-    exp_time_per_visit_approved: Optional[int] = None
-    num_of_visits_approved: Optional[int] = None
-    monitoring_freq: Optional[TextLength] = None
+    target_type: str | None = None
+    ra: AstropyAngle | None = None
+    dec: AstropyAngle | None = None
+    poserr: float | str | None = None
+    instrument: str | None = None
+    urgency: int | None = UrgencyEnum.MEDIUM
+    opt_mag: float | str | None = None
+    opt_filt: str | None = None
+    xrt_countrate: StrIntFloat | None = None
+    bat_countrate: float | str | None = None
+    other_brightness: str | None = None
+    grb_detector: str | None = None
+    immediate_objective: str | None = None
+    science_just: str | None = None
+    total_exp_time_approved: int | None = None
+    exp_time_just: str | None = None
+    exp_time_per_visit_approved: int | None = None
+    num_of_visits_approved: int | None = None
+    monitoring_freq: TextLength | None = None
     proposal: bool = False
-    proposal_id: Optional[str] = None
-    proposal_trigger_just: Optional[str] = None
-    proposal_pi: Optional[str] = None
+    proposal_id: str | None = None
+    proposal_trigger_just: str | None = None
+    proposal_pi: str | None = None
     xrt_mode: XRTModeType = XRTModeEnum.PHOTON_COUNTING
-    uvot_mode: Optional[UVOTModeType] = 0x9999
-    uvot_just: Optional[str] = None
+    uvot_mode: UVOTModeType | None = 0x9999
+    uvot_just: str | None = None
     tiling: bool = False
-    number_of_tiles: Optional[str] = None
-    exposure_time_per_tile: Optional[int] = None
-    tiling_justification: Optional[str] = None
-    obs_n: Union[int, str, None] = None
-    obs_type: Optional[ObsType] = None
-    calendar: Optional[SwiftCalendar] = None
-    grb_triggertime: Optional[datetime] = None
-    done: Optional[int] = None
-    decision: Optional[str] = None
-    target_id: Optional[int] = None
-    uvot_mode_approved: Optional[int] = None
-    xrt_mode_approved: Optional[int] = None
-    date_begin: Union[str, date, None] = None
-    date_end: Union[str, date, None] = None
-    l_name: Optional[str] = None
+    number_of_tiles: str | None = None
+    exposure_time_per_tile: int | None = None
+    tiling_justification: str | None = None
+    obs_n: int | str | None = None
+    obs_type: ObsType | None = None
+    calendar: SwiftCalendar | None = None
+    grb_triggertime: datetime | None = None
+    done: int | None = None
+    decision: str | None = None
+    target_id: int | None = None
+    uvot_mode_approved: int | None = None
+    xrt_mode_approved: int | None = None
+    date_begin: str | date | None = None
+    date_end: str | date | None = None
+    l_name: str | None = None
     num_of_visits: int = 1
-    exp_time_per_visit: Optional[int] = None
+    exp_time_per_visit: int | None = None
     status: TOOStatus = TOOStatus()
 
     # Internal storage for computed exposure
-    _exposure: Optional[int] = None
+    _exposure: int | None = None
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def exposure(self) -> Optional[int]:
+    def exposure(self) -> int | None:
         if self._exposure is None:
             if self.exp_time_per_visit is not None and self.num_of_visits is not None:
                 self._exposure = self.exp_time_per_visit * self.num_of_visits
         return self._exposure
 
     @exposure.setter
-    def exposure(self, v: Union[int, float]) -> None:
+    def exposure(self, v: int | float) -> None:
         self._exposure = int(v)
 
     # English Descriptions of all the variables
@@ -162,17 +162,17 @@ class SwiftTOOFormSchema(BaseSchema):
     target_type: str = Field(description="Source Type")
     ra: float = Field(description="Right Ascension (degrees)", ge=0, le=360)
     dec: float = Field(description="Declination (degrees)", ge=-90, le=90)
-    poserr: Optional[float] = Field(None, description="Positional Error")
+    poserr: float | None = Field(None, description="Positional Error")
     instrument: Literal["XRT", "UVOT", "BAT"] = Field("XRT", description="Primary Instrument")
     obs_type: ObsType = Field(..., description="Observation Type")
     urgency: UrgencyEnum = Field(UrgencyEnum.MEDIUM, description="TOO Urgency")
-    opt_mag: Union[float, str, None] = Field(None, description="Optical Magnitude")
-    opt_filt: Optional[str] = Field(None, description="Optical Filter")
-    xrt_countrate: Optional[StrIntFloat] = Field(None, description="XRT Count Rate")
-    bat_countrate: Optional[str] = Field(None, description="BAT Count Rate")
-    other_brightness: Optional[str] = Field(None, description="Other Brightness")
-    grb_detector: Optional[str] = Field(None, description="GRB Detector")
-    grb_triggertime: Optional[datetime] = Field(None, description="GRB Trigger Time")
+    opt_mag: float | str | None = Field(None, description="Optical Magnitude")
+    opt_filt: str | None = Field(None, description="Optical Filter")
+    xrt_countrate: StrIntFloat | None = Field(None, description="XRT Count Rate")
+    bat_countrate: str | None = Field(None, description="BAT Count Rate")
+    other_brightness: str | None = Field(None, description="Other Brightness")
+    grb_detector: str | None = Field(None, description="GRB Detector")
+    grb_triggertime: datetime | None = Field(None, description="GRB Trigger Time")
     # redshift_val: Optional[str] = Field(None, description="Redshift Value")
     # redshift_status: Optional[str] = Field(None, description="Redshift Status")
     uvot_mode: UVOTModeType = Field(0x9999, description="UVOT Mode")
@@ -181,19 +181,19 @@ class SwiftTOOFormSchema(BaseSchema):
     exposure: int = Field(description="Exposure Time")
     # GI Proposal
     proposal: bool = Field(False, description="GI Proposal")
-    proposal_id: Optional[str] = Field(None, description="Proposal ID")
-    proposal_trigger_just: Optional[str] = Field(None, description="GI Program Trigger Criteria Justification")
-    proposal_pi: Optional[str] = Field(None, description="GI Proposal PI")
+    proposal_id: str | None = Field(None, description="Proposal ID")
+    proposal_trigger_just: str | None = Field(None, description="GI Program Trigger Criteria Justification")
+    proposal_pi: str | None = Field(None, description="GI Proposal PI")
     uvot_just: str = Field("", description="UVOT Filter Justification")
     xrt_mode: XRTModeType = Field(XRTModeEnum.PHOTON_COUNTING, description="XRT Mode")
     tiling: bool = Field(False, description="Tiling")
-    number_of_tiles: Optional[Literal["4", "7", "19", "37", "Other"]] = Field(None, description="Number of Tiles")
-    exposure_time_per_tile: Optional[float] = Field(None, description="Exposure Time per Tile")
-    tiling_justification: Optional[str] = Field(None, description="Tiling Justification")
+    number_of_tiles: Literal["4", "7", "19", "37", "Other"] | None = Field(None, description="Number of Tiles")
+    exposure_time_per_tile: float | None = Field(None, description="Exposure Time per Tile")
+    tiling_justification: str | None = Field(None, description="Tiling Justification")
     exp_time_just: str = Field(..., description="Exposure Time Justification")
-    exp_time_per_visit: Optional[float] = Field(None, description="Exposure Time per Visit")
-    num_of_visits: Optional[int] = Field(None, description="Number of Visits")
-    monitoring_freq: Optional[TextLength] = Field(None, description="Monitoring Frequency")
+    exp_time_per_visit: float | None = Field(None, description="Exposure Time per Visit")
+    num_of_visits: int | None = Field(None, description="Number of Visits")
+    monitoring_freq: TextLength | None = Field(None, description="Monitoring Frequency")
 
     @model_validator(mode="after")
     def check_proposal(self) -> "SwiftTOOFormSchema":

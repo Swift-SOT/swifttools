@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Optional, Union
+from typing import Any
 
 from pydantic import ConfigDict, computed_field, model_validator
 
@@ -27,9 +27,9 @@ class SwiftDateTimeSchema(BaseSchema):
 
 
 class SwiftClockSchema(BaseSchema):
-    met: Union[float, list[float], None] = None
-    utctime: Union[datetime, list[datetime], None] = None
-    swifttime: Union[datetime, list[datetime], None] = None
+    met: float | list[float] | None = None
+    utctime: datetime | list[datetime] | None = None
+    swifttime: datetime | list[datetime] | None = None
     entries: list[SwiftDateTimeSchema] = []
     status: TOOStatus = TOOStatus()
 
@@ -37,9 +37,9 @@ class SwiftClockSchema(BaseSchema):
 
 
 class SwiftClockGetSchema(BaseSchema):
-    met: Union[float, list[float], None] = None
-    utctime: Union[datetime, list[datetime], None] = None
-    swifttime: Union[datetime, list[datetime], None] = None
+    met: float | list[float] | None = None
+    utctime: datetime | list[datetime] | None = None
+    swifttime: datetime | list[datetime] | None = None
 
     @model_validator(mode="before")
     @classmethod
@@ -194,7 +194,7 @@ class TOOAPIClockCorrect:
     spiders through a class looking for datetimes, submits them to SwiftClock,
     and then replaces them all with the results of SwiftClock."""
 
-    _clock: Optional[SwiftClock] = None
+    _clock: SwiftClock | None = None
 
     def to_utctime(self):
         """Convert times to a UTC base"""

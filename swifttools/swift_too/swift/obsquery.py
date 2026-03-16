@@ -1,6 +1,6 @@
 from collections.abc import Generator
 from datetime import datetime, timedelta
-from typing import Any, Optional, Union
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, computed_field, model_validator
 
@@ -63,28 +63,28 @@ class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect, TOOAPIBaseclass, TOOA
         Target name of the primary target of the observation
     """
 
-    begin: Optional[datetime] = None
-    settle: Optional[datetime] = None
-    end: Optional[datetime] = None
-    obstype: Optional[str] = None
-    target_name: Optional[str] = None
-    roll: Optional[float] = None
-    target_id: Optional[int] = None
-    segment: Optional[int] = None
-    obs_id: Optional[ObsIDSDC] = None
-    bat_mode: Optional[int] = None
-    xrt_mode: Optional[int] = None
-    uvot_mode: Optional[int] = None
-    fom: Optional[int] = None
-    comment: Optional[str] = None
-    timetarget: Optional[int] = None
-    timeobs: Optional[int] = None
-    flag: Optional[int] = None
-    mvdfwpos: Optional[int] = None
-    targettype: Optional[str] = None
-    sunha: Optional[float] = None
-    ra_object: Optional[float] = None
-    dec_object: Optional[float] = None
+    begin: datetime | None = None
+    settle: datetime | None = None
+    end: datetime | None = None
+    obstype: str | None = None
+    target_name: str | None = None
+    roll: float | None = None
+    target_id: int | None = None
+    segment: int | None = None
+    obs_id: ObsIDSDC | None = None
+    bat_mode: int | None = None
+    xrt_mode: int | None = None
+    uvot_mode: int | None = None
+    fom: int | None = None
+    comment: str | None = None
+    timetarget: int | None = None
+    timeobs: int | None = None
+    flag: int | None = None
+    mvdfwpos: int | None = None
+    targettype: str | None = None
+    sunha: float | None = None
+    ra_object: float | None = None
+    dec_object: float | None = None
 
     _varnames = {
         "begin": "Begin Time",
@@ -137,14 +137,14 @@ class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect, TOOAPIBaseclass, TOOA
 
 
 class SwiftAFSTGetSchema(BaseModel):
-    ra: Optional[AstropyAngle] = None
-    dec: Optional[AstropyAngle] = None
-    begin: Optional[AstropyDateTime] = None
-    end: Optional[AstropyDateTime] = None
-    length: Optional[AstropyDayLength] = None
-    radius: Optional[AstropyAngle] = None
-    target_id: Union[int, list[int], None] = None
-    obs_id: Union[ObsIDSDC, list[ObsIDSDC], None] = None
+    ra: AstropyAngle | None = None
+    dec: AstropyAngle | None = None
+    begin: AstropyDateTime | None = None
+    end: AstropyDateTime | None = None
+    length: AstropyDayLength | None = None
+    radius: AstropyAngle | None = None
+    target_id: int | list[int] | None = None
+    obs_id: ObsIDSDC | list[ObsIDSDC] | None = None
 
     model_config = ConfigDict(extra="ignore")
 
@@ -164,10 +164,10 @@ class SwiftAFSTGetSchema(BaseModel):
 
 
 class SwiftAFSTSchema(OptionalCoordinateSchema, OptionalBeginEndLengthSchema):
-    radius: Optional[AstropyAngle] = None
-    target_id: Union[int, list[int], None] = None
-    obs_id: Union[ObsIDSDC, list[ObsIDSDC], None] = None
-    afstmax: Union[datetime, SwiftDateTimeSchema, None] = None
+    radius: AstropyAngle | None = None
+    target_id: int | list[int] | None = None
+    obs_id: ObsIDSDC | list[ObsIDSDC] | None = None
+    afstmax: datetime | SwiftDateTimeSchema | None = None
     entries: list[SwiftAFSTEntry] = []
     status: TOOStatus = TOOStatus()
 
@@ -238,35 +238,35 @@ class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, TOOAPIBackCompat, Ba
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def target_id(self) -> Optional[int]:
+    def target_id(self) -> int | None:
         if len(self.entries) == 0:
             return None
         return self.entries[0].target_id
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def segment(self) -> Optional[int]:
+    def segment(self) -> int | None:
         if len(self.entries) == 0:
             return None
         return self.entries[0].segment
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def obs_id(self) -> Optional[ObsIDSDC]:
+    def obs_id(self) -> ObsIDSDC | None:
         if len(self.entries) == 0:
             return None
         return self.entries[0].obs_id
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def target_name(self) -> Optional[str]:  # Updated return type to Optional[str]
+    def target_name(self) -> str | None:  # Updated return type to Optional[str]
         if len(self.entries) == 0:
             return None
         return self.entries[0].target_name
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def ra_object(self) -> Optional[float]:  # Updated return type to Optional[float]
+    def ra_object(self) -> float | None:  # Updated return type to Optional[float]
         if len(self.entries) == 0:
             return None
         if hasattr(self.entries[0], "ra_object"):
@@ -275,7 +275,7 @@ class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, TOOAPIBackCompat, Ba
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def dec_object(self) -> Optional[float]:  # Updated return type to Optional[float]
+    def dec_object(self) -> float | None:  # Updated return type to Optional[float]
         if len(self.entries) == 0:
             return None
         if hasattr(self.entries[0], "dec_object"):
@@ -284,49 +284,49 @@ class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, TOOAPIBackCompat, Ba
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def exposure(self) -> Optional[timedelta]:  # Updated return type to Optional[timedelta]
+    def exposure(self) -> timedelta | None:  # Updated return type to Optional[timedelta]
         if len(self.entries) == 0:
             return None
         return timedelta(seconds=sum([e.exposure.seconds for e in self.entries]))
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def slewtime(self) -> Optional[timedelta]:  # Updated return type to Optional[timedelta>
+    def slewtime(self) -> timedelta | None:  # Updated return type to Optional[timedelta>
         if len(self.entries) == 0 or not hasattr(self.entries[0], "slewtime"):
             return None
         return timedelta(seconds=sum([e.slewtime.seconds for e in self.entries]))
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def begin(self) -> Optional[datetime]:  # Updated return type to Optional[datetime]
+    def begin(self) -> datetime | None:  # Updated return type to Optional[datetime]
         if len(self.entries) == 0:
             return None
         return min([q.begin for q in self.entries if q.begin is not None])
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def end(self) -> Optional[datetime]:  # Updated return type to Optional[datetime]
+    def end(self) -> datetime | None:  # Updated return type to Optional[datetime]
         if len(self.entries) == 0:
             return None
         return max([q.end for q in self.entries if q.end is not None])
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def xrt_mode(self) -> Optional[int]:  # Updated return type to Optional[int]
+    def xrt_mode(self) -> int | None:  # Updated return type to Optional[int]
         if len(self.entries) == 0:
             return None
         return self.entries[0].xrt_mode
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def uvot_mode(self) -> Optional[int]:  # Updated return type to Optional[int]
+    def uvot_mode(self) -> int | None:  # Updated return type to Optional[int]
         if len(self.entries) == 0:
             return None
         return self.entries[0].uvot_mode
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def bat_mode(self) -> Optional[int]:  # Updated return type to Optional[int]
+    def bat_mode(self) -> int | None:  # Updated return type to Optional[int]
         if len(self.entries) == 0:
             return None
         return self.entries[0].bat_mode

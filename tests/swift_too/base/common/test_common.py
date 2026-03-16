@@ -1,5 +1,5 @@
 import importlib
-from typing import ClassVar, Optional
+from typing import ClassVar
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
@@ -84,7 +84,7 @@ class TestMockTOOAPIBaseclass:
         class StandardAPI(TOOAPIBaseclass, BaseModel):
             _endpoint: ClassVar[str] = "/test"
             status: TOOStatus = TOOStatus()
-            obs_id: Optional[int] = None
+            obs_id: int | None = None
 
         obj = StandardAPI(obs_id=7, autosubmit=False)
         assert isinstance(hash(obj), int)
@@ -94,7 +94,7 @@ class TestMockTOOAPIBaseclass:
         class NonLeadingAPI(BaseModel, TOOAPIBaseclass):
             _endpoint: ClassVar[str] = "/test"
             status: TOOStatus = TOOStatus()
-            obs_id: Optional[int] = None
+            obs_id: int | None = None
 
         obj = NonLeadingAPI(obs_id=7, autosubmit=False)
         assert isinstance(hash(obj), int)
@@ -116,9 +116,9 @@ class TestMockTOOAPIBaseclass:
 
     def test_schema_payload_includes_attr_not_in_model_dump(self, mock_base_class):
         class SchemaExtra(BaseModel):
-            obs_id: Optional[int] = None
+            obs_id: int | None = None
             username: str = "anonymous"
-            shared_secret: Optional[str] = None
+            shared_secret: str | None = None
 
         mock_base_class.shared_secret = "secret"
         payload = mock_base_class._schema_payload(SchemaExtra)
@@ -126,7 +126,7 @@ class TestMockTOOAPIBaseclass:
 
     def test_schema_payload_inserts_non_model_attribute_field(self, mock_base_class):
         class SchemaExtra(BaseModel):
-            token: Optional[str] = None
+            token: str | None = None
 
         object.__setattr__(mock_base_class, "token", "abc")
         payload = mock_base_class._schema_payload(SchemaExtra)

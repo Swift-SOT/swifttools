@@ -1,6 +1,5 @@
 # Local fixtures for tests/swift_too/base/repr
 
-from typing import Union
 
 import pytest
 from pydantic import BaseModel
@@ -11,9 +10,9 @@ from swifttools.swift_too.base.status import TOOStatus
 
 
 class ReprModel(TOOAPIReprMixin, BaseModel):
-    name: Union[str, None] = None
+    name: str | None = None
     tags: list[str] = []
-    status: Union[TOOStatus, str] = TOOStatus()
+    status: TOOStatus | str = TOOStatus()
 
 
 class MockReprClass(BaseSchema, TOOAPIReprMixin):

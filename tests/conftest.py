@@ -1,4 +1,4 @@
-from typing import ClassVar, Optional
+from typing import ClassVar
 from unittest.mock import Mock
 
 import pytest
@@ -13,7 +13,7 @@ from swifttools.swift_too.base.status import TOOStatus
 
 
 class MockSchema(BaseModel):
-    obs_id: Optional[int] = None
+    obs_id: int | None = None
     username: str = "anonymous"
 
 
@@ -26,7 +26,7 @@ class MockTOOAPIBaseclass(BaseModel, TOOAPIBaseclass):
     _get_schema: ClassVar[MockSchema] = MockSchema
     _post_schema: ClassVar[Mock] = Mock()
     status: TOOStatus = TOOStatus()
-    obs_id: Optional[int] = None
+    obs_id: int | None = None
     # username, shared_secret, autosubmit inherited from TOOAPIBaseclass
 
     def __init__(self, **kwargs) -> None:

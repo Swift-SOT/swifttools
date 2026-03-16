@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import Optional
 
 from pydantic import BaseModel, Field, computed_field, model_validator
 
@@ -77,8 +76,8 @@ class SwiftVisQueryGetSchema(BaseModel):
     ra: AstropyAngle
     dec: AstropyAngle
     begin: AstropyDateTime = Field(default_factory=utcnow)
-    end: Optional[AstropyDateTime] = None
-    length: Optional[AstropyDayLength] = 7
+    end: AstropyDateTime | None = None
+    length: AstropyDayLength | None = 7
     hires: bool = False
 
     @model_validator(mode="before")

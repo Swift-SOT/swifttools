@@ -1,6 +1,5 @@
 import re
 from datetime import datetime, timedelta, timezone
-from typing import Optional, Union
 
 from astropy import units as u  # type: ignore[import-untyped]
 from astropy.time import TimeDelta  # type: ignore[import-untyped]
@@ -15,8 +14,8 @@ def utcnow():
 
 
 def convert_from_timedelta(
-    value: Union[float, int, u.Quantity, timedelta, TimeDelta, None],
-) -> Union[float, PydanticUndefinedType, None]:
+    value: float | int | u.Quantity | timedelta | TimeDelta | None,
+) -> float | PydanticUndefinedType | None:
     """Convert a value to a timedelta in days."""
     if isinstance(value, PydanticUndefinedType):
         return value
@@ -32,7 +31,7 @@ def convert_from_timedelta(
         raise TypeError(f"Unsupported type for timedelta conversion: {type(value)}")
 
 
-def convert_obs_id_sdc(obs_id: Union[str, int]) -> str:
+def convert_obs_id_sdc(obs_id: str | int) -> str:
     """
     Convert various formats for obs_id (SDC and Spacecraft) into one format
     (Spacecraft)
@@ -95,7 +94,7 @@ def _tablefy(table, header=None):
     return tab
 
 
-def validate_monitoring_cadence(value: Union[str, u.Quantity, timedelta, TimeDelta, None]) -> Optional[str]:
+def validate_monitoring_cadence(value: str | u.Quantity | timedelta | TimeDelta | None) -> str | None:
     # Check for empty values
     if value is None or (isinstance(value, str) and value.strip() == ""):
         return None
@@ -124,7 +123,7 @@ def validate_monitoring_cadence(value: Union[str, u.Quantity, timedelta, TimeDel
     raise ValueError("Monitoring frequency in incorrect format.")
 
 
-def uvot_mode_convert(mode: Union[int, str]) -> str:
+def uvot_mode_convert(mode: int | str) -> str:
     if isinstance(mode, str):
         return mode
     if isinstance(mode, int) and mode >= 0 and mode <= 0xFFFF:
