@@ -252,6 +252,35 @@ class TestSwiftTOORequestServerValidateSuccess:
                 too.server_validate()
                 assert len(too.status.warnings) == 1
 
+    def test_server_validate_status_only_response_preserves_request_fields(self, too_request_base):
+        too = too_request_base
+        too._api_base = API_URL
+        # Set required fields
+        object.__setattr__(too, "target_name", "Test Target")
+        object.__setattr__(too, "immediate_objective", "Test objective")
+        object.__setattr__(too, "uvot_just", "Test UVOT justification")
+
+        original_target_name = too.target_name
+        original_science_just = too.science_just
+
+        # Return a status-only payload through the normal response handler.
+        response = MagicMock()
+        response.status_code = 200
+        response.json.return_value = {"status": "Validated"}
+
+        with patch.object(SwiftTOORequest, "validate_post", return_value=True):
+            with patch.object(
+                SwiftTOORequest,
+                "submit_post",
+                autospec=True,
+                side_effect=lambda this: this._handle_response(response),
+            ):
+                assert too.server_validate() is True
+
+        assert too.target_name == original_target_name
+        assert too.science_just == original_science_just
+        assert too.validate_only is False
+
 
 class TestSwiftTOORequestServerValidateFailure:
     @patch("swifttools.swift_too.base.common.cookie_jar")

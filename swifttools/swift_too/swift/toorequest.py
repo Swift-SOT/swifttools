@@ -240,6 +240,7 @@ class SwiftTOOFormSchema(BaseSchema):
 
 
 class SwiftTOOPostSchema(SwiftTOOFormSchema):
+    username: str = Field(description="Requester username")
     debug: bool = False
     quiet: bool = True
     validate_only: bool = False

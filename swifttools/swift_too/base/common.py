@@ -178,6 +178,29 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
                         kwargs[field_name] = arg
         return kwargs
 
+    def _schema_payload(self, schema: type[BaseModel]) -> dict[str, Any]:
+        """Build a schema-limited payload including class attributes.
+
+        Some request attributes (e.g., username/shared_secret) are declared on
+        mixins and may not be Pydantic model fields. Include those values when
+        the schema expects them.
+        """
+        assert hasattr(self, "model_dump"), "Not a Pydantic model."
+
+        field_names = set(schema.model_fields.keys())
+        payload = self.model_dump(include=field_names, exclude_none=True)  # type: ignore[attr-defined]
+
+        # Ensure fields declared outside the Pydantic schema hierarchy are
+        # still considered when required by the target schema.
+        for field_name in field_names:
+            if field_name in payload:
+                continue
+            value = getattr(self, field_name, None)
+            if value is not None:
+                payload[field_name] = value
+
+        return payload
+
     def _get_schema_for_init(self) -> Optional[type[BaseModel]]:
         """Get the appropriate schema for initialization."""
         schema_attr = getattr(self.__class__, "_get_schema", None) or getattr(self.__class__, "_post_schema", None)
@@ -365,12 +388,8 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         assert hasattr(self, "model_dump"), "Not a Pydantic model."
 
         # Prepare request arguments
-        args = self._get_schema.model_validate(
-            self.model_dump(exclude={"__pydantic_extra__"}, exclude_none=True)
-        ).model_dump(exclude_none=True)
+        args = self._get_schema.model_validate(self._schema_payload(self._get_schema)).model_dump(exclude_none=True)
         args.pop("status", None)
-
-        print(args)
 
         with httpx.Client(cookies=cookie_jar) as client:
             if not self._ensure_authenticated(client):
@@ -386,7 +405,6 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
             except Exception as e:
                 self.__set_error(f"Request failed: {e}")
                 return False
-            print(response.url)
         return self._handle_response(response)
 
     def submit_post(self) -> bool:
@@ -395,10 +413,11 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         assert hasattr(self, "model_dump"), "Not a Pydantic model."
 
         # Prepare request arguments
-        args = self._post_schema.model_validate(self.model_dump(exclude={"__pydantic_extra__"})).model_dump(
-            exclude_none=True, mode="json"
-        )
-        print(args)
+        payload = self._schema_payload(self._post_schema)
+        args = self._post_schema.model_validate(payload).model_dump(exclude_none=True, mode="json")
+        if not args:
+            self.__set_error("Refusing to submit an empty POST payload.")
+            return False
         with httpx.Client(cookies=cookie_jar) as client:
             if not self._ensure_authenticated(client):
                 return False
@@ -422,9 +441,7 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         assert hasattr(self, "model_dump"), "Not a Pydantic model."
 
         # Prepare request arguments
-        args = self._get_schema.model_validate(self.model_dump(exclude={"__pydantic_extra__"})).model_dump(
-            exclude_none=True
-        )
+        args = self._get_schema.model_validate(self._schema_payload(self._get_schema)).model_dump(exclude_none=True)
         args.pop("status", None)
 
         with httpx.Client(cookies=cookie_jar) as client:
@@ -443,7 +460,6 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
                 self.__set_error(f"Request failed: {e}")
                 object.__setattr__(self, "complete", True)
                 return
-            print(response.url)
         self._handle_response_async(response)
 
     def _submit_post_async(self) -> None:
@@ -452,10 +468,12 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         assert hasattr(self, "model_dump"), "Not a Pydantic model."
 
         # Prepare request arguments
-        args = self._post_schema.model_validate(self.model_dump(exclude={"__pydantic_extra__"})).model_dump(
-            exclude_none=True, mode="json"
-        )
-        print(args)
+        payload = self._schema_payload(self._post_schema)
+        args = self._post_schema.model_validate(payload).model_dump(exclude_none=True, mode="json")
+        if not args:
+            self.__set_error("Refusing to submit an empty POST payload.")
+            object.__setattr__(self, "complete", True)
+            return
         with httpx.Client(cookies=cookie_jar) as client:
             if not self._ensure_authenticated(client):
                 object.__setattr__(self, "complete", True)
@@ -486,6 +504,33 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         self._handle_response(response)
         object.__setattr__(self, "complete", True)
 
+    @staticmethod
+    def _normalize_response_payload(payload: Any) -> Any:
+        """Normalize API response payloads for model validation.
+
+        Some endpoints return a bare string in ``status`` (e.g., "Validated")
+        instead of a full status object. Convert that into a dict shape expected
+        by models using ``TOOStatus``.
+        """
+        if not isinstance(payload, dict):
+            return payload
+
+        status_value = payload.get("status")
+        if not isinstance(status_value, str):
+            return payload
+
+        normalized = dict(payload)
+        status_payload: dict[str, Any] = {"status": status_value}
+
+        # Preserve common status fields when the API returns them at top level.
+        for key in ("errors", "warnings", "too_id", "jobnumber"):
+            value = normalized.get(key)
+            if value is not None:
+                status_payload[key] = value
+
+        normalized["status"] = status_payload
+        return normalized
+
     def _handle_response(self, response: httpx.Response) -> bool:
         """Handle API response and update object state.
 
@@ -499,10 +544,23 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         bool
             True if response was handled successfully, False otherwise.
         """
-        if response.status_code == HTTPStatus.OK:
+        if (
+            isinstance(response.status_code, int)
+            and HTTPStatus.OK <= response.status_code < HTTPStatus.MULTIPLE_CHOICES
+        ):
             try:
-                data = self.model_validate(response.json())  # type: ignore[attr-defined]
-                self.__dict__ = data.__dict__
+                payload = self._normalize_response_payload(response.json())
+                data = self.model_validate(payload)  # type: ignore[attr-defined]
+                # Merge only fields explicitly returned by the API response.
+                # This prevents partial responses (e.g., validate-only status
+                # payloads) from wiping request fields back to defaults.
+                if isinstance(payload, dict):
+                    for field_name, field_info in data.__class__.model_fields.items():  # type: ignore[attr-defined]
+                        if field_name in payload or (field_info.alias and field_info.alias in payload):
+                            object.__setattr__(self, field_name, getattr(data, field_name))
+                else:
+                    for field_name in data.model_fields_set:  # type: ignore[attr-defined]
+                        object.__setattr__(self, field_name, getattr(data, field_name))
                 self._post_process()
                 return True
             except Exception as e:
@@ -543,7 +601,7 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
             True if validation succeeded, False otherwise.
         """
         try:
-            schema.model_validate(self.model_dump(include=set(schema.model_fields.keys()), exclude_none=True))  # type: ignore[attr-defined]
+            schema.model_validate(self._schema_payload(schema))
             return True
         except ValidationError as e:
             if set_error:

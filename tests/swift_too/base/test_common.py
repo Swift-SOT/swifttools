@@ -115,8 +115,56 @@ class TestMockTOOAPIBaseclass:
             result = mock_base_class.submit_get()
             assert result is False
 
+    def test_handle_response_normalizes_string_status(self, mock_base_class):
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"status": "Validated"}
+
+        captured = {}
+
+        def mock_model_validate(data):
+            captured["payload"] = data
+            return mock_base_class
+
+        with patch.object(MockTOOAPIBaseclass, "model_validate", side_effect=mock_model_validate):
+            result = mock_base_class._handle_response(mock_response)
+
+        assert result is True
+        assert captured["payload"]["status"] == {"status": "Validated"}
+
+    def test_handle_response_201_created_is_success(self, mock_base_class):
+        mock_response = Mock()
+        mock_response.status_code = 201
+        mock_response.json.return_value = {
+            "status": "Accepted",
+            "too_id": 22682,
+            "jobnumber": 23472401,
+            "errors": [],
+            "warnings": [],
+        }
+
+        result = mock_base_class._handle_response(mock_response)
+
+        assert result is True
+        assert mock_base_class.status.status == "Accepted"
+        assert mock_base_class.status.too_id == 22682
+        assert mock_base_class.status.jobnumber == 23472401
+
+    def test_handle_response_partial_payload_preserves_existing_fields(self, mock_base_class):
+        mock_base_class.obs_id = 424242
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"status": "Validated"}
+
+        result = mock_base_class._handle_response(mock_response)
+
+        assert result is True
+        assert mock_base_class.obs_id == 424242
+        assert mock_base_class.status.status == "Validated"
+
     def test_submit_post_400_error(self, mock_cookie_jar, mock_client, mock_base_class):
         with patch.object(MockTOOAPIBaseclass, "_post_schema", Mock()) as mock_schema:
+            mock_schema.model_fields = {}
             mock_schema.model_validate.return_value.model_dump.return_value = {"param": "value"}
 
             mock_response = Mock()
@@ -130,6 +178,7 @@ class TestMockTOOAPIBaseclass:
 
     def test_submit_post_other_error(self, mock_cookie_jar, mock_client, mock_base_class):
         with patch.object(MockTOOAPIBaseclass, "_post_schema", Mock()) as mock_schema:
+            mock_schema.model_fields = {}
             mock_validated = Mock()
             mock_validated.model_dump.return_value = {"param": "value"}
             mock_schema.model_validate.return_value = mock_validated
