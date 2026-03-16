@@ -531,6 +531,42 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         normalized["status"] = status_payload
         return normalized
 
+    def _apply_status_from_payload(self, payload: Any) -> bool:
+        """Apply structured status/errors/warnings from API payload.
+
+        Returns True when a status payload was found and applied.
+        """
+        if not isinstance(payload, dict):
+            return False
+
+        normalized = self._normalize_response_payload(payload)
+        status_payload = normalized.get("status") if isinstance(normalized, dict) else None
+        if not isinstance(status_payload, dict):
+            return False
+
+        if not hasattr(self, "status") or isinstance(self.status, str):
+            return False
+
+        status_value = status_payload.get("status")
+        if isinstance(status_value, str):
+            self.status.status = status_value
+
+        errors = status_payload.get("errors")
+        if isinstance(errors, list):
+            self.status.errors = [str(err) for err in errors]
+
+        warnings_list = status_payload.get("warnings")
+        if isinstance(warnings_list, list):
+            self.status.warnings = [str(warn) for warn in warnings_list]
+
+        if status_payload.get("too_id") is not None:
+            self.status.too_id = status_payload.get("too_id")
+
+        if status_payload.get("jobnumber") is not None:
+            self.status.jobnumber = status_payload.get("jobnumber")
+
+        return True
+
     def _handle_response(self, response: httpx.Response) -> bool:
         """Handle API response and update object state.
 
@@ -576,6 +612,11 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
             isinstance(response.status_code, int)
             and HTTPStatus.BAD_REQUEST <= response.status_code < HTTPStatus.INTERNAL_SERVER_ERROR
         ):
+            try:
+                if self._apply_status_from_payload(response.json()):
+                    return False
+            except Exception:
+                pass
             self.__set_error(f"Client error {response.status_code}: {response.text}")
         elif isinstance(response.status_code, int):
             self.__set_error(f"Server error {response.status_code}: {response.text}")
