@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from tabulate import tabulate
 
 from ..base.common import TOOAPIBaseclass
+from ..base.repr import TOOAPIReprMixin
 from ..base.schemas import AstropyAngle, BaseSchema
 from ..base.status import TOOStatus
 from .instruments import TOOAPIInstruments
@@ -20,7 +21,7 @@ class SwiftUVOTModeGetSchema(BaseModel):
     dec: Optional[AstropyAngle] = None
 
 
-class SwiftUVOTModeEntry(BaseSchema):
+class SwiftUVOTModeEntry(BaseSchema, TOOAPIReprMixin):
     """Class describing a single entry in the UVOT Mode table
 
     Attributes
@@ -64,9 +65,6 @@ class SwiftUVOTModeEntry(BaseSchema):
     special: Optional[int] = None
     comment: Optional[str] = None
     filter_name: Optional[str] = None
-
-    def __str__(self):
-        return self.filter_name
 
 
 class SwiftUVOTModeSchema(BaseSchema):
@@ -140,7 +138,12 @@ class SwiftUVOTMode(TOOAPIBaseclass, TOOAPIInstruments, SwiftUVOTModeSchema, TOO
             for entry in self.entries:
                 table_columns.append([getattr(entry, col) for col in table_cols])
 
-            table = f"UVOT Mode: 0x{self.uvot_mode:04x}\n"
+            if isinstance(self.uvot_mode, int):
+                mode_label = f"0x{self.uvot_mode:04x}"
+            else:
+                mode_label = f"{self.uvot_mode}"
+
+            table = f"UVOT Mode: {mode_label}\n"
             table += "The following table summarizes this mode, ordered by the filter sequence:\n"
             table += tabulate(table_columns, tablefmt="pretty")
             table += "\nFilter: The particular filter in the sequence.\n"

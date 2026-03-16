@@ -84,6 +84,12 @@ class TestSwiftPPSTEntry:
         header, data = entry._table
         assert data == [[begin_datetime, end_datetime, "Test", "00012345678", 3600]]
 
+    def test_repr_html_table(self, entry_with_name_and_obs):
+        html_repr = entry_with_name_and_obs._repr_html_()
+        assert "<table" in html_repr
+        assert "Begin Time" in html_repr
+        assert "End Time" in html_repr
+
 
 class TestSwiftPPSTGetSchema:
     def test_valid_schema(self, test_datetime):

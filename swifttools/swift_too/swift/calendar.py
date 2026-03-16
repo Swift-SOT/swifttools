@@ -27,7 +27,7 @@ class SwiftCalendarGetSchema(BaseModel):
     status: TOOStatus = TOOStatus()
 
 
-class SwiftCalendarEntry(BaseSchema, TOOAPIClockCorrect):
+class SwiftCalendarEntry(BaseSchema, TOOAPIClockCorrect, TOOAPIReprMixin):
     """Class for a single entry in the Swift TOO calendar.
 
     Attributes

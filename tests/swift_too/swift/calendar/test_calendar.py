@@ -72,3 +72,9 @@ class TestSwiftCalendarEntry:
     def test_table_property_table_first_start(self, sample_entry):
         header, table = sample_entry._table
         assert table[0][1] == datetime(2023, 1, 1, 13, 0, 0)
+
+    def test_repr_html_table(self, sample_entry):
+        html_repr = sample_entry._repr_html_()
+        assert "<table" in html_repr
+        assert "Begin" in html_repr
+        assert "End" in html_repr

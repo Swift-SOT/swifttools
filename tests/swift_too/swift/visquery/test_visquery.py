@@ -123,3 +123,9 @@ class TestSwiftVisWindow:
     def test_getitem_index_error(self, vis_window):
         with pytest.raises(IndexError):
             _ = vis_window[2]
+
+    def test_repr_html_table(self, vis_window):
+        html_repr = vis_window._repr_html_()
+        assert "<table" in html_repr
+        assert "Begin Time" in html_repr
+        assert "End Time" in html_repr

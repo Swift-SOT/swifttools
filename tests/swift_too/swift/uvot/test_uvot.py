@@ -48,3 +48,9 @@ class TestSwiftUVOTModeEntry:
 
     def test_init_eventmode(self, uvot_entry):
         assert uvot_entry.eventmode is None
+
+    def test_repr_html_table(self, uvot_entry):
+        html_repr = uvot_entry._repr_html_()
+        assert "<table" in html_repr
+        assert "Parameter" in html_repr
+        assert "Value" in html_repr

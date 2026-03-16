@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field, computed_field, model_validator
 from swifttools.swift_too.base.functions import utcnow
 
 from ..base.common import TOOAPIBaseclass
+from ..base.repr import TOOAPIReprMixin
 from ..base.schemas import (
     AstropyAngle,
     AstropyDateTime,
@@ -19,7 +20,7 @@ from .clock import TOOAPIClockCorrect
 from .resolve import TOOAPIAutoResolve
 
 
-class SwiftVisWindow(BaseSchema, TOOAPIClockCorrect):
+class SwiftVisWindow(BaseSchema, TOOAPIClockCorrect, TOOAPIReprMixin):
     """
     Simple class to define a Visibility window. Begin and End of window can
     either be accessed as self.begin or self.end, or as self[0] or self[1].

@@ -5,6 +5,7 @@ from pydantic import ConfigDict, Field, model_validator
 
 from ..base.back_compat import TOOAPIBackCompat
 from ..base.common import TOOAPIBaseclass
+from ..base.repr import TOOAPIReprMixin
 from ..base.schemas import AstropyAngle, BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
 from ..base.status import TOOStatus
 from .clock import TOOAPIClockCorrect
@@ -35,7 +36,7 @@ class SwiftPPSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema)
         return values
 
 
-class SwiftPPSTEntry(BaseSchema, TOOAPIClockCorrect, TOOAPIBackCompat):
+class SwiftPPSTEntry(BaseSchema, TOOAPIClockCorrect, TOOAPIBackCompat, TOOAPIReprMixin):
     """
     Class that defines an individual entry in the Swift Pre-Planned Science
     Timeline
