@@ -333,8 +333,6 @@ class TOOAPIDownloadData:
             data.username = "anonymous"
             data.shared_secret = "anonymous"
         data.submit()
-        if data.fetch:
-            data.download()
         # Return the SwiftData class on completion
         return data
 
