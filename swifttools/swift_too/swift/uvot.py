@@ -140,7 +140,7 @@ class SwiftUVOTMode(TOOAPIBaseclass, TOOAPIInstruments, SwiftUVOTModeSchema, TOO
             for entry in self.entries:
                 table_columns.append([getattr(entry, col) for col in table_cols])
 
-            table = f"UVOT Mode: {self.uvot_mode}\n"
+            table = f"UVOT Mode: 0x{self.uvot_mode:04x}\n"
             table += "The following table summarizes this mode, ordered by the filter sequence:\n"
             table += tabulate(table_columns, tablefmt="pretty")
             table += "\nFilter: The particular filter in the sequence.\n"
