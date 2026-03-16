@@ -7,7 +7,7 @@ import boto3  # type: ignore[import-untyped]
 import boto3.session  # type: ignore[import-untyped]
 import httpx
 from botocore import UNSIGNED  # type: ignore[import-untyped]
-from botocore.client import Config  # type: ignore[import-untyped]
+from botocore.client import BaseClient, Config  # type: ignore[import-untyped]
 from pydantic import Field
 from tqdm.auto import tqdm
 
@@ -199,7 +199,7 @@ class SwiftData(TOOAPIBaseclass, SwiftDataSchema):
     match: str | list[str] | None = None
     quiet: bool = False
     aws: bool = False
-    _s3: boto3.session.Session.client | None = None
+    _s3: BaseClient | None = None
 
     def __getitem__(self, i):
         if len(self.entries) == 0:
