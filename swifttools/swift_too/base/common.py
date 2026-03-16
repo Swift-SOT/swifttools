@@ -298,7 +298,7 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         bool
             Was submission successful?
         """
-        if self.status.status == "Pending":
+        if self.status.status == STATUS_PENDING:
             if hasattr(self, "_get_schema"):
                 if self.validate_get():
                     return self.submit_get()
@@ -321,20 +321,22 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         bool
             True if the request was queued successfully, False otherwise.
         """
-        if self.status.status == "Pending":
+        if self.status.status == STATUS_PENDING:
             if hasattr(self, "_get_schema"):
                 if self.validate_get():
-                    threading.Thread(target=self._submit_get_async, daemon=True).start()
-                    threading.Thread(target=self._queue_watchdog, daemon=True).start()
-                    return True
+                    return self._start_async_submission(self._submit_get_async)
                 return False
             elif hasattr(self, "_post_schema"):
                 if self.validate_post():
-                    threading.Thread(target=self._submit_post_async, daemon=True).start()
-                    threading.Thread(target=self._queue_watchdog, daemon=True).start()
-                    return True
+                    return self._start_async_submission(self._submit_post_async)
                 return False
         return False
+
+    def _start_async_submission(self, target: Any) -> bool:
+        """Start async submit task plus timeout watchdog."""
+        threading.Thread(target=target, daemon=True).start()
+        threading.Thread(target=self._queue_watchdog, daemon=True).start()
+        return True
 
     def _queue_watchdog(self) -> None:
         """Ensure queued async requests cannot block forever.
@@ -383,114 +385,98 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         self.__set_error("Login failed with status code. Please check your credentials.")
         return False
 
-    def submit_get(self) -> bool:
-        """Perform an API GET request to the server."""
+    def _build_get_args(self) -> dict[str, Any]:
+        """Build validated GET request arguments."""
         assert hasattr(self, "_get_schema"), "GET schema not defined for this API class."
         assert hasattr(self, "model_dump"), "Not a Pydantic model."
 
-        # Prepare request arguments
         args = self._get_schema.model_validate(self._schema_payload(self._get_schema)).model_dump(exclude_none=True)
         args.pop("status", None)
+        return args
 
-        with httpx.Client(cookies=cookie_jar) as client:
-            if not self._ensure_authenticated(client):
-                return False
-
-            try:
-                response = client.get(
-                    self.submit_url,
-                    params=args,
-                    timeout=self._timeout,
-                    follow_redirects=True,
-                )
-            except Exception as e:
-                self.__set_error(f"Request failed: {e}")
-                return False
-        return self._handle_response(response)
-
-    def submit_post(self) -> bool:
-        """Perform an API POST request to the server."""
+    def _build_post_args(self) -> Optional[dict[str, Any]]:
+        """Build validated POST request payload."""
         assert hasattr(self, "_post_schema"), "POST schema not defined for this API class."
         assert hasattr(self, "model_dump"), "Not a Pydantic model."
 
-        # Prepare request arguments
         payload = self._schema_payload(self._post_schema)
         args = self._post_schema.model_validate(payload).model_dump(exclude_none=True, mode="json")
         if not args:
             self.__set_error("Refusing to submit an empty POST payload.")
-            return False
+            return None
+        return args
+
+    def _perform_request(
+        self,
+        method: str,
+        *,
+        params: Optional[dict[str, Any]] = None,
+        data: Optional[dict[str, Any]] = None,
+    ) -> Optional[httpx.Response]:
+        """Execute a GET/POST request with shared auth and error handling."""
         with httpx.Client(cookies=cookie_jar) as client:
             if not self._ensure_authenticated(client):
-                return False
+                return None
 
             try:
-                response = client.post(
+                if method == "GET":
+                    return client.get(
+                        self.submit_url,
+                        params=params,
+                        timeout=self._timeout,
+                        follow_redirects=True,
+                    )
+
+                return client.post(
                     self.submit_url,
-                    data=args,
+                    data=data,
                     timeout=self._timeout,
                     follow_redirects=True,
                 )
             except Exception as e:
                 self.__set_error(f"Request failed: {e}")
-                return False
+                return None
+
+    def submit_get(self) -> bool:
+        """Perform an API GET request to the server."""
+        args = self._build_get_args()
+        response = self._perform_request("GET", params=args)
+        if response is None:
+            return False
+        return self._handle_response(response)
+
+    def submit_post(self) -> bool:
+        """Perform an API POST request to the server."""
+        args = self._build_post_args()
+        if args is None:
+            return False
+
+        response = self._perform_request("POST", data=args)
+        if response is None:
+            return False
 
         return self._handle_response(response)
 
     def _submit_get_async(self) -> None:
         """Perform an asynchronous API GET request to the server."""
-        assert hasattr(self, "_get_schema"), "GET schema not defined for this API class."
-        assert hasattr(self, "model_dump"), "Not a Pydantic model."
-
-        # Prepare request arguments
-        args = self._get_schema.model_validate(self._schema_payload(self._get_schema)).model_dump(exclude_none=True)
-        args.pop("status", None)
-
-        with httpx.Client(cookies=cookie_jar) as client:
-            if not self._ensure_authenticated(client):
-                object.__setattr__(self, "complete", True)
-                return
-
-            try:
-                response = client.get(
-                    self.submit_url,
-                    params=args,
-                    timeout=self._timeout,
-                    follow_redirects=True,
-                )
-            except Exception as e:
-                self.__set_error(f"Request failed: {e}")
-                object.__setattr__(self, "complete", True)
-                return
+        args = self._build_get_args()
+        response = self._perform_request("GET", params=args)
+        if response is None:
+            object.__setattr__(self, "complete", True)
+            return
         self._handle_response_async(response)
 
     def _submit_post_async(self) -> None:
         """Perform an asynchronous API POST request to the server."""
-        assert hasattr(self, "_post_schema"), "POST schema not defined for this API class."
-        assert hasattr(self, "model_dump"), "Not a Pydantic model."
-
-        # Prepare request arguments
-        payload = self._schema_payload(self._post_schema)
-        args = self._post_schema.model_validate(payload).model_dump(exclude_none=True, mode="json")
-        if not args:
-            self.__set_error("Refusing to submit an empty POST payload.")
+        args = self._build_post_args()
+        if args is None:
             object.__setattr__(self, "complete", True)
             return
-        with httpx.Client(cookies=cookie_jar) as client:
-            if not self._ensure_authenticated(client):
-                object.__setattr__(self, "complete", True)
-                return
 
-            try:
-                response = client.post(
-                    self.submit_url,
-                    data=args,
-                    timeout=self._timeout,
-                    follow_redirects=True,
-                )
-            except Exception as e:
-                self.__set_error(f"Request failed: {e}")
-                object.__setattr__(self, "complete", True)
-                return
+        response = self._perform_request("POST", data=args)
+        if response is None:
+            object.__setattr__(self, "complete", True)
+            return
 
         self._handle_response_async(response)
 
