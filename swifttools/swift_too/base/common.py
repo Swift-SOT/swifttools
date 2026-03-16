@@ -1,4 +1,5 @@
 import http.cookiejar
+import json
 import threading
 import time
 import warnings
@@ -146,6 +147,37 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         "xrt_mode": ["xrtmode"],
         "bat_mode": ["batmode"],
     }
+
+    def __init_subclass__(cls, **kwargs):
+        """Ensure API subclasses are hashable even with different MRO order."""
+        super().__init_subclass__(**kwargs)
+        if getattr(cls, "__hash__", None) is None:
+            cls.__hash__ = TOOAPIBaseclass.__hash__
+
+    def __hash__(self) -> int:
+        """Compute a deterministic hash from class type + serialized state.
+
+        API classes are mutable, so this is intentionally an "unsafe" hash:
+        callers should avoid mutating objects while they are used as set/dict
+        keys.
+        """
+        payload: Any
+        if hasattr(self, "model_dump"):
+            try:
+                payload = self.model_dump(mode="json", by_alias=True, exclude_none=False)  # type: ignore[attr-defined]
+            except Exception:
+                payload = self.model_dump()  # type: ignore[attr-defined]
+        elif isinstance(self, dict):
+            payload = dict(self)
+        else:
+            payload = getattr(self, "__dict__", {})
+
+        try:
+            serialized = json.dumps(payload, sort_keys=True, default=str, separators=(",", ":"))
+        except Exception:
+            serialized = repr(payload)
+
+        return hash((self.__class__, serialized))
 
     def __init__(self, *args, **kwargs):
         # Handle backward compatibility and positional arguments
@@ -385,6 +417,43 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         self.__set_error("Login failed with status code. Please check your credentials.")
         return False
 
+    async def _ensure_authenticated_async(self, client: httpx.AsyncClient) -> bool:
+        """
+        Ensure the async client is authenticated. Login if needed.
+
+        Parameters
+        ----------
+        client : httpx.AsyncClient
+            The HTTP client to use for the request.
+
+        Returns
+        -------
+        bool
+            True if authenticated successfully, False otherwise.
+        """
+        # Skip login for anonymous users
+        if self.username == "anonymous":
+            return True
+
+        # Check if we have a valid session cookie
+        if any(c.name == SESSION_COOKIE_NAME and not c.is_expired() for c in cookie_jar):
+            return True
+
+        # Perform login
+        try:
+            resp = await client.post(
+                f"{API_URL}/login", json={"username": self.username, "password": self.shared_secret}
+            )
+            if resp.status_code == HTTPStatus.OK:
+                cookie_jar.save(ignore_discard=True)
+                return True
+        except Exception as e:
+            self.__set_error(f"Login failed: {e}")
+            return False
+
+        self.__set_error("Login failed with status code. Please check your credentials.")
+        return False
+
     def _build_get_args(self) -> dict[str, Any]:
         """Build validated GET request arguments."""
         assert hasattr(self, "_get_schema"), "GET schema not defined for this API class."
@@ -437,10 +506,49 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
                 self.__set_error(f"Request failed: {e}")
                 return None
 
+    async def _perform_request_async(
+        self,
+        method: str,
+        *,
+        params: Optional[dict[str, Any]] = None,
+        data: Optional[dict[str, Any]] = None,
+    ) -> Optional[httpx.Response]:
+        """Execute an async GET/POST request with shared auth and error handling."""
+        async with httpx.AsyncClient(cookies=cookie_jar) as client:
+            if not await self._ensure_authenticated_async(client):
+                return None
+
+            try:
+                if method == "GET":
+                    return await client.get(
+                        self.submit_url,
+                        params=params,
+                        timeout=self._timeout,
+                        follow_redirects=True,
+                    )
+
+                return await client.post(
+                    self.submit_url,
+                    data=data,
+                    timeout=self._timeout,
+                    follow_redirects=True,
+                )
+            except Exception as e:
+                self.__set_error(f"Request failed: {e}")
+                return None
+
     def submit_get(self) -> bool:
         """Perform an API GET request to the server."""
         args = self._build_get_args()
         response = self._perform_request("GET", params=args)
+        if response is None:
+            return False
+        return self._handle_response(response)
+
+    async def get(self) -> bool:
+        """Perform an asynchronous API GET request to the server."""
+        args = self._build_get_args()
+        response = await self._perform_request_async("GET", params=args)
         if response is None:
             return False
         return self._handle_response(response)
@@ -452,6 +560,18 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
             return False
 
         response = self._perform_request("POST", data=args)
+        if response is None:
+            return False
+
+        return self._handle_response(response)
+
+    async def post(self) -> bool:
+        """Perform an asynchronous API POST request to the server."""
+        args = self._build_post_args()
+        if args is None:
+            return False
+
+        response = await self._perform_request_async("POST", data=args)
         if response is None:
             return False
 

@@ -1,6 +1,6 @@
 import importlib
 from typing import ClassVar, Optional
-from unittest.mock import Mock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from pydantic import BaseModel, ValidationError
@@ -79,6 +79,26 @@ class TestMockTOOAPIBaseclass:
     def test_convert_positional_args_assigns_schema_fields(self, mock_base_class):
         out = mock_base_class._convert_positional_args((123,), {})
         assert out["obs_id"] == 123
+
+    def test_hashable_for_standard_api_mro(self):
+        class StandardAPI(TOOAPIBaseclass, BaseModel):
+            _endpoint: ClassVar[str] = "/test"
+            status: TOOStatus = TOOStatus()
+            obs_id: Optional[int] = None
+
+        obj = StandardAPI(obs_id=7, autosubmit=False)
+        assert isinstance(hash(obj), int)
+        assert obj in {obj}
+
+    def test_hashable_for_non_leading_tooapi_mro(self):
+        class NonLeadingAPI(BaseModel, TOOAPIBaseclass):
+            _endpoint: ClassVar[str] = "/test"
+            status: TOOStatus = TOOStatus()
+            obs_id: Optional[int] = None
+
+        obj = NonLeadingAPI(obs_id=7, autosubmit=False)
+        assert isinstance(hash(obj), int)
+        assert obj in {obj}
 
     def test_get_schema_for_init_uses_default_attr(self, mock_base_class, mock_too_api_baseclass, mock_schema):
         class Wrapper:
@@ -164,6 +184,48 @@ class TestMockTOOAPIBaseclass:
 
             result = mock_base_class.submit_get()
             assert result is False
+
+    @pytest.mark.asyncio
+    async def test_get_async_success(self, mock_base_class):
+        mock_response = Mock(status_code=200)
+        with patch.object(type(mock_base_class), "_build_get_args", return_value={"k": "v"}):
+            with patch.object(
+                type(mock_base_class), "_perform_request_async", new=AsyncMock(return_value=mock_response)
+            ):
+                with patch.object(type(mock_base_class), "_handle_response", return_value=True):
+                    result = await mock_base_class.get()
+                    assert result is True
+
+    @pytest.mark.asyncio
+    async def test_get_async_no_response(self, mock_base_class):
+        with patch.object(type(mock_base_class), "_build_get_args", return_value={"k": "v"}):
+            with patch.object(type(mock_base_class), "_perform_request_async", new=AsyncMock(return_value=None)):
+                result = await mock_base_class.get()
+                assert result is False
+
+    @pytest.mark.asyncio
+    async def test_post_async_empty_payload(self, mock_base_class):
+        with patch.object(type(mock_base_class), "_build_post_args", return_value=None):
+            result = await mock_base_class.post()
+            assert result is False
+
+    @pytest.mark.asyncio
+    async def test_post_async_no_response(self, mock_base_class):
+        with patch.object(type(mock_base_class), "_build_post_args", return_value={"p": 1}):
+            with patch.object(type(mock_base_class), "_perform_request_async", new=AsyncMock(return_value=None)):
+                result = await mock_base_class.post()
+                assert result is False
+
+    @pytest.mark.asyncio
+    async def test_post_async_success(self, mock_base_class):
+        mock_response = Mock(status_code=200)
+        with patch.object(type(mock_base_class), "_build_post_args", return_value={"p": 1}):
+            with patch.object(
+                type(mock_base_class), "_perform_request_async", new=AsyncMock(return_value=mock_response)
+            ):
+                with patch.object(type(mock_base_class), "_handle_response", return_value=True):
+                    result = await mock_base_class.post()
+                    assert result is True
 
     def test_handle_response_normalizes_string_status_result(self, mock_base_class, mock_too_api_baseclass):
         mock_response = Mock()

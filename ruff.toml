@@ -10,6 +10,7 @@ ignore = []
 "swifttools/ukssdc/*/*.py" = ["E501", "F405", "E721", "F403", "E402"]
 "swifttools/ukssdc/*/*/*.py" = ["E501", "F405", "E721", "F403", "E402"]
 "swifttools/ukssdc/*/*/*/*.py" = ["E501", "F405", "E721", "F403", "E402"]
+"examples/*.ipynb" = ["F704"]
 
 
 [format]
