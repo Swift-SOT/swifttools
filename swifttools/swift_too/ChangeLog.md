@@ -8,12 +8,25 @@
 
 ## `swifttools` 4.0.0 / `swift_too` 2.0.0
 
-** Jun ?, 2025 **: Updated `swift_too` module utilizing new REST API for Swift.
-Functionality of API client should be compatible with prior version, however
-some minor changes maybe be present, for example in the types of some
-attributes. `swift_too` API client is now strongly typed utilizing Pydantic.
-As this may be a breaking change, the version is bumped to `swifttools-4.0`
-with the version for `swift_too` being bumped to `2.0`.
+** Mar 17, 2026 **: Major update of `swift_too` for the REST-backed API.
+
+This release is the first major `swift_too` update since the `3.x` line.
+It keeps the same high-level use cases, but modernizes internals and some
+public behavior.
+
+- Reworked `swift_too` around strongly typed Pydantic models and schemas.
+- Added async request support (`async get`/`post`) and queue-based async
+  workflows for API query classes.
+- Deprecated and disabled `QueryJob`; use async methods on request/query
+  objects directly (for example `queue()` + polling the object).
+- Improved request validation and status/error handling across endpoints,
+  including stricter `GET` argument schemas and better date/range handling.
+- Updated back-compat support for historical class names/arguments while
+  moving codebase internals to the new API model and naming conventions.
+- Added broad unit-test coverage for core base classes and Swift endpoint
+  models, and refreshed example notebooks for the updated workflows.
+- Swift API objects are now hashable, allowing use in sets/dicts where this
+  was previously unreliable.
 
 ## `swifttools` 3.0.23`/`swift_too` 1.2.33
 
