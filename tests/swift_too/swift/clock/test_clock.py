@@ -14,37 +14,6 @@ from swifttools.swift_too.swift.clock import (
 from swifttools.swift_too.swift.datetime import swiftdatetime
 
 
-@pytest.fixture
-def mock_clock_correct():
-    """Fixture for MockClockCorrect instance."""
-    return MockClockCorrect(test_datetime=datetime(2023, 1, 1))
-
-
-@pytest.fixture
-def swift_clock():
-    """Fixture for SwiftClock instance with autosubmit=False."""
-    return SwiftClock(autosubmit=False)
-
-
-@pytest.fixture
-def swift_datetime_schema():
-    """Fixture for SwiftDateTimeSchema instance."""
-    return SwiftDateTimeSchema(met=123456789.0, utcf=10.0, isutc=False)
-
-
-@pytest.fixture
-def swift_clock_with_entry(swift_clock):
-    """Fixture for SwiftClock with a mock entry."""
-    entry = SwiftDateTimeSchema(met=123456789.0, utcf=0.0, isutc=False)
-    object.__setattr__(
-        entry,
-        "_table",
-        [["MET", "Swift Time", "UTC Time"], [123456789.0, datetime(2023, 1, 1), datetime(2023, 1, 1)]],
-    )
-    swift_clock.entries = [entry]
-    return swift_clock
-
-
 class MockClockCorrect(BaseSchema, TOOAPIClockCorrect):
     """Mock class to test TOOAPIClockCorrect mixin"""
 
@@ -100,6 +69,11 @@ class TestSwiftClock:
     def test_len_with_entries(self, swift_clock):
         object.__setattr__(swift_clock, "entries", [1, 2, 3])
         assert len(swift_clock) == 3
+
+    def test_len_with_none_entries(self):
+        clock = SwiftClock(autosubmit=False)
+        clock.entries = []
+        assert len(clock) == 0
 
     def test_getitem_first(self, swift_clock):
         entry1 = SwiftDateTimeSchema(met=1.0, utcf=0.0, isutc=False)
@@ -212,6 +186,24 @@ class TestTOOAPIClockCorrect:
             ]
             mock_clock_correct.clock_correct()
             mock_clock_class.assert_called_once()
+
+    def test_clock_correct_nested_traversal_success(self):
+        mock = MockClockCorrect(test_datetime=datetime(2023, 1, 1))
+        mock.nested_list = [datetime(2023, 1, 1)]
+        mock._clock = Mock()
+        mock._datetime_refs = [([("model", "nested_list"), ("list", 0)], datetime(2023, 1, 1))]
+        mock._clock.entries = [datetime(2023, 2, 2)]
+        mock.clock_correct()
+        assert mock.nested_list[0] == datetime(2023, 2, 2)
+
+    def test_clock_correct_nested_dict_traversal_success(self):
+        mock = MockClockCorrect(test_datetime=datetime(2023, 1, 1))
+        mock.nested_dict = {"inner": datetime(2023, 1, 1)}
+        mock._clock = Mock()
+        mock._datetime_refs = [([("model", "nested_dict"), ("dict", "inner")], datetime(2023, 1, 1))]
+        mock._clock.entries = [datetime(2023, 3, 3)]
+        mock.clock_correct()
+        assert mock.nested_dict["inner"] == datetime(2023, 3, 3)
 
 
 class TestSwiftDateTimeSchema:
@@ -344,6 +336,29 @@ class TestIndexDatetimes:
         container = {"clock": SwiftClock(autosubmit=False)}
         i, values = index_datetimes(container)
         assert values == []
+
+    def test_list_recursion_and_setattr(self):
+        # List recursion
+        d = {"dates": [datetime(2020, 1, 1), datetime(2021, 1, 1)]}
+        i, values = index_datetimes(d)
+        assert i == 2
+        assert len(values) == 2
+
+        # setattr path when dictionary is an object
+        class Obj:
+            def __init__(self):
+                self.date = datetime(2022, 1, 1)
+
+        o = Obj()
+        new = [datetime(2030, 1, 1)]
+        i, values = index_datetimes(o, setvals=new)
+        assert o.date == datetime(2030, 1, 1)
+
+    def test_dict_recursion(self):
+        nested = {"outer": {"inner": datetime(2010, 1, 1)}}
+        i, values = index_datetimes(nested)
+        assert i == 1
+        assert values[0] == datetime(2010, 1, 1)
 
 
 class TestClockCorrectAssertion:

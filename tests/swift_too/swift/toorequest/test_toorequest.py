@@ -1,62 +1,10 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from pydantic import ValidationError
 
 from swifttools.swift_too.base.common import API_URL
-from swifttools.swift_too.swift.toorequest import SwiftTOORequest
-
-
-@pytest.fixture
-def mock_resolve():
-    mock = MagicMock()
-    mock.ra = 10.0
-    mock.dec = 20.0
-    mock.status.warnings = []
-    mock.status.errors = []
-    return mock
-
-
-@pytest.fixture
-def too_request_base(mock_resolve):
-    with patch("swifttools.swift_too.swift.resolve.SwiftResolve", return_value=mock_resolve):
-        too = SwiftTOORequest(
-            ra=10.0,
-            dec=20.0,
-            science_just="Test justification",
-            num_of_visits=1,
-            exp_time_per_visit=1000,
-            exp_time_just="Test exposure justification",
-            obs_type="Spectroscopy",
-            instrument="XRT",
-            target_name="Test Target",
-            target_type="Normal",
-            username="testuser",
-            shared_secret="testsecret",
-            autosubmit=False,
-        )
-        return too
-
-
-@pytest.fixture
-def too_request_with_decision(mock_resolve):
-    with patch("swifttools.swift_too.swift.resolve.SwiftResolve", return_value=mock_resolve):
-        too = SwiftTOORequest(
-            ra=10.0,
-            dec=20.0,
-            science_just="Test justification",
-            num_of_visits=1,
-            exp_time_per_visit=1000,
-            exp_time_just="Test exposure justification",
-            obs_type="Spectroscopy",
-            instrument="XRT",
-            target_name="Test Target",
-            target_type="Normal",
-            username="testuser",
-            shared_secret="testsecret",
-            autosubmit=False,
-            decision="Approved",
-        )
-        return too
+from swifttools.swift_too.swift.toorequest import SwiftTOOFormSchema, SwiftTOOPostSchema, SwiftTOORequest
 
 
 class TestSwiftTOORequestInit:
@@ -314,3 +262,277 @@ class TestSwiftTOORequestServerValidateInvalidPost:
         with patch.object(too, "validate_post", return_value=False):
             result = too.server_validate()
             assert result is False
+
+
+class TestSwiftTOORequestAdditional:
+    def test_init_validate_only(self, basic_too_request):
+        assert basic_too_request.validate_only is False
+
+    def test_init_debug(self, basic_too_request):
+        assert basic_too_request.debug is False
+
+    def test_table_property_decision_none_header(self, too_request_for_table):
+        header, table = too_request_for_table._table
+        assert header == ["Parameter", "Value"]
+
+    def test_table_property_decision_none_table_length(self, too_request_for_table):
+        header, table = too_request_for_table._table
+        assert len(table) > 0
+
+    def test_table_property_decision_not_none_header(self, too_request_with_decision_for_table):
+        header, table = too_request_with_decision_for_table._table
+        assert header == ["Parameter", "Value"]
+
+    def test_table_property_decision_not_none_table_length(self, too_request_with_decision_for_table):
+        header, table = too_request_with_decision_for_table._table
+        assert len(table) > 0
+
+    def test_server_validate_success(self, basic_too_request):
+        request = basic_too_request
+        # Set required fields
+        object.__setattr__(request, "target_name", "Test Target")
+        object.__setattr__(request, "immediate_objective", "Test objective")
+        object.__setattr__(request, "uvot_just", "Test UVOT justification")
+        # Clear errors from the start
+        request.status.errors = []
+        request.status.warnings = []
+
+        with patch.object(SwiftTOORequest, "validate_post", return_value=True):
+            with patch.object(SwiftTOORequest, "submit", return_value=True):
+                result = request.server_validate()
+                assert result is True
+
+    def test_server_validate_with_errors(self, basic_too_request):
+        request = basic_too_request
+        request.validate_post = lambda: True
+
+        original_submit = request.submit
+
+        def mock_submit_with_errors():
+            request.status.errors = ["Test error"]
+            request.status.warnings = []
+
+        request.submit = mock_submit_with_errors
+
+        result = request.server_validate()
+        assert result is False
+
+        request.submit = original_submit
+
+    def test_server_validate_validate_post_failure(self, basic_too_request):
+        request = basic_too_request
+        request.validate_post = lambda: False
+
+        result = request.server_validate()
+        assert result is False
+
+    def test_server_validate_with_actual_validation_raises_exception(self, mock_resolve_default):
+        request = SwiftTOORequest()
+
+        schema = SwiftTOOFormSchema(
+            target_name="Test Target",
+            ra=10.0,
+            dec=20.0,
+            target_type="GRB",
+            obs_type="Spectroscopy",
+            science_just="Test justification",
+            immediate_objective="Test objective",
+            exposure=1000,
+            exp_time_just="Test exp justification",
+            xrt_countrate="1.0",
+            grb_triggertime="2023-01-01T00:00:00",
+            grb_detector="BAT",
+            instrument="XRT",
+            opt_mag=20.0,
+            opt_filt="V",
+            uvot_just="Test UVOT justification",
+        )
+
+        with pytest.raises(Exception):
+            request.server_validate(schema)
+
+
+class TestSwiftTOOFormSchema:
+    def test_check_requirements_validator_raises_validation_error(self):
+        with pytest.raises(ValidationError) as exc_info:
+            SwiftTOOFormSchema(
+                username="testuser",
+                shared_secret="testsecret",
+            )
+        assert "Missing required field" in str(exc_info.value) or "Field required" in str(exc_info.value)
+
+    def test_check_proposal_validator_missing_proposal_id(self, mock_resolve_default):
+        with pytest.raises(ValueError) as exc_info:
+            SwiftTOOFormSchema(
+                proposal=True,
+                proposal_pi="Test PI",
+                target_name="Test Target",
+                ra=10.0,
+                dec=20.0,
+                target_type="GRB",
+                obs_type="Spectroscopy",
+                science_just="Test justification",
+                immediate_objective="Test objective",
+                exposure=1000,
+                exp_time_just="Test exp justification",
+                instrument="XRT",
+            )
+        assert "Must specify proposal ID and PI if GI proposal" in str(exc_info.value)
+
+    def test_check_proposal_validator_missing_proposal_pi(self, mock_resolve_default):
+        with pytest.raises(ValueError) as exc_info:
+            SwiftTOOFormSchema(
+                proposal=True,
+                proposal_id="12345",
+                target_name="Test Target",
+                ra=10.0,
+                dec=20.0,
+                target_type="GRB",
+                obs_type="Spectroscopy",
+                science_just="Test justification",
+                immediate_objective="Test objective",
+                exposure=1000,
+                exp_time_just="Test exp justification",
+                instrument="XRT",
+            )
+        assert "Must specify proposal ID and PI if GI proposal" in str(exc_info.value)
+
+    def test_check_proposal_validator_missing_trigger_justification(self, mock_resolve_default):
+        with pytest.raises(ValueError) as exc_info:
+            SwiftTOOFormSchema(
+                proposal=True,
+                proposal_id="12345",
+                proposal_pi="Test PI",
+                target_name="Test Target",
+                ra=10.0,
+                dec=20.0,
+                target_type="GRB",
+                obs_type="Spectroscopy",
+                science_just="Test justification",
+                immediate_objective="Test objective",
+                exposure=1000,
+                exp_time_just="Test exp justification",
+                instrument="XRT",
+            )
+        assert "Must specify proposal trigger justification if GI TOO" in str(exc_info.value)
+
+    def test_tiling_validator_missing_tiling_justification(self, mock_resolve_default):
+        with pytest.raises(ValueError) as exc_info:
+            SwiftTOOFormSchema(
+                tiling=True,
+                target_name="Test Target",
+                ra=10.0,
+                dec=20.0,
+                target_type="GRB",
+                obs_type="Spectroscopy",
+                science_just="Test justification",
+                immediate_objective="Test objective",
+                exposure=1000,
+                exp_time_just="Test exp justification",
+                instrument="XRT",
+            )
+        assert "Must specify tiling justification if tiling is True" in str(exc_info.value)
+
+    def test_brightness_validator_missing_brightness_values(self, mock_resolve_default):
+        with pytest.raises(ValueError) as exc_info:
+            SwiftTOOFormSchema(
+                target_name="Test Target",
+                ra=10.0,
+                dec=20.0,
+                target_type="GRB",
+                obs_type="Spectroscopy",
+                science_just="Test justification",
+                immediate_objective="Test objective",
+                exposure=1000,
+                exp_time_just="Test exp justification",
+                instrument="XRT",
+            )
+        assert "Must specify at least one brightness value" in str(exc_info.value)
+
+    def test_grb_validator_missing_grb_details(self, mock_resolve_default):
+        with pytest.raises(ValueError) as exc_info:
+            SwiftTOOFormSchema(
+                target_type="GRB",
+                target_name="Test Target",
+                ra=10.0,
+                dec=20.0,
+                obs_type="Spectroscopy",
+                science_just="Test justification",
+                immediate_objective="Test objective",
+                exposure=1000,
+                exp_time_just="Test exp justification",
+                xrt_countrate="1.0",
+                instrument="XRT",
+            )
+        assert "Must specify GRB trigger time and detector if source type is GRB" in str(exc_info.value)
+
+    def test_uvot_validator_missing_uvot_justification(self, mock_resolve_default):
+        with pytest.raises(ValueError) as exc_info:
+            SwiftTOOFormSchema(
+                uvot_mode="0x1234",
+                uvot_just="",
+                target_name="Test Target",
+                ra=10.0,
+                dec=20.0,
+                target_type="GRB",
+                obs_type="Spectroscopy",
+                science_just="Test justification",
+                immediate_objective="Test objective",
+                exposure=1000,
+                exp_time_just="Test exp justification",
+                xrt_countrate="1.0",
+                grb_triggertime="2023-01-01T00:00:00",
+                grb_detector="BAT",
+                instrument="XRT",
+            )
+        assert "Must specify UVOT justification if UVOT mode is not filter of the day" in str(exc_info.value)
+
+    def test_monitoring_validator_invalid_format(self, mock_resolve_default):
+        with pytest.raises(ValueError) as exc_info:
+            SwiftTOOFormSchema(
+                monitoring_freq="invalid_format",
+                target_name="Test Target",
+                target_type="GRB",
+                obs_type="Spectroscopy",
+                science_just="Test justification",
+                immediate_objective="Test objective",
+                exposure=1000,
+                exp_time_just="Test exp justification",
+                xrt_countrate="1.0",
+                grb_triggertime="2023-01-01T00:00:00",
+                grb_detector="BAT",
+                instrument="XRT",
+            )
+        assert "Monitoring frequency in incorrect format" in str(exc_info.value)
+
+    def test_exposure_validator_missing_exp_time_per_visit(self, mock_resolve_default):
+        with pytest.raises(ValueError) as exc_info:
+            SwiftTOOFormSchema(
+                target_name="Test Target",
+                ra=10.0,
+                dec=20.0,
+                target_type="GRB",
+                obs_type="Spectroscopy",
+                science_just="Test justification",
+                immediate_objective="Test objective",
+                exposure=1000,
+                exp_time_just="Test exp justification",
+                num_of_visits=2,
+                monitoring_freq="1 day",
+                xrt_countrate="1.0",
+                grb_triggertime="2023-01-01T00:00:00",
+                grb_detector="BAT",
+                instrument="XRT",
+                uvot_mode="0x9999",
+            )
+        assert "Must specify exposure time per visit if number of visits is specified" in str(exc_info.value)
+
+
+class TestSwiftTOOPostSchema:
+    def test_check_requirements_validator_raises_validation_error(self):
+        with pytest.raises(ValidationError) as exc_info:
+            SwiftTOOPostSchema(
+                username="testuser",
+                shared_secret="testsecret",
+            )
+        assert "Missing required field" in str(exc_info.value) or "Field required" in str(exc_info.value)

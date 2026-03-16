@@ -1,6 +1,4 @@
-from datetime import datetime
-
-from swifttools.swift_too.swift.saa import SwiftSAA, SwiftSAAEntry, SwiftSAAGetSchema
+from swifttools.swift_too.swift.saa import SwiftSAAEntry, SwiftSAAGetSchema
 
 
 class TestSwiftSAAGetSchema:
@@ -10,51 +8,59 @@ class TestSwiftSAAGetSchema:
 
 
 class TestSwiftSAAEntry:
-    def test_init(self):
-        begin = datetime(2023, 1, 1, 12, 0, 0)
-        end = datetime(2023, 1, 1, 13, 0, 0)
-        entry = SwiftSAAEntry(begin=begin, end=end)
-        assert entry.begin == begin
-        assert entry.end == end
+    def test_init_begin(self, begin_datetime, end_datetime):
+        entry = SwiftSAAEntry(begin=begin_datetime, end=end_datetime)
+        assert entry.begin == begin_datetime
 
-    def test_table_property(self):
-        begin = datetime(2023, 1, 1, 12, 0, 0)
-        end = datetime(2023, 1, 1, 13, 0, 0)
-        entry = SwiftSAAEntry(begin=begin, end=end)
-        header, data = entry._table
+    def test_init_end(self, begin_datetime, end_datetime):
+        entry = SwiftSAAEntry(begin=begin_datetime, end=end_datetime)
+        assert entry.end == end_datetime
+
+    def test_table_property_header(self, sample_saa_entry):
+        header, _ = sample_saa_entry._table
         assert header == ["Begin Time", "End Time"]
-        assert data == [[begin, end]]
+
+    def test_table_property_data(self, sample_saa_entry, begin_datetime, end_datetime):
+        _, data = sample_saa_entry._table
+        assert data == [[begin_datetime, end_datetime]]
 
 
 class TestSwiftSAA:
-    def test_init(self):
-        saa = SwiftSAA(autosubmit=False)
-        assert saa.entries == []
+    def test_init(self, swift_saa):
+        assert swift_saa.entries == []
 
-    def test_getitem(self):
-        saa = SwiftSAA(autosubmit=False)
-        entry = SwiftSAAEntry(begin=datetime(2023, 1, 1, 12, 0, 0), end=datetime(2023, 1, 1, 13, 0, 0))
-        saa.entries = [entry]
-        assert saa[0] == entry
+    def test_getitem(self, swift_saa, sample_saa_entry):
+        swift_saa.entries = [sample_saa_entry]
+        assert swift_saa[0] == sample_saa_entry
 
-    def test_len(self):
-        saa = SwiftSAA(autosubmit=False)
-        saa.entries = [SwiftSAAEntry(begin=datetime(2023, 1, 1, 12, 0, 0), end=datetime(2023, 1, 1, 13, 0, 0))]
-        assert len(saa) == 1
+    def test_len(self, swift_saa, sample_saa_entry):
+        swift_saa.entries = [sample_saa_entry]
+        assert len(swift_saa) == 1
 
-    def test_table_property_empty(self):
-        saa = SwiftSAA(autosubmit=False)
-        header, data = saa._table
+    def test_table_property_empty_header(self, swift_saa):
+        header, _ = swift_saa._table
         assert header == []
+
+    def test_table_property_empty_data(self, swift_saa):
+        _, data = swift_saa._table
         assert data == []
 
-    def test_table_property_with_entries(self):
-        saa = SwiftSAA(autosubmit=False)
-        entry1 = SwiftSAAEntry(begin=datetime(2023, 1, 1, 12, 0, 0), end=datetime(2023, 1, 1, 13, 0, 0))
-        entry2 = SwiftSAAEntry(begin=datetime(2023, 1, 2, 12, 0, 0), end=datetime(2023, 1, 2, 13, 0, 0))
-        saa.entries = [entry1, entry2]
-        header, data = saa._table
+    def test_table_property_with_entries_header(self, swift_saa, sample_saa_entries):
+        swift_saa.entries = sample_saa_entries
+        header, _ = swift_saa._table
         assert header == ["#", "Begin Time", "End Time"]
+
+    def test_table_property_with_entries_length(self, swift_saa, sample_saa_entries):
+        swift_saa.entries = sample_saa_entries
+        _, data = swift_saa._table
         assert len(data) == 2
-        assert data[0] == [0, entry1.begin, entry1.end]
-        assert data[1] == [1, entry2.begin, entry2.end]
+
+    def test_table_property_with_entries_first_row(self, swift_saa, sample_saa_entries):
+        swift_saa.entries = sample_saa_entries
+        _, data = swift_saa._table
+        assert data[0] == [0, sample_saa_entries[0].begin, sample_saa_entries[0].end]
+
+    def test_table_property_with_entries_second_row(self, swift_saa, sample_saa_entries):
+        swift_saa.entries = sample_saa_entries
+        _, data = swift_saa._table
+        assert data[1] == [1, sample_saa_entries[1].begin, sample_saa_entries[1].end]

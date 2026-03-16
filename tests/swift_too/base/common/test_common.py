@@ -16,39 +16,6 @@ from swifttools.swift_too.base.common import (
 from swifttools.swift_too.base.status import TOOStatus
 
 
-class MockSchema(BaseModel):
-    obs_id: Optional[int] = None
-    username: str = "anonymous"
-
-
-class MockTOOAPIBaseclass(BaseModel, TOOAPIBaseclass):
-    """Mock class for testing TOOAPIBaseclass"""
-
-    _endpoint: ClassVar[str] = "/test"
-    _api_base: str = API_URL
-    _schema: ClassVar[Mock] = Mock()
-    _get_schema: ClassVar[MockSchema] = MockSchema
-    _post_schema: ClassVar[Mock] = Mock()
-    status: TOOStatus = TOOStatus()
-    obs_id: Optional[int] = None
-    # username, shared_secret, autosubmit inherited from TOOAPIBaseclass
-
-    def __init__(self, **kwargs):
-        # Back compat
-        for key, values in self._back_compat_args.items():
-            for value in values:
-                if value in kwargs:
-                    if key not in kwargs:
-                        kwargs[key] = kwargs[value]
-                    del kwargs[value]
-        super().__init__(**kwargs)
-
-
-@pytest.fixture
-def mock_base_class():
-    return MockTOOAPIBaseclass(username="testuser", shared_secret="testsecret")
-
-
 class TestMockTOOAPIBaseclass:
     def test_parse_422_error_variants(self):
         assert _parse_422_error('{"detail":"simple"}') == ["simple"]
@@ -80,8 +47,8 @@ class TestMockTOOAPIBaseclass:
         monkeypatch.setattr(common_module.http.cookiejar, "LWPCookieJar", original)
         importlib.reload(common_module)
 
-    def test_init_with_back_compat_args_obs_id(self, mock_base_class):
-        obj = MockTOOAPIBaseclass(obsnum=123)
+    def test_init_with_back_compat_args_obs_id(self, mock_too_api_baseclass):
+        obj = mock_too_api_baseclass(obsnum=123)
         assert obj.obs_id == 123
 
     def test_handle_back_compat_args_drops_duplicate_deprecated_key(self, mock_base_class):
@@ -99,19 +66,19 @@ class TestMockTOOAPIBaseclass:
         out = mock_base_class._convert_positional_args((123,), {})
         assert out["obs_id"] == 123
 
-    def test_get_schema_for_init_uses_default_attr(self, mock_base_class):
+    def test_get_schema_for_init_uses_default_attr(self, mock_base_class, mock_too_api_baseclass, mock_schema):
         class Wrapper:
-            default = MockSchema
+            default = mock_schema
 
-        original_get = getattr(MockTOOAPIBaseclass, "_get_schema", None)
-        original_post = getattr(MockTOOAPIBaseclass, "_post_schema", None)
-        MockTOOAPIBaseclass._get_schema = Wrapper
-        MockTOOAPIBaseclass._post_schema = Mock()
+        original_get = getattr(mock_too_api_baseclass, "_get_schema", None)
+        original_post = getattr(mock_too_api_baseclass, "_post_schema", None)
+        mock_too_api_baseclass._get_schema = Wrapper
+        mock_too_api_baseclass._post_schema = Mock()
         try:
-            assert mock_base_class._get_schema_for_init() is MockSchema
+            assert mock_base_class._get_schema_for_init() is mock_schema
         finally:
-            MockTOOAPIBaseclass._get_schema = original_get
-            MockTOOAPIBaseclass._post_schema = original_post
+            mock_too_api_baseclass._get_schema = original_get
+            mock_too_api_baseclass._post_schema = original_post
 
     def test_schema_payload_includes_attr_not_in_model_dump(self, mock_base_class):
         class SchemaExtra(BaseModel):
@@ -138,8 +105,10 @@ class TestMockTOOAPIBaseclass:
     # Note: login method was refactored into _ensure_authenticated
     # and is tested indirectly through submit_get/submit_post tests
 
-    def test_submit_get_success(self, mock_cookie_jar, mock_client, mock_base_class, mock_validated_payload):
-        with patch.object(MockSchema, "model_validate", return_value=mock_validated_payload):
+    def test_submit_get_success(
+        self, mock_cookie_jar, mock_client, mock_base_class, mock_validated_payload, mock_too_api_baseclass, mock_schema
+    ):
+        with patch.object(mock_schema, "model_validate", return_value=mock_validated_payload):
             mock_response = Mock()
             mock_response.status_code = 200
             mock_response.json.return_value = {"status": "success"}
@@ -152,12 +121,14 @@ class TestMockTOOAPIBaseclass:
                 mock_base_class.status.status = "success"
                 return mock_base_class
 
-            with patch.object(MockTOOAPIBaseclass, "model_validate", side_effect=mock_model_validate):
+            with patch.object(mock_too_api_baseclass, "model_validate", side_effect=mock_model_validate):
                 result = mock_base_class.submit_get()
                 assert result is True
 
-    def test_submit_get_400_error(self, mock_cookie_jar, mock_client, mock_base_class, mock_validated_payload):
-        with patch.object(MockSchema, "model_validate", return_value=mock_validated_payload):
+    def test_submit_get_400_error(
+        self, mock_cookie_jar, mock_client, mock_base_class, mock_validated_payload, mock_schema
+    ):
+        with patch.object(mock_schema, "model_validate", return_value=mock_validated_payload):
             mock_response = Mock()
             mock_response.status_code = 400
             mock_response.text = "Bad Request"
@@ -167,8 +138,10 @@ class TestMockTOOAPIBaseclass:
             result = mock_base_class.submit_get()
             assert result is False
 
-    def test_submit_get_other_error(self, mock_cookie_jar, mock_client, mock_base_class, mock_validated_payload):
-        with patch.object(MockSchema, "model_validate", return_value=mock_validated_payload):
+    def test_submit_get_other_error(
+        self, mock_cookie_jar, mock_client, mock_base_class, mock_validated_payload, mock_schema
+    ):
+        with patch.object(mock_schema, "model_validate", return_value=mock_validated_payload):
             mock_response = Mock()
             mock_response.status_code = 500
             mock_response.text = "Internal Server Error"
@@ -178,7 +151,7 @@ class TestMockTOOAPIBaseclass:
             result = mock_base_class.submit_get()
             assert result is False
 
-    def test_handle_response_normalizes_string_status(self, mock_base_class):
+    def test_handle_response_normalizes_string_status(self, mock_base_class, mock_too_api_baseclass):
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"status": "Validated"}
@@ -189,7 +162,7 @@ class TestMockTOOAPIBaseclass:
             captured["payload"] = data
             return mock_base_class
 
-        with patch.object(MockTOOAPIBaseclass, "model_validate", side_effect=mock_model_validate):
+        with patch.object(mock_too_api_baseclass, "model_validate", side_effect=mock_model_validate):
             result = mock_base_class._handle_response(mock_response)
 
         assert result is True
@@ -253,8 +226,8 @@ class TestMockTOOAPIBaseclass:
         assert mock_base_class.obs_id == 424242
         assert mock_base_class.status.status == "Validated"
 
-    def test_submit_post_400_error(self, mock_cookie_jar, mock_client, mock_base_class):
-        with patch.object(MockTOOAPIBaseclass, "_post_schema", Mock()) as mock_schema:
+    def test_submit_post_400_error(self, mock_cookie_jar, mock_client, mock_base_class, mock_too_api_baseclass):
+        with patch.object(mock_too_api_baseclass, "_post_schema", Mock()) as mock_schema:
             mock_schema.model_fields = {}
             mock_schema.model_validate.return_value.model_dump.return_value = {"param": "value"}
 
@@ -267,8 +240,10 @@ class TestMockTOOAPIBaseclass:
             result = mock_base_class.submit_post()
             assert result is False
 
-    def test_submit_post_other_error(self, mock_cookie_jar, mock_client, mock_base_class, mock_validated_payload):
-        with patch.object(MockTOOAPIBaseclass, "_post_schema", Mock()) as mock_schema:
+    def test_submit_post_other_error(
+        self, mock_cookie_jar, mock_client, mock_base_class, mock_validated_payload, mock_too_api_baseclass
+    ):
+        with patch.object(mock_too_api_baseclass, "_post_schema", Mock()) as mock_schema:
             mock_schema.model_fields = {}
             mock_schema.model_validate.return_value = mock_validated_payload
 
@@ -281,13 +256,13 @@ class TestMockTOOAPIBaseclass:
             result = mock_base_class.submit_post()
             assert result is False
 
-    def test_validate_get_success(self, mock_base_class):
-        with patch.object(MockSchema, "model_validate", return_value=Mock()):
+    def test_validate_get_success(self, mock_base_class, mock_schema):
+        with patch.object(mock_schema, "model_validate", return_value=Mock()):
             result = mock_base_class.validate_get()
             assert result is True
 
-    def test_validate_get_failure(self, mock_base_class):
-        with patch.object(MockSchema, "model_validate", side_effect=ValidationError.from_exception_data("test", [])):
+    def test_validate_get_failure(self, mock_base_class, mock_schema):
+        with patch.object(mock_schema, "model_validate", side_effect=ValidationError.from_exception_data("test", [])):
             result = mock_base_class.validate_get()
             assert result is False
 
@@ -323,8 +298,8 @@ class TestMockTOOAPIBaseclass:
         many = TOOAPIBaseclass._format_validation_error(exc_many.value)
         assert "(and 1 more)" in many
 
-    def test_validate_post_success(self, mock_base_class):
-        with patch.object(MockTOOAPIBaseclass, "_post_schema", Mock()) as mock_schema:
+    def test_validate_post_success(self, mock_base_class, mock_too_api_baseclass):
+        with patch.object(mock_too_api_baseclass, "_post_schema", Mock()) as mock_schema:
             mock_schema.model_fields = {}
             mock_schema.model_validate.return_value = Mock()
             result = mock_base_class.validate_post()
@@ -335,10 +310,10 @@ class TestMockTOOAPIBaseclass:
         result = mock_base_class.submit()
         assert result is False
 
-    def test_submit_routes_get_and_post(self, mock_base_class, post_only_model_cls):
+    def test_submit_routes_get_and_post(self, mock_base_class, post_only_model_cls, mock_too_api_baseclass):
         mock_base_class.status.status = "Pending"
-        with patch.object(MockTOOAPIBaseclass, "validate_get", return_value=True):
-            with patch.object(MockTOOAPIBaseclass, "submit_get", return_value=True) as mget:
+        with patch.object(mock_too_api_baseclass, "validate_get", return_value=True):
+            with patch.object(mock_too_api_baseclass, "submit_get", return_value=True) as mget:
                 assert mock_base_class.submit() is True
                 mget.assert_called_once()
 
@@ -353,11 +328,11 @@ class TestMockTOOAPIBaseclass:
         with patch.object(post_only_model_cls, "validate_post", return_value=False):
             assert obj.submit() is False
 
-    def test_set_error_with_status_string_calls_error_method(self, mock_base_class):
+    def test_set_error_with_status_string_calls_error_method(self, mock_base_class, mock_too_api_baseclass):
         # Use a subclass that defines an 'error' method to avoid pydantic extra-field restrictions
         called = []
 
-        class ErrorClass(MockTOOAPIBaseclass):
+        class ErrorClass(mock_too_api_baseclass):
             def error(self, msg):
                 called.append(msg)
 
@@ -384,10 +359,10 @@ class TestMockTOOAPIBaseclass:
         captured = capsys.readouterr()
         assert "ERROR: No status error" in captured.out
 
-    def test_model_post_init_calls_submit_get_when_pending(self, mock_base_class):
+    def test_model_post_init_calls_submit_get_when_pending(self, mock_base_class, mock_schema):
         # Ensure model_post_init calls submit_get when pending and autosubmit=True
         class TestModel(TOOAPIBaseclass, BaseModel):
-            _get_schema = MockSchema
+            _get_schema = mock_schema
             status: TOOStatus = TOOStatus()
 
         m = TestModel(username="testuser", shared_secret="testsecret", autosubmit=False)
@@ -399,9 +374,9 @@ class TestMockTOOAPIBaseclass:
                 m.model_post_init({})
                 mock_submit.assert_called_once()
 
-    def test_model_post_init_not_calling_when_validate_fails(self, mock_base_class):
+    def test_model_post_init_not_calling_when_validate_fails(self, mock_base_class, mock_schema):
         class TestModel(TOOAPIBaseclass, BaseModel):
-            _get_schema = MockSchema
+            _get_schema = mock_schema
             status: TOOStatus = TOOStatus()
 
         m = TestModel(username="testuser", shared_secret="testsecret", autosubmit=False)
@@ -413,13 +388,15 @@ class TestMockTOOAPIBaseclass:
                 m.model_post_init({})
                 mock_submit.assert_not_called()
 
-    def test_submit_get_saves_cookie_on_login(self, mock_cookie_jar, mock_client, mock_validated_payload):
+    def test_submit_get_saves_cookie_on_login(
+        self, mock_cookie_jar, mock_client, mock_validated_payload, mock_too_api_baseclass, mock_schema
+    ):
         # Ensure cookie_jar.save is called when login is successful and no session cookie exists
-        m = MockTOOAPIBaseclass(username="testuser", shared_secret="testsecret")
+        m = mock_too_api_baseclass(username="testuser", shared_secret="testsecret")
         m.status.status = "Pending"
         # Ensure cookie jar iterates empty -> no session cookie present
         mock_cookie_jar.__iter__.return_value = []
-        with patch.object(MockSchema, "model_validate", return_value=mock_validated_payload):
+        with patch.object(mock_schema, "model_validate", return_value=mock_validated_payload):
             mock_response = Mock()
             mock_response.status_code = 200
             mock_response.json.return_value = {"status": "success"}
@@ -435,37 +412,41 @@ class TestMockTOOAPIBaseclass:
     # other tests and classes; explicit positional-arg conversion tests are
     # difficult to construct with pydantic BaseModel subclasses.
 
-    def test_submit_get_login_failure_returns_false(self, mock_cookie_jar, mock_client, mock_validated_payload):
-        m = MockTOOAPIBaseclass(username="testuser", shared_secret="testsecret")
+    def test_submit_get_login_failure_returns_false(
+        self, mock_cookie_jar, mock_client, mock_validated_payload, mock_too_api_baseclass, mock_schema
+    ):
+        m = mock_too_api_baseclass(username="testuser", shared_secret="testsecret")
         m.status.status = "Pending"
         # ensure no session cookie
         mock_cookie_jar.__iter__.return_value = []
         # Patch _ensure_authenticated to return False
-        with patch.object(MockTOOAPIBaseclass, "_ensure_authenticated", return_value=False):
-            with patch.object(MockSchema, "model_validate", return_value=mock_validated_payload):
+        with patch.object(mock_too_api_baseclass, "_ensure_authenticated", return_value=False):
+            with patch.object(mock_schema, "model_validate", return_value=mock_validated_payload):
                 result = m.submit_get()
                 assert result is False
 
-    def test_submit_get_validation_failure(self, mock_base_class):
+    def test_submit_get_validation_failure(self, mock_base_class, mock_too_api_baseclass, mock_schema):
         mock_base_class.status.status = "Pending"
         with (
-            patch.object(MockSchema, "model_validate", side_effect=ValidationError.from_exception_data("test", [])),
-            patch.object(MockTOOAPIBaseclass, "validate_post", return_value=False),
+            patch.object(mock_schema, "model_validate", side_effect=ValidationError.from_exception_data("test", [])),
+            patch.object(mock_too_api_baseclass, "validate_post", return_value=False),
         ):
             result = mock_base_class.submit()
             assert result is False
 
-    def test_submit_post_validation_failure(self, mock_base_class):
+    def test_submit_post_validation_failure(self, mock_base_class, mock_too_api_baseclass):
         mock_base_class.status.status = "Pending"
         with (
-            patch.object(MockTOOAPIBaseclass, "validate_get", return_value=False),
-            patch.object(MockTOOAPIBaseclass, "_post_schema", Mock()) as mock_schema,
+            patch.object(mock_too_api_baseclass, "validate_get", return_value=False),
+            patch.object(mock_too_api_baseclass, "_post_schema", Mock()) as mock_schema,
         ):
             mock_schema.model_validate.side_effect = ValidationError.from_exception_data("test", [])
             result = mock_base_class.submit()
             assert result is False
 
-    def test_queue_get_success(self, mock_cookie_jar, mock_client, mock_base_class, mock_validated_payload):
+    def test_queue_get_success(
+        self, mock_cookie_jar, mock_client, mock_base_class, mock_validated_payload, mock_too_api_baseclass, mock_schema
+    ):
         import time
         from unittest.mock import patch
 
@@ -473,7 +454,7 @@ class TestMockTOOAPIBaseclass:
         object.__setattr__(mock_base_class, "complete", False)
         assert mock_base_class.complete is False
 
-        with patch.object(MockSchema, "model_validate", return_value=mock_validated_payload):
+        with patch.object(mock_schema, "model_validate", return_value=mock_validated_payload):
             mock_response = Mock()
             mock_response.status_code = 200
             mock_response.json.return_value = {"status": "success"}
@@ -486,16 +467,16 @@ class TestMockTOOAPIBaseclass:
                 mock_base_class.status.status = "success"
                 return mock_base_class
 
-            with patch.object(MockTOOAPIBaseclass, "model_validate", side_effect=mock_model_validate):
+            with patch.object(mock_too_api_baseclass, "model_validate", side_effect=mock_model_validate):
                 result = mock_base_class.queue()
                 assert result is True
                 # Wait a bit for the thread to complete
                 time.sleep(0.1)
                 assert mock_base_class.complete is True
 
-    def test_queue_validation_failures(self, mock_base_class, post_only_model_cls):
+    def test_queue_validation_failures(self, mock_base_class, post_only_model_cls, mock_too_api_baseclass):
         mock_base_class.status.status = "Pending"
-        with patch.object(MockTOOAPIBaseclass, "validate_get", return_value=False):
+        with patch.object(mock_too_api_baseclass, "validate_get", return_value=False):
             assert mock_base_class.queue() is False
 
         obj = post_only_model_cls(username="u", shared_secret="s", autosubmit=False)
@@ -544,100 +525,104 @@ class TestMockTOOAPIBaseclass:
         client.post.return_value.status_code = 403
         assert mock_base_class._ensure_authenticated(client) is False
 
-    def test_should_autosubmit_status_string_and_validation_failure(self, mock_base_class):
+    def test_should_autosubmit_status_string_and_validation_failure(
+        self, mock_base_class, mock_too_api_baseclass, mock_schema
+    ):
         mock_base_class.autosubmit = True
         mock_base_class.status = "not-status-obj"
         assert mock_base_class._should_autosubmit() is False
 
         mock_base_class.status = TOOStatus()
         mock_base_class.status.status = "Pending"
-        with patch.object(MockSchema, "model_validate", side_effect=TypeError("bad")):
+        with patch.object(mock_schema, "model_validate", side_effect=TypeError("bad")):
             assert mock_base_class._should_autosubmit() is False
 
     def test_submit_get_exception_and_submit_post_paths(
-        self, mock_cookie_jar, mock_client, mock_base_class, mock_validated_payload
+        self, mock_cookie_jar, mock_client, mock_base_class, mock_validated_payload, mock_too_api_baseclass, mock_schema
     ):
-        with patch.object(MockSchema, "model_validate", return_value=mock_validated_payload):
+        with patch.object(mock_schema, "model_validate", return_value=mock_validated_payload):
             mock_client.return_value.__enter__.return_value.get.side_effect = Exception("x")
             mock_client.return_value.__enter__.return_value.post.return_value = Mock(status_code=200)
             assert mock_base_class.submit_get() is False
 
-        with patch.object(MockTOOAPIBaseclass, "_post_schema", Mock()) as mock_schema:
+        with patch.object(mock_too_api_baseclass, "_post_schema", Mock()) as mock_schema:
             mock_schema.model_fields = {}
             mock_schema.model_validate.return_value.model_dump.return_value = {}
             assert mock_base_class.submit_post() is False
 
-        with patch.object(MockTOOAPIBaseclass, "_post_schema", Mock()) as mock_schema:
+        with patch.object(mock_too_api_baseclass, "_post_schema", Mock()) as mock_schema:
             mock_schema.model_fields = {}
             mock_schema.model_validate.return_value.model_dump.return_value = {"p": 1}
             mock_client.return_value.__enter__.return_value.post.side_effect = Exception("x")
             assert mock_base_class.submit_post() is False
 
-        with patch.object(MockTOOAPIBaseclass, "_post_schema", Mock()) as mock_schema:
+        with patch.object(mock_too_api_baseclass, "_post_schema", Mock()) as mock_schema:
             mock_schema.model_fields = {}
             mock_schema.model_validate.return_value.model_dump.return_value = {"p": 1}
-            with patch.object(MockTOOAPIBaseclass, "_ensure_authenticated", return_value=True):
+            with patch.object(mock_too_api_baseclass, "_ensure_authenticated", return_value=True):
                 mock_client.return_value.__enter__.return_value.post.side_effect = Exception("boom")
                 assert mock_base_class.submit_post() is False
 
-        with patch.object(MockTOOAPIBaseclass, "_post_schema", Mock()) as mock_schema:
+        with patch.object(mock_too_api_baseclass, "_post_schema", Mock()) as mock_schema:
             mock_schema.model_fields = {}
             mock_schema.model_validate.return_value.model_dump.return_value = {"p": 1}
             mock_client.return_value.__enter__.return_value.post.side_effect = None
             mock_client.return_value.__enter__.return_value.post.return_value = Mock(status_code=200)
-            with patch.object(MockTOOAPIBaseclass, "_ensure_authenticated", return_value=True):
-                with patch.object(MockTOOAPIBaseclass, "_handle_response", return_value=True):
+            with patch.object(mock_too_api_baseclass, "_ensure_authenticated", return_value=True):
+                with patch.object(mock_too_api_baseclass, "_handle_response", return_value=True):
                     assert mock_base_class.submit_post() is True
 
-    def test_async_submit_branches(self, mock_cookie_jar, mock_client, mock_base_class, mock_validated_payload):
-        with patch.object(MockTOOAPIBaseclass, "_ensure_authenticated", return_value=False):
-            with patch.object(MockSchema, "model_validate", return_value=mock_validated_payload):
+    def test_async_submit_branches(
+        self, mock_cookie_jar, mock_client, mock_base_class, mock_validated_payload, mock_too_api_baseclass, mock_schema
+    ):
+        with patch.object(mock_too_api_baseclass, "_ensure_authenticated", return_value=False):
+            with patch.object(mock_schema, "model_validate", return_value=mock_validated_payload):
                 object.__setattr__(mock_base_class, "complete", False)
                 mock_base_class._submit_get_async()
                 assert mock_base_class.complete is True
 
-        with patch.object(MockTOOAPIBaseclass, "_ensure_authenticated", return_value=True):
-            with patch.object(MockSchema, "model_validate", return_value=mock_validated_payload):
+        with patch.object(mock_too_api_baseclass, "_ensure_authenticated", return_value=True):
+            with patch.object(mock_schema, "model_validate", return_value=mock_validated_payload):
                 mock_client.return_value.__enter__.return_value.get.side_effect = Exception("x")
                 object.__setattr__(mock_base_class, "complete", False)
                 mock_base_class._submit_get_async()
                 assert mock_base_class.complete is True
 
-        with patch.object(MockTOOAPIBaseclass, "_post_schema", Mock()) as mock_schema:
+        with patch.object(mock_too_api_baseclass, "_post_schema", Mock()) as mock_schema:
             mock_schema.model_fields = {}
             mock_schema.model_validate.return_value.model_dump.return_value = {}
             object.__setattr__(mock_base_class, "complete", False)
             mock_base_class._submit_post_async()
             assert mock_base_class.complete is True
 
-        with patch.object(MockTOOAPIBaseclass, "_post_schema", Mock()) as mock_schema:
+        with patch.object(mock_too_api_baseclass, "_post_schema", Mock()) as mock_schema:
             mock_schema.model_fields = {}
             mock_schema.model_validate.return_value.model_dump.return_value = {"p": 1}
-            with patch.object(MockTOOAPIBaseclass, "_ensure_authenticated", return_value=False):
+            with patch.object(mock_too_api_baseclass, "_ensure_authenticated", return_value=False):
                 object.__setattr__(mock_base_class, "complete", False)
                 mock_base_class._submit_post_async()
                 assert mock_base_class.complete is True
 
-        with patch.object(MockTOOAPIBaseclass, "_post_schema", Mock()) as mock_schema:
+        with patch.object(mock_too_api_baseclass, "_post_schema", Mock()) as mock_schema:
             mock_schema.model_fields = {}
             mock_schema.model_validate.return_value.model_dump.return_value = {"p": 1}
-            with patch.object(MockTOOAPIBaseclass, "_ensure_authenticated", return_value=True):
+            with patch.object(mock_too_api_baseclass, "_ensure_authenticated", return_value=True):
                 mock_client.return_value.__enter__.return_value.post.side_effect = Exception("x")
                 object.__setattr__(mock_base_class, "complete", False)
                 mock_base_class._submit_post_async()
                 assert mock_base_class.complete is True
 
-        with patch.object(MockTOOAPIBaseclass, "_post_schema", Mock()) as mock_schema:
+        with patch.object(mock_too_api_baseclass, "_post_schema", Mock()) as mock_schema:
             mock_schema.model_fields = {}
             mock_schema.model_validate.return_value.model_dump.return_value = {"p": 1}
-            with patch.object(MockTOOAPIBaseclass, "_ensure_authenticated", return_value=True):
+            with patch.object(mock_too_api_baseclass, "_ensure_authenticated", return_value=True):
                 mock_client.return_value.__enter__.return_value.post.side_effect = None
                 mock_client.return_value.__enter__.return_value.post.return_value = Mock(status_code=200)
-                with patch.object(MockTOOAPIBaseclass, "_handle_response_async") as m_async:
+                with patch.object(mock_too_api_baseclass, "_handle_response_async") as m_async:
                     mock_base_class._submit_post_async()
                     m_async.assert_called_once()
 
-    def test_handle_response_remaining_branches(self, mock_base_class):
+    def test_handle_response_remaining_branches(self, mock_base_class, mock_too_api_baseclass):
         # success payload that is not dict -> model_fields_set merge path
         mock_response = Mock()
         mock_response.status_code = 200
@@ -647,11 +632,11 @@ class TestMockTOOAPIBaseclass:
             model_fields_set = {"status"}
             status = TOOStatus(status="Accepted")
 
-        with patch.object(MockTOOAPIBaseclass, "model_validate", return_value=DataObj()):
+        with patch.object(mock_too_api_baseclass, "model_validate", return_value=DataObj()):
             assert mock_base_class._handle_response(mock_response) is True
 
         # validation exception
-        with patch.object(MockTOOAPIBaseclass, "model_validate", side_effect=ValueError("bad")):
+        with patch.object(mock_too_api_baseclass, "model_validate", side_effect=ValueError("bad")):
             assert mock_base_class._handle_response(mock_response) is False
 
         # 422 / unauthorized / non-int status

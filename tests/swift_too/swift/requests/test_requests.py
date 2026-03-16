@@ -1,5 +1,4 @@
 from datetime import datetime
-from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -18,35 +17,22 @@ class TestSwiftTOORequestsGetSchema:
 
 
 class TestSwiftTOORequests:
-    @patch("swifttools.swift_too.swift.resolve.SwiftResolve")
-    def test_init(self, mock_resolve):
-        mock_resolve.return_value = MagicMock(ra=10.0, dec=20.0, status=MagicMock(warnings=[], errors=[]))
-        requests = SwiftTOORequests(autosubmit=False)
-        assert requests.entries == []
+    def test_init(self, swift_requests):
+        assert swift_requests.entries == []
 
-    @patch("swifttools.swift_too.swift.resolve.SwiftResolve")
-    def test_getitem(self, mock_resolve):
-        mock_resolve.return_value = MagicMock(ra=10.0, dec=20.0, status=MagicMock(warnings=[], errors=[]))
-        requests = SwiftTOORequests(autosubmit=False)
-        entry = SwiftTOORequest(too_id=123)
-        requests.entries = [entry]
-        assert requests[0] == entry
+    def test_getitem(self, swift_requests, sample_too_request):
+        swift_requests.entries = [sample_too_request]
+        assert swift_requests[0] == sample_too_request
 
-    @patch("swifttools.swift_too.swift.resolve.SwiftResolve")
-    def test_len(self, mock_resolve):
-        mock_resolve.return_value = MagicMock(ra=10.0, dec=20.0, status=MagicMock(warnings=[], errors=[]))
-        requests = SwiftTOORequests(autosubmit=False)
-        requests.entries = [SwiftTOORequest(too_id=1), SwiftTOORequest(too_id=2)]
-        assert len(requests) == 2
+    def test_len(self, swift_requests):
+        swift_requests.entries = [SwiftTOORequest(too_id=1), SwiftTOORequest(too_id=2)]
+        assert len(swift_requests) == 2
 
-    @patch("swifttools.swift_too.swift.resolve.SwiftResolve")
-    def test_by_id(self, mock_resolve):
-        mock_resolve.return_value = MagicMock(ra=10.0, dec=20.0, status=MagicMock(warnings=[], errors=[]))
-        requests = SwiftTOORequests(autosubmit=False)
+    def test_by_id(self, swift_requests):
         entry1 = SwiftTOORequest(too_id=123, target_name="Target1", autosubmit=False)
         entry2 = SwiftTOORequest(too_id=456, target_name="Target2", autosubmit=False)
-        requests.entries = [entry1, entry2]
-        result = requests.by_id(456)
+        swift_requests.entries = [entry1, entry2]
+        result = swift_requests.by_id(456)
         assert result == entry2
 
     def test_table_property_empty(self):
@@ -55,28 +41,9 @@ class TestSwiftTOORequests:
         assert header == []
         assert data == []
 
-    @patch("swifttools.swift_too.swift.resolve.SwiftResolve")
-    def test_table_property_with_entries(self, mock_resolve):
-        mock_resolve.return_value = MagicMock(ra=10.0, dec=20.0, status=MagicMock(warnings=[], errors=[]))
-        requests = SwiftTOORequests(autosubmit=False)
-        entry = SwiftTOORequest(
-            too_id=123,
-            target_name="Test Target",
-            instrument="XRT",
-            ra=10.0,
-            dec=20.0,
-            uvot_mode_approved=0x9999,
-            xrt_mode_approved=7,
-            timestamp=datetime(2023, 1, 1),
-            l_name="Test L",
-            urgency=2,  # HIGH
-            date_begin=datetime(2023, 1, 1),
-            date_end=datetime(2023, 1, 2),
-            target_id=456,
-            autosubmit=False,
-        )
-        requests.entries = [entry]
-        header, data = requests._table
+    def test_table_property_with_entries(self, swift_requests, sample_too_request):
+        swift_requests.entries = [sample_too_request]
+        header, data = swift_requests._table
         expected_header = [
             "ToO ID",
             "Object Name",

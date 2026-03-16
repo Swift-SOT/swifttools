@@ -1,70 +1,18 @@
-import pytest
-
-from swifttools.swift_too.swift.uvot import SwiftUVOTMode, SwiftUVOTModeEntry
-
-
-@pytest.fixture
-def uvot_mode():
-    return SwiftUVOTMode(uvot_mode=0x30ED, autosubmit=False)
-
-
-@pytest.fixture
-def uvot_mode_empty():
-    uvot = SwiftUVOTMode(autosubmit=False)
-    uvot.entries = []
-    return uvot
-
-
-@pytest.fixture
-def uvot_mode_with_entries(uvot_mode_empty):
-    entry = SwiftUVOTModeEntry(
-        uvot_mode=0x30ED,
-        filter_name="V",
-        eventmode=False,
-        field_of_view=17,
-        binning=1,
-        max_exposure=1000,
-        weight=True,
-        comment="Test filter",
-    )
-    uvot_mode_empty.entries = [entry]
-    return uvot_mode_empty
-
-
-@pytest.fixture
-def uvot_entry():
-    return SwiftUVOTModeEntry(uvot_mode=0x30ED)
-
-
 class TestSwiftUVOTMode:
     def test_init(self, uvot_mode):
         assert uvot_mode.uvot_mode == 0x30ED
 
-    def test_getitem_first(self):
-        uvot = SwiftUVOTMode(autosubmit=False)
-        entry1 = SwiftUVOTModeEntry(uvot_mode=0x30ED)
-        entry2 = SwiftUVOTModeEntry(uvot_mode=0x30ED)
-        uvot.entries = [entry1, entry2]
-        assert uvot[0] == entry1
+    def test_getitem_first(self, uvot_mode_with_two_entries, sample_uvot_entries):
+        assert uvot_mode_with_two_entries[0] == sample_uvot_entries[0]
 
-    def test_getitem_second(self):
-        uvot = SwiftUVOTMode(autosubmit=False)
-        entry1 = SwiftUVOTModeEntry(uvot_mode=0x30ED)
-        entry2 = SwiftUVOTModeEntry(uvot_mode=0x30ED)
-        uvot.entries = [entry1, entry2]
-        assert uvot[1] == entry2
+    def test_getitem_second(self, uvot_mode_with_two_entries, sample_uvot_entries):
+        assert uvot_mode_with_two_entries[1] == sample_uvot_entries[1]
 
-    def test_len_empty(self):
-        uvot = SwiftUVOTMode(autosubmit=False)
-        assert len(uvot) == 0
+    def test_len_empty(self, uvot_mode_empty):
+        assert len(uvot_mode_empty) == 0
 
-    def test_len_three(self):
-        uvot = SwiftUVOTMode(autosubmit=False)
-        entry1 = SwiftUVOTModeEntry(uvot_mode=0x30ED)
-        entry2 = SwiftUVOTModeEntry(uvot_mode=0x30ED)
-        entry3 = SwiftUVOTModeEntry(uvot_mode=0x30ED)
-        uvot.entries = [entry1, entry2, entry3]
-        assert len(uvot) == 3
+    def test_len_three(self, uvot_mode_with_three_entries):
+        assert len(uvot_mode_with_three_entries) == 3
 
     def test_str_empty(self, uvot_mode_empty):
         str_repr = str(uvot_mode_empty)

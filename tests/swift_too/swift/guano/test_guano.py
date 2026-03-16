@@ -4,101 +4,27 @@ from unittest.mock import patch
 import pytest
 
 from swifttools.swift_too.swift.guano import (
-    SwiftGUANO,
     SwiftGUANOData,
     SwiftGUANOEntry,
     SwiftGUANOGetSchema,
-    SwiftGUANOGTI,
 )
-
-
-@pytest.fixture
-def guano():
-    return SwiftGUANO(autosubmit=False)
-
-
-@pytest.fixture
-def entry():
-    return SwiftGUANOEntry()
-
-
-@pytest.fixture
-def data():
-    return SwiftGUANOData(all_gtis=[])
-
-
-@pytest.fixture
-def gti():
-    return SwiftGUANOGTI()
-
-
-@pytest.fixture
-def mock_data():
-    return type("MockData", (), {"exposure": 5.0, "gti": None, "all_gtis": []})()
-
-
-@pytest.fixture
-def mock_data_none():
-    return type("MockData", (), {"exposure": None, "gti": None, "all_gtis": []})()
-
-
-@pytest.fixture
-def mock_entry():
-    return type("MockEntry", (), {"_calc_begin_end": lambda self: None})()
 
 
 class TestSwiftGUANO:
     def test_init_entries_empty(self, guano):
         assert guano.entries == []
 
-    def test_getitem_first(self, guano):
-        from datetime import datetime
+    def test_getitem_first(self, guano_with_entries, sample_guano_entries):
+        assert guano_with_entries[0] == sample_guano_entries[0]
 
-        from swifttools.swift_too.swift.guano import SwiftGUANOEntry
-
-        entry1 = SwiftGUANOEntry(
-            triggertype="GRB", triggertime=datetime(2023, 1, 1), offset=10.0, duration=5.0, obs_id="00012345001"
-        )
-        entry2 = SwiftGUANOEntry(
-            triggertype="GRB", triggertime=datetime(2023, 1, 2), offset=20.0, duration=6.0, obs_id="00012345002"
-        )
-        guano.entries = [entry1, entry2]
-        assert guano[0] == entry1
-
-    def test_getitem_second(self, guano):
-        from datetime import datetime
-
-        from swifttools.swift_too.swift.guano import SwiftGUANOEntry
-
-        entry1 = SwiftGUANOEntry(
-            triggertype="GRB", triggertime=datetime(2023, 1, 1), offset=10.0, duration=5.0, obs_id="00012345001"
-        )
-        entry2 = SwiftGUANOEntry(
-            triggertype="GRB", triggertime=datetime(2023, 1, 2), offset=20.0, duration=6.0, obs_id="00012345002"
-        )
-        guano.entries = [entry1, entry2]
-        assert guano[1] == entry2
+    def test_getitem_second(self, guano_with_entries, sample_guano_entries):
+        assert guano_with_entries[1] == sample_guano_entries[1]
 
     def test_len_empty(self, guano):
         assert len(guano) == 0
 
-    def test_len_with_entries(self, guano):
-        from datetime import datetime
-
-        from swifttools.swift_too.swift.guano import SwiftGUANOEntry
-
-        entries = [
-            SwiftGUANOEntry(
-                triggertype="GRB",
-                triggertime=datetime(2023, 1, i + 1),
-                offset=10.0 * i,
-                duration=5.0,
-                obs_id=f"0001234500{i}",
-            )
-            for i in range(3)
-        ]
-        guano.entries = entries
-        assert len(guano) == 3
+    def test_len_with_entries(self, guano_with_three_entries):
+        assert len(guano_with_three_entries) == 3
 
     def test_validate_with_length(self, guano):
         guano.length = 1.0
@@ -121,19 +47,8 @@ class TestSwiftGUANO:
             "Observation ID",
         ]
 
-    def test_table_property_table_length(self, guano):
-        # Setup with entries
-        entry1 = SwiftGUANOEntry(
-            triggertype="GRB",
-            triggertime=datetime(2023, 1, 1, 12, 0, 0),
-            offset=10.0,
-            duration=5.0,
-            obs_id="00012345001",
-            quadsaway=0,
-        )
-        entry1.data = SwiftGUANOData(exposure=5.0, all_gtis=[])
-        guano.entries = [entry1]
-        header, table = guano._table
+    def test_table_property_table_length(self, guano_with_table_entry):
+        header, table = guano_with_table_entry._table
         assert len(table) == 1
 
     def test_table_property_first_entry_type(self, guano):
