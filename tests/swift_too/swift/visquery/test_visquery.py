@@ -92,6 +92,35 @@ class TestSwiftVisQuery:
         payload = schema.model_dump(exclude_none=True)
         assert payload["length"] == 7
 
+    def test_get_schema_normalize_with_object_input(self):
+        class InputObj:
+            def __init__(self):
+                self.end = datetime(2023, 1, 2)
+                self.length = 3
+
+        values = SwiftVisQueryGetSchema.normalize_end_length(InputObj())
+        assert values["length"] is None
+
+    def test_iter_empty_returns_fallback_window(self, vis_query):
+        values = list(iter(vis_query))
+        assert len(values) == 1
+        assert values[0].begin == vis_query.begin
+        assert values[0].end == vis_query.begin
+
+    def test_getitem_empty_zero_returns_fallback_window(self, vis_query):
+        fallback = vis_query[0]
+        assert fallback.begin == vis_query.begin
+        assert fallback.end == vis_query.begin
+
+    def test_getitem_empty_negative_one_returns_fallback_window(self, vis_query):
+        fallback = vis_query[-1]
+        assert fallback.begin == vis_query.begin
+        assert fallback.end == vis_query.begin
+
+    def test_getitem_empty_raises_index_error(self, vis_query):
+        with pytest.raises(IndexError):
+            _ = vis_query[1]
+
 
 class TestSwiftVisWindow:
     def test_table_header(self, vis_window):
@@ -129,3 +158,8 @@ class TestSwiftVisWindow:
         assert "<table" in html_repr
         assert "Begin Time" in html_repr
         assert "End Time" in html_repr
+
+    def test_str(self, vis_window):
+        text = str(vis_window)
+        assert "2023-01-01" in text
+        assert "2023-01-02" in text

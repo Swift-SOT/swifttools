@@ -3,8 +3,14 @@ from unittest.mock import MagicMock, patch
 import pytest
 from pydantic import ValidationError
 
-from swifttools.swift_too.base.common import API_URL
-from swifttools.swift_too.swift.toorequest import SwiftTOOFormSchema, SwiftTOOPostSchema, SwiftTOORequest
+from swifttools.swift_too.base.common import API_URL, TOOAPIBaseclass
+from swifttools.swift_too.base.status import TOOStatus
+from swifttools.swift_too.swift.toorequest import (
+    SwiftTOOFormSchema,
+    SwiftTOOPostSchema,
+    SwiftTOORequest,
+    SwiftTOORequestSchema,
+)
 
 
 class TestSwiftTOORequestInit:
@@ -580,6 +586,93 @@ class TestSwiftTOOFormSchema:
             )
         assert "Must specify exposure time per visit if number of visits is specified" in str(exc_info.value)
 
+    def test_check_proposal_sets_exposure_from_visits(self):
+        schema = SwiftTOOFormSchema.model_construct(
+            target_name="Test Target",
+            target_type="Normal",
+            ra=10.0,
+            dec=20.0,
+            obs_type="Spectroscopy",
+            science_just="Test justification",
+            immediate_objective="Test objective",
+            exposure=1000,
+            exp_time_just="Test exp justification",
+            xrt_countrate="1.0",
+            instrument="XRT",
+            exp_time_per_visit=500,
+            num_of_visits=2,
+            monitoring_freq="1 day",
+            uvot_mode="0x9999",
+            uvot_just="",
+        )
+        object.__setattr__(schema, "exposure", None)
+        schema.check_proposal()
+        assert schema.exposure == 1000
+
+    def test_check_proposal_requires_monitoring_freq_when_num_visits_set(self):
+        schema = SwiftTOOFormSchema.model_construct(
+            target_name="Test Target",
+            target_type="Normal",
+            ra=10.0,
+            dec=20.0,
+            obs_type="Spectroscopy",
+            science_just="Test justification",
+            immediate_objective="Test objective",
+            exposure=1000,
+            exp_time_just="Test exp justification",
+            xrt_countrate="1.0",
+            instrument="XRT",
+            exp_time_per_visit=500,
+            num_of_visits=1,
+            monitoring_freq="1 day",
+            uvot_mode="0x9999",
+            uvot_just="",
+        )
+        object.__setattr__(schema, "monitoring_freq", None)
+        with pytest.raises(ValueError, match="Must specify monitoring frequency if number of visits is specified"):
+            schema.check_proposal()
+
+    def test_check_proposal_requires_exp_time_just_when_num_visits_set(self):
+        schema = SwiftTOOFormSchema.model_construct(
+            target_name="Test Target",
+            target_type="Normal",
+            ra=10.0,
+            dec=20.0,
+            obs_type="Spectroscopy",
+            science_just="Test justification",
+            immediate_objective="Test objective",
+            exposure=1000,
+            exp_time_just="Test exp justification",
+            xrt_countrate="1.0",
+            instrument="XRT",
+            exp_time_per_visit=500,
+            num_of_visits=1,
+            monitoring_freq="1 day",
+            uvot_mode="0x9999",
+            uvot_just="",
+        )
+        object.__setattr__(schema, "exp_time_just", None)
+        with pytest.raises(ValueError, match="Must specify exposure time justification"):
+            schema.check_proposal()
+
+
+class TestSwiftTOORequestSchemaCoverage:
+    def test_exposure_setter(self):
+        schema = SwiftTOORequestSchema()
+        schema.exposure = 1.8
+        assert schema._exposure == 1
+
+    def test_validate_exposure_returns_calculated_value(self):
+        with (
+            patch.object(SwiftTOORequestSchema, "exp_time_per_visit", 50, create=True),
+            patch.object(SwiftTOORequestSchema, "num_of_visits", 3, create=True),
+        ):
+            value = SwiftTOORequestSchema.validate_exposure(None, None)
+        assert value == 150
+
+    def test_validate_exposure_passthrough(self):
+        assert SwiftTOORequestSchema.validate_exposure(25, None) == 25
+
 
 class TestSwiftTOOPostSchema:
     def test_check_requirements_validator_raises_validation_error(self):
@@ -589,3 +682,57 @@ class TestSwiftTOOPostSchema:
                 shared_secret="testsecret",
             )
         assert "Missing required field" in str(exc_info.value) or "Field required" in str(exc_info.value)
+
+
+class TestSwiftTOORequestCoverage:
+    def test_obs_types_property(self, basic_too_request):
+        obs_types = basic_too_request.obs_types
+        assert len(obs_types) > 0
+        assert all(hasattr(obs, "value") for obs in obs_types)
+
+    def test_table_header_empty_when_no_parameters_selected(self, basic_too_request):
+        request = basic_too_request
+        request.decision = None
+        request._varnames = {}
+        header, table = request._table
+        assert header == []
+        assert table == []
+
+    def test_table_raw_data_fallback_when_model_dump_fails(self, basic_too_request):
+        request = basic_too_request
+        request.decision = "Approved"
+        request.__dict__["target_name"] = "Fallback Target"
+
+        with patch.object(SwiftTOORequest, "model_dump", autospec=True, side_effect=Exception("boom")):
+            header, table = request._table
+
+        assert header == ["Parameter", "Value"]
+        assert ["Object Name", "Fallback Target"] in table
+
+    def test_validate_calls_status_clear_and_validate_post(self, basic_too_request):
+        request = basic_too_request
+
+        with (
+            patch.object(TOOStatus, "clear", autospec=True) as clear_mock,
+            patch.object(TOOAPIBaseclass, "validate_post", return_value=True) as validate_post_mock,
+        ):
+            assert request.validate() is True
+
+        clear_mock.assert_called_once_with(request.status)
+        validate_post_mock.assert_called_once()
+
+    def test_server_validate_merges_previous_warnings_on_error(self, basic_too_request):
+        request = basic_too_request
+        request.status.warnings = ["pre-existing warning"]
+
+        with (
+            patch.object(SwiftTOORequest, "validate_post", return_value=True) as validate_post_mock,
+            patch.object(SwiftTOORequest, "submit", return_value=True) as submit_mock,
+        ):
+            request.status.errors = ["server error"]
+            result = request.server_validate()
+
+        assert result is False
+        validate_post_mock.assert_called_once()
+        submit_mock.assert_called_once()
+        assert request.status.warnings == ["pre-existing warning", "pre-existing warning"]

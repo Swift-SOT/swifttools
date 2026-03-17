@@ -4,7 +4,7 @@ import pytest
 
 from swifttools.swift_too.swift.calendar import SwiftCalendar
 from swifttools.swift_too.swift.requests import SwiftTOORequests, SwiftTOORequestsGetSchema
-from swifttools.swift_too.swift.toorequest import SwiftTOORequest
+from swifttools.swift_too.swift.toorequest import SwiftTOORequest, SwiftTOORequestSchema
 
 
 class TestSwiftTOORequestsGetSchema:
@@ -16,6 +16,15 @@ class TestSwiftTOORequestsGetSchema:
         with pytest.raises(ValueError, match="At least one parameter must be set"):
             SwiftTOORequestsGetSchema()
 
+    def test_validator_accepts_object_input(self):
+        class InputObj:
+            def __init__(self):
+                self.begin = datetime(2023, 1, 1)
+
+        data = SwiftTOORequestsGetSchema.validate_at_least_one_param(InputObj())
+        assert isinstance(data, dict)
+        assert data["begin"] == datetime(2023, 1, 1)
+
 
 class TestSwiftTOORequests:
     def test_init(self, swift_requests):
@@ -24,6 +33,10 @@ class TestSwiftTOORequests:
     def test_getitem(self, swift_requests, sample_too_request):
         swift_requests.entries = [sample_too_request]
         assert swift_requests[0] == sample_too_request
+
+    def test_getitem_empty_returns_schema(self, swift_requests):
+        value = swift_requests[0]
+        assert isinstance(value, SwiftTOORequestSchema)
 
     def test_len(self, swift_requests):
         swift_requests.entries = [SwiftTOORequest(too_id=1), SwiftTOORequest(too_id=2)]
@@ -70,6 +83,35 @@ class TestSwiftTOORequests:
         swift_requests.entries = [sample_too_request]
         header, data = swift_requests._table
         assert len(data) == 1
+
+    def test_format_uvot_mode_none(self):
+        assert SwiftTOORequests._format_uvot_mode(None) is None
+
+    def test_format_uvot_mode_int(self):
+        assert SwiftTOORequests._format_uvot_mode(39321) == "0x9999"
+
+    def test_format_uvot_mode_string_hex(self):
+        assert SwiftTOORequests._format_uvot_mode("0x9999") == "0x9999"
+
+    def test_format_uvot_mode_string_invalid(self):
+        assert SwiftTOORequests._format_uvot_mode("not-a-mode") == "not-a-mode"
+
+    def test_format_uvot_mode_passthrough(self):
+        mode = {"mode": 1}
+        assert SwiftTOORequests._format_uvot_mode(mode) == mode
+
+    def test_format_xrt_mode_none(self):
+        assert SwiftTOORequests._format_xrt_mode(None) == "Unset"
+
+    def test_format_xrt_mode_string_invalid(self):
+        assert SwiftTOORequests._format_xrt_mode("bad") == "bad"
+
+    def test_format_xrt_mode_int_unknown(self):
+        assert SwiftTOORequests._format_xrt_mode(99999) == "99999"
+
+    def test_format_xrt_mode_passthrough(self):
+        mode = {"mode": 1}
+        assert SwiftTOORequests._format_xrt_mode(mode) == mode
 
     def test_too_request_calendar_is_swiftcalendar(self):
         req = SwiftTOORequest(
