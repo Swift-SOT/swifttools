@@ -1,9 +1,9 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 from pydantic import ValidationError
 
-from swifttools.swift_too.base.common import API_URL, TOOAPIBaseclass
+from swifttools.swift_too.base.common import TOOAPIBaseclass
 from swifttools.swift_too.base.status import TOOStatus
 from swifttools.swift_too.swift.toorequest import (
     SwiftTOOFormSchema,
@@ -29,117 +29,20 @@ class TestSwiftTOORequestSubmit:
         too = too_request_base
         assert too.status.status == "Pending"
 
-    @patch("swifttools.swift_too.base.common.cookie_jar")
-    @patch("httpx.Client")
-    def test_submit_result_status_after_submit(self, mock_client, mock_cookie_jar, too_request_base):
-        too = too_request_base
-        too._api_base = API_URL
-        # Mock the response
-        mock_response = mock_client.return_value.__enter__.return_value.post.return_value
-        mock_response.status_code = 200
-        mock_response.json.return_value = {"status": "Accepted", "too_id": 123}
-
-        # Mock login
-        login_response = mock_client.return_value.__enter__.return_value.post.return_value
-        login_response.status_code = 200
-
-        with patch.object(too, "validate_post", return_value=True):
-            with patch.object(type(too), "_post_schema") as mock_post_schema:
-                mock_post_schema.model_validate.return_value.model_dump.return_value = {"param": "value"}
-
-                def mock_handle_response(response):
-                    # Directly update the object like _handle_response would
-                    too.status.status = "Accepted"
-                    too.too_id = 123
-                    return True
-
-                with patch.object(too, "_handle_response", side_effect=mock_handle_response):
-                    _ = too.submit()
-                    assert too.status.status == "Accepted"
-
-    @patch("swifttools.swift_too.base.common.cookie_jar")
-    @patch("httpx.Client")
-    def test_submit_result_too_id_after_submit(self, mock_client, mock_cookie_jar, too_request_base):
-        too = too_request_base
-        too._api_base = API_URL
-        # Mock the response
-        mock_response = mock_client.return_value.__enter__.return_value.post.return_value
-        mock_response.status_code = 200
-        mock_response.json.return_value = {"status": "Accepted", "too_id": 123}
-
-        # Mock login
-        login_response = mock_client.return_value.__enter__.return_value.post.return_value
-        login_response.status_code = 200
-
-        with patch.object(too, "validate_post", return_value=True):
-            with patch.object(type(too), "_post_schema") as mock_post_schema:
-                mock_post_schema.model_validate.return_value.model_dump.return_value = {"param": "value"}
-
-                def mock_handle_response(response):
-                    # Directly update the object like _handle_response would
-                    too.status.status = "Accepted"
-                    too.too_id = 123
-                    return True
-
-                with patch.object(too, "_handle_response", side_effect=mock_handle_response):
-                    _ = too.submit()
-                    assert too.too_id == 123
-
-    @patch("swifttools.swift_too.base.common.cookie_jar")
-    @patch("httpx.Client")
-    def test_submit_status(self, mock_client, mock_cookie_jar, too_request_base):
-        too = too_request_base
-        too._api_base = API_URL
-        # Mock the response
-        mock_response = mock_client.return_value.__enter__.return_value.post.return_value
-        mock_response.status_code = 200
-        mock_response.json.return_value = {"status": "Accepted", "too_id": 123}
-
-        # Mock login
-        login_response = mock_client.return_value.__enter__.return_value.post.return_value
-        login_response.status_code = 200
-
-        with patch.object(too, "validate_post", return_value=True):
-            with patch.object(type(too), "_post_schema") as mock_post_schema:
-                mock_post_schema.model_validate.return_value.model_dump.return_value = {"param": "value"}
-
-                def mock_handle_response(response):
-                    # Directly update the object like _handle_response would
-                    too.status.status = "Accepted"
-                    too.too_id = 123
-                    return True
-
-                with patch.object(too, "_handle_response", side_effect=mock_handle_response):
-                    too.submit()
-                    assert too.status.status == "Accepted"
-
-    @patch("swifttools.swift_too.base.common.cookie_jar")
-    @patch("httpx.Client")
-    def test_submit_too_id(self, mock_client, mock_cookie_jar, too_request_base):
-        too = too_request_base
-        too._api_base = API_URL
-        # Mock the response
-        mock_response = mock_client.return_value.__enter__.return_value.post.return_value
-        mock_response.status_code = 200
-        mock_response.json.return_value = {"status": "Accepted", "too_id": 123}
-
-        # Mock login
-        login_response = mock_client.return_value.__enter__.return_value.post.return_value
-        login_response.status_code = 200
-
-        with patch.object(too, "validate_post", return_value=True):
-            with patch.object(type(too), "_post_schema") as mock_post_schema:
-                mock_post_schema.model_validate.return_value.model_dump.return_value = {"param": "value"}
-
-                def mock_handle_response(response):
-                    # Directly update the object like _handle_response would
-                    too.status.status = "Accepted"
-                    too.too_id = 123
-                    return True
-
-                with patch.object(too, "_handle_response", side_effect=mock_handle_response):
-                    too.submit()
-                    assert too.too_id == 123
+    @pytest.mark.parametrize(
+        "field, expected",
+        [
+            ("status.status", "Accepted"),
+            ("too_id", 123),
+        ],
+    )
+    def test_submit_updates_expected_fields(self, too_request_submit_success, field, expected):
+        too = too_request_submit_success
+        too.submit()
+        if field == "status.status":
+            assert too.status.status == expected
+        else:
+            assert too.too_id == expected
 
 
 class TestSwiftTOORequestTableProperty:
@@ -185,15 +88,8 @@ class TestSwiftTOORequestTablePropertyWithDecision:
 
 
 class TestSwiftTOORequestServerValidateSuccess:
-    @patch("swifttools.swift_too.base.common.cookie_jar")
-    @patch("httpx.Client")
-    def test_server_validate_result(self, mock_client, mock_cookie_jar, too_request_base):
-        too = too_request_base
-        too._api_base = API_URL
-        # Set required fields for validate_post
-        object.__setattr__(too, "target_name", "Test Target")
-        object.__setattr__(too, "immediate_objective", "Test immediate objective")
-        object.__setattr__(too, "uvot_just", "Test UVOT justification")
+    def test_server_validate_result(self, too_request_with_required_fields):
+        too = too_request_with_required_fields
         # Clear errors before calling server_validate
         too.status.errors.clear()
         too.status.warnings = ["Some warning"]
@@ -202,15 +98,8 @@ class TestSwiftTOORequestServerValidateSuccess:
                 result = too.server_validate()
                 assert result is True
 
-    @patch("swifttools.swift_too.base.common.cookie_jar")
-    @patch("httpx.Client")
-    def test_server_validate_validate_only(self, mock_client, mock_cookie_jar, too_request_base):
-        too = too_request_base
-        too._api_base = API_URL
-        # Set required fields
-        object.__setattr__(too, "target_name", "Test Target")
-        object.__setattr__(too, "immediate_objective", "Test objective")
-        object.__setattr__(too, "uvot_just", "Test UVOT justification")
+    def test_server_validate_validate_only(self, too_request_with_required_fields):
+        too = too_request_with_required_fields
         with patch.object(SwiftTOORequest, "validate_post", return_value=True):
             with patch.object(SwiftTOORequest, "submit") as mock_submit:
                 mock_submit.return_value = True
@@ -219,15 +108,8 @@ class TestSwiftTOORequestServerValidateSuccess:
                 too.server_validate()
                 assert too.validate_only is False
 
-    @patch("swifttools.swift_too.base.common.cookie_jar")
-    @patch("httpx.Client")
-    def test_server_validate_warnings(self, mock_client, mock_cookie_jar, too_request_base):
-        too = too_request_base
-        too._api_base = API_URL
-        # Set required fields
-        object.__setattr__(too, "target_name", "Test Target")
-        object.__setattr__(too, "immediate_objective", "Test objective")
-        object.__setattr__(too, "uvot_just", "Test UVOT justification")
+    def test_server_validate_warnings(self, too_request_with_required_fields):
+        too = too_request_with_required_fields
         with patch.object(SwiftTOORequest, "validate_post", return_value=True):
             with patch.object(SwiftTOORequest, "submit") as mock_submit:
                 mock_submit.return_value = True
@@ -236,53 +118,37 @@ class TestSwiftTOORequestServerValidateSuccess:
                 too.server_validate()
                 assert len(too.status.warnings) == 1
 
-    def test_server_validate_status_only_response_preserves_request_fields(self, too_request_base):
-        too = too_request_base
-        too._api_base = API_URL
-        # Set required fields
-        object.__setattr__(too, "target_name", "Test Target")
-        object.__setattr__(too, "immediate_objective", "Test objective")
-        object.__setattr__(too, "uvot_just", "Test UVOT justification")
+    def test_server_validate_status_only_response_preserves_request_fields(
+        self, too_request_with_required_fields, status_validated_response
+    ):
+        too = too_request_with_required_fields
 
         original_target_name = too.target_name
         original_science_just = too.science_just
-
-        # Return a status-only payload through the normal response handler.
-        response = MagicMock()
-        response.status_code = 200
-        response.json.return_value = {"status": "Validated"}
 
         with patch.object(SwiftTOORequest, "validate_post", return_value=True):
             with patch.object(
                 SwiftTOORequest,
                 "submit_post",
                 autospec=True,
-                side_effect=lambda this: this._handle_response(response),
+                side_effect=lambda this: this._handle_response(status_validated_response),
             ):
                 assert too.server_validate() is True
 
         assert too.target_name == original_target_name
         assert too.science_just == original_science_just
 
-    def test_server_validate_status_only_response_preserves_validate_only(self, too_request_base):
-        too = too_request_base
-        too._api_base = API_URL
-        # Set required fields
-        object.__setattr__(too, "target_name", "Test Target")
-        object.__setattr__(too, "immediate_objective", "Test objective")
-        object.__setattr__(too, "uvot_just", "Test UVOT justification")
-
-        # Return a status-only payload through the normal response handler.
-        response = MagicMock()
-        response.status_code = 200
-        response.json.return_value = {"status": "Validated"}
+    def test_server_validate_status_only_response_preserves_validate_only(
+        self, too_request_with_required_fields, status_validated_response
+    ):
+        too = too_request_with_required_fields
 
         with patch.object(SwiftTOORequest, "validate_post", return_value=True):
             with patch.object(
                 SwiftTOORequest,
                 "submit_post",
                 autospec=True,
-                side_effect=lambda this: this._handle_response(response),
+                side_effect=lambda this: this._handle_response(status_validated_response),
             ):
                 assert too.server_validate() is True
 
@@ -290,11 +156,8 @@ class TestSwiftTOORequestServerValidateSuccess:
 
 
 class TestSwiftTOORequestServerValidateFailure:
-    @patch("swifttools.swift_too.base.common.cookie_jar")
-    @patch("httpx.Client")
-    def test_server_validate_result_failure(self, mock_client, mock_cookie_jar, too_request_base):
-        too = too_request_base
-        too._api_base = API_URL
+    def test_server_validate_result_failure(self, too_request_with_required_fields):
+        too = too_request_with_required_fields
         with patch.object(too, "validate_post", return_value=True):
             with patch.object(too, "submit") as mock_submit:
                 mock_submit.return_value = True
@@ -302,11 +165,8 @@ class TestSwiftTOORequestServerValidateFailure:
                 result = too.server_validate()
                 assert result is False
 
-    @patch("swifttools.swift_too.base.common.cookie_jar")
-    @patch("httpx.Client")
-    def test_server_validate_validate_only_failure(self, mock_client, mock_cookie_jar, too_request_base):
-        too = too_request_base
-        too._api_base = API_URL
+    def test_server_validate_validate_only_failure(self, too_request_with_required_fields):
+        too = too_request_with_required_fields
         with patch.object(too, "validate_post", return_value=True):
             with patch.object(too, "submit") as mock_submit:
                 mock_submit.return_value = True
@@ -586,71 +446,22 @@ class TestSwiftTOOFormSchema:
             )
         assert "Must specify exposure time per visit if number of visits is specified" in str(exc_info.value)
 
-    def test_check_proposal_sets_exposure_from_visits(self):
-        schema = SwiftTOOFormSchema.model_construct(
-            target_name="Test Target",
-            target_type="Normal",
-            ra=10.0,
-            dec=20.0,
-            obs_type="Spectroscopy",
-            science_just="Test justification",
-            immediate_objective="Test objective",
-            exposure=1000,
-            exp_time_just="Test exp justification",
-            xrt_countrate="1.0",
-            instrument="XRT",
-            exp_time_per_visit=500,
-            num_of_visits=2,
-            monitoring_freq="1 day",
-            uvot_mode="0x9999",
-            uvot_just="",
-        )
+    def test_check_proposal_sets_exposure_from_visits(self, form_schema_construct_kwargs):
+        kwargs = dict(form_schema_construct_kwargs)
+        kwargs["num_of_visits"] = 2
+        schema = SwiftTOOFormSchema.model_construct(**kwargs)
         object.__setattr__(schema, "exposure", None)
         schema.check_proposal()
         assert schema.exposure == 1000
 
-    def test_check_proposal_requires_monitoring_freq_when_num_visits_set(self):
-        schema = SwiftTOOFormSchema.model_construct(
-            target_name="Test Target",
-            target_type="Normal",
-            ra=10.0,
-            dec=20.0,
-            obs_type="Spectroscopy",
-            science_just="Test justification",
-            immediate_objective="Test objective",
-            exposure=1000,
-            exp_time_just="Test exp justification",
-            xrt_countrate="1.0",
-            instrument="XRT",
-            exp_time_per_visit=500,
-            num_of_visits=1,
-            monitoring_freq="1 day",
-            uvot_mode="0x9999",
-            uvot_just="",
-        )
+    def test_check_proposal_requires_monitoring_freq_when_num_visits_set(self, constructed_form_schema):
+        schema = constructed_form_schema
         object.__setattr__(schema, "monitoring_freq", None)
         with pytest.raises(ValueError, match="Must specify monitoring frequency if number of visits is specified"):
             schema.check_proposal()
 
-    def test_check_proposal_requires_exp_time_just_when_num_visits_set(self):
-        schema = SwiftTOOFormSchema.model_construct(
-            target_name="Test Target",
-            target_type="Normal",
-            ra=10.0,
-            dec=20.0,
-            obs_type="Spectroscopy",
-            science_just="Test justification",
-            immediate_objective="Test objective",
-            exposure=1000,
-            exp_time_just="Test exp justification",
-            xrt_countrate="1.0",
-            instrument="XRT",
-            exp_time_per_visit=500,
-            num_of_visits=1,
-            monitoring_freq="1 day",
-            uvot_mode="0x9999",
-            uvot_just="",
-        )
+    def test_check_proposal_requires_exp_time_just_when_num_visits_set(self, constructed_form_schema):
+        schema = constructed_form_schema
         object.__setattr__(schema, "exp_time_just", None)
         with pytest.raises(ValueError, match="Must specify exposure time justification"):
             schema.check_proposal()
