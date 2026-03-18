@@ -11,7 +11,7 @@ class TOOAPIReprMixin:
     @property
     def _table(self) -> tuple[list[str], list[list[str]]]:
         """Table of details of the class"""
-        _parameters = self.__class__.model_fields.keys()
+        _parameters = self.__class__.model_fields.keys()  # type: ignore[attr-defined]
         header = ["Parameter", "Value"]
         table = []
         for row in _parameters:
@@ -47,6 +47,6 @@ class TOOAPIReprMixin:
 
     def __repr__(self) -> str:
         args = ",".join(
-            [f"{row}='{getattr(self, row)}'" for row in self.__class__.model_fields if getattr(self, row) is not None]
+            [f"{row}='{getattr(self, row)}'" for row in self.__class__.model_fields if getattr(self, row) is not None]  # type: ignore[attr-defined]
         )
         return f"{self.__class__.__name__}({args})"

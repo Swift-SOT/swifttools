@@ -378,7 +378,7 @@ class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, TOOAPIBackCompat, Ba
         return header, [row]
 
 
-class SwiftObservations(dict, TOOAPIBaseclass):
+class SwiftObservations(dict, TOOAPIBaseclass):  # type: ignore[misc]
     """Adapted dictionary class for containing observations that mostly is just
     to ensure that data can be displayed in a consistent format. Key is
     typically the Swift Observation ID in SDC format (e.g. '00012345012')."""

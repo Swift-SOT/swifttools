@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 from pydantic import ConfigDict, Field
 
@@ -61,7 +62,7 @@ class SwiftSAA(TOOAPIBaseclass, TOOAPIClockCorrect, SwiftSAASchema):
         return len(self.entries)
 
     @property
-    def _table(self) -> tuple[list[str], list[list[datetime]]]:
+    def _table(self) -> tuple[list[str], list[list[Any]]]:
         if not self.entries:
             return [], []
         else:

@@ -260,7 +260,7 @@ class TOOAPIClockCorrect:
 
         for (path, _), new_value in zip(datetime_refs, replacement_values):
             if isinstance(new_value, SwiftDateTimeSchema):
-                new_value = new_value.utctime
+                new_value = new_value.utctime  # type: ignore[assignment]
             current = self
             for kind, key in path[:-1]:
                 if kind == "model":
