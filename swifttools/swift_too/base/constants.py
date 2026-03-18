@@ -36,7 +36,7 @@ MODESXRT = {
 }
 
 # Define the API version
-API_VERSION = f"{version_tuple[0]}.{version_tuple[1]}"
+API_VERSION = str(version_tuple[0]) if version_tuple[1] == 0 else f"{version_tuple[0]}.{version_tuple[1]}"
 
 # Submission URL
 # Default to production API; allow explicit override for local/dev testing.
