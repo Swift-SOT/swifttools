@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, computed_field, model_validator
 
 from ..base.back_compat import TOOAPIBackCompat
 from ..base.common import TOOAPIBaseclass
+from ..base.repr import TOOAPIReprMixin
 from ..base.schemas import (
     AstropyAngle,
     AstropyDateTime,
@@ -22,7 +23,9 @@ from .resolve import TOOAPIAutoResolve
 from .schemas import ObsIDSDC
 
 
-class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect, TOOAPIBaseclass, TOOAPIDownloadData, TOOAPIBackCompat):
+class SwiftAFSTEntry(
+    CoordinateSchema, TOOAPIClockCorrect, TOOAPIBaseclass, TOOAPIDownloadData, TOOAPIBackCompat, TOOAPIReprMixin
+):
     """Class that defines an individual entry in the Swift As-Flown Timeline
 
     Attributes

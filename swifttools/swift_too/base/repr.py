@@ -9,7 +9,7 @@ class TOOAPIReprMixin:
     """Mixin to provide string and HTML representations for TOO API classes."""
 
     @property
-    def _table(self):
+    def _table(self) -> tuple[list[str], list[list[str]]]:
         """Table of details of the class"""
         _parameters = self.__class__.model_fields.keys()
         header = ["Parameter", "Value"]
@@ -25,7 +25,7 @@ class TOOAPIReprMixin:
                     table.append([row, "\n".join(textwrap.wrap(f"{value}"))])
         return header, table
 
-    def _repr_html_(self):
+    def _repr_html_(self) -> str:
         if hasattr(self, "status") and not isinstance(self.status, str) and self.status.status == "Rejected":
             return "<b>Rejected with the following error(s): </b>" + " ".join(self.status.errors)
         else:
@@ -35,7 +35,7 @@ class TOOAPIReprMixin:
             else:
                 return "No data"
 
-    def __str__(self):
+    def __str__(self) -> str:
         if hasattr(self, "status") and not isinstance(self.status, str) and self.status.status == "Rejected":
             return "Rejected with the following error(s): " + " ".join(self.status.errors)
         else:
@@ -45,7 +45,7 @@ class TOOAPIReprMixin:
             else:
                 return "No data"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         args = ",".join(
             [f"{row}='{getattr(self, row)}'" for row in self.__class__.model_fields if getattr(self, row) is not None]
         )
