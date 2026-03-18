@@ -17,12 +17,12 @@ class SwiftDateTimeSchema(BaseSchema):
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def swifttime(self) -> swiftdatetime:
+    def swifttime(self) -> datetime:
         return swiftdatetime.frommet(self.met, utcf=self.utcf, isutc=self.isutc).swifttime
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def utctime(self) -> swiftdatetime:
+    def utctime(self) -> datetime:
         return swiftdatetime.frommet(self.met, utcf=self.utcf, isutc=self.isutc).utctime
 
 
@@ -68,7 +68,7 @@ class SwiftClock(TOOAPIBaseclass, SwiftClockSchema):
         00:00:00 UT. Note that MET is measured using Swift's internal clock, and
         are not corrected for clock drift.
     swifttime : datetime
-        Spacecraft time converted to datetime units. Note that dates are note
+        Spacecraft time converted to datetime units. Note that dates are not
         corrected for leap seconds or clock drift.
     utctime : datetime
         Universal Time value, corrected for Swift's clock drift and leap

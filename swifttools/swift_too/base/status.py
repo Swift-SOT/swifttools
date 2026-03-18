@@ -1,3 +1,5 @@
+from pydantic import Field
+
 from ..swift.schemas import BaseSchema
 from .repr import TOOAPIReprMixin
 
@@ -22,8 +24,8 @@ class SwiftTOOStatus(BaseSchema, TOOAPIReprMixin):
     status: str = "Pending"
     too_id: int | None = None
     jobnumber: int | None = None
-    errors: list = []
-    warnings: list = []
+    errors: list = Field(default_factory=list)
+    warnings: list = Field(default_factory=list)
 
     def __eq__(self, value):
         return value == self.status
