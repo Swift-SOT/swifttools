@@ -151,6 +151,41 @@ class TestSwiftAFSTEntry:
         header, data = entry._table
         assert len(data[0]) == 6
 
+    def test_exposure_is_none_when_settle_missing(self):
+        """Exposure is None when required timestamps are incomplete."""
+        entry = SwiftAFSTEntry(
+            end=datetime(2023, 1, 1, 12, 10, 0),
+            ra=266,
+            dec=-29,
+        )
+
+        assert entry.exposure is None
+
+    def test_slewtime_is_none_when_settle_missing(self):
+        """Slewtime is None when required timestamps are incomplete."""
+        entry = SwiftAFSTEntry(
+            begin=datetime(2023, 1, 1, 12, 0, 0),
+            ra=266,
+            dec=-29,
+        )
+
+        assert entry.slewtime is None
+
+    def test_table_uses_none_for_missing_time_deltas(self):
+        """Table rendering should not raise when time deltas cannot be computed."""
+        entry = SwiftAFSTEntry(
+            begin=datetime(2023, 1, 1, 12, 0, 0),
+            end=datetime(2023, 1, 1, 12, 10, 0),
+            targname="Test Target",
+            obs_id="00012345001",
+            ra=266,
+            dec=-29,
+        )
+
+        _, data = entry._table
+        assert data[0][4] is None
+        assert data[0][5] is None
+
     def test_varnames_contains_begin(self, basic_afst_entry):
         """Test _varnames contains expected keys."""
         assert "begin" in basic_afst_entry._varnames
@@ -547,6 +582,36 @@ class TestSwiftObservation:
         obs = SwiftObservation(entries=entries)
         header, data = obs._table
         assert len(data) == 1
+
+    def test_time_aggregation_exposure_ignores_incomplete_entries(self):
+        """Exposure should only sum snapshots with both settle and end timestamps."""
+        entries = self.create_sample_entries()
+        entries.append(
+            SwiftAFSTEntry(
+                begin=datetime(2023, 1, 1, 12, 20, 0),
+                end=datetime(2023, 1, 1, 12, 25, 0),
+                ra=266,
+                dec=-29,
+            )
+        )
+        obs = SwiftObservation(entries=entries)
+
+        assert obs.exposure == timedelta(minutes=8)
+
+    def test_time_aggregation_slewtime_ignores_incomplete_entries(self):
+        """Slewtime should only sum snapshots with both begin and settle timestamps."""
+        entries = self.create_sample_entries()
+        entries.append(
+            SwiftAFSTEntry(
+                begin=datetime(2023, 1, 1, 12, 20, 0),
+                end=datetime(2023, 1, 1, 12, 25, 0),
+                ra=266,
+                dec=-29,
+            )
+        )
+        obs = SwiftObservation(entries=entries)
+
+        assert obs.slewtime == timedelta(minutes=2)
 
 
 class TestSwiftObservations:
