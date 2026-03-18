@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import ConfigDict
+from pydantic import ConfigDict, Field
 
 from ..base.common import TOOAPIBaseclass
 from ..base.repr import TOOAPIReprMixin
@@ -30,8 +30,8 @@ class SwiftSAAEntry(BaseSchema, TOOAPIClockCorrect, TOOAPIReprMixin):
 
 class SwiftSAASchema(OptionalBeginEndLengthSchemaDefaultLength):
     bat: bool = False
-    entries: list[SwiftSAAEntry] = []
-    status: TOOStatus = TOOStatus()
+    entries: list[SwiftSAAEntry] = Field(default_factory=list)
+    status: TOOStatus = Field(default_factory=TOOStatus)
 
 
 class SwiftSAA(TOOAPIBaseclass, TOOAPIClockCorrect, SwiftSAASchema):

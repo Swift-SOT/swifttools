@@ -123,8 +123,8 @@ class SwiftPPSTSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
     target_id: int | list[int] | None = None
     obs_id: ObsIDSDC | list[ObsIDSDC] | None = None
     ppstmax: datetime | None = None
-    entries: list[SwiftPPSTEntry] = []
-    status: TOOStatus = TOOStatus()
+    entries: list[SwiftPPSTEntry] = Field(default_factory=list)
+    status: TOOStatus = Field(default_factory=TOOStatus)
 
 
 class SwiftPPST(

@@ -1,4 +1,4 @@
-from pydantic import ConfigDict, computed_field, model_validator
+from pydantic import ConfigDict, Field, computed_field, model_validator
 
 from ..base.common import TOOAPIBaseclass
 from ..base.schemas import BaseSchema, OptionalCoordinateSchema
@@ -13,7 +13,7 @@ class SwiftResolveGetSchema(BaseSchema):
 class SwiftResolveSchema(OptionalCoordinateSchema):
     name: str | None = None
     resolver: str | None = None
-    status: TOOStatus = TOOStatus()
+    status: TOOStatus = Field(default_factory=TOOStatus)
 
 
 class SwiftResolve(TOOAPIBaseclass, SwiftResolveSchema):
@@ -40,7 +40,7 @@ class SwiftResolve(TOOAPIBaseclass, SwiftResolveSchema):
         Name of name resolving service used
     skycoord : SkyCoord
         SkyCoord version of RA/Dec if astropy is installed
-    status : str
+    status : TOOStatus
         status of API request
     """
 

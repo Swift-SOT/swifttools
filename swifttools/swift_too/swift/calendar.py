@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from ..base.common import TOOAPIBaseclass
 from ..base.repr import TOOAPIReprMixin
@@ -23,7 +23,7 @@ class SwiftCalendarGetSchema(BaseModel):
     too_id: int | None = None
     radius: AstropyAngle | None = 12 / 60.0
     targetid: int | None = None
-    status: TOOStatus = TOOStatus()
+    status: TOOStatus = Field(default_factory=TOOStatus)
 
 
 class SwiftCalendarEntry(BaseSchema, TOOAPIClockCorrect, TOOAPIReprMixin):

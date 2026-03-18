@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from pydantic import ConfigDict, computed_field, model_validator
+from pydantic import ConfigDict, Field, computed_field, model_validator
 
 from ..base.common import TOOAPIBaseclass
 from ..base.schemas import BaseSchema
@@ -13,7 +13,7 @@ class SwiftDateTimeSchema(BaseSchema):
     met: float
     utcf: float
     isutc: bool
-    status: TOOStatus = TOOStatus()
+    status: TOOStatus = Field(default_factory=TOOStatus)
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -30,8 +30,8 @@ class SwiftClockSchema(BaseSchema):
     met: float | list[float] | None = None
     utctime: datetime | list[datetime] | None = None
     swifttime: datetime | list[datetime] | None = None
-    entries: list[SwiftDateTimeSchema] = []
-    status: TOOStatus = TOOStatus()
+    entries: list[SwiftDateTimeSchema] = Field(default_factory=list)
+    status: TOOStatus = Field(default_factory=TOOStatus)
 
     model_config = ConfigDict(extra="ignore")
 

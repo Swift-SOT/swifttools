@@ -51,7 +51,7 @@ class SwiftDataFile(BaseSchema, TOOAPIReprMixin):
         self,
         outdir: str = ".",
         s3: Any | None = None,
-    ):
+    ) -> bool:
         """Download the file into a given `outdir`"""
         # Make the directories for the full path if they don't exist
         fulldir = os.path.join(outdir, self.path)
@@ -109,8 +109,8 @@ class SwiftDataSchema(BaseSchema):
     uksdc: bool = False
     itsdc: bool = False
     subthresh: bool = False
-    entries: list[SwiftDataFile] = []
-    status: TOOStatus = TOOStatus()
+    entries: list[SwiftDataFile] = Field(default_factory=list)
+    status: TOOStatus = Field(default_factory=TOOStatus)
 
 
 class SwiftData(TOOAPIBaseclass, SwiftDataSchema):

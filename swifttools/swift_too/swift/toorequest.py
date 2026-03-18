@@ -62,7 +62,7 @@ class SwiftTOORequestSchema(BaseSchema, TOOAPIReprMixin, TOOAPIBackCompat):
     l_name: str | None = None
     num_of_visits: int = 1
     exp_time_per_visit: int | None = None
-    status: TOOStatus = TOOStatus()
+    status: TOOStatus = Field(default_factory=TOOStatus)
 
     # Internal storage for computed exposure
     _exposure: int | None = None

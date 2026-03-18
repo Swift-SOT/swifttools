@@ -65,8 +65,8 @@ class SwiftVisWindow(BaseSchema, TOOAPIClockCorrect, TOOAPIReprMixin):
 class SwiftVisQuerySchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
     length: AstropyDayLength
     hires: bool = False
-    windows: list[SwiftVisWindow] = []
-    status: TOOStatus = TOOStatus()
+    windows: list[SwiftVisWindow] = Field(default_factory=list)
+    status: TOOStatus = Field(default_factory=TOOStatus)
 
 
 class SwiftVisQueryGetSchema(BaseModel):

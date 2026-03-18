@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import ConfigDict, model_validator
+from pydantic import ConfigDict, Field, model_validator
 
 from ..base.common import TOOAPIBaseclass
 from ..base.constants import XRTMODES
@@ -55,8 +55,8 @@ class SwiftTOORequestsSchema(BaseSchema):
     dec: AstropyAngle | None = None
     radius: AstropyAngle | None = None
     debug: bool = False
-    entries: list[SwiftTOORequestSchema] = []
-    status: TOOStatus = TOOStatus()
+    entries: list[SwiftTOORequestSchema] = Field(default_factory=list)
+    status: TOOStatus = Field(default_factory=TOOStatus)
 
 
 class SwiftTOORequests(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestsSchema):
@@ -68,7 +68,7 @@ class SwiftTOORequests(TOOAPIBaseclass, TOOAPIAutoResolve, SwiftTOORequestsSchem
         Swift TOO API username (default 'anonymous')
     shared_secret: str
         TOO API shared secret (default 'anonymous')
-    entries : list
+    entries : list[SwiftTOORequestSchema]
         List of TOOs (`SwiftTOORequest`)
     status : TOOStatus
         Status of API request

@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from pydantic import ConfigDict, model_validator
+from pydantic import ConfigDict, Field, model_validator
 
 from ..base.common import TOOAPIBaseclass, TOOAPIReprMixin
 from ..base.schemas import (
@@ -228,8 +228,8 @@ class SwiftGUANOSchema(BaseSchema):
     triggertype: str | None = None
     lastcommand: datetime | None = None
     guanostatus: bool | None = None
-    entries: list[SwiftGUANOEntry] = []
-    status: TOOStatus = TOOStatus()
+    entries: list[SwiftGUANOEntry] = Field(default_factory=list)
+    status: TOOStatus = Field(default_factory=TOOStatus)
 
 
 class SwiftGUANO(

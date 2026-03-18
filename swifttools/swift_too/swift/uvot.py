@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from tabulate import tabulate
 
 from ..base.common import TOOAPIBaseclass
@@ -69,8 +69,8 @@ class SwiftUVOTModeSchema(BaseSchema):
     uvot_mode: int | None = None
     ra: float | None = None
     dec: float | None = None
-    entries: list[SwiftUVOTModeEntry] = []
-    status: TOOStatus = TOOStatus()
+    entries: list[SwiftUVOTModeEntry] = Field(default_factory=list)
+    status: TOOStatus = Field(default_factory=TOOStatus)
 
 
 class SwiftUVOTMode(TOOAPIBaseclass, TOOAPIInstruments, SwiftUVOTModeSchema, TOOAPIAutoResolve):
