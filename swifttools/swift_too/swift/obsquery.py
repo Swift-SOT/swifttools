@@ -109,29 +109,31 @@ class SwiftAFSTEntry(CoordinateSchema, TOOAPIClockCorrect, TOOAPIBaseclass, TOOA
     }
 
     @property
-    def exposure(self) -> timedelta:
+    def exposure(self) -> timedelta | None:
         if self.settle is None or self.end is None:
-            raise TypeError("Settle and end times must be set to calculate exposure")
+            return None
         return self.end - self.settle
 
     @property
-    def slewtime(self) -> timedelta:
+    def slewtime(self) -> timedelta | None:
         if self.settle is None or self.begin is None:
-            raise TypeError("Begin and settle times must be set to calculate slewtime")
+            return None
         return self.settle - self.begin
 
     @property
     def _table(self) -> tuple[list[str], list[list[Any]]]:
         parameters = ["begin", "end", "target_name", "obs_id", "exposure", "slewtime"]
         header = [self._header_title(row) for row in parameters]
+        exposure_seconds = self.exposure.seconds if self.exposure is not None else None
+        slewtime_seconds = self.slewtime.seconds if self.slewtime is not None else None
         return header, [
             [
                 self.begin,
                 self.end,
                 self.target_name,
                 self.obs_id,
-                self.exposure.seconds,
-                self.slewtime.seconds,
+                exposure_seconds,
+                slewtime_seconds,
             ]
         ]
 
@@ -287,14 +289,28 @@ class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, TOOAPIBackCompat, Ba
     def exposure(self) -> timedelta | None:  # Updated return type to Optional[timedelta]
         if len(self.entries) == 0:
             return None
-        return timedelta(seconds=sum([e.exposure.seconds for e in self.entries]))
+        total_seconds = sum(
+            [
+                int((e.end - e.settle).total_seconds())
+                for e in self.entries
+                if e.end is not None and e.settle is not None
+            ]
+        )
+        return timedelta(seconds=total_seconds) if total_seconds > 0 else None
 
     @computed_field  # type: ignore[prop-decorator]
     @property
     def slewtime(self) -> timedelta | None:  # Updated return type to Optional[timedelta>
-        if len(self.entries) == 0 or not hasattr(self.entries[0], "slewtime"):
+        if len(self.entries) == 0:
             return None
-        return timedelta(seconds=sum([e.slewtime.seconds for e in self.entries]))
+        total_seconds = sum(
+            [
+                int((e.settle - e.begin).total_seconds())
+                for e in self.entries
+                if e.begin is not None and e.settle is not None
+            ]
+        )
+        return timedelta(seconds=total_seconds) if total_seconds > 0 else None
 
     @computed_field  # type: ignore[prop-decorator]
     @property

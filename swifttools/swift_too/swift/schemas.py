@@ -40,6 +40,7 @@ class SwiftTOOStatusGetSchema(BaseSchema):
 
 class SwiftObservationSchema(BaseSchema):
     begin: AstropyDateTime | None = None
+    settle: AstropyDateTime | None = None
     end: AstropyDateTime | None = None
     obstype: str | None = None
     target_name: str | None = None
@@ -63,23 +64,29 @@ class SwiftObservationSchema(BaseSchema):
 
     @property
     def exposure(self):
+        if self.settle is None or self.end is None:
+            return None
         return self.end - self.settle
 
     @property
     def slewtime(self):
+        if self.begin is None or self.settle is None:
+            return None
         return self.settle - self.begin
 
     @property
     def _table(self):
         parameters = ["begin", "end", "target_name", "obs_id", "exposure", "slewtime"]
         header = [row for row in parameters]
+        exposure_seconds = self.exposure.seconds if self.exposure is not None else None
+        slewtime_seconds = self.slewtime.seconds if self.slewtime is not None else None
         return header, [
             [
                 self.begin,
                 self.end,
                 self.target_name,
                 self.obs_id,
-                self.exposure.seconds,
-                self.slewtime.seconds,
+                exposure_seconds,
+                slewtime_seconds,
             ]
         ]
