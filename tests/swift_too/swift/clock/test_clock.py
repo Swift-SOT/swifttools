@@ -67,7 +67,11 @@ class TestSwiftClock:
         assert len(swift_clock) == 0
 
     def test_len_with_entries(self, swift_clock):
-        swift_clock.entries = [1, 2, 3]
+        swift_clock.entries = [
+            SwiftDateTimeSchema(met=1.0, utcf=0.0, isutc=False),
+            SwiftDateTimeSchema(met=2.0, utcf=0.0, isutc=False),
+            SwiftDateTimeSchema(met=3.0, utcf=0.0, isutc=False),
+        ]
         assert len(swift_clock) == 3
 
     def test_len_with_none_entries(self):
