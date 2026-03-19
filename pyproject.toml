@@ -68,6 +68,7 @@ build-backend = "setuptools.build_meta"
 write_to = "swifttools/version.py"
 
 [tool.pytest.ini_options]
+addopts = "--import-mode=importlib"
 filterwarnings = [
     "ignore::DeprecationWarning",
 ]
