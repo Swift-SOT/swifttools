@@ -1,0 +1,228 @@
+from pydantic import BaseModel, Field
+from tabulate import tabulate
+
+from ..base.common import TOOAPIBaseclass
+from ..base.repr import TOOAPIReprMixin
+from ..base.schemas import AstropyAngle, BaseSchema
+from ..base.status import TOOStatus
+from .instruments import TOOAPIInstruments
+from .resolve import TOOAPIAutoResolve
+
+
+class UVOTModeSchema(BaseSchema):
+    uvot_mode: int
+
+
+class SwiftUVOTModeGetSchema(BaseModel):
+    uvot_mode: int
+    ra: AstropyAngle | None = None
+    dec: AstropyAngle | None = None
+
+
+class SwiftUVOTModeEntry(BaseSchema, TOOAPIReprMixin):
+    """Class describing a single entry in the UVOT Mode table
+
+    Attributes
+    ----------
+    uvot_mode : int
+        UVOT mode
+    filter_num : int
+        filter number
+    min_exposure : int
+        minumum exposure for entry
+    filter_name : str
+        filter name
+    filter_pos : int
+        position of filter in filter wheel
+    filter_seqid : int
+        Sequence ID of filter
+    eventmode : boolean
+        Is filter entry taken in event mode
+    field_of_view : int
+        Filter of view in arcminutes
+    binning : int
+        Binning of entry
+    max_exposure : int
+        maximum exposure time for filter
+    weight: boolean
+        Is observation for this filter weighted for the total exposure time
+    special: str
+        comment on special modes
+    """
+
+    uvot_mode: int = 0
+    filter_num: int | None = None
+    min_exposure: int | None = None
+    filter_pos: int | None = None
+    filter_seqid: int | None = None
+    eventmode: int | None = None
+    field_of_view: int | None = None
+    binning: int | None = None
+    max_exposure: int | None = None
+    weight: int | None = None
+    special: int | None = None
+    comment: str | None = None
+    filter_name: str | None = None
+
+
+class SwiftUVOTModeSchema(BaseSchema):
+    uvot_mode: int | None = None
+    ra: float | None = None
+    dec: float | None = None
+    entries: list[SwiftUVOTModeEntry] = Field(default_factory=list)
+    status: TOOStatus = Field(default_factory=TOOStatus)
+
+
+class SwiftUVOTMode(TOOAPIBaseclass, TOOAPIInstruments, SwiftUVOTModeSchema, TOOAPIAutoResolve):
+    """Class to fetch information about a given UVOT mode. Specifically this is
+    useful for understanding for a given UVOT hex mode (e.g. 0x30ed), which
+    filters and configuration are used by UVOT.
+
+    Attributes
+    ----------
+    uvot_mode : int / str
+        UVOT mode to fetch information about (can be hex string or integer)
+    username : str
+        username for TOO API (default 'anonymous')
+    shared_secret : str
+        shared secret for TOO API (default 'anonymous')
+    status : TOOStatus
+        TOO API submission status
+    entries : list
+        entries (`UVOT_mode_entry`) in UVOT mode table
+    """
+
+    # Core API definitions
+    _schema = SwiftUVOTModeSchema
+    _get_schema = SwiftUVOTModeGetSchema
+    _endpoint = "/swift/uvot_mode"
+
+    def _post_process(self):
+        if len(self.entries) == 0:
+            self.entries = [SwiftUVOTModeEntry(uvot_mode=self.uvot_mode or 0)]
+
+    def __getitem__(self, index):
+        return self.entries[index]
+
+    def __len__(self):
+        return len(self.entries)
+
+    def __str__(self):
+        """Display UVOT mode table"""
+        if hasattr(self, "status") and self.status == "Rejected" and isinstance(self.status, TOOStatus):
+            return "Rejected with the following error(s): " + " ".join(self.status.errors)
+        elif self.entries is not None:
+            table_cols = [
+                "filter_name",
+                "eventmode",
+                "field_of_view",
+                "binning",
+                "max_exposure",
+                "weight",
+                "comment",
+            ]
+            table_columns = list()
+            table_columns.append(
+                [
+                    "Filter",
+                    "Event FOV",
+                    "Image FOV",
+                    "Bin Size",
+                    "Max. Exp. Time",
+                    "Weighting",
+                    "Comments",
+                ]
+            )
+            for entry in self.entries:
+                table_columns.append([getattr(entry, col) for col in table_cols])
+
+            if isinstance(self.uvot_mode, int):
+                mode_label = f"0x{self.uvot_mode:04x}"
+            else:
+                mode_label = f"{self.uvot_mode}"
+
+            table = f"UVOT Mode: {mode_label}\n"
+            table += "The following table summarizes this mode, ordered by the filter sequence:\n"
+            table += tabulate(table_columns, tablefmt="pretty")
+            table += "\nFilter: The particular filter in the sequence.\n"
+            table += "Event FOV: The size of the FOV (in arc-minutes) for UVOT event data.\n"
+            table += "Image FOV: The size of the FOV (in arc-minutes) for UVOT image data.\n"
+            table += "Max. Exp. Time: The maximum amount of time the snapshot will spend on the particular filter in the sequence.\n"
+            table += "Weighting: Ratio of time spent on the particular filter in the sequence.\n"
+            table += "Comments: Additional notes that may be useful to know.\n"
+            return table
+        else:
+            return "No data"
+
+    def _repr_html_(self):
+        """Jupyter Notebook friendly display of UVOT mode table"""
+
+        if (
+            hasattr(self, "status")
+            and self.status.status == "Rejected"
+            and self.status.__class__.__name__ == "SwiftTOOStatus"
+        ):
+            return "<b>Rejected with the following error(s): </b>" + " ".join(self.status.errors)
+        elif self.entries is not None:
+            if isinstance(self.uvot_mode, int):
+                mode_label = f"0x{self.uvot_mode:04x}"
+            else:
+                mode_label = f"{self.uvot_mode}"
+            html = f"<h2>UVOT Mode: {mode_label}</h2>"
+            html += "<p>The following table summarizes this mode, ordered by the filter sequence:</p>"
+
+            html += '<table id="modelist" cellpadding=4 cellspacing=0>'
+            html += "<tr>"  # style="background-color:#08f; color:#fff;">'
+            html += "<th>Filter</th>"
+            html += "<th>Event FOV</th>"
+            html += "<th>Image FOV</th>"
+            html += "<th>Bin Size</th>"
+            html += "<th>Max. Exp. Time</th>"
+            html += "<th>Weighting</th>"
+            html += "<th>Comments</th>"
+            html += "</tr>"
+
+            table_cols = [
+                "filter_name",
+                "eventmode",
+                "field_of_view",
+                "binning",
+                "max_exposure",
+                "weight",
+                "comment",
+            ]
+            i = 0
+            for entry in self.entries:
+                if i % 2:
+                    html += '<tr style="background-color:#eee;">'
+                else:
+                    html += "<tr>"
+                for col in table_cols:
+                    html += "<td>"
+                    html += f"{getattr(entry, col)}"
+                    html += "</td>"
+
+                html += "</tr>"
+                i += 1
+            html += "</table>"
+            html += '<p id="terms">'
+            html += "<small><b>Filter: </b>The particular filter in the sequence.<br>"
+            html += "<b>Event FOV: </b>The size of the FOV (in arc-minutes) for UVOT event data.<br>"
+            html += "<b>Image FOV: </b>The size of the FOV (in arc-minutes) for UVOT image data.<br>"
+            html += "<b>Max. Exp. Time: </b>The maximum amount of time the snapshot will spend on the particular filter in the sequence.<br>"
+            html += "<b>Weighting: </b>Ratio of time spent on the particular filter in the sequence.<br>"
+            html += "<b>Comments: </b>Additional notes that may be useful to know.<br></small>"
+            html += "</p>"
+            return html
+        else:
+            return "No data"
+
+
+# Aliases that are more PEP8 compliant
+UVOTMode = SwiftUVOTMode
+UVOTModeEntry = SwiftUVOTModeEntry
+# Backwards compatibility names
+UVOT_mode_entry = SwiftUVOTModeEntry
+UVOT_mode = SwiftUVOTMode
+Swift_UVOTMode = SwiftUVOTMode
+Swift_UVOTModeEntry = SwiftUVOTModeEntry

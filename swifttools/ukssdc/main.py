@@ -37,16 +37,17 @@ submitAPICall() - actually submits an API request and checks the result
 __docformat__ = "restructedtext en"
 
 
-import requests
 import json
-import warnings
 import math
 import os
+import warnings
+from distutils.version import StrictVersion
+
 import numpy as np
 import pandas as pd
-from distutils.version import StrictVersion
-from .version import _apiVersion
+import requests
 
+from .version import _apiVersion
 
 SXPS_BAND_NAMES = ("Total", "Soft", "Medium", "Hard")
 

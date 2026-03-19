@@ -60,7 +60,7 @@ completed. `Queued` means that the job has been accepted, but not yet processed.
 completed. `Rejected` means that the server rejected the job for any number of
 reasons, that are reported by in `Swift_TOOStatus` class.
 
-6. UVOT_mode
+6. SwiftUVOTMode
 
 UVOT modes are typically given as hex modes. This class allows the user to look
 up the meaning of a given hex code, which is typically a table of UVOT filters
@@ -144,17 +144,61 @@ served basis. Typically processing requests takes a 10-20 seconds. Status of
 requests can be queried, and errors are reported back.
 """
 
-from .api_resolve import Resolve, Swift_Resolve
 from .query_job import QueryJob
-from .swift_calendar import Calendar, Swift_Calendar
-from .swift_clock import Clock, Swift_Clock
-from .swift_data import Data, Swift_Data
-from .swift_guano import GUANO, Swift_GUANO
-from .swift_obsquery import ObsQuery, Swift_ObsQuery
-from .swift_planquery import PlanQuery, Swift_PlanQuery
-from .swift_requests import Swift_TOO_Requests, Swift_TOORequests, TOORequests
-from .swift_saa import SAA, Swift_SAA
-from .swift_toorequest import TOO, Swift_TOO, Swift_TOO_Request, TOORequest
-from .swift_uvot import Swift_UVOTMode, UVOT_mode, UVOTMode
-from .swift_visquery import Swift_VisQuery, VisQuery
+from .swift.calendar import Calendar, Swift_Calendar
+from .swift.clock import Clock, Swift_Clock, SwiftClock
+from .swift.data import Data, Swift_Data, SwiftData
+from .swift.guano import GUANO, Swift_GUANO, SwiftGUANO
+from .swift.obsquery import ObsQuery, Swift_ObsQuery, SwiftAFST
+from .swift.planquery import PlanQuery, Swift_PlanQuery, Swift_PPST
+from .swift.requests import Swift_TOO_Requests, Swift_TOORequests, TOORequests
+from .swift.resolve import Resolve, Swift_Resolve, SwiftResolve
+from .swift.saa import SAA, Swift_SAA
+from .swift.toorequest import TOO, Swift_TOO, Swift_TOO_Request, SwiftTOO, TOORequest
+from .swift.uvot import Swift_UVOTMode, SwiftUVOTMode, UVOTMode
+from .swift.visquery import Swift_VisQuery, VisQuery
 from .version import version as __version__
+
+# Legacy alias retained for import compatibility.
+UVOT_Mode = UVOTMode
+
+__all__ = [
+    "__version__",
+    "Calendar",
+    "Clock",
+    "Data",
+    "GUANO",
+    "ObsQuery",
+    "PlanQuery",
+    "QueryJob",
+    "Resolve",
+    "SAA",
+    "Swift_Calendar",
+    "Swift_Clock",
+    "Swift_Data",
+    "Swift_GUANO",
+    "Swift_ObsQuery",
+    "Swift_PlanQuery",
+    "Swift_PPST",
+    "Swift_Resolve",
+    "Swift_SAA",
+    "Swift_TOO_Request",
+    "Swift_TOO_Requests",
+    "Swift_TOO",
+    "Swift_TOORequests",
+    "Swift_UVOTMode",
+    "Swift_VisQuery",
+    "SwiftAFST",
+    "SwiftClock",
+    "SwiftData",
+    "SwiftGUANO",
+    "SwiftResolve",
+    "TOO",
+    "SwiftTOO",
+    "TOORequest",
+    "TOORequests",
+    "SwiftUVOTMode",
+    "UVOT_Mode",
+    "UVOTMode",
+    "VisQuery",
+]

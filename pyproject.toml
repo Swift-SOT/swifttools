@@ -1,10 +1,74 @@
-[build-system]
-requires = [
-    "setuptools>=42",
-    "setuptools_scm[toml]>=3.4",
-    "wheel"
+
+[project]
+name = "swifttools"
+description = "Tools for users of the Swift satellite"
+dynamic = ["version"]
+readme = "README.md"
+authors = [
+    { name = "Phil A. Evans", email = "pae9@leicester.ac.uk" },
+    { name = "Jamie A. Kennea", email = "jak51@psu.edu" },
 ]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Scientific/Engineering :: Astronomy",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Natural Language :: English",
+]
+
+requires-python = ">=3.10"
+dependencies = [
+    "astropy>=6.0.1",
+    "keyring>=25.6.0",
+    "pydantic>=2.11.3",
+    "requests>=2.32.3",
+    "pandas>=2.2.3",
+    "numpy>=1.26.4",
+    "tqdm>=4.67.1",
+    "boto3>=1.38.1",
+    "tabulate>=0.9.0",
+    "httpx>=0.28.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.11.6",
+    "mypy>=1.15.0",
+    "build>=1.2.2.post1",
+    "types-requests>=2.31.0.6",
+    "types-tabulate>=0.9.0.20241207",
+    "pytest-cov>=6.1.1",
+    "pre-commit>=4.2.0",
+    "types-mock>=5.2.0.20250516",
+    "types-tqdm>=4.67.0.20250809",
+    "mock>=5.2.0",
+    "jupyter>=1.1.1",
+    "prek>=0.2.23",
+    "pytest-asyncio>=1.2.0",
+]
+
+[tool.setuptools]
+zip-safe = false
+packages = ["swifttools"]
+platforms = ["any"]
+include-package-data = true
+
+
+[build-system]
+requires = ["setuptools>=42", "setuptools_scm[toml]>=3.4", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
 write_to = "swifttools/version.py"
+
+[tool.pytest.ini_options]
+addopts = "--import-mode=importlib"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
