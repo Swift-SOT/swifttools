@@ -253,6 +253,20 @@ class TestSwiftClockGetSchema:
         result = SwiftClockGetSchema.validate_exactly_one_field(MockValues())
         assert result["met"] == 123456789.0
 
+    def test_valid_mettime_alias(self):
+        schema = SwiftClockGetSchema(mettime=123456789.0)
+        assert schema.met == 123456789.0
+
+    def test_valid_utc_alias(self):
+        dt = datetime(2023, 1, 1)
+        schema = SwiftClockGetSchema(utc=dt)
+        assert schema.utctime == dt
+
+    def test_valid_swift_alias(self):
+        dt = datetime(2023, 1, 1)
+        schema = SwiftClockGetSchema(swift=dt)
+        assert schema.swifttime == dt
+
 
 class TestIndexDatetimes:
     def test_with_mock_object_count(self):

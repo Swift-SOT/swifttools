@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from pydantic import ConfigDict, Field, computed_field, model_validator
+from pydantic import AliasChoices, ConfigDict, Field, computed_field, model_validator
 
 from ..base.common import TOOAPIBaseclass
 from ..base.schemas import BaseSchema
@@ -27,10 +27,12 @@ class SwiftDateTimeSchema(BaseSchema):
 
 
 class SwiftClockSchema(BaseSchema):
-    met: float | list[float] | None = None
+    met: float | list[float] | None = Field(default=None, validation_alias=AliasChoices("met", "mettime"))
     utcf: float | list[float] | None = None
-    utctime: datetime | list[datetime] | None = None
-    swifttime: datetime | list[datetime] | None = None
+    utctime: datetime | list[datetime] | None = Field(default=None, validation_alias=AliasChoices("utctime", "utc"))
+    swifttime: datetime | list[datetime] | None = Field(
+        default=None, validation_alias=AliasChoices("swifttime", "swift")
+    )
     entries: list[SwiftDateTimeSchema] = Field(default_factory=list)
     status: TOOStatus = Field(default_factory=TOOStatus)
 
@@ -38,9 +40,11 @@ class SwiftClockSchema(BaseSchema):
 
 
 class SwiftClockGetSchema(BaseSchema):
-    met: float | list[float] | None = None
-    utctime: datetime | list[datetime] | None = None
-    swifttime: datetime | list[datetime] | None = None
+    met: float | list[float] | None = Field(default=None, validation_alias=AliasChoices("met", "mettime"))
+    utctime: datetime | list[datetime] | None = Field(default=None, validation_alias=AliasChoices("utctime", "utc"))
+    swifttime: datetime | list[datetime] | None = Field(
+        default=None, validation_alias=AliasChoices("swifttime", "swift")
+    )
 
     @model_validator(mode="before")
     @classmethod
@@ -48,6 +52,15 @@ class SwiftClockGetSchema(BaseSchema):
         """Require exactly one of met, utctime, or swifttime to be provided"""
         if not isinstance(values, dict):
             values = values.__dict__
+
+        # Normalize legacy aliases before counting populated fields.
+        if values.get("met") is None and values.get("mettime") is not None:
+            values["met"] = values["mettime"]
+        if values.get("utctime") is None and values.get("utc") is not None:
+            values["utctime"] = values["utc"]
+        if values.get("swifttime") is None and values.get("swift") is not None:
+            values["swifttime"] = values["swift"]
+
         provided_fields = [field for field in ["met", "utctime", "swifttime"] if values.get(field) is not None]
 
         if len(provided_fields) != 1:
