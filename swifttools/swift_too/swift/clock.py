@@ -114,10 +114,10 @@ class SwiftClock(TOOAPIBaseclass, SwiftClockSchema):
         swifttime_values = [entry.swifttime for entry in self.entries]
         utctime_values = [entry.utctime for entry in self.entries]
 
-        object.__setattr__(self, "met", self._scalar_or_list(met_values))
-        object.__setattr__(self, "utcf", self._scalar_or_list(utcf_values))
-        object.__setattr__(self, "swifttime", self._scalar_or_list(swifttime_values))
-        object.__setattr__(self, "utctime", self._scalar_or_list(utctime_values))
+        self.met = self._scalar_or_list(met_values)
+        self.utcf = self._scalar_or_list(utcf_values)
+        self.swifttime = self._scalar_or_list(swifttime_values)
+        self.utctime = self._scalar_or_list(utctime_values)
 
     def _post_process(self) -> None:
         converted = [swiftdatetime.frommet(e.met, utcf=e.utcf, isutc=e.isutc) for e in self.entries]
@@ -171,7 +171,7 @@ class SwiftClock(TOOAPIBaseclass, SwiftClockSchema):
 
     @utc.setter
     def utc(self, value):
-        object.__setattr__(self, "utctime", value)
+        self.utctime = value
 
     @property
     def swift(self):
@@ -179,7 +179,7 @@ class SwiftClock(TOOAPIBaseclass, SwiftClockSchema):
 
     @swift.setter
     def swift(self, value):
-        object.__setattr__(self, "swifttime", value)
+        self.swifttime = value
 
     @property
     def mettime(self):
@@ -187,7 +187,7 @@ class SwiftClock(TOOAPIBaseclass, SwiftClockSchema):
 
     @mettime.setter
     def mettime(self, value):
-        object.__setattr__(self, "met", value)
+        self.met = value
 
 
 Swift_Clock = SwiftClock

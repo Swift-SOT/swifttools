@@ -67,7 +67,7 @@ class TestSwiftClock:
         assert len(swift_clock) == 0
 
     def test_len_with_entries(self, swift_clock):
-        object.__setattr__(swift_clock, "entries", [1, 2, 3])
+        swift_clock.entries = [1, 2, 3]
         assert len(swift_clock) == 3
 
     def test_len_with_none_entries(self):
@@ -160,16 +160,16 @@ class TestTOOAPIClockCorrect:
     def test_to_utctime_calls_clock_method(self, mock_clock_correct):
         clock_mock = Mock()
         clock_mock.entries = [datetime(2023, 1, 2)]
-        object.__setattr__(mock_clock_correct, "_clock", clock_mock)
-        object.__setattr__(mock_clock_correct, "_datetime_refs", [([("model", "test_datetime")], datetime(2023, 1, 1))])
+        mock_clock_correct._clock = clock_mock
+        mock_clock_correct._datetime_refs = [([("model", "test_datetime")], datetime(2023, 1, 1))]
         mock_clock_correct.to_utctime()
         clock_mock.to_utctime.assert_called_once()
 
     def test_to_swifttime_calls_clock_method(self, mock_clock_correct):
         clock_mock = Mock()
         clock_mock.entries = [datetime(2023, 1, 2)]
-        object.__setattr__(mock_clock_correct, "_clock", clock_mock)
-        object.__setattr__(mock_clock_correct, "_datetime_refs", [([("model", "test_datetime")], datetime(2023, 1, 1))])
+        mock_clock_correct._clock = clock_mock
+        mock_clock_correct._datetime_refs = [([("model", "test_datetime")], datetime(2023, 1, 1))]
         mock_clock_correct.to_swifttime()
         clock_mock.to_swifttime.assert_called_once()
 
