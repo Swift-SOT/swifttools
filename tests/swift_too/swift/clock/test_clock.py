@@ -67,7 +67,11 @@ class TestSwiftClock:
         assert len(swift_clock) == 0
 
     def test_len_with_entries(self, swift_clock):
-        object.__setattr__(swift_clock, "entries", [1, 2, 3])
+        swift_clock.entries = [
+            SwiftDateTimeSchema(met=1.0, utcf=0.0, isutc=False),
+            SwiftDateTimeSchema(met=2.0, utcf=0.0, isutc=False),
+            SwiftDateTimeSchema(met=3.0, utcf=0.0, isutc=False),
+        ]
         assert len(swift_clock) == 3
 
     def test_len_with_none_entries(self):
@@ -109,53 +113,67 @@ class TestSwiftClock:
         mock_entry = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
         swift_clock.entries = [mock_entry]
         swift_clock._post_process()
-        assert isinstance(swift_clock.met, list)
+        assert isinstance(swift_clock.met, float)
 
     def test_post_process_swifttime_type(self, swift_clock):
         mock_entry = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
         swift_clock.entries = [mock_entry]
         swift_clock._post_process()
-        assert isinstance(swift_clock.swifttime, list)
+        assert isinstance(swift_clock.swifttime, datetime)
 
     def test_post_process_utctime_type(self, swift_clock):
         mock_entry = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
         swift_clock.entries = [mock_entry]
         swift_clock._post_process()
-        assert isinstance(swift_clock.utctime, list)
+        assert isinstance(swift_clock.utctime, datetime)
 
     def test_post_process_met_length(self, swift_clock):
-        mock_entry = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
-        swift_clock.entries = [mock_entry]
+        entry1 = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
+        entry2 = swiftdatetime.frommet(123456790.0, utcf=11.0, isutc=False)
+        swift_clock.entries = [entry1, entry2]
         swift_clock._post_process()
-        assert len(swift_clock.met) == 1
+        assert isinstance(swift_clock.met, list)
+        assert len(swift_clock.met) == 2
 
     def test_post_process_swifttime_length(self, swift_clock):
-        mock_entry = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
-        swift_clock.entries = [mock_entry]
+        entry1 = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
+        entry2 = swiftdatetime.frommet(123456790.0, utcf=11.0, isutc=False)
+        swift_clock.entries = [entry1, entry2]
         swift_clock._post_process()
-        assert len(swift_clock.swifttime) == 1
+        assert isinstance(swift_clock.swifttime, list)
+        assert len(swift_clock.swifttime) == 2
 
     def test_post_process_utctime_length(self, swift_clock):
-        mock_entry = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
-        swift_clock.entries = [mock_entry]
+        entry1 = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
+        entry2 = swiftdatetime.frommet(123456790.0, utcf=11.0, isutc=False)
+        swift_clock.entries = [entry1, entry2]
         swift_clock._post_process()
-        assert len(swift_clock.utctime) == 1
+        assert isinstance(swift_clock.utctime, list)
+        assert len(swift_clock.utctime) == 2
+
+    def test_legacy_aliases(self, swift_clock):
+        entry = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
+        swift_clock.entries = [entry]
+        swift_clock._post_process()
+        assert swift_clock.utc == swift_clock.utctime
+        assert swift_clock.swift == swift_clock.swifttime
+        assert swift_clock.mettime == swift_clock.met
 
 
 class TestTOOAPIClockCorrect:
     def test_to_utctime_calls_clock_method(self, mock_clock_correct):
         clock_mock = Mock()
         clock_mock.entries = [datetime(2023, 1, 2)]
-        object.__setattr__(mock_clock_correct, "_clock", clock_mock)
-        object.__setattr__(mock_clock_correct, "_datetime_refs", [([("model", "test_datetime")], datetime(2023, 1, 1))])
+        mock_clock_correct._clock = clock_mock
+        mock_clock_correct._datetime_refs = [([("model", "test_datetime")], datetime(2023, 1, 1))]
         mock_clock_correct.to_utctime()
         clock_mock.to_utctime.assert_called_once()
 
     def test_to_swifttime_calls_clock_method(self, mock_clock_correct):
         clock_mock = Mock()
         clock_mock.entries = [datetime(2023, 1, 2)]
-        object.__setattr__(mock_clock_correct, "_clock", clock_mock)
-        object.__setattr__(mock_clock_correct, "_datetime_refs", [([("model", "test_datetime")], datetime(2023, 1, 1))])
+        mock_clock_correct._clock = clock_mock
+        mock_clock_correct._datetime_refs = [([("model", "test_datetime")], datetime(2023, 1, 1))]
         mock_clock_correct.to_swifttime()
         clock_mock.to_swifttime.assert_called_once()
 
@@ -238,6 +256,20 @@ class TestSwiftClockGetSchema:
 
         result = SwiftClockGetSchema.validate_exactly_one_field(MockValues())
         assert result["met"] == 123456789.0
+
+    def test_valid_mettime_alias(self):
+        schema = SwiftClockGetSchema(mettime=123456789.0)
+        assert schema.met == 123456789.0
+
+    def test_valid_utc_alias(self):
+        dt = datetime(2023, 1, 1)
+        schema = SwiftClockGetSchema(utc=dt)
+        assert schema.utctime == dt
+
+    def test_valid_swift_alias(self):
+        dt = datetime(2023, 1, 1)
+        schema = SwiftClockGetSchema(swift=dt)
+        assert schema.swifttime == dt
 
 
 class TestIndexDatetimes:
