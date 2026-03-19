@@ -1,0 +1,147 @@
+import re
+from datetime import datetime, timedelta, timezone
+
+from astropy import units as u  # type: ignore[import-untyped]
+from astropy.time import TimeDelta  # type: ignore[import-untyped]
+from pydantic_core import PydanticUndefinedType
+
+from .constants import MODESXRT, XRTMODES
+
+
+def utcnow():
+    """Return the current UTC time as a datetime object."""
+    return datetime.now(tz=timezone.utc).replace(tzinfo=None)
+
+
+def convert_from_timedelta(
+    value: float | int | u.Quantity | timedelta | TimeDelta | None,
+) -> float | PydanticUndefinedType | None:
+    """Convert a value to a timedelta in days."""
+    if isinstance(value, PydanticUndefinedType):
+        return value
+    if value is None:
+        return None
+    if isinstance(value, u.Quantity) or isinstance(value, TimeDelta):
+        return value.to(u.day).value
+    elif isinstance(value, (int, float)):
+        return float(value)
+    elif isinstance(value, timedelta):
+        return value.total_seconds() / 86400.0
+    else:
+        raise TypeError(f"Unsupported type for timedelta conversion: {type(value)}")
+
+
+def convert_obs_id_sdc(obs_id: str | int) -> str:
+    """
+    Convert various formats for obs_id (SDC and Spacecraft) into one format
+    (Spacecraft)
+    """
+    if isinstance(obs_id, str):
+        # All SDC format target IDs are 11 digits long and start with a "0"
+        # (unless we get into the 10,000,000 target ID range)
+        if obs_id.startswith("0"):
+            if re.match(r"0[0-9]{10}", obs_id) is None:
+                raise ValueError("ERROR: Obsnum string format incorrect")
+            return obs_id
+        # Handle case where obsids are strings, but not in SDC format
+        elif re.match(r"[0-9]+", obs_id) is None:
+            raise ValueError("ERROR: Obsnum string format incorrect")
+        else:
+            obs_id = int(obs_id)
+
+    if isinstance(obs_id, int):
+        if obs_id == -1:
+            return "00000000000"
+        if obs_id < 0 or obs_id > 0xFFFFFFFF:
+            raise ValueError("ERROR: Obsnum int format incorrect")
+        # Convert to SDC format
+        targetid = obs_id & 0xFFFFFF
+        segment = obs_id >> 24
+        return f"{targetid:08d}{segment:03d}"
+    else:
+        raise ValueError("`obs_id` in wrong format.")
+
+
+def _tablefy(table, header=None):
+    """Simple HTML table generator
+
+    Parameters
+    ----------
+    table : list
+        Data for table
+    header : list
+        Headers for table, by default None
+
+    Returns
+    -------
+    str
+        HTML formatted table.
+    """
+
+    tab = "<table>"
+    if header is not None:
+        tab += "<thead>"
+        tab += "".join([f"<th style='text-align: left;'>{head}</th>" for head in header])
+        tab += "</thead>"
+
+    for row in table:
+        tab += "<tr>"
+        # Replace any carriage returns with <br>
+        row = [f"{col}".replace("\n", "<br>") for col in row]
+        tab += "".join([f"<td style='text-align: left;'>{col}</td>" for col in row])
+        tab += "</tr>"
+    tab += "</table>"
+    return tab
+
+
+def validate_monitoring_cadence(value: str | u.Quantity | timedelta | TimeDelta | None) -> str | None:
+    # Check for empty values
+    if value is None or (isinstance(value, str) and value.strip() == ""):
+        return None
+
+    if type(value) is str:
+        if (
+            re.match(
+                r"\d+(\.\d+)?\s+(day?|week?|month?|orbit?|minute?|second?)(s?)",
+                value.strip(),
+            )
+            is None
+        ):
+            raise ValueError(
+                "Monitoring frequency in incorrect format. Must be a number followed by a time unit (day, week, month, orbit, minute, second)."
+            )
+        return value.strip()
+
+    if type(value) is timedelta:
+        value = u.Quantity(value.total_seconds(), u.second)
+
+    if type(value) is u.Quantity or isinstance(value, TimeDelta):
+        if value.to(u.day).value >= (1 * u.day).value:
+            return f"{value.to(u.day).value} days"
+        else:
+            return f"{value.to(u.hour).value} hours"
+    raise ValueError("Monitoring frequency in incorrect format.")
+
+
+def uvot_mode_convert(mode: int | str) -> str:
+    if isinstance(mode, str):
+        return mode
+    if isinstance(mode, int) and mode >= 0 and mode <= 0xFFFF:
+        return f"0x{mode:04X}"
+    else:
+        raise ValueError("Invalid UVOT mode.")
+
+
+def xrt_mode_convert(mode):
+    if isinstance(mode, str):
+        if mode in MODESXRT:
+            return MODESXRT[mode]
+        else:
+            raise ValueError(f"Unknown mode ({mode}), should be PC, WT or Auto")
+    elif mode is None:
+        return mode
+    else:
+        if mode in XRTMODES:
+            return mode
+        else:
+            raise ValueError(f"Unknown mode ({mode}), should be PC (7), WT (6) or Auto (0)")

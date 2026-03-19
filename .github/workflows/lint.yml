@@ -5,15 +5,16 @@ name: Python Lint/Format check
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
-  python:
+  lint:
+    name: Python Lint/Format Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Check for Lint
         uses: astral-sh/ruff-action@v3
@@ -22,3 +23,21 @@ jobs:
         uses: astral-sh/ruff-action@v3
         with:
           args: format --check
+
+  tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install the latest version of uv
+
+        uses: astral-sh/setup-uv@v7
+        with:
+          activate-environment: true
+      - name: Install Package
+        # Note need to pip install -e so that coverage works correctly
+        run: uv pip install -e .[dev]
+
+      - name: Run tests
+        run: pytest

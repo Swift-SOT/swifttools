@@ -1,16 +1,18 @@
-import requests
 import json
-from .prod_common import *  # noqa
-from .prod_base import ProductRequest
-from .productVars import skipGlobals, globalParTriggers
 import os
 import re
 import warnings
-import pandas as pd
 from distutils.version import StrictVersion
-from .version import _apiVersion
+
+import pandas as pd
+import requests
+
 from ..data import download as dl
 from ..main import plotLightCurve as mplot
+from .prod_base import ProductRequest
+from .prod_common import *  # noqa
+from .productVars import globalParTriggers, skipGlobals
+from .version import _apiVersion
 
 # from ..ukssdc.data.SXPS import _saveSingleSpectrum
 
