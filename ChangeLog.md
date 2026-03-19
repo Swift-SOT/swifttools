@@ -2,6 +2,7 @@
 
 Changes to the main `swifttools` package:
 
+- 2026 Mar 19. Release 4.0.1.
 - 2026 Mar 17. Release 4.0, requires python >= 3.10.
 - 2024 May 09. Migrated the sourcecode from GitLab to GitHub.
 
