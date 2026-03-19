@@ -54,12 +54,9 @@ class SwiftClockGetSchema(BaseSchema):
             values = values.__dict__
 
         # Normalize legacy aliases before counting populated fields.
-        if values.get("met") is None and values.get("mettime") is not None:
-            values["met"] = values["mettime"]
-        if values.get("utctime") is None and values.get("utc") is not None:
-            values["utctime"] = values["utc"]
-        if values.get("swifttime") is None and values.get("swift") is not None:
-            values["swifttime"] = values["swift"]
+        for field_name, alias_name in (("met", "mettime"), ("utctime", "utc"), ("swifttime", "swift")):
+            if values.get(field_name) is None and values.get(alias_name) is not None:
+                values[field_name] = values[alias_name]
 
         provided_fields = [field for field in ["met", "utctime", "swifttime"] if values.get(field) is not None]
 
@@ -108,20 +105,22 @@ class SwiftClock(TOOAPIBaseclass, SwiftClockSchema):
             return values[0]
         return values
 
-    def _sync_values_from_entries(self) -> None:
-        met_values = [entry.met for entry in self.entries]
-        utcf_values = [entry.utcf for entry in self.entries]
-        swifttime_values = [entry.swifttime for entry in self.entries]
-        utctime_values = [entry.utctime for entry in self.entries]
+    def _set_entries(self, entries: list[swiftdatetime]) -> None:
+        """Set entries bypassing assignment validation to preserve swiftdatetime objects."""
+        object.__setattr__(self, "entries", entries)
 
-        self.met = self._scalar_or_list(met_values)
-        self.utcf = self._scalar_or_list(utcf_values)
-        self.swifttime = self._scalar_or_list(swifttime_values)
-        self.utctime = self._scalar_or_list(utctime_values)
+    def _sync_values_from_entries(self) -> None:
+        self.met = self._scalar_or_list([entry.met for entry in self.entries])
+        self.utcf = self._scalar_or_list([entry.utcf for entry in self.entries])
+        self.swifttime = self._scalar_or_list([entry.swifttime for entry in self.entries])
+        self.utctime = self._scalar_or_list([entry.utctime for entry in self.entries])
+
+    def _convert_entries_timebase(self, isutc: bool) -> list[swiftdatetime]:
+        return [swiftdatetime.frommet(entry.met, utcf=entry.utcf, isutc=isutc) for entry in self.entries]
 
     def _post_process(self) -> None:
         converted = [swiftdatetime.frommet(e.met, utcf=e.utcf, isutc=e.isutc) for e in self.entries]
-        object.__setattr__(self, "entries", converted)
+        self._set_entries(converted)
         self._sync_values_from_entries()
 
     def __getitem__(self, index):
@@ -144,24 +143,12 @@ class SwiftClock(TOOAPIBaseclass, SwiftClockSchema):
 
     def to_utctime(self):
         """Convert all entries to a UTC time base"""
-        mets = [entry.met for entry in self.entries]
-        utcfs = [entry.utcf for entry in self.entries]
-        object.__setattr__(
-            self,
-            "entries",
-            [swiftdatetime.frommet(mets[i], utcf=utcfs[i], isutc=True) for i in range(len(mets))],
-        )
+        self._set_entries(self._convert_entries_timebase(isutc=True))
         self._sync_values_from_entries()
 
     def to_swifttime(self):
         """Convert all entries to a Swift Time base"""
-        mets = [entry.met for entry in self.entries]
-        utcfs = [entry.utcf for entry in self.entries]
-        object.__setattr__(
-            self,
-            "entries",
-            [swiftdatetime.frommet(mets[i], utcf=utcfs[i], isutc=False) for i in range(len(mets))],
-        )
+        self._set_entries(self._convert_entries_timebase(isutc=False))
         self._sync_values_from_entries()
 
     # Legacy attribute aliases retained for backward compatibility.
