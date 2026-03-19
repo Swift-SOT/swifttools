@@ -109,37 +109,51 @@ class TestSwiftClock:
         mock_entry = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
         swift_clock.entries = [mock_entry]
         swift_clock._post_process()
-        assert isinstance(swift_clock.met, list)
+        assert isinstance(swift_clock.met, float)
 
     def test_post_process_swifttime_type(self, swift_clock):
         mock_entry = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
         swift_clock.entries = [mock_entry]
         swift_clock._post_process()
-        assert isinstance(swift_clock.swifttime, list)
+        assert isinstance(swift_clock.swifttime, datetime)
 
     def test_post_process_utctime_type(self, swift_clock):
         mock_entry = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
         swift_clock.entries = [mock_entry]
         swift_clock._post_process()
-        assert isinstance(swift_clock.utctime, list)
+        assert isinstance(swift_clock.utctime, datetime)
 
     def test_post_process_met_length(self, swift_clock):
-        mock_entry = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
-        swift_clock.entries = [mock_entry]
+        entry1 = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
+        entry2 = swiftdatetime.frommet(123456790.0, utcf=11.0, isutc=False)
+        swift_clock.entries = [entry1, entry2]
         swift_clock._post_process()
-        assert len(swift_clock.met) == 1
+        assert isinstance(swift_clock.met, list)
+        assert len(swift_clock.met) == 2
 
     def test_post_process_swifttime_length(self, swift_clock):
-        mock_entry = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
-        swift_clock.entries = [mock_entry]
+        entry1 = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
+        entry2 = swiftdatetime.frommet(123456790.0, utcf=11.0, isutc=False)
+        swift_clock.entries = [entry1, entry2]
         swift_clock._post_process()
-        assert len(swift_clock.swifttime) == 1
+        assert isinstance(swift_clock.swifttime, list)
+        assert len(swift_clock.swifttime) == 2
 
     def test_post_process_utctime_length(self, swift_clock):
-        mock_entry = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
-        swift_clock.entries = [mock_entry]
+        entry1 = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
+        entry2 = swiftdatetime.frommet(123456790.0, utcf=11.0, isutc=False)
+        swift_clock.entries = [entry1, entry2]
         swift_clock._post_process()
-        assert len(swift_clock.utctime) == 1
+        assert isinstance(swift_clock.utctime, list)
+        assert len(swift_clock.utctime) == 2
+
+    def test_legacy_aliases(self, swift_clock):
+        entry = swiftdatetime.frommet(123456789.0, utcf=10.0, isutc=False)
+        swift_clock.entries = [entry]
+        swift_clock._post_process()
+        assert swift_clock.utc == swift_clock.utctime
+        assert swift_clock.swift == swift_clock.swifttime
+        assert swift_clock.mettime == swift_clock.met
 
 
 class TestTOOAPIClockCorrect:

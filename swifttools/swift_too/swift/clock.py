@@ -28,6 +28,7 @@ class SwiftDateTimeSchema(BaseSchema):
 
 class SwiftClockSchema(BaseSchema):
     met: float | list[float] | None = None
+    utcf: float | list[float] | None = None
     utctime: datetime | list[datetime] | None = None
     swifttime: datetime | list[datetime] | None = None
     entries: list[SwiftDateTimeSchema] = Field(default_factory=list)
@@ -87,12 +88,28 @@ class SwiftClock(TOOAPIBaseclass, SwiftClockSchema):
     _get_schema = SwiftClockGetSchema
     _endpoint = "/swift/clock"
 
+    @staticmethod
+    def _scalar_or_list(values: list[Any]) -> Any:
+        """Return a scalar for single-item responses to preserve legacy behavior."""
+        if len(values) == 1:
+            return values[0]
+        return values
+
+    def _sync_values_from_entries(self) -> None:
+        met_values = [entry.met for entry in self.entries]
+        utcf_values = [entry.utcf for entry in self.entries]
+        swifttime_values = [entry.swifttime for entry in self.entries]
+        utctime_values = [entry.utctime for entry in self.entries]
+
+        object.__setattr__(self, "met", self._scalar_or_list(met_values))
+        object.__setattr__(self, "utcf", self._scalar_or_list(utcf_values))
+        object.__setattr__(self, "swifttime", self._scalar_or_list(swifttime_values))
+        object.__setattr__(self, "utctime", self._scalar_or_list(utctime_values))
+
     def _post_process(self) -> None:
         converted = [swiftdatetime.frommet(e.met, utcf=e.utcf, isutc=e.isutc) for e in self.entries]
         object.__setattr__(self, "entries", converted)
-        object.__setattr__(self, "met", [entry.met for entry in converted])
-        object.__setattr__(self, "swifttime", [entry.swifttime for entry in converted])
-        object.__setattr__(self, "utctime", [entry.utctime for entry in converted])
+        self._sync_values_from_entries()
 
     def __getitem__(self, index):
         return self.entries[index]
@@ -121,6 +138,7 @@ class SwiftClock(TOOAPIBaseclass, SwiftClockSchema):
             "entries",
             [swiftdatetime.frommet(mets[i], utcf=utcfs[i], isutc=True) for i in range(len(mets))],
         )
+        self._sync_values_from_entries()
 
     def to_swifttime(self):
         """Convert all entries to a Swift Time base"""
@@ -131,6 +149,32 @@ class SwiftClock(TOOAPIBaseclass, SwiftClockSchema):
             "entries",
             [swiftdatetime.frommet(mets[i], utcf=utcfs[i], isutc=False) for i in range(len(mets))],
         )
+        self._sync_values_from_entries()
+
+    # Legacy attribute aliases retained for backward compatibility.
+    @property
+    def utc(self):
+        return self.utctime
+
+    @utc.setter
+    def utc(self, value):
+        object.__setattr__(self, "utctime", value)
+
+    @property
+    def swift(self):
+        return self.swifttime
+
+    @swift.setter
+    def swift(self, value):
+        object.__setattr__(self, "swifttime", value)
+
+    @property
+    def mettime(self):
+        return self.met
+
+    @mettime.setter
+    def mettime(self, value):
+        object.__setattr__(self, "met", value)
 
 
 Swift_Clock = SwiftClock
