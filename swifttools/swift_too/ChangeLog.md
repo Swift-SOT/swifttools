@@ -6,6 +6,18 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
+## `swifttools` 4.0.1 / `swift_too` 2.0.1
+
+** Mar 19, 2026 **: Compatibility fix release for `Clock`.
+
+- Restored legacy `Clock` aliases `utc`, `swift` and `mettime` alongside
+  `utctime`, `swifttime` and `met`.
+- Restored historical single-value behavior for `Clock` results, so a request
+  with one input returns scalar `met`/`utctime`/`swifttime`/`utcf` values
+  rather than one-element lists.
+- Added compatibility coverage for legacy alias parsing and `Clock` result
+  shape behavior.
+
 ## `swifttools` 4.0.0 / `swift_too` 2.0.0
 
 ** Mar 17, 2026 **: Major update of `swift_too` for the REST-backed API.
