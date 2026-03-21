@@ -18,6 +18,10 @@ class SwiftPPSTGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema)
     radius: AstropyAngle | None = None
     target_id: int | list[int] | None = None
     obs_id: ObsIDSDC | list[ObsIDSDC] | None = None
+    limit: int | None = None
+    offset: int | None = None
+    sort_by: str | None = None
+    order: str | None = None
 
     model_config = ConfigDict(extra="ignore")
 
@@ -122,6 +126,10 @@ class SwiftPPSTSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
     radius: AstropyAngle | None = None
     target_id: int | list[int] | None = None
     obs_id: ObsIDSDC | list[ObsIDSDC] | None = None
+    limit: int | None = None
+    offset: int | None = None
+    sort_by: str | None = None
+    order: str | None = None
     ppstmax: datetime | None = None
     entries: list[SwiftPPSTEntry] = Field(default_factory=list)
     status: TOOStatus = Field(default_factory=TOOStatus)

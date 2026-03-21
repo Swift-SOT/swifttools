@@ -197,7 +197,11 @@ class SwiftGUANOGetSchema(OptionalBeginEndLengthSchema):
     triggertime: datetime | None = None
     limit: int | None = None
     page: int | None = None
+    offset: int | None = None
+    sort_by: str | None = None
+    order: str | None = None
     triggertype: str | None = None
+    queue: int | None = None
 
     model_config = ConfigDict(extra="ignore")
 
@@ -209,7 +213,6 @@ class SwiftGUANOGetSchema(OptionalBeginEndLengthSchema):
             return
         if not isinstance(values, dict):
             values = values.__dict__
-        print(values)
         for key in cls.model_fields.keys():
             if key in values:
                 good = True
@@ -221,10 +224,14 @@ class SwiftGUANOGetSchema(OptionalBeginEndLengthSchema):
 class SwiftGUANOSchema(BaseSchema):
     begin: datetime | None = None
     end: datetime | None = None
+    username: str = Field(default="anonymous")
     subthreshold: bool = False
     successful: bool = True
     triggertime: datetime | None = None
     limit: int | None = None
+    offset: int | None = None
+    sort_by: str | None = None
+    order: str | None = None
     triggertype: str | None = None
     lastcommand: datetime | None = None
     guanostatus: bool | None = None

@@ -11,7 +11,11 @@ from .toorequest import SwiftTOORequestSchema
 
 
 class SwiftTOORequestsGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinateSchema):
+    username: str | None = None
     limit: int | None = None
+    offset: int | None = None
+    sort_by: str | None = None
+    order: str | None = None
     page: int | None = None
     year: int | None = None
     detail: bool = False
@@ -28,6 +32,7 @@ class SwiftTOORequestsGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinate
         if isinstance(data, dict):
             # Exclude model_config and other class attributes
             params = [
+                "username",
                 "begin",
                 "end",
                 "length",
@@ -48,6 +53,9 @@ class SwiftTOORequestsSchema(BaseSchema):
     begin: datetime | None = None
     length: float | None = None
     limit: int | None = None
+    offset: int | None = None
+    sort_by: str | None = None
+    order: str | None = None
     year: int | None = None
     detail: bool = False
     too_id: int | None = None

@@ -44,7 +44,7 @@ class TestSwiftUVOTModeEntry:
         assert uvot_entry.uvot_mode == 0x30ED
 
     def test_init_filter_name(self, uvot_entry):
-        assert uvot_entry.filter_name is None
+        assert uvot_entry.filter_name == ""
 
     def test_init_eventmode(self, uvot_entry):
         assert uvot_entry.eventmode is None
