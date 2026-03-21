@@ -22,7 +22,12 @@ class SwiftCalendarGetSchema(BaseModel):
     dec: AstropyAngle | None = None
     too_id: int | None = None
     radius: AstropyAngle | None = 12 / 60.0
+    target_id: int | None = None
     targetid: int | None = None
+    limit: int | None = None
+    offset: int | None = None
+    sort_by: str | None = None
+    order: str | None = None
     status: TOOStatus = Field(default_factory=TOOStatus)
 
 
@@ -122,7 +127,12 @@ class SwiftCalendarSchema(BaseSchema, TOOAPIReprMixin):
     ra: AstropyAngle | None = None
     dec: AstropyAngle | None = None
     radius: AstropyAngle | None = None
+    target_id: int | None = None
     targetid: int | None = None
+    limit: int | None = None
+    offset: int | None = None
+    sort_by: str | None = None
+    order: str | None = None
     entries: list[SwiftCalendarEntry] = []
     status: TOOStatus = TOOStatus()
 

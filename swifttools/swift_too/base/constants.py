@@ -40,7 +40,7 @@ API_VERSION = str(version_tuple[0]) if version_tuple[1] == 0 else f"{version_tup
 
 # Submission URL
 # Default to production API; allow explicit override for local/dev testing.
-API_URL = os.getenv("SWIFT_TOO_API_URL", f"https://www.swift.psu.edu/api/v{API_VERSION}")
+API_URL = os.getenv("SWIFT_TOO_API_URL", f"http://localhost:8000/api/v{API_VERSION}")
 
 # Magic strings
 STATUS_PENDING = "Pending"
