@@ -32,6 +32,7 @@ class SwiftTOORequestsGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinate
         if isinstance(data, dict):
             # Exclude model_config and other class attributes
             params = [
+                "username",
                 "begin",
                 "end",
                 "length",

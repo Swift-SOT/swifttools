@@ -201,7 +201,7 @@ class SwiftGUANOGetSchema(OptionalBeginEndLengthSchema):
     sort_by: str | None = None
     order: str | None = None
     triggertype: str | None = None
-    queue_num: int | None = None
+    queue: int | None = None
 
     model_config = ConfigDict(extra="ignore")
 
@@ -232,7 +232,6 @@ class SwiftGUANOSchema(BaseSchema):
     offset: int | None = None
     sort_by: str | None = None
     order: str | None = None
-    queue_num: int | None = None
     triggertype: str | None = None
     lastcommand: datetime | None = None
     guanostatus: bool | None = None

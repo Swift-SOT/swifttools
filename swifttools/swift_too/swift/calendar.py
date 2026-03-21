@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from ..base.common import TOOAPIBaseclass
 from ..base.repr import TOOAPIReprMixin
@@ -28,7 +28,6 @@ class SwiftCalendarGetSchema(BaseModel):
     offset: int | None = None
     sort_by: str | None = None
     order: str | None = None
-    status: TOOStatus = Field(default_factory=TOOStatus)
 
 
 class SwiftCalendarEntry(BaseSchema, TOOAPIClockCorrect, TOOAPIReprMixin):
