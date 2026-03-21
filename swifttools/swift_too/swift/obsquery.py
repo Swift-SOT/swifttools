@@ -150,6 +150,11 @@ class SwiftAFSTGetSchema(BaseModel):
     radius: AstropyAngle | None = None
     target_id: int | list[int] | None = None
     obs_id: ObsIDSDC | list[ObsIDSDC] | None = None
+    gw_event: str | None = None
+    limit: int | None = None
+    offset: int | None = None
+    sort_by: str | None = None
+    order: str | None = None
 
     model_config = ConfigDict(extra="ignore")
 
@@ -172,6 +177,11 @@ class SwiftAFSTSchema(OptionalCoordinateSchema, OptionalBeginEndLengthSchema):
     radius: AstropyAngle | None = None
     target_id: int | list[int] | None = None
     obs_id: ObsIDSDC | list[ObsIDSDC] | None = None
+    gw_event: str | None = None
+    limit: int | None = None
+    offset: int | None = None
+    sort_by: str | None = None
+    order: str | None = None
     afstmax: datetime | SwiftDateTimeSchema | None = None
     entries: list[SwiftAFSTEntry] = []
     status: TOOStatus = TOOStatus()
