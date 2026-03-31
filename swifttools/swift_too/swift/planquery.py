@@ -12,7 +12,6 @@ from ..base.schemas import (
     AstropyDateTime,
     AstropyDayLength,
     BaseSchema,
-    CoordinateSchema,
     OptionalBeginEndLengthSchema,
     OptionalCoordinateSchema,
 )
@@ -24,7 +23,7 @@ from .schemas import ObsIDSDC
 
 
 class SwiftPPSTEntry(
-    CoordinateSchema, TOOAPIClockCorrect, TOOAPIBaseclass, TOOAPIDownloadData, TOOAPIBackCompat, TOOAPIReprMixin
+    OptionalCoordinateSchema, TOOAPIClockCorrect, TOOAPIBaseclass, TOOAPIDownloadData, TOOAPIBackCompat, TOOAPIReprMixin
 ):
     """Class that defines an individual entry in the Swift Pre-Planned Science Timeline
 
