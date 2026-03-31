@@ -317,35 +317,35 @@ class SwiftObservation(TOOAPIBaseclass, TOOAPIDownloadData, TOOAPIBackCompat, Ba
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def begin(self) -> datetime | None:  # Updated return type to Optional[datetime]
+    def begin(self) -> datetime | None:
         if len(self.entries) == 0:
             return None
         return min([q.begin for q in self.entries if q.begin is not None])
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def end(self) -> datetime | None:  # Updated return type to Optional[datetime]
+    def end(self) -> datetime | None:
         if len(self.entries) == 0:
             return None
         return max([q.end for q in self.entries if q.end is not None])
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def xrt_mode(self) -> int | None:  # Updated return type to Optional[int]
+    def xrt_mode(self) -> int | None:
         if len(self.entries) == 0:
             return None
         return self.entries[0].xrt_mode
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def uvot_mode(self) -> int | None:  # Updated return type to Optional[int]
+    def uvot_mode(self) -> int | None:
         if len(self.entries) == 0:
             return None
         return self.entries[0].uvot_mode
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def bat_mode(self) -> int | None:  # Updated return type to Optional[int]
+    def bat_mode(self) -> int | None:
         if len(self.entries) == 0:
             return None
         return self.entries[0].bat_mode
