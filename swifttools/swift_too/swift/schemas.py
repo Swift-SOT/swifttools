@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from enum import Enum
-from time import tzset
+import time
 from typing import Annotated
 
 from pydantic import (
@@ -16,7 +16,29 @@ from ..base.schemas import AstropyDateTime, BaseSchema
 
 # Make sure we are working in UTC times
 os.environ["TZ"] = "UTC"
-tzset()
+try:
+    time.tzset()
+    tzset_worked = True
+except AttributeError:
+    tzset_worked = False
+
+if not tzset_worked:
+    # There is no tzset function in some environments (Windows, Mac-Intel)
+    # Check whether setting the TZ environment variable is sufficient
+    from datetime import datetime as _dt, timezone as _tz
+    # Have to check in both January and June because of Daylight Saving Time
+    if (_dt(2026,1,1, tzinfo=_tz.utc) == _dt(2026,1,1).astimezone(_tz.utc)
+            and _dt(2026,6,1, tzinfo=_tz.utc) == _dt(2026,6,1).astimezone(_tz.utc)):
+        tzset_worked = True
+    else:
+        import warnings
+        warnings.warn(
+            "time.tzset() not available on this platform. Naive datetime strings "
+            "may be interpreted as local time instead of UTC. If necessary, "
+            "set the timezone to UTC before executing python.",
+            RuntimeWarning
+        )
+
 
 ObsIDSDC = Annotated[
     str,
