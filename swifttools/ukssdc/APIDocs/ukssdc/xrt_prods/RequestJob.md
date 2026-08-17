@@ -48,7 +48,7 @@ Global parameters are set using the `setGlobalPars` function which receives the 
 "par=value" as the function arguments, where the "par"s are the [global parameters](#global-parameters). i.e.
 
 ```python
-In [3]: myReq.setGlobalPars(centroid=True, posErr=1.5)
+In[3]: myReq.setGlobalPars(centroid=True, posErr=1.5)
 ```
 
 You can set as many global parameters as you want at a time, and can call `setGlobalPars` as many times as you want.
@@ -122,7 +122,7 @@ If you didn't pass the parameters at creation time, or didn't pass all of them o
 you can do this with the `set..()` function:
 
 ```python
-In [9]: myReq.setLightCurvePars(pcCounts=20, wtCounts=30, dynamic=True)
+In[9]: myReq.setLightCurvePars(pcCounts=20, wtCounts=30, dynamic=True)
 ```
 We can check the light curve parameters as we did for the globals:
 
@@ -160,7 +160,7 @@ This example lets me introduce one other concept. There are a few parameters tha
 Finally, we may decide that we don't want to build this product after all, so we can remove it:
 
 ```python
-In [14]: myReq.removeSpectrum()
+In[14]: myReq.removeSpectrum()
 ```
 
 #### Little aside

@@ -21,14 +21,14 @@ is to check how many jobs you currently have queued or running, and to throttle 
 For this we have the `countActiveJobs()` method. This is actually a method of the `xrt_prods` module, so to use this directly, you need to import that module to use this function. Here, I have assumed you have done `from swifttools import xrt_prods`, and then we can check the number of active jobs thus:
 
 ```python
-In [1]: howMany = ux.countActiveJobs('YOUR_EMAIL_ADDRESS')
+In[1]: howMany = ux.countActiveJobs("YOUR_EMAIL_ADDRESS")
 ```
 
 However, for the sake of ease the `XRTProductRequest` class has a wrapper to this using the `UserID` value of
 your class, i.e. if you have created a request, `myReq` then:
 
 ```python
-In [2]: howMany = myReq.countActiveJobs()
+In[2]: howMany = myReq.countActiveJobs()
 ```
 
 is the same as the call above.
@@ -76,22 +76,21 @@ import swifttools.ukssdc.xrt_prods as ux
 import time
 # Other imports
 
-max_jobs = 5 # How many jobs we'll submit in any one go.
+max_jobs = 5  # How many jobs we'll submit in any one go.
 my_email = "me@myinstitute.countryCode"
 
-productsIWant = someFunctionToDefineWhatIWant() # Exercise for reader: write this function :)
+productsIWant = someFunctionToDefineWhatIWant()  # Exercise for reader: write this function :)
 
-myReqs = [] # This will hold the requests.
-ix=0
+myReqs = []  # This will hold the requests.
+ix = 0
 
 while ix < len(productsIwant):
-
     # Check if any jobs have finished, and download the products if they have
     # NB, on the first run this will of course not do anything, because ix=0
     ctr = 0
     for i in myReqs:
         if i.complete:
-            i.downloadProducts('/mydir', stem='myProd_'+str(ctr))
+            i.downloadProducts("/mydir", stem="myProd_" + str(ctr))
         ctr = ctr + 1
 
     # Submit as many as I can:
@@ -102,8 +101,8 @@ while ix < len(productsIwant):
         g = productsIWant[ix].globalPars
         myReqs[ix].setGlobalPars(**g)
         if productsIWant[ix].hasLightCurve:
-          l = productsIWant[ix].lcPars
-          tmpReq.addLightCurve(**l)
+            l = productsIWant[ix].lcPars
+            tmpReq.addLightCurve(**l)
         # etc for spectrum, pos &c
 
         # Submit the job
@@ -115,7 +114,7 @@ while ix < len(productsIwant):
     # OK, now we've submitted as many jobs as we can at one time
     # Let's give them time to run, and then try again
     time.sleep(120)
-    print (f"I have submitted {ix} / {len(productsIwant)} jobs")
+    print(f"I have submitted {ix} / {len(productsIwant)} jobs")
 
 # OK, if we're here all jobs have been submitted.
 # Can go through myReqs[] and download them all.
@@ -148,15 +147,15 @@ Instead there are two ways you can copy the data from one request to another.
 i.e.
 
 ```python
-In [1]: myNewReq = ux.XRTProductRequest('YOUR_EMAIL_ADDRESS', JSONVals=something) # constructor method
-In [2]: myNewReq.setFromJSON(something) # other method. myNewReq already exists, and 'something' is the JSON object/dict
+In[1]: myNewReq = ux.XRTProductRequest("YOUR_EMAIL_ADDRESS", JSONVals=something)  # constructor method
+In[2]: myNewReq.setFromJSON(something)  # other method. myNewReq already exists, and 'something' is the JSON object/dict
 ```
 
 This alone doesn't help, because we need to create the data, represented above as `something`. Fortunately we thought of that too, and we provide method `getJSON()` or `getJSONDict()` which dump out the status of the existing request. So we can recast the above calls:
 
 ```python
-In [3]: myNewReq = ux.XRTProductRequest('YOUR_EMAIL_ADDRESS', JSONVals = myOldReq.getJSONDict() ) # constructor method
-In [4]: myNewReq.setFromJSON( myOldReq.getJSONDict()) # other method. myNewReq already exists
+In[3]: myNewReq = ux.XRTProductRequest("YOUR_EMAIL_ADDRESS", JSONVals=myOldReq.getJSONDict())  # constructor method
+In[4]: myNewReq.setFromJSON(myOldReq.getJSONDict())  # other method. myNewReq already exists
 ```
 
 Or, in the case that you want to build your products periodically, after new observations, you may do something like this:
@@ -176,8 +175,10 @@ This is why `updateProds` is `True` by default. But don't despair: if for some r
 [discussed elsewhere](ReturnData.md), the names of these parameters don't match those used by the Python API, so if you want to use these values, you need to pass an extra argument when you assign these values: `fromServer=True`, i.e.
 
 ```python
-In [7]: myNewReq = ux.XRTProductRequest('YOUR_EMAIL_ADDRESS', JSONVals = myOldReq.subRetData['jobPars'], fromServer=True ) # constructor method
-In [8]: myNewReq.setFromJSON( myOldReq.subRetData['jobPars'], fromServer=True) # other method. myNewReq already exists
+In[7]: myNewReq = ux.XRTProductRequest(
+    "YOUR_EMAIL_ADDRESS", JSONVals=myOldReq.subRetData["jobPars"], fromServer=True
+)  # constructor method
+In[8]: myNewReq.setFromJSON(myOldReq.subRetData["jobPars"], fromServer=True)  # other method. myNewReq already exists
 ```
 
 If you want to save the data from your original request to come back to it later, it may be easier to do this as a JSON object:
@@ -200,8 +201,8 @@ Maybe you don't want to duplicate an entire product request, but you do want the
 For this you can access the products within your request directly, and assign them, thus:
 
 ```python
-In [1]: myNewReq = ux.XRTProductRequest('YOUR_EMAIL_ADDRESS')
-In [2]: myNewReq.LightCurve = myOldReq.LightCurve
+In[1]: myNewReq = ux.XRTProductRequest("YOUR_EMAIL_ADDRESS")
+In[2]: myNewReq.LightCurve = myOldReq.LightCurve
 ```
 
 And we can check this has worked if we want:
@@ -249,8 +250,8 @@ provided that you know the jobID, and that you own that job.
 This is done thus:
 
 ```python
-In [1]: myNewReq = ux.XRTProductRequest('YOUR_EMAIL_ADDRESS')
-In [2]: myNewReq.copyOldJob(868)
+In[1]: myNewReq = ux.XRTProductRequest("YOUR_EMAIL_ADDRESS")
+In[2]: myNewReq.copyOldJob(868)
 ```
 
 Here, job 868 was retrieved from the server.
@@ -267,7 +268,7 @@ If you want to recover some information about one of your previous jobs, perhaps
 then you need the ``listOldJobs()`` method. This is actually a method of the ``xrt_prods`` module, so is called thus:
 
 ```python
-In [1]: myOldJobs = ux.listOldJobs('YOUR_EMAIL_ADDRESS')
+In[1]: myOldJobs = ux.listOldJobs("YOUR_EMAIL_ADDRESS")
 ```
 
 (as above, this assumes you have first done `from swifttools import xrt_prods`).
@@ -276,7 +277,7 @@ However, for the sake of ease the ``XRTProductRequest`` class has a wrapper to t
 your class, i.e.
 
 ```python
-In [2]: myOldJobs = myReq.listOldJobs()
+In[2]: myOldJobs = myReq.listOldJobs()
 ```
 
 is the same as the call above.
@@ -307,8 +308,8 @@ This list in itself can be quite long (at the time of writing, I have 66 old job
 it using list comprehensions. For example, let us assume that I want to find an old request I made to analyse GK Per:
 
 ```python
-In [4]: gkperJobs = [x for x in oldJobs if x['Name']=='GK Per']
-In [5]: len(gkperJobs)
+In[4]: gkperJobs = [x for x in oldJobs if x["Name"] == "GK Per"]
+In[5]: len(gkperJobs)
 Out[5]: 12
 ```
 

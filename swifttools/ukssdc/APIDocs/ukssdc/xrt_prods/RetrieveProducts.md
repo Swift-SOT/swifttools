@@ -74,7 +74,7 @@ Having downloaded the light curve, you may wish to plot it. There is a [common p
 in the `swifttools.ukssdc` module, and the `xrt_prods` class contains a wrapper to this
 
 ```python
-In [5]: myReq.plotLC(xlog=True, ylog=True, fileName='mylc.png')
+In[5]: myReq.plotLC(xlog=True, ylog=True, fileName="mylc.png")
 ```
 
 **Note** This requires you to have `matplotlib.pylab` installed.
