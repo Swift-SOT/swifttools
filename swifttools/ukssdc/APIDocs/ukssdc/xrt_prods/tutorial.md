@@ -53,27 +53,27 @@ Successfully created a astrometric position
 Let's check that this is valid before we try to submit it:
 
 ```python
-In [9]: myReq.isValid()
-Out[9]: (True, '')
+In[9]: myReq.isValid()
+Out[9]: (True, "")
 ```
 
 Great, let's submit it:
 
 ```python
-In [10]: myReq.submit()
+In[10]: myReq.submit()
 Out[10]: True
 ```
 
 Phew, it worked. Let's find the JobID, and the URL, just in case we want a note of them. We'll also save the data returned by the server in case we want it later.
 
 ```python
-In [11]: myReq.JobID
-Out[11]: '951'
+In[11]: myReq.JobID
+Out[11]: "951"
 
-In [12]: myReq.URL
-Out[12]: 'https://www.swift.ac.uk/user_objects/tprods/USERPROD_951'
+In[12]: myReq.URL
+Out[12]: "https://www.swift.ac.uk/user_objects/tprods/USERPROD_951"
 
-In [13]: subData = myReq.subRetData
+In[13]: subData = myReq.subRetData
 ```
 
 Now, let's see how it's getting on:
@@ -154,7 +154,7 @@ Hmm, the light curve hasn't got far yet but the standard position is nearly done
  Done that? Nice brew? Good. OK, is this complete yet?
 
 ```python
-In [23]: myReq.complete
+In[23]: myReq.complete
 True
 ```
 
@@ -238,7 +238,7 @@ Out[33]:
 OK, I've removed the output as I can't make it look as nice as in my Jupyter notebook. You can explore it yourself. Or you can just:
 
 ```python
-In [30]: myReq.plotLC(xlog=True, ylog=True)
+In[30]: myReq.plotLC(xlog=True, ylog=True)
 ```
 
 ![png](lcplot.png)
@@ -259,9 +259,19 @@ import swifttools.ukssdc.xrt_prods as ux
 import sys
 import time
 
-myReq = ux.XRTProductRequest('YOUR_EMAIL_ADDRESS')
-myReq.setGlobalPars(getTargs=True, centroid=True, name='GRB 200116A', RA=335.6985, Dec=-7.5179, centMeth='simple', useSXPS=False, T0=608713541.952, posErr=1)
-myReq.addLightCurve(binMeth='counts', pcCounts=20, wtCounts=30, dynamic=True)
+myReq = ux.XRTProductRequest("YOUR_EMAIL_ADDRESS")
+myReq.setGlobalPars(
+    getTargs=True,
+    centroid=True,
+    name="GRB 200116A",
+    RA=335.6985,
+    Dec=-7.5179,
+    centMeth="simple",
+    useSXPS=False,
+    T0=608713541.952,
+    posErr=1,
+)
+myReq.addLightCurve(binMeth="counts", pcCounts=20, wtCounts=30, dynamic=True)
 myReq.addSpectrum(hasRedshift=False, galactic=True)
 myReq.addStandardPos()
 myReq.addEnhancedPos()
@@ -277,11 +287,11 @@ if not myReq.submit():
 # completes. I'm just going to wait until everything is complete
 
 while not myReq.complete:
-  print("Products not yet complete; waiting for a minute")
-  time.sleep(60)
+    print("Products not yet complete; waiting for a minute")
+    time.sleep(60)
 
 # Great, all done so download
-myReq.downloadProducts('/some/where', stem='tutorial_files_', format='zip')
+myReq.downloadProducts("/some/where", stem="tutorial_files_", format="zip")
 
 print("All done")
 ```

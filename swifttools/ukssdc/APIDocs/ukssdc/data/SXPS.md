@@ -85,7 +85,7 @@ You can generate upper limits at any position covered by the SXPS catalogues usi
 
 
 ```python
-ul = uds.getUpperLimits(position='334.502058 -8.256481', cat='LSXPS')
+ul = uds.getUpperLimits(position="334.502058 -8.256481", cat="LSXPS")
 ```
 
 `getUpperLimits()` always returns its result (there is no `saveData` option) so we captured it in the `ul` variable wich is a `dict`, let's explore it:
@@ -106,7 +106,7 @@ The first few keys tell us how the `position` argument was parsed, and we'll com
 
 
 ```python
-ul['ULData']
+ul["ULData"]
 ```
 
 
@@ -126,17 +126,14 @@ So let's ask instead for upper limits in all bands and all datasets; this will t
 
 
 ```python
-ul = uds.getUpperLimits(position='77.969042, -62.324167',
-                        cat='LSXPS',
-                        bands='all',
-                        whichData='all')
+ul = uds.getUpperLimits(position="77.969042, -62.324167", cat="LSXPS", bands="all", whichData="all")
 ```
 
 And now let's see what the 'ULData' entry looks like:
 
 
 ```python
-ul['ULData']
+ul["ULData"]
 ```
 
 
@@ -167,7 +164,7 @@ If this key is set, its value tells you about the source(s) in question:
 
 
 ```python
-ul['DetData']
+ul["DetData"]
 ```
 
 
@@ -189,10 +186,7 @@ Let's do a quick demonstration, because `detectionsAsRates` results in more colu
 
 
 ```python
-ul = uds.getUpperLimits(position='77.969042, -62.324167',
-                        cat='LSXPS',
-                        whichData='all',
-                        detectionsAsRates=True)
+ul = uds.getUpperLimits(position="77.969042, -62.324167", cat="LSXPS", whichData="all", detectionsAsRates=True)
 ```
 
 (Note, I removed the `bands` argument so we just get the total band again).
@@ -201,7 +195,7 @@ Let's have a look at the results:
 
 
 ```python
-ul['ULData']
+ul["ULData"]
 ```
 
 
@@ -214,7 +208,7 @@ Be sure to scroll to the right to see all the columns, or run the cell below:
 
 
 ```python
-ul['ULData'].columns.tolist()
+ul["ULData"].columns.tolist()
 ```
 
 
@@ -310,11 +304,7 @@ I'm not going to go into details here of how this function works, and what all t
 
 
 ```python
-merged = uk.mergeUpperLimits(ul['ULData'],
-                             verbose=True,
-                             conf=0.95,
-                             rows=ul['ULData']['ObsID']<"10000000000"
-                            )
+merged = uk.mergeUpperLimits(ul["ULData"], verbose=True, conf=0.95, rows=ul["ULData"]["ObsID"] < "10000000000")
 merged
 ```
 
@@ -353,10 +343,7 @@ If you want to simply download the full catalogue table, you can use the functio
 
 
 ```python
-uds.getFullTable(table='sources',
-                 saveData=True,
-                 destDir='/tmp/APIDemo_SXPS_cat',
-                 silent=False)
+uds.getFullTable(table="sources", saveData=True, destDir="/tmp/APIDemo_SXPS_cat", silent=False)
 ```
 
     Making directory /tmp/APIDemo_SXPS_cat
@@ -370,11 +357,7 @@ We could instead have given `returnData=True` which actually downloads the file,
 
 
 ```python
-data = uds.getFullTable(table='sources',
-                        returnData=True,
-                        saveData=False,
-                        silent=False,
-                        verbose=True)
+data = uds.getFullTable(table="sources", returnData=True, saveData=False, silent=False, verbose=True)
 ```
 
     Uploading data to https://www.swift.ac.uk/API/main.php
@@ -407,13 +390,15 @@ So:
 
 
 ```python
-data = uds.getFullTable(table='datasets',
-                        destDir='/tmp/APIDemo_SXPS_cat',
-                        saveData=True,
-                        subset='ultra-clean',
-                        format='fits',
-                        silent=False,
-                        verbose=True, )
+data = uds.getFullTable(
+    table="datasets",
+    destDir="/tmp/APIDemo_SXPS_cat",
+    saveData=True,
+    subset="ultra-clean",
+    format="fits",
+    silent=False,
+    verbose=True,
+)
 ```
 
     Uploading data to https://www.swift.ac.uk/API/main.php
@@ -449,7 +434,7 @@ As you can see, this has returned us something with keys 'hourly' and 'daily', a
 
 
 ```python
-list(oldTabs['hourly'].keys())[0:5]
+list(oldTabs["hourly"].keys())[0:5]
 ```
 
 
@@ -465,7 +450,7 @@ list(oldTabs['hourly'].keys())[0:5]
 
 
 ```python
-list(oldTabs['daily'].keys())[0:5]
+list(oldTabs["daily"].keys())[0:5]
 ```
 
 
@@ -481,14 +466,16 @@ Any of the keys we've just seen can be supplied as the `epoch` parameter to `get
 
 
 ```python
-data = uds.getFullTable(table='sources',
-                        destDir='/tmp/APIDemo_SXPS_cat',
-                        saveData=True,
-                        subset='ultra-clean',
-                        epoch='2022-08-17',
-                        format='fits',
-                        silent=False,
-                        verbose=True, )
+data = uds.getFullTable(
+    table="sources",
+    destDir="/tmp/APIDemo_SXPS_cat",
+    saveData=True,
+    subset="ultra-clean",
+    epoch="2022-08-17",
+    format="fits",
+    silent=False,
+    verbose=True,
+)
 ```
 
     Uploading data to https://www.swift.ac.uk/API/main.php
@@ -519,11 +506,7 @@ The second case is a bit more complicated, but also much rarer, it generally onl
 
 
 ```python
-data = uds.getSourceDetails(sourceID=37562,
-                            cat='LSXPS',
-                            silent=True,
-                            verbose=False
-                            )
+data = uds.getSourceDetails(sourceID=37562, cat="LSXPS", silent=True, verbose=False)
 data.keys()
 ```
 
@@ -536,7 +519,7 @@ data.keys()
 
 
 ```python
-data['newerSources']
+data["newerSources"]
 ```
 
 
@@ -582,7 +565,7 @@ So, let's jump straight in with an example:
 
 
 ```python
-data = uds.getSourceDetails(sourceID=11375, cat='LSXPS')
+data = uds.getSourceDetails(sourceID=11375, cat="LSXPS")
 ```
 
 (I said, truly, that `cat` is optional but I think it's helpful to make it explicit).
@@ -1094,7 +1077,7 @@ I'll let you explore it at your leisure, with just a few notes. Firstly, those t
 
 
 ```python
-data['Detections'].keys()
+data["Detections"].keys()
 ```
 
 
@@ -1108,7 +1091,7 @@ This tells me how many stacks and normal observations the source was detected in
 
 
 ```python
-data['Detections']['NumStacks']
+data["Detections"]["NumStacks"]
 ```
 
 
@@ -1120,7 +1103,7 @@ data['Detections']['NumStacks']
 
 
 ```python
-data['Detections']['Observations']
+data["Detections"]["Observations"]
 ```
 
 
@@ -1133,7 +1116,7 @@ The other thing I want to point out about this relates to the notes above about 
 
 
 ```python
-data['LSXPS_ID']
+data["LSXPS_ID"]
 ```
 
 
@@ -1149,8 +1132,8 @@ Another useful aspect of the data this function returns is that it contains the 
 
 
 ```python
-data = uds.getSourceDetails(sourceID=106107, cat='LSXPS')
-data['CrossMatch']
+data = uds.getSourceDetails(sourceID=106107, cat="LSXPS")
+data["CrossMatch"]
 ```
 
 
@@ -1165,8 +1148,7 @@ There's not really much more to say for `getSourceDetails()`, except a reminder 
 
 
 ```python
-data = uds.getSourceDetails(sourceName=('LSXPS J163700.6+073914', 'LSXPS J163647.0+074206'),
-                         cat='LSXPS')
+data = uds.getSourceDetails(sourceName=("LSXPS J163700.6+073914", "LSXPS J163647.0+074206"), cat="LSXPS")
 ```
 
 
@@ -1186,7 +1168,7 @@ This result should not be unexpected -- I warned you right at the top of this no
 
 
 ```python
-data['LSXPS J163700.6+073914']
+data["LSXPS J163700.6+073914"]
 ```
 
 
@@ -1486,7 +1468,7 @@ From the lists of detections, non-detections etc in the data returned above, it 
 
 
 ```python
-what = uds.getObsList(sourceName='LSXPS J073006.9-193710', useObs='allCat')
+what = uds.getObsList(sourceName="LSXPS J073006.9-193710", useObs="allCat")
 what
 ```
 
@@ -1536,10 +1518,10 @@ This sounds impossible - how can a source be in the catalogue and yet have no bl
 ```python
 for sid in (209851, 209220):
     print(f"Source {sid}:")
-    what = uds.getObsList(sourceID=sid, useObs='blind')
-    if len(what['obsList']) == 0:
+    what = uds.getObsList(sourceID=sid, useObs="blind")
+    if len(what["obsList"]) == 0:
         print("No blind detections found, getting allCat")
-        what = uds.getObsList(sourceID=sid, useObs='allCat')
+        what = uds.getObsList(sourceID=sid, useObs="allCat")
     print(f"  * Targets: {what['targList']}\n  * Observations: {what['obsList']}\n\n")
 ```
 
@@ -1563,11 +1545,8 @@ Having got the obs list you may want to download the actual data, we can do that
 
 ```python
 import swifttools.ukssdc.data as ud
-ud.downloadObsData(what['obsList'],
-                   instruments=('xrt',),
-                   destDir='/tmp/APIDemo_SXPS_data',
-                   silent=False
-                  )
+
+ud.downloadObsData(what["obsList"], instruments=("xrt",), destDir="/tmp/APIDemo_SXPS_data", silent=False)
 ```
 
     Making directory /tmp/APIDemo_SXPS_data
@@ -1642,13 +1621,9 @@ All light curves returned by anything in the `swifttools.ukssdc` module have a c
 
 
 ```python
-lcs = uds.getLightCurves(sourceName='LSXPS J062131.8-622213',
-                         cat='LSXPS',
-                         binning='obsid',
-                         timeFormat='MJD',
-                         saveData=False,
-                         returnData=True
-                        )
+lcs = uds.getLightCurves(
+    sourceName="LSXPS J062131.8-622213", cat="LSXPS", binning="obsid", timeFormat="MJD", saveData=False, returnData=True
+)
 ```
 
 I'm not going to spend much time unpacking this, because you can [read about the light curve `dict` elsewhere](https://www.swift.ac.uk/API/ukssdc/structures.md#the-light-curve-dict) but we'll take a quick look.
@@ -1698,7 +1673,7 @@ The 'Datasets' key, as I'm sure you know, tells you what light curves we actuall
 
 
 ```python
-lcs['Datasets']
+lcs["Datasets"]
 ```
 
 
@@ -1723,7 +1698,7 @@ Let's have a quick look at one each of these:
 
 
 ```python
-lcs['Total_rates']
+lcs["Total_rates"]
 ```
 
 
@@ -1736,7 +1711,7 @@ We have a `pandas DataFrame` with the light curve data in it. The upper limit en
 
 
 ```python
-lcs['Total_UL']
+lcs["Total_UL"]
 ```
 
 
@@ -1752,14 +1727,15 @@ In the above call we got all data in all bands, but we didn't have to, because o
 
 
 ```python
-lcs = uds.getLightCurves(sourceName='LSXPS J221755.4-082100',
-                         cat='LSXPS',
-                         binning='snapshot',
-                         timeFormat='TDB',
-                         bands=('total', 'hard', 'HR1'),
-                         saveData=False,
-                         returnData=True
-                        )
+lcs = uds.getLightCurves(
+    sourceName="LSXPS J221755.4-082100",
+    cat="LSXPS",
+    binning="snapshot",
+    timeFormat="TDB",
+    bands=("total", "hard", "HR1"),
+    saveData=False,
+    returnData=True,
+)
 ```
 
 
@@ -1822,20 +1798,21 @@ Let's start with `getAllTypes`, as it shows us everything!
 
 
 ```python
-lcs = uds.getLightCurves(sourceName='LSXPS J051152.3-621925',
-                         cat='LSXPS',
-                         bands=('total',),
-                         binning='obsid',
-                         timeFormat='MJD',
-                         saveData=False,
-                         returnData=True,
-                         getAllTypes=True
-                        )
+lcs = uds.getLightCurves(
+    sourceName="LSXPS J051152.3-621925",
+    cat="LSXPS",
+    bands=("total",),
+    binning="obsid",
+    timeFormat="MJD",
+    saveData=False,
+    returnData=True,
+    getAllTypes=True,
+)
 ```
 
 
 ```python
-lcs['Datasets']
+lcs["Datasets"]
 ```
 
 
@@ -1855,23 +1832,24 @@ If we don't set this flag, we won't get duplicated data, so we can instead selec
 
 
 ```python
-lcs = uds.getLightCurves(sourceName='LSXPS J051152.3-621925',
-                         cat='LSXPS',
-                         bands=('total',),
-                         binning='obsid',
-                         timeFormat='MJD',
-                         saveData=False,
-                         returnData=True,
-                         retroAsUL = True,
-                         groupULs = False
-                        )
+lcs = uds.getLightCurves(
+    sourceName="LSXPS J051152.3-621925",
+    cat="LSXPS",
+    bands=("total",),
+    binning="obsid",
+    timeFormat="MJD",
+    saveData=False,
+    returnData=True,
+    retroAsUL=True,
+    groupULs=False,
+)
 ```
 
 Here we have asked for the retrospective detections to be given as upper limits. The non-detections will also be upper limits (the default), but we also said `groupULs=False`, so instead of having a `Total_UL` light curve containing the retrospective and non-detections, we expect these to have been kept separate. Let's confirm this:
 
 
 ```python
-lcs['Datasets']
+lcs["Datasets"]
 ```
 
 
@@ -1897,17 +1875,18 @@ So if we give the same command as above, but with the grouping of upper limits e
 
 
 ```python
-lcs = uds.getLightCurves(sourceName='LSXPS J051152.3-621925',
-                         cat='LSXPS',
-                         bands=('total',),
-                         binning='obsid',
-                         timeFormat='MJD',
-                         saveData=False,
-                         returnData=True,
-                         retroAsUL = True,
-                         groupULs = True, ## This is the default, but I'm being explicit
-                        )
-lcs['Datasets']
+lcs = uds.getLightCurves(
+    sourceName="LSXPS J051152.3-621925",
+    cat="LSXPS",
+    bands=("total",),
+    binning="obsid",
+    timeFormat="MJD",
+    saveData=False,
+    returnData=True,
+    retroAsUL=True,
+    groupULs=True,  ## This is the default, but I'm being explicit
+)
+lcs["Datasets"]
 ```
 
 
@@ -1921,7 +1900,7 @@ So we now just have a 'Total_UL' dataset with all of the upper limits in it. Let
 
 
 ```python
-len(lcs['Total_UL'])
+len(lcs["Total_UL"])
 ```
 
 
@@ -1944,9 +1923,7 @@ from swifttools.ukssdc import plotLightCurve
 
 
 ```python
-fig, ax = plotLightCurve(lcs, whichCurves=('Total_rates',),
-                         ylog=True,
-                         verbose=True)
+fig, ax = plotLightCurve(lcs, whichCurves=("Total_rates",), ylog=True, verbose=True)
 ```
 
     Creating new subplot object
@@ -1963,12 +1940,9 @@ And I'll take this chance to show you something about that function; as well as 
 
 
 ```python
-fig, ax = plotLightCurve(lcs, whichCurves=('Total_UL',),
-                         ylog=True,
-                         verbose=True,
-                         fig=fig,
-                         cols={"Total_UL": "blue"},
-                         ax=ax)
+fig, ax = plotLightCurve(
+    lcs, whichCurves=("Total_UL",), ylog=True, verbose=True, fig=fig, cols={"Total_UL": "blue"}, ax=ax
+)
 fig
 ```
 
@@ -1994,14 +1968,15 @@ It may be that you didn't want to handle the data in a variable at all, but just
 
 
 ```python
-uds.getLightCurves(sourceName='LSXPS J062131.8-622213',
-                   cat='LSXPS',
-                   saveData=True,
-                   binning='obsid',
-                   timeFormat='MJD',
-                   destDir='/tmp/APIDemo_SXPS_LC',
-                   verbose=True,
-                   )
+uds.getLightCurves(
+    sourceName="LSXPS J062131.8-622213",
+    cat="LSXPS",
+    saveData=True,
+    binning="obsid",
+    timeFormat="MJD",
+    destDir="/tmp/APIDemo_SXPS_LC",
+    verbose=True,
+)
 ```
 
     Getting data for sourceName = `LSXPS J062131.8-622213`
@@ -2033,15 +2008,16 @@ we can use all of those complicated controls over how data are grouped and forma
 
 
 ```python
-uds.getLightCurves(sourceName='LSXPS J062131.8-622213',
-                   cat='LSXPS',
-                   saveData=True,
-                   binning='obsid',
-                   timeFormat='MJD',
-                   destDir='/tmp/APIDemo_SXPS_LC2',
-                   verbose=True,
-                   getAllTypes=True
-                   )
+uds.getLightCurves(
+    sourceName="LSXPS J062131.8-622213",
+    cat="LSXPS",
+    saveData=True,
+    binning="obsid",
+    timeFormat="MJD",
+    destDir="/tmp/APIDemo_SXPS_LC2",
+    verbose=True,
+    getAllTypes=True,
+)
 ```
 
     Getting data for sourceName = `LSXPS J062131.8-622213`
@@ -2078,15 +2054,16 @@ Let me also demonstrate the `subDirs` issue which only comes into play when we g
 
 
 ```python
-uds.getLightCurves(sourceName=('LSXPS J062131.8-622213','LSXPS J051152.3-621925'),
-                   cat='LSXPS',
-                   saveData=True,
-                   binning='obsid',
-                   timeFormat='MJD',
-                   destDir='/tmp/APIDemo_SXPS_LC3',
-                   verbose=True,
-                   subDirs=True
-                   )
+uds.getLightCurves(
+    sourceName=("LSXPS J062131.8-622213", "LSXPS J051152.3-621925"),
+    cat="LSXPS",
+    saveData=True,
+    binning="obsid",
+    timeFormat="MJD",
+    destDir="/tmp/APIDemo_SXPS_LC3",
+    verbose=True,
+    subDirs=True,
+)
 ```
 
     Getting data for sourceName = `LSXPS J062131.8-622213`
@@ -2126,15 +2103,16 @@ You have probably noticed that the file names are the same for the two sources, 
 
 
 ```python
-uds.getLightCurves(sourceName=('LSXPS J062131.8-622213','LSXPS J051152.3-621925'),
-                   cat='LSXPS',
-                   saveData=True,
-                   binning='obsid',
-                   timeFormat='MJD',
-                   destDir='/tmp/APIDemo_SXPS_LC4',
-                   verbose=True,
-                   subDirs=False
-                   )
+uds.getLightCurves(
+    sourceName=("LSXPS J062131.8-622213", "LSXPS J051152.3-621925"),
+    cat="LSXPS",
+    saveData=True,
+    binning="obsid",
+    timeFormat="MJD",
+    destDir="/tmp/APIDemo_SXPS_LC4",
+    verbose=True,
+    subDirs=False,
+)
 ```
 
     Getting data for sourceName = `LSXPS J062131.8-622213`
@@ -2181,15 +2159,16 @@ Obviously, the former argument only makes sense if we downloaded a few light cur
 
 
 ```python
-lcs = uds.getLightCurves(sourceName=('LSXPS J051152.3-621925','LSXPS J221755.4-082100', 'LSXPS J062131.8-622213'),
-                         cat='LSXPS',
-                         bands='all',
-                         binning='obsid',
-                         timeFormat='MJD',
-                         saveData=False,
-                         returnData=True,
-                         getAllTypes=True
-                        )
+lcs = uds.getLightCurves(
+    sourceName=("LSXPS J051152.3-621925", "LSXPS J221755.4-082100", "LSXPS J062131.8-622213"),
+    cat="LSXPS",
+    bands="all",
+    binning="obsid",
+    timeFormat="MJD",
+    saveData=False,
+    returnData=True,
+    getAllTypes=True,
+)
 ```
 
 Let's remind ourself what this looks like:
@@ -2208,7 +2187,7 @@ lcs.keys()
 
 
 ```python
-lcs['LSXPS J051152.3-621925']['Datasets']
+lcs["LSXPS J051152.3-621925"]["Datasets"]
 ```
 
 
@@ -2245,13 +2224,14 @@ But now, for whatever reason, I only want to save the light curves of the first 
 
 
 ```python
-uds.saveLightCurves(lcs,
-                    whichSources=('LSXPS J051152.3-621925','LSXPS J062131.8-622213'),
-                    whichCurves=('Total_blind_rates', 'Hard_nondet_UL'),
-                    destDir='/tmp/APIDemo_SXPS_LC5',
-                    subDirs=True,
-                    verbose=True
-                   )
+uds.saveLightCurves(
+    lcs,
+    whichSources=("LSXPS J051152.3-621925", "LSXPS J062131.8-622213"),
+    whichCurves=("Total_blind_rates", "Hard_nondet_UL"),
+    destDir="/tmp/APIDemo_SXPS_LC5",
+    subDirs=True,
+    verbose=True,
+)
 ```
 
     Making directory /tmp/APIDemo_SXPS_LC5
@@ -2347,13 +2327,14 @@ Anyway, "A little less conversation a little more action" seems appropriate here
 
 
 ```python
-uds.getSpectra(sourceName='LSXPS J221755.4-082100',
-               cat='LSXPS',
-               destDir='/tmp/APIDemo_SXPS_spec',
-               verbose=True,
-               extract=True,
-               removeTar=True
-              )
+uds.getSpectra(
+    sourceName="LSXPS J221755.4-082100",
+    cat="LSXPS",
+    destDir="/tmp/APIDemo_SXPS_spec",
+    verbose=True,
+    extract=True,
+    removeTar=True,
+)
 ```
 
     Getting data for sourceName = `LSXPS J221755.4-082100`
@@ -2390,13 +2371,14 @@ I turned on verbose mode so that you can see what's happening. Because we only r
 
 
 ```python
-uds.getSpectra(sourceName=('LSXPS J221755.4-082100', 'LSXPS J033112.0+435414'),
-               cat='LSXPS',
-               destDir='/tmp/APIDemo_SXPS_spec2',
-               verbose=True,
-               extract=True,
-               removeTar=True
-              )
+uds.getSpectra(
+    sourceName=("LSXPS J221755.4-082100", "LSXPS J033112.0+435414"),
+    cat="LSXPS",
+    destDir="/tmp/APIDemo_SXPS_spec2",
+    verbose=True,
+    extract=True,
+    removeTar=True,
+)
 ```
 
     Getting data for sourceName = `LSXPS J221755.4-082100`
@@ -2473,19 +2455,20 @@ So, let's get an spectrum:
 
 
 ```python
-specData = uds.getSpectra(sourceName='LSXPS J221755.4-082100',
-                          cat='LSXPS',
-                          saveData=False,
-                          saveImages=False,
-                          returnData=True,
-                          )
+specData = uds.getSpectra(
+    sourceName="LSXPS J221755.4-082100",
+    cat="LSXPS",
+    saveData=False,
+    saveImages=False,
+    returnData=True,
+)
 ```
 
 Note that I have set both `saveData` and `saveImages` to `False` so all I have got is the spectral data. This follows the spectral `dict` and I'm not going to detail this much because of the [dedicated documentation](https://www.swift.ac.uk/API/ukssdc/structures.md#the-spectrum-dict), but let's at least look at something. I want to know what the results of the APEC fit to this object was, and I know that, for all SXPS spectra, we only have one time interval (called interval0) and only one mode (PC), so I can jump straight to it:
 
 
 ```python
-specData['interval0']['PC']['APEC']
+specData["interval0"]["PC"]["APEC"]
 ```
 
 
@@ -2518,23 +2501,25 @@ As with light curves, you can separate the `get` and `save` phases, by calling `
 
 
 ```python
-specData = uds.getSpectra(sourceName=('LSXPS J051152.3-621925','LSXPS J221755.4-082100', 'LSXPS J062131.8-622213'),
-                          cat='LSXPS',
-                          saveData=False,
-                          saveImages=False,
-                          returnData=True,
-                        )
+specData = uds.getSpectra(
+    sourceName=("LSXPS J051152.3-621925", "LSXPS J221755.4-082100", "LSXPS J062131.8-622213"),
+    cat="LSXPS",
+    saveData=False,
+    saveImages=False,
+    returnData=True,
+)
 ```
 
 
 ```python
-uds.saveSpectra(specData,
-                whichSources=('LSXPS J051152.3-621925','LSXPS J221755.4-082100'),
-                destDir='/tmp/APIDemo_SXPS_spec3',
-                verbose=True,
-                extract=True,
-                removeTar=True
-                )
+uds.saveSpectra(
+    specData,
+    whichSources=("LSXPS J051152.3-621925", "LSXPS J221755.4-082100"),
+    destDir="/tmp/APIDemo_SXPS_spec3",
+    verbose=True,
+    extract=True,
+    removeTar=True,
+)
 ```
 
     Making directory /tmp/APIDemo_SXPS_spec3
@@ -2598,10 +2583,7 @@ You can also download the png-format thumbnail images of the sources. These can 
 
 
 ```python
-uds.saveSourceImages(sourceName='LSXPS J051152.3-621925',
-                     cat='LSXPS',
-                     destDir='/tmp/APIDemo_SXPS_image',
-                     verbose=True)
+uds.saveSourceImages(sourceName="LSXPS J051152.3-621925", cat="LSXPS", destDir="/tmp/APIDemo_SXPS_image", verbose=True)
 ```
 
     Making directory /tmp/APIDemo_SXPS_image
@@ -2629,11 +2611,13 @@ As usual, this function includes a `subDirs` parameter (default: `True`) which i
 
 
 ```python
-uds.saveSourceImages(sourceName=('LSXPS J051152.3-621925','LSXPS J221755.4-082100'),
-                     cat='LSXPS',
-                     destDir='/tmp/APIDemo_SXPS_image2',
-                     subDirs=False,
-                     verbose=True)
+uds.saveSourceImages(
+    sourceName=("LSXPS J051152.3-621925", "LSXPS J221755.4-082100"),
+    cat="LSXPS",
+    destDir="/tmp/APIDemo_SXPS_image2",
+    subDirs=False,
+    verbose=True,
+)
 ```
 
     Making directory /tmp/APIDemo_SXPS_image2
@@ -2724,12 +2708,7 @@ First, a simple one:
 
 
 ```python
-myReq = uds.makeProductRequest('MY_EMAIL_ADDRESS',
-                               cat='LSXPS',
-                               sourceID=17092,
-                               useObs='all',
-                               silent=False
-                              )
+myReq = uds.makeProductRequest("MY_EMAIL_ADDRESS", cat="LSXPS", sourceID=17092, useObs="all", silent=False)
 myReq.getGlobalPars()
 ```
 
@@ -2784,14 +2763,15 @@ Let's explore a few more ways of using this function. First, we will specify tha
 
 
 ```python
-myReq = uds.makeProductRequest('MY_EMAIL_ADDRESS',
-                               cat='LSXPS',
-                               sourceID=17092,
-                               T0='firstBlindDet',
-                               useObs='blind',
-                               addProds=['LightCurve', 'StandardPos'],
-                               silent=True,
-                              )
+myReq = uds.makeProductRequest(
+    "MY_EMAIL_ADDRESS",
+    cat="LSXPS",
+    sourceID=17092,
+    T0="firstBlindDet",
+    useObs="blind",
+    addProds=["LightCurve", "StandardPos"],
+    silent=True,
+)
 print(myReq)
 print(f"Globals: {myReq.getGlobalPars()}\n")
 for p in myReq.productList:
@@ -2826,7 +2806,7 @@ You can see that the spectrum parameters don't include the observation list. Of 
 
 
 ```python
-myReq.setSpectrumPars(whichData='user', useObs = myReq.getLightCurvePars()['useObs'])
+myReq.setSpectrumPars(whichData="user", useObs=myReq.getLightCurvePars()["useObs"])
 for p in myReq.productList:
     print(f"{p}:\t{myReq.getProductPars(p)}")
 ```
@@ -2840,20 +2820,17 @@ OK, two more things. First, I said above you don't have to supply the `cat` argu
 
 
 ```python
-info = uds.getSourceDetails(sourceID=17092,
-                         cat='LSXPS',
-                         silent=True,
-                         verbose=False
-)
+info = uds.getSourceDetails(sourceID=17092, cat="LSXPS", silent=True, verbose=False)
 
-myReq = uds.makeProductRequest('MY_EMAIL_ADDRESS',
-                               sourceDetails=info,
-                               sourceID=17092,
-                               T0='firstBlindDet',
-                               useObs='blind',
-                               addProds=['LightCurve','Spectrum', 'StandardPos'],
-                               silent=True,
-                              )
+myReq = uds.makeProductRequest(
+    "MY_EMAIL_ADDRESS",
+    sourceDetails=info,
+    sourceID=17092,
+    T0="firstBlindDet",
+    useObs="blind",
+    addProds=["LightCurve", "Spectrum", "StandardPos"],
+    silent=True,
+)
 print(myReq)
 print(f"Globals: {myReq.getGlobalPars()}\n")
 for p in myReq.productList:
@@ -2878,22 +2855,19 @@ The last thing to show, related to what I've just said, is that we can of course
 
 
 ```python
-data = uds.getSourceDetails(sourceID=(17092,),
-                   cat='LSXPS',
-                   silent=True,
-                   verbose=False
-)
+data = uds.getSourceDetails(sourceID=(17092,), cat="LSXPS", silent=True, verbose=False)
 
-rlist = uds.makeProductRequest('MY_EMAIL_ADDRESS',
-                               sourceDetails=info,
-                               sourceID=(17092,128791),
-                               cat='LSXPS',  # This is actually the default, but explicit is good
-                               T0='firstBlindDet',
-                               useObs='blind',
-                               addProds=['LightCurve'],
-                               silent=False,
-                               verbose=False
-                              )
+rlist = uds.makeProductRequest(
+    "MY_EMAIL_ADDRESS",
+    sourceDetails=info,
+    sourceID=(17092, 128791),
+    cat="LSXPS",  # This is actually the default, but explicit is good
+    T0="firstBlindDet",
+    useObs="blind",
+    addProds=["LightCurve"],
+    silent=False,
+    verbose=False,
+)
 ```
 
     Have to get sourceDetails for sourceID=17092
@@ -2934,12 +2908,11 @@ I mentioned that we may want to make the actual `XRTProductRequest`s be silent. 
 ```python
 for sourceID in rlist.keys():
     print(f"\n{sourceID}\n======")
-    rlist[sourceID].silent=True
+    rlist[sourceID].silent = True
     print(f"{rlist[sourceID]}")
     print(f"Globals: {rlist[sourceID].getGlobalPars()}\n")
     for p in rlist[sourceID].productList:
         print(f"{p}:\t{rlist[sourceID].getProductPars(p)}")
-
 ```
 
 
@@ -2990,7 +2963,7 @@ To get information about a dataset, we simply call the function `getDatasetDetai
 
 
 ```python
-dsInfo = uds.getDatasetDetails(ObsID='00282445000', cat='LSXPS')
+dsInfo = uds.getDatasetDetails(ObsID="00282445000", cat="LSXPS")
 ```
 
 
@@ -3344,7 +3317,7 @@ If you scroll down in the above you'll see one thing that look like a tables -- 
 
 
 ```python
-dsInfo['Sources']
+dsInfo["Sources"]
 ```
 
 
@@ -3357,7 +3330,7 @@ And you may note that the columns 'Total_DetectionDetails', 'Soft_DetectionDetai
 
 
 ```python
-dsInfo['Sources']['Total_DetectionDetails'][0]
+dsInfo["Sources"]["Total_DetectionDetails"][0]
 ```
 
 
@@ -3385,7 +3358,7 @@ And of course we can access a specific property:
 
 
 ```python
-dsInfo['Sources']['Total_DetectionDetails'][0]['SNR']
+dsInfo["Sources"]["Total_DetectionDetails"][0]["SNR"]
 ```
 
 
@@ -3399,8 +3372,7 @@ As with all of the data access functions (see the [General notes](#intro)) we ca
 
 
 ```python
-dsInfo = uds.getDatasetDetails(ObsID=('00282445000','00015231001'),
-                               cat='LSXPS')
+dsInfo = uds.getDatasetDetails(ObsID=("00282445000", "00015231001"), cat="LSXPS")
 dsInfo.keys()
 ```
 
@@ -3421,11 +3393,7 @@ Let's start with a quick demo:
 
 
 ```python
-uds.saveDatasetImages(ObsID='00282445000',
-                      cat='LSXPS',
-                      destDir='/tmp/APIDemo_SXPS_Im',
-                      verbose=True,
-                      getRegions=True)
+uds.saveDatasetImages(ObsID="00282445000", cat="LSXPS", destDir="/tmp/APIDemo_SXPS_Im", verbose=True, getRegions=True)
 ```
 
     Making directory /tmp/APIDemo_SXPS_Im
@@ -3485,13 +3453,15 @@ Let's do one more quick demo, exploting these features and reminding you that yo
 
 
 ```python
-uds.saveDatasetImages(ObsID=('00282445000','00221755001'),
-                      cat='LSXPS',
-                      destDir='/tmp/APIDemo_SXPS_Im2',
-                      types=('image','backgroundmap'),
-                      bands=('total', 'soft'),
-                      verbose=True,
-                      getRegions=True)
+uds.saveDatasetImages(
+    ObsID=("00282445000", "00221755001"),
+    cat="LSXPS",
+    destDir="/tmp/APIDemo_SXPS_Im2",
+    types=("image", "backgroundmap"),
+    bands=("total", "soft"),
+    verbose=True,
+    getRegions=True,
+)
 ```
 
     Making directory /tmp/APIDemo_SXPS_Im2
@@ -3551,11 +3521,7 @@ Let's start by getting images. I'm going to request an image which I know is a s
 
 
 ```python
-uds.saveDatasetImages(ObsID='10000000668',
-                      cat='LSXPS',
-                      destDir='/tmp/APIDemo_SXPS_Im3',
-                      verbose=True,
-                      getRegions=True)
+uds.saveDatasetImages(ObsID="10000000668", cat="LSXPS", destDir="/tmp/APIDemo_SXPS_Im3", verbose=True, getRegions=True)
 ```
 
     Making directory /tmp/APIDemo_SXPS_Im3
@@ -3600,11 +3566,7 @@ As predicted, I got an error, and the error message tells me that the dataset ca
 
 
 ```python
-uds.saveDatasetImages(ObsID='10000000189',
-                      cat='LSXPS',
-                      destDir='/tmp/APIDemo_SXPS_Im3',
-                      verbose=True,
-                      getRegions=True)
+uds.saveDatasetImages(ObsID="10000000189", cat="LSXPS", destDir="/tmp/APIDemo_SXPS_Im3", verbose=True, getRegions=True)
 ```
 
     Getting data for ObsID = `10000000189`
@@ -3642,7 +3604,7 @@ Now lets explore these same two datasets with `getDatasetDetails()`:
 
 
 ```python
-dsInfo = uds.getDatasetDetails(ObsID='10000000668', cat='LSXPS')
+dsInfo = uds.getDatasetDetails(ObsID="10000000668", cat="LSXPS")
 dsInfo.keys()
 ```
 
@@ -3657,7 +3619,7 @@ This was a case of a stack that has been superseded and removed, and we know thi
 
 
 ```python
-dsInfo['SupersedingStacks']
+dsInfo["SupersedingStacks"]
 ```
 
 
@@ -3676,8 +3638,8 @@ I don't want to get bogged down here in the details of stacked image management 
 
 
 ```python
-dsInfo = uds.getDatasetDetails(DatasetID=229018, cat='LSXPS')
-dsInfo['SupersedingStacks']
+dsInfo = uds.getDatasetDetails(DatasetID=229018, cat="LSXPS")
+dsInfo["SupersedingStacks"]
 ```
 
 
@@ -3696,7 +3658,7 @@ If we asked for the dataset details for an obsolete stack we would get the full 
 
 
 ```python
-dsInfo = uds.getDatasetDetails(DatasetID=228895, cat='LSXPS')
+dsInfo = uds.getDatasetDetails(DatasetID=228895, cat="LSXPS")
 dsInfo["IsObsoleteStack"]
 ```
 
@@ -4299,13 +4261,14 @@ As usual, the files are either written to disk (default), returned as a variable
 
 
 ```python
-lcs = uds.getLightCurves(sourceName=('Swift J073006.8-193709', 'Swift J175737.4-070600'),
-                         transient=True,
-                         cat='LSXPS',
-                         binning='counts',
-                         saveData=False,
-                         returnData=True,
-                        )
+lcs = uds.getLightCurves(
+    sourceName=("Swift J073006.8-193709", "Swift J175737.4-070600"),
+    transient=True,
+    cat="LSXPS",
+    binning="counts",
+    saveData=False,
+    returnData=True,
+)
 lcs.keys()
 ```
 
@@ -4320,7 +4283,7 @@ I got two transients, just to remind you that we can, so as you can see, the top
 
 
 ```python
-lcs['Swift J073006.8-193709']['Datasets']
+lcs["Swift J073006.8-193709"]["Datasets"]
 ```
 
 
@@ -4347,7 +4310,7 @@ If you find this annoying, there is a reason, but it's too boring to write here.
 
 
 ```python
-lcs['Swift J073006.8-193709']['PC_incbad']
+lcs["Swift J073006.8-193709"]["PC_incbad"]
 ```
 
 
@@ -4372,14 +4335,15 @@ Let's explore this:
 
 
 ```python
-specSet = uds.getSpectra(sourceID=(30, 576),
-                         destDir='/tmp/APIDemo_transSpec2',
-                         transient=True,
-                         silent=False,
-                         specType='both',
-                         verbose=True,
-                         returnData=True
-                       )
+specSet = uds.getSpectra(
+    sourceID=(30, 576),
+    destDir="/tmp/APIDemo_transSpec2",
+    transient=True,
+    silent=False,
+    specType="both",
+    verbose=True,
+    returnData=True,
+)
 ```
 
     Getting data for sourceID = `30`
@@ -4446,7 +4410,7 @@ As I warned you, `specSet[30]` is not [a spectrum `dict`](https://www.swift.ac.u
 
 
 ```python
-specSet[30]['Discovery'].keys()
+specSet[30]["Discovery"].keys()
 ```
 
 
@@ -4458,7 +4422,7 @@ specSet[30]['Discovery'].keys()
 
 
 ```python
-specSet[30]['Full'].keys()
+specSet[30]["Full"].keys()
 ```
 
 
@@ -4481,11 +4445,13 @@ Let's see if you can guess how we get the images of a transient. I will request 
 
 
 ```python
-uds.saveSourceImages(sourceName='Swift J073006.8-193709',
-                     transient=True,
-                     bands=('soft', 'expmap'),
-                     destDir='/tmp/APIDemo_SXPS_image2',
-                     verbose=True)
+uds.saveSourceImages(
+    sourceName="Swift J073006.8-193709",
+    transient=True,
+    bands=("soft", "expmap"),
+    destDir="/tmp/APIDemo_SXPS_image2",
+    verbose=True,
+)
 ```
 
     Making directory /tmp/APIDemo_SXPS_image2
@@ -4509,13 +4475,16 @@ The final thing is to be able to make an XRTProductRequest. I think you can gues
 
 
 ```python
-myReq = uds.makeProductRequest('MY_EMAIL_ADDRESS',
-                               transient=True,
-                               sourceID=576,
-                               T0='Discovery',
-                               useObs='new',
-                               addProds=['LightCurve',]
-                              )
+myReq = uds.makeProductRequest(
+    "MY_EMAIL_ADDRESS",
+    transient=True,
+    sourceID=576,
+    T0="Discovery",
+    useObs="new",
+    addProds=[
+        "LightCurve",
+    ],
+)
 print(myReq)
 print(f"Globals: {myReq.getGlobalPars()}\n")
 for p in myReq.productList:

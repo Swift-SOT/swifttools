@@ -1,10 +1,14 @@
-from datetime import datetime
-
 from pydantic import ConfigDict, Field, model_validator
 
 from ..base.common import TOOAPIBaseclass
 from ..base.constants import XRTMODES
-from ..base.schemas import AstropyAngle, BaseSchema, OptionalBeginEndLengthSchema, OptionalCoordinateSchema
+from ..base.schemas import (
+    AstropyAngle,
+    AstropyDateTime,
+    BaseSchema,
+    OptionalBeginEndLengthSchema,
+    OptionalCoordinateSchema,
+)
 from ..base.status import TOOStatus
 from .resolve import TOOAPIAutoResolve
 from .toorequest import SwiftTOORequestSchema
@@ -45,7 +49,7 @@ class SwiftTOORequestsGetSchema(OptionalBeginEndLengthSchema, OptionalCoordinate
 
 
 class SwiftTOORequestsSchema(BaseSchema):
-    begin: datetime | None = None
+    begin: AstropyDateTime | None = None
     length: float | None = None
     limit: int | None = None
     year: int | None = None

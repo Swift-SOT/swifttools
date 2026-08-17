@@ -102,9 +102,9 @@ use the deprecated features. You can do this in a few ways (the code snippets be
 the `XRTProductRequest` object).
 
 ```python
-In [1]: XRTProductRequest.useDeprecate = True
-In [2]: myReq = XRTProductRequest('YOUR_EMAIL_HERE', useDeprecate=True)
-In [3]: myReq.deprecate=True
+In[1]: XRTProductRequest.useDeprecate = True
+In[2]: myReq = XRTProductRequest("YOUR_EMAIL_HERE", useDeprecate=True)
+In[3]: myReq.deprecate = True
 ```
 
 Obviously, running all 3 above would be a bit pointless since they all do the same thing, I'm just showing
@@ -119,8 +119,8 @@ deprecated functions. After about 11 seconds you may find this annoying, so you 
 subsequently, as in the two examples calls below:
 
 ```python
-In [4]: myReq = XRTProductRequest('YOUR_EMAIL_HERE', showDepWarnings=False)
-In [5]: myReq.showDepWarnings=False
+In[4]: myReq = XRTProductRequest("YOUR_EMAIL_HERE", showDepWarnings=False)
+In[5]: myReq.showDepWarnings = False
 ```
 
 (Of course, calling both of these would be overkill).
@@ -170,7 +170,7 @@ From v1.10, this behaviour has been homogenised and slightly altered. Now all `r
 You can still ask the function to return the data, by passing the (new) argument `returnData=True`, e.g.
 
 ```python
-In [8]: lc = myReq.retrieveStandardPos(returnData=True)
+In[8]: lc = myReq.retrieveStandardPos(returnData=True)
 ```
 
 and/or you can access the returned data via the class variables (most of which are new):

@@ -3,6 +3,9 @@ line-length = 120
 indent-width = 4
 
 [lint]
+# Pin the rule set explicitly so upgrading ruff doesn't silently enable new
+# rule categories (e.g. DTZ, BLE, S, PIE, SIM, RUF) and break CI.
+select = ["E4", "E7", "E9", "F"]
 ignore = []
 
 [lint.per-file-ignores] # Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)  codes by default.

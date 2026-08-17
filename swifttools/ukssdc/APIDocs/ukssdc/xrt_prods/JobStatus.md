@@ -14,7 +14,7 @@ Obviously, if your products are not complete you will need to continue to poll t
 `complete` is a boolean variable that simply reports whether or not the jobs to build your requested products have all finished. i.e.
 
 ```python
-In [1]: myReq.complete
+In[1]: myReq.complete
 True
 ```
 
@@ -29,8 +29,10 @@ True
 To query the product status, use the `checkProductStatus()` method. This takes a single, optional argument detailing which product(s) to query. This can either be the string 'all' (to query all requested products) or a tuple/list of the product names. e.g.
 
 ```python
-In [2]: prodStatus = myReq.checkProductStatus(('LightCurve', 'StandardPos')) # Poll only the light curve and standard position
-In [3]: prodStatus = myReq.checkProductStatus() # same as myReq.checkProductStatus('all')
+In[2]: prodStatus = myReq.checkProductStatus(
+    ("LightCurve", "StandardPos")
+)  # Poll only the light curve and standard position
+In[3]: prodStatus = myReq.checkProductStatus()  # same as myReq.checkProductStatus('all')
 ```
 
 This returns a dictionary with one entry per product. Each of these entries is in turn a dictionary with four entries:

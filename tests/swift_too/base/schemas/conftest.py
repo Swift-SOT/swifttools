@@ -1,10 +1,36 @@
 # Local fixtures for tests/swift_too/base/schemas
+import os
+import time
 from datetime import datetime, timezone
 
 import astropy.units as u  # type: ignore[import-untyped]
 import pytest
 from astropy.coordinates import SkyCoord  # type: ignore[import-untyped]
 from astropy.time import Time  # type: ignore[import-untyped]
+
+
+@pytest.fixture
+def non_utc_timezone():
+    """Run the process in a non-UTC timezone for the duration of a test.
+
+    Datetime handling should not depend on the timezone of the machine running
+    the code, so tests that check this need a timezone that is not UTC.
+    Skipped where `time.tzset` is unavailable, i.e. anywhere but Unix.
+    """
+    if not hasattr(time, "tzset"):
+        pytest.skip("time.tzset is not available on this platform")
+
+    original = os.environ.get("TZ")
+    os.environ["TZ"] = "America/New_York"  # UTC-5 in January
+    time.tzset()
+    try:
+        yield
+    finally:
+        if original is None:
+            del os.environ["TZ"]
+        else:
+            os.environ["TZ"] = original
+        time.tzset()
 
 
 @pytest.fixture

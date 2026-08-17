@@ -4,7 +4,7 @@ from typing import Any
 from pydantic import AliasChoices, ConfigDict, Field, computed_field, model_validator
 
 from ..base.common import TOOAPIBaseclass
-from ..base.schemas import BaseSchema
+from ..base.schemas import AstropyDateTime, BaseSchema
 from ..base.status import TOOStatus
 from .datetime import swiftdatetime
 
@@ -29,8 +29,10 @@ class SwiftDateTimeSchema(BaseSchema):
 class SwiftClockSchema(BaseSchema):
     met: float | list[float] | None = Field(default=None, validation_alias=AliasChoices("met", "mettime"))
     utcf: float | list[float] | None = None
-    utctime: datetime | list[datetime] | None = Field(default=None, validation_alias=AliasChoices("utctime", "utc"))
-    swifttime: datetime | list[datetime] | None = Field(
+    utctime: AstropyDateTime | list[AstropyDateTime] | None = Field(
+        default=None, validation_alias=AliasChoices("utctime", "utc")
+    )
+    swifttime: AstropyDateTime | list[AstropyDateTime] | None = Field(
         default=None, validation_alias=AliasChoices("swifttime", "swift")
     )
     entries: list[SwiftDateTimeSchema] = Field(default_factory=list)
@@ -41,8 +43,10 @@ class SwiftClockSchema(BaseSchema):
 
 class SwiftClockGetSchema(BaseSchema):
     met: float | list[float] | None = Field(default=None, validation_alias=AliasChoices("met", "mettime"))
-    utctime: datetime | list[datetime] | None = Field(default=None, validation_alias=AliasChoices("utctime", "utc"))
-    swifttime: datetime | list[datetime] | None = Field(
+    utctime: AstropyDateTime | list[AstropyDateTime] | None = Field(
+        default=None, validation_alias=AliasChoices("utctime", "utc")
+    )
+    swifttime: AstropyDateTime | list[AstropyDateTime] | None = Field(
         default=None, validation_alias=AliasChoices("swifttime", "swift")
     )
 

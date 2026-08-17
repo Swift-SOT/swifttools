@@ -110,9 +110,8 @@ We can change catalogue in two ways, either changing the cat variable, or supply
 
 
 ```python
-q = uq.GRBQuery(cat='BAT_GRB',
-                silent=False)
-q.cat = 'SDC_GRB'
+q = uq.GRBQuery(cat="BAT_GRB", silent=False)
+q.cat = "SDC_GRB"
 ```
 
     Resetting query details
@@ -143,7 +142,7 @@ Here I've shown the metadata for the SDC Data Table, and slightly annoyingly, Ju
 
 
 ```python
-list(q.metadata['ColName'])
+list(q.metadata["ColName"])
 ```
 
 
@@ -244,8 +243,8 @@ First, we'll get all the data for a query and then filter it:
 
 
 ```python
-q.addFilter(('BAT_T90', '<', 2))
-q.addCol('*')
+q.addFilter(("BAT_T90", "<", 2))
+q.addCol("*")
 q.submit()
 q.results
 ```
@@ -264,7 +263,7 @@ I could now define a subset of only those with no BAT_T90_warning value set, so 
 
 
 ```python
-subset=q.results['BAT_T90_warn'] == False
+subset = q.results["BAT_T90_warn"] == False
 ```
 
 (Quick Python note: to build the subset on a boolean column we don't need a comparison, so `q.results['some_col']` returns the indices where `some_col` is `True`, the `~` above returns instead where it is `False`. The 'boolean' columns in the database are actually integers with values 1 or 0 (blame MariaDB) hence the `astype()` call).
@@ -286,12 +285,12 @@ This only has one fewer row than the original query. It may be more informative 
 
 
 ```python
-subset=q.results['BAT_T90_warn'].astype(bool)
+subset = q.results["BAT_T90_warn"].astype(bool)
 myFrame = q.results.loc[subset]
 myRow = myFrame.iloc[0]
-print(myRow['Name'])
-print(myRow['BAT_T90'])
-print(myRow['BAT_T90_orig'])
+print(myRow["Name"])
+print(myRow["BAT_T90"])
+print(myRow["BAT_T90_orig"])
 ```
 
     GRB 161004A
@@ -316,8 +315,7 @@ First up, let's create a query object for the primary catalogue. As ever for the
 
 
 ```python
-q = uq.GRBQuery(cat='BAT_GRB',
-                silent=False)
+q = uq.GRBQuery(cat="BAT_GRB", silent=False)
 ```
 
     Resetting query details
@@ -327,7 +325,7 @@ Now I will add the XRT catalogue as be an auxilliary:
 
 
 ```python
-q.setAuxCat('UK_XRT')
+q.setAuxCat("UK_XRT")
 ```
 
     Resetting query details
@@ -343,7 +341,7 @@ So, let's do that. FIrst we want a T90 filter, which applies to our primary cata
 
 
 ```python
-q.addFilter(('T90', '<', 2))
+q.addFilter(("T90", "<", 2))
 ```
 
     Need to get the metadata.
@@ -353,7 +351,7 @@ and we want a filter on the number of light curve breaks for the auxilliary cata
 
 
 ```python
-q.auxCat.addFilter( ('NumLCBreaks', '>=', 1))
+q.auxCat.addFilter(("NumLCBreaks", ">=", 1))
 ```
 
     Need to get the metadata.
@@ -378,9 +376,8 @@ Because we had `silent=False` you can see that there were two queries done, and 
 
 
 ```python
-print (len(q.results))
-print (len(q.auxCat.results))
-
+print(len(q.results))
+print(len(q.auxCat.results))
 ```
 
     16
@@ -443,8 +440,8 @@ For our new query, let's request all columns in both catalogues:
 
 
 ```python
-q.addCol('*')
-q.auxCat.addCol('*')
+q.addCol("*")
+q.auxCat.addCol("*")
 ```
 
     Need to get the metadata.
@@ -502,11 +499,10 @@ So, let's run some demos. We'll stick with the query above, but I'll repeat the 
 
 
 ```python
-q = uq.GRBQuery(cat='BAT_GRB',
-                silent=False)
-q.setAuxCat('UK_XRT')
-q.addFilter(('T90', '<', 2))
-q.auxCat.addFilter( ('NumLCBreaks', '>=', 1))
+q = uq.GRBQuery(cat="BAT_GRB", silent=False)
+q.setAuxCat("UK_XRT")
+q.addFilter(("T90", "<", 2))
+q.auxCat.addFilter(("NumLCBreaks", ">=", 1))
 q.submit(merge=True)
 print(f"\n\nI have {len(q.results)} rows in the merged table")
 ```
@@ -737,10 +733,7 @@ The query module also lets us save the light curves after downloading. Again, th
 
 
 ```python
-q.saveLightCurves(whichGRBs=['GRB 051221A', 'GRB 100117A'],
-                  destDir='/tmp/APIDemo_GRB_LC',
-                  header=True,
-                  subDirs=True)
+q.saveLightCurves(whichGRBs=["GRB 051221A", "GRB 100117A"], destDir="/tmp/APIDemo_GRB_LC", header=True, subDirs=True)
 ```
 
     Making directory /tmp/APIDemo_GRB_LC
@@ -757,7 +750,7 @@ If we don't try to specify the datasets to plot, we may end up in a mess (or at 
 
 
 ```python
-q.lightCurves['GRB 060313']['Datasets']
+q.lightCurves["GRB 060313"]["Datasets"]
 ```
 
 
@@ -779,10 +772,7 @@ OK, now let's plot this:
 
 
 ```python
-q.plotLightCurves('GRB 060313',
-                  whichCurves=('WT_incbad', 'PC_incbad', 'PCUL_incbad'),
-                  xlog=True,
-                  ylog=True)
+q.plotLightCurves("GRB 060313", whichCurves=("WT_incbad", "PC_incbad", "PCUL_incbad"), xlog=True, ylog=True)
 ```
 
     Plotting WT_incbad as rates
@@ -809,10 +799,7 @@ As noted in the [`plotLightCurve()` documentation](https://www.swift.ac.uk/API/u
 
 
 ```python
-f,a = q.plotLightCurves('GRB 060313',
-                       whichCurves=('WT_incbad', 'PC_incbad', 'PCUL_incbad'),
-                       xlog=True,
-                       ylog=True)
+f, a = q.plotLightCurves("GRB 060313", whichCurves=("WT_incbad", "PC_incbad", "PCUL_incbad"), xlog=True, ylog=True)
 ```
 
     Plotting WT_incbad as rates
@@ -828,14 +815,15 @@ f,a = q.plotLightCurves('GRB 060313',
 
 
 ```python
-f,a = q.plotLightCurves('GRB 160501A',
-                       whichCurves=('WT_incbad', 'PC_incbad', 'PCUL_incbad'),
-                       xlog=True,
-                       ylog=True,
-                       fig = f,
-                       ax = a,
-                       cols = {'WT':'cyan', 'PC': 'magenta'}
-                       )
+f, a = q.plotLightCurves(
+    "GRB 160501A",
+    whichCurves=("WT_incbad", "PC_incbad", "PCUL_incbad"),
+    xlog=True,
+    ylog=True,
+    fig=f,
+    ax=a,
+    cols={"WT": "cyan", "PC": "magenta"},
+)
 f
 ```
 
@@ -866,12 +854,14 @@ This will shock you I'm sure, but to get spectra we replace the word 'lightCurve
 
 
 ```python
-q.getSpectra(subset=q.results['Err90']<1.9,
-            saveData=True,
-            destDir='/tmp/APIDemo_GRB_Spec2',
-            extract=False,
-            removeTar=False,
-            saveImages=True)
+q.getSpectra(
+    subset=q.results["Err90"] < 1.9,
+    saveData=True,
+    destDir="/tmp/APIDemo_GRB_Spec2",
+    extract=False,
+    removeTar=False,
+    saveImages=True,
+)
 ```
 
     Resolved `GRB 051221A` as `173780`.
@@ -935,10 +925,17 @@ As with lightcurves, we can save the data after downloading as well, specifying 
 
 
 ```python
-q.saveSpectra(destDir='/tmp/APIDemo_GRB_Spec3',
-              whichGRBs=('GRB 051221A', 'GRB 060218', 'GRB 060313', 'GRB 061201',),
-              extract=True,
-              removeTar=True)
+q.saveSpectra(
+    destDir="/tmp/APIDemo_GRB_Spec3",
+    whichGRBs=(
+        "GRB 051221A",
+        "GRB 060218",
+        "GRB 060313",
+        "GRB 061201",
+    ),
+    extract=True,
+    removeTar=True,
+)
 ```
 
     Making directory /tmp/APIDemo_GRB_Spec3
@@ -963,11 +960,13 @@ Honestly, nothing about this should be difficult or surprising. Again, all the a
 
 
 ```python
-q.getBurstAnalyser(subset=q.results['Err90']<1.5,
-                   downloadTar=True,
-                   extract=False,
-                   removeTar=False,
-                   destDir='/tmp/APIDemo_GRB_burstAn')
+q.getBurstAnalyser(
+    subset=q.results["Err90"] < 1.5,
+    downloadTar=True,
+    extract=False,
+    removeTar=False,
+    destDir="/tmp/APIDemo_GRB_burstAn",
+)
 ```
 
     Resolved `GRB 060218` as `191157`.
@@ -1003,14 +1002,16 @@ And again, we can also save data having downloaded it:
 
 
 ```python
-q.saveBurstAnalyser(destDir="/tmp/APIDemo_GRB_burstAn2",
-                    whichGRBs=['GRB 060218', 'GRB 200324A'],
-                    header=True,
-                    subDirs=True,
-                    usePropagatedErrors=True,
-                    instruments=['XRT',]
-                    )
-
+q.saveBurstAnalyser(
+    destDir="/tmp/APIDemo_GRB_burstAn2",
+    whichGRBs=["GRB 060218", "GRB 200324A"],
+    header=True,
+    subDirs=True,
+    usePropagatedErrors=True,
+    instruments=[
+        "XRT",
+    ],
+)
 ```
 
     Making directory /tmp/APIDemo_GRB_burstAn2
@@ -1025,7 +1026,7 @@ GRB positions differ only from the above examples by the fact that there is no `
 
 
 ```python
-q.getPositions(byName=True, subset=q.results['Image_position_err']>1.8)
+q.getPositions(byName=True, subset=q.results["Image_position_err"] > 1.8)
 ```
 
     Resolved `GRB 060218` as `191157`.
@@ -1051,7 +1052,7 @@ q.positions.keys()
 
 
 ```python
-q.positions['GRB 060218']
+q.positions["GRB 060218"]
 ```
 
 
@@ -1079,9 +1080,7 @@ Before moving on let me use positions, as they are small, to show one other thin
 
 
 ```python
-pointlessVar = q.getPositions(byName=True,
-                              subset=q.results['Image_position_err']>1.8,
-                              returnData=True)
+pointlessVar = q.getPositions(byName=True, subset=q.results["Image_position_err"] > 1.8, returnData=True)
 pointlessVar.keys()
 ```
 
@@ -1106,10 +1105,13 @@ And finally, you may want to download all of the obsData for your result. In thi
 
 
 ```python
-q.getObsData(destDir="/tmp/APIDemo_GRBdata",
-             subset=q.results['GRBname']=='GRB 200324A',
-             instruments=['XRT',],
-            )
+q.getObsData(
+    destDir="/tmp/APIDemo_GRBdata",
+    subset=q.results["GRBname"] == "GRB 200324A",
+    instruments=[
+        "XRT",
+    ],
+)
 ```
 
     Have to get targetIDs: ['00963260']

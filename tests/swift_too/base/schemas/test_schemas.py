@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import astropy.units as u  # type: ignore[import-untyped]
 import pytest
@@ -11,6 +11,7 @@ from swifttools.swift_too.base.schemas import (
     OptionalBeginEndLengthSchemaDefaultLength,
     OptionalCoordinateSchema,
     to_datetime,
+    to_naive_utc,
     to_utc_datetime,
 )
 
@@ -29,6 +30,64 @@ class TestToDatetime:
         # Use TypeAdapter validate for AstropyDateTime via to_datetime
         val = to_datetime.validate_python("2020-01-02T12:00:00Z")
         assert isinstance(val, datetime)
+
+
+class TestToNaiveUTC:
+    def test_naive_input_is_taken_to_be_utc(self):
+        assert to_naive_utc(datetime(2020, 1, 1, 12, 0)) == datetime(2020, 1, 1, 12, 0)
+
+    def test_aware_input_is_converted_to_utc(self):
+        aware = datetime(2020, 1, 1, 12, 0, tzinfo=timezone(timedelta(hours=-5)))
+        assert to_naive_utc(aware) == datetime(2020, 1, 1, 17, 0)
+
+    def test_is_idempotent(self):
+        aware = datetime(2020, 1, 1, 12, 0, tzinfo=timezone(timedelta(hours=-5)))
+        once = to_naive_utc(aware)
+        assert to_naive_utc(once) == once
+
+
+class TestToUTCDatetimeErrors:
+    def test_unsupported_type_raises_valueerror(self):
+        # ValueError, not TypeError, so that Pydantic can recover and try the
+        # next member of a union such as `AstropyDateTime | list[AstropyDateTime]`.
+        with pytest.raises(ValueError):
+            to_utc_datetime(object())
+
+    def test_astropy_datetime_can_be_unioned_with_a_list(self):
+        from typing import Optional, Union
+
+        from pydantic import TypeAdapter
+
+        from swifttools.swift_too.base.schemas import AstropyDateTime
+
+        adapter = TypeAdapter(Optional[Union[AstropyDateTime, list[AstropyDateTime]]])
+        assert adapter.validate_python("2020-01-01T12:00:00Z") == datetime(2020, 1, 1, 12, 0)
+        assert adapter.validate_python(["2020-01-01T12:00:00Z", datetime(2020, 1, 1, 12, 0)]) == [
+            datetime(2020, 1, 1, 12, 0),
+            datetime(2020, 1, 1, 12, 0),
+        ]
+        assert adapter.validate_python(None) is None
+
+
+class TestTimezoneIndependence:
+    """Times must not shift with the timezone of the machine running the code."""
+
+    def test_naive_string_is_not_shifted(self, non_utc_timezone):
+        assert to_datetime.validate_python("2020-01-01T12:00:00") == datetime(2020, 1, 1, 12, 0)
+
+    def test_naive_datetime_is_not_shifted(self, non_utc_timezone):
+        assert to_utc_datetime(datetime(2020, 1, 1, 12, 0)) == datetime(2020, 1, 1, 12, 0)
+
+    def test_aware_string_is_still_converted(self, non_utc_timezone):
+        assert to_datetime.validate_python("2020-01-01T12:00:00-05:00") == datetime(2020, 1, 1, 17, 0)
+
+    def test_schema_validation_does_not_shift_repeatedly(self, non_utc_timezone):
+        # `begin` is validated more than once on the way through a model, so a
+        # conversion that is not idempotent shifts the time by a multiple of
+        # the UTC offset.
+        schema = OptionalBeginEndLengthSchema(begin=datetime(2020, 1, 1, 12, 0), length=1)
+        assert schema.begin == datetime(2020, 1, 1, 12, 0)
+        assert schema.end == datetime(2020, 1, 2, 12, 0)
 
 
 class TestBeginEndLengthSchema:

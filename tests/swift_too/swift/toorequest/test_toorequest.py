@@ -547,3 +547,17 @@ class TestSwiftTOORequestCoverage:
         validate_post_mock.assert_called_once()
         submit_mock.assert_called_once()
         assert request.status.warnings == ["pre-existing warning", "pre-existing warning"]
+
+
+class TestTOOTimeNormalization:
+    """A TOO must be submitted with the same trigger time however it was written."""
+
+    def test_grb_triggertime_forms_are_equivalent(self, equivalent_instants, expected_instant):
+        for value in equivalent_instants:
+            too = SwiftTOORequest(autosubmit=False, grb_triggertime=value)
+            assert too.grb_triggertime == expected_instant, f"failed for {value!r}"
+
+    def test_grb_triggertime_serializes_without_an_offset(self, equivalent_instants):
+        for value in equivalent_instants:
+            too = SwiftTOORequest(autosubmit=False, grb_triggertime=value)
+            assert too.model_dump(mode="json")["grb_triggertime"] == "2024-06-01T12:00:00", f"failed for {value!r}"

@@ -417,3 +417,35 @@ class TestClockCorrectAssertion:
         mock_clock_correct._clock.entries = [datetime(2023, 1, 2)]
         with pytest.raises(AssertionError, match="Expected dict but got"):
             mock_clock_correct.clock_correct()
+
+
+class TestClockTimeNormalization:
+    """Every way of writing an instant must reach the API as the same UTC time."""
+
+    def test_utctime_forms_are_equivalent(self, equivalent_instants, expected_instant):
+        for value in equivalent_instants:
+            clock = SwiftClock(autosubmit=False, utctime=value)
+            assert clock._build_get_args()["utctime"] == expected_instant, f"failed for {value!r}"
+
+    def test_swifttime_forms_are_equivalent(self, equivalent_instants, expected_instant):
+        for value in equivalent_instants:
+            clock = SwiftClock(autosubmit=False, swifttime=value)
+            assert clock._build_get_args()["swifttime"] == expected_instant, f"failed for {value!r}"
+
+    def test_list_of_mixed_forms_is_normalized(self, equivalent_instants, expected_instant):
+        clock = SwiftClock(autosubmit=False, utctime=list(equivalent_instants))
+        assert clock._build_get_args()["utctime"] == [expected_instant] * len(equivalent_instants)
+
+    def test_legacy_utc_alias_is_normalized(self, equivalent_instants, expected_instant):
+        for value in equivalent_instants:
+            clock = SwiftClock(autosubmit=False, utc=value)
+            assert clock._build_get_args()["utctime"] == expected_instant, f"failed for {value!r}"
+
+    def test_legacy_swift_alias_is_normalized(self, equivalent_instants, expected_instant):
+        for value in equivalent_instants:
+            clock = SwiftClock(autosubmit=False, swift=value)
+            assert clock._build_get_args()["swifttime"] == expected_instant, f"failed for {value!r}"
+
+    def test_met_is_unaffected(self):
+        assert SwiftClock(autosubmit=False, met=100.0)._build_get_args() == {"met": 100.0}
+        assert SwiftClock(autosubmit=False, mettime=[1.0, 2.0])._build_get_args() == {"met": [1.0, 2.0]}
