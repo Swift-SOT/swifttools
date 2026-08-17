@@ -6,7 +6,9 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
-## Unreleased
+## `swifttools` 4.0.3 / `swift_too` 2.0.2 
+
+**Aug 17, 2026**: Fixes for timezone handling
 
 - Timezone aware datetimes are now converted to UTC on every request field that
   takes a time, instead of being passed to the API with their original offset.
