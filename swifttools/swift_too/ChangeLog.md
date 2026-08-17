@@ -6,7 +6,7 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
-## `swifttools` 4.0.3 / `swift_too` 2.0.2 
+## `swifttools` 4.0.3 / `swift_too` 2.0.2
 
 **Aug 17, 2026**: Fixes for timezone handling
 
