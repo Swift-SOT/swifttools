@@ -6,6 +6,39 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
+## Unreleased
+
+- Naive (timezone-free) datetime input is now interpreted as UTC rather than as
+  local time, so times no longer shift with the timezone of the machine running
+  the code. Timezone aware input is still converted to UTC as before.
+- Removed the module-level `os.environ["TZ"] = "UTC"` / `tzset()` side effect
+  from `swift_too.swift.schemas`. It changed the timezone of the whole host
+  process on import, and made the package unimportable on Windows, where
+  `time.tzset` does not exist.
+
+## `swifttools` 4.0.2 / `swift_too` 2.0.1
+
+**Mar 31, 2026**: Structural fixes for `PlanQuery`.
+
+- `PlanQuery` now defines its own `SwiftObservation` and `SwiftObservations`
+  containers, holding `SwiftPPSTEntry` objects, rather than reusing the ones
+  from `ObsQuery`, which are built around as-flown `SwiftAFSTEntry` entries.
+- Plan entries now handle coordinates through the shared coordinate schema, so
+  `skycoord` is populated alongside `ra` and `dec`.
+- `download()` moved from `PlanQuery` itself onto individual plan entries and
+  observations, which are what actually have a single `obs_id` to download.
+  This matches `ObsQuery`. Code calling `PlanQuery(...).download()` needs to
+  call it on an entry or an observation instead.
+- `PlanQuery` results are now iterable, and gained an `append()` method and an
+  `api_name` property, again matching `ObsQuery`.
+- A default search radius of 12 arcmin is applied when `ra` and `dec` are given
+  without a `radius`, as `ObsQuery` already did.
+- `exposure` on a plan entry returns `None` when `begin` or `end` is missing,
+  rather than raising, and the `slewtime` column has been dropped from plan
+  entry tables, as plan entries have no settle time from which to compute it.
+- Aligned the `PlanQuery` request schema with the `ObsQuery` one, so both apply
+  the same "at least one constraint" rule.
+
 ## `swifttools` 4.0.1 / `swift_too` 2.0.1
 
 ** Mar 19, 2026 **: Compatibility fix release for `Clock`.
