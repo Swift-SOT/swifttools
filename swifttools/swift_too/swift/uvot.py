@@ -50,7 +50,7 @@ class SwiftUVOTModeEntry(BaseSchema, TOOAPIReprMixin):
         comment on special modes
     """
 
-    uvot_mode: int = 0
+    uvot_mode: int
     filter_num: int | None = None
     min_exposure: int | None = None
     filter_pos: int | None = None
@@ -62,7 +62,7 @@ class SwiftUVOTModeEntry(BaseSchema, TOOAPIReprMixin):
     weight: int | None = None
     special: int | None = None
     comment: str | None = None
-    filter_name: str | None = None
+    filter_name: str
 
 
 class SwiftUVOTModeSchema(BaseSchema):
@@ -99,7 +99,7 @@ class SwiftUVOTMode(TOOAPIBaseclass, TOOAPIInstruments, SwiftUVOTModeSchema, TOO
 
     def _post_process(self):
         if len(self.entries) == 0:
-            self.entries = [SwiftUVOTModeEntry(uvot_mode=self.uvot_mode or 0)]
+            self.entries = [SwiftUVOTModeEntry(uvot_mode=self.uvot_mode or 0, filter_name="")]
 
     def __getitem__(self, index):
         return self.entries[index]

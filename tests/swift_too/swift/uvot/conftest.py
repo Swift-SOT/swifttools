@@ -34,15 +34,15 @@ def uvot_mode_with_entries(uvot_mode_empty):
 
 @pytest.fixture
 def uvot_entry():
-    return SwiftUVOTModeEntry(uvot_mode=0x30ED)
+    return SwiftUVOTModeEntry(uvot_mode=0x30ED, filter_name="")
 
 
 @pytest.fixture
 def sample_uvot_entries():
     """List of sample SwiftUVOTModeEntry objects for testing."""
     return [
-        SwiftUVOTModeEntry(uvot_mode=0x30ED),
-        SwiftUVOTModeEntry(uvot_mode=0x30ED),
+        SwiftUVOTModeEntry(uvot_mode=0x30ED, filter_name=""),
+        SwiftUVOTModeEntry(uvot_mode=0x30ED, filter_name=""),
     ]
 
 
@@ -57,9 +57,9 @@ def uvot_mode_with_two_entries(uvot_mode_empty, sample_uvot_entries):
 def uvot_mode_with_three_entries(uvot_mode_empty):
     """SwiftUVOTMode instance with three entries."""
     entries = [
-        SwiftUVOTModeEntry(uvot_mode=0x30ED),
-        SwiftUVOTModeEntry(uvot_mode=0x30ED),
-        SwiftUVOTModeEntry(uvot_mode=0x30ED),
+        SwiftUVOTModeEntry(uvot_mode=0x30ED, filter_name=""),
+        SwiftUVOTModeEntry(uvot_mode=0x30ED, filter_name=""),
+        SwiftUVOTModeEntry(uvot_mode=0x30ED, filter_name=""),
     ]
     uvot_mode_empty.entries = entries
     return uvot_mode_empty

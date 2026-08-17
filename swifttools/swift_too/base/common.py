@@ -466,7 +466,8 @@ class TOOAPIBaseclass(TOOAPIReprMixin):
         assert hasattr(self, "_get_schema"), "GET schema not defined for this API class."
         assert hasattr(self, "model_dump"), "Not a Pydantic model."
 
-        args = self._get_schema.model_validate(self._schema_payload(self._get_schema)).model_dump(exclude_none=True)
+        validated = self._get_schema.model_validate(self._schema_payload(self._get_schema))
+        args = validated.model_dump(exclude_none=True, by_alias=True)
         args.pop("status", None)
         return args
 
