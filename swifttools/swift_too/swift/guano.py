@@ -209,7 +209,6 @@ class SwiftGUANOGetSchema(OptionalBeginEndLengthSchema):
             return
         if not isinstance(values, dict):
             values = values.__dict__
-        print(values)
         for key in cls.model_fields.keys():
             if key in values:
                 good = True

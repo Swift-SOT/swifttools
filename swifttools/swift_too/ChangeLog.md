@@ -8,6 +8,8 @@
 
 ## Unreleased
 
+- Removed a leftover debug `print()` in the `GUANO` request validator, which
+  dumped the raw request and response fields to the terminal on every query.
 - Naive (timezone-free) datetime input is now interpreted as UTC rather than as
   local time, so times no longer shift with the timezone of the machine running
   the code. Timezone aware input is still converted to UTC as before.
