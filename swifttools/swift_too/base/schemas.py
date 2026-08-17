@@ -53,7 +53,10 @@ def to_utc_datetime(value):
         return to_datetime.validate_python(value)
     if isinstance(value, Time):
         return value.utc.datetime
-    raise TypeError(f"Expected datetime or astropy Time or string formatted time, got {type(value)}")
+    # Raise ValueError rather than TypeError, so that Pydantic treats this as a
+    # failed validation it can recover from. That lets `AstropyDateTime` be used
+    # as one member of a union, e.g. `AstropyDateTime | list[AstropyDateTime]`.
+    raise ValueError(f"Expected datetime or astropy Time or string formatted time, got {type(value)}")
 
 
 class AstropyDateTimeAnnotation:

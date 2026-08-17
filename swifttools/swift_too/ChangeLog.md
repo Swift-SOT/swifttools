@@ -8,6 +8,18 @@
 
 ## Unreleased
 
+- Timezone aware datetimes are now converted to UTC on every request field that
+  takes a time, instead of being passed to the API with their original offset.
+  Previously `Clock(utctime=...)`, `Clock(swifttime=...)`, `GUANO(triggertime=...)`
+  and `TOO(grb_triggertime=...)` sent the offset through unchanged, so a time
+  such as `12:00 UTC` written as `17:30+05:30` was submitted as `17:30`. This
+  mostly affected users outside UTC, who are the ones likely to be holding aware
+  datetimes.
+- Those same fields now accept astropy `Time` objects, as the rest of the module
+  already did. This also applies to `GUANO(begin=...)`, `GUANO(end=...)` and
+  `TOORequests(begin=...)`, which previously raised a validation error.
+- Invalid input to a time field now raises a Pydantic `ValidationError` rather
+  than a bare `TypeError`, consistent with every other field in the module.
 - Removed a leftover debug `print()` in the `GUANO` request validator, which
   dumped the raw request and response fields to the terminal on every query.
 - Naive (timezone-free) datetime input is now interpreted as UTC rather than as

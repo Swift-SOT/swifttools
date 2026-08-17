@@ -4,6 +4,7 @@ from unittest.mock import patch
 import pytest
 
 from swifttools.swift_too.swift.guano import (
+    SwiftGUANO,
     SwiftGUANOData,
     SwiftGUANOEntry,
     SwiftGUANOGetSchema,
@@ -287,3 +288,17 @@ class TestSwiftGUANOGetSchema:
     def test_validate_parameters_invalid(self):
         with pytest.raises(ValueError, match="At least one of the parameters must be provided"):
             SwiftGUANOGetSchema.validate_parameters({})
+
+
+class TestGUANOTimeNormalization:
+    """Every way of writing an instant must reach the API as the same UTC time."""
+
+    def test_triggertime_forms_are_equivalent(self, equivalent_instants, expected_instant):
+        for value in equivalent_instants:
+            guano = SwiftGUANO(autosubmit=False, triggertime=value)
+            assert guano._build_get_args()["triggertime"] == expected_instant, f"failed for {value!r}"
+
+    def test_begin_forms_are_equivalent(self, equivalent_instants, expected_instant):
+        for value in equivalent_instants:
+            guano = SwiftGUANO(autosubmit=False, begin=value, length=1)
+            assert guano._build_get_args()["begin"] == expected_instant, f"failed for {value!r}"

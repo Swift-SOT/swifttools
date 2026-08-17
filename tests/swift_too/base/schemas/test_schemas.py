@@ -46,6 +46,29 @@ class TestToNaiveUTC:
         assert to_naive_utc(once) == once
 
 
+class TestToUTCDatetimeErrors:
+    def test_unsupported_type_raises_valueerror(self):
+        # ValueError, not TypeError, so that Pydantic can recover and try the
+        # next member of a union such as `AstropyDateTime | list[AstropyDateTime]`.
+        with pytest.raises(ValueError):
+            to_utc_datetime(object())
+
+    def test_astropy_datetime_can_be_unioned_with_a_list(self):
+        from typing import Optional, Union
+
+        from pydantic import TypeAdapter
+
+        from swifttools.swift_too.base.schemas import AstropyDateTime
+
+        adapter = TypeAdapter(Optional[Union[AstropyDateTime, list[AstropyDateTime]]])
+        assert adapter.validate_python("2020-01-01T12:00:00Z") == datetime(2020, 1, 1, 12, 0)
+        assert adapter.validate_python(["2020-01-01T12:00:00Z", datetime(2020, 1, 1, 12, 0)]) == [
+            datetime(2020, 1, 1, 12, 0),
+            datetime(2020, 1, 1, 12, 0),
+        ]
+        assert adapter.validate_python(None) is None
+
+
 class TestTimezoneIndependence:
     """Times must not shift with the timezone of the machine running the code."""
 
