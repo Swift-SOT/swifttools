@@ -6,6 +6,34 @@
 
 #### Author: Jamie A. Kennea (Penn State)
 
+## `swifttools` 4.0.4 / `swift_too` 2.0.3
+
+**Aug 17, 2026**: Missing endpoint parameters
+
+- Query parameters that the API accepts but the module never sent are now
+  available on the classes that wrap those endpoints. `ObsQuery` gained
+  `gw_event`, `Calendar` gained `target_id`, and `TOORequests` gained
+  `username`. Previously these had to be filtered for client side, or in the
+  case of `gw_event` could not be reached at all.
+- Result paging and ordering are now supported on `ObsQuery`, `Calendar`,
+  `GUANO` and `TOORequests`, through `limit`, `offset`, `sort_by` and `order`.
+  Several of these classes already accepted `limit` but had no way to ask for
+  anything beyond the first page of results.
+- `GUANO` gained the `queue_num` parameter, for selecting which GUANO queue to
+  search. The API calls this parameter `queue`, but that name is already taken
+  by the `queue()` method every request class uses for asynchronous
+  submission, so it is exposed as `queue_num` and translated to `queue` on the
+  wire. Request parameters are now serialized by alias to support this, which
+  affects no other parameter.
+- `Calendar` no longer sends a `status` parameter with its requests. This was a
+  `TOOStatus` object that had been declared alongside the genuine query
+  parameters, and was never something the API expected to receive.
+- `uvot_mode` and `filter_name` are now required when constructing a
+  `SwiftUVOTModeEntry`, rather than defaulting to `0` and `None`. The API
+  always supplies both, and the defaults gave a silently invalid entry, with a
+  UVOT mode of zero, when they were omitted. Code constructing entries by hand
+  needs to pass both.
+
 ## `swifttools` 4.0.3 / `swift_too` 2.0.2
 
 **Aug 17, 2026**: Fixes for timezone handling
