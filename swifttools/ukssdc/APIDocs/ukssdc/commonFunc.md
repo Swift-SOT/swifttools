@@ -56,6 +56,7 @@ if you wish, as below:
 
 ```python
 import testtools.ukssdc.data as ud
+
 help(ud.download._getLightCurve)
 ```
 
@@ -372,9 +373,8 @@ of the light curve. You can determine the upshot of this from the function's ret
 then here's an example of me asking to only merge the bins in a specified time range:
 
 ```python
-ul = lcData['PCUL']  # Makes the next lines more readable
-res = uk.mergeLightCurveBins(ul,
-                             rows=(ul['Time']>59770)&(ul['Time']>59790) )
+ul = lcData["PCUL"]  # Makes the next lines more readable
+res = uk.mergeLightCurveBins(ul, rows=(ul["Time"] > 59770) & (ul["Time"] > 59790))
 ```
 
 ### `mergeUpperLimits()`

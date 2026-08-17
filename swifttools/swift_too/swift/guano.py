@@ -4,6 +4,7 @@ from pydantic import ConfigDict, Field, model_validator
 
 from ..base.common import TOOAPIBaseclass, TOOAPIReprMixin
 from ..base.schemas import (
+    AstropyDateTime,
     BaseSchema,
     OptionalBeginEndLengthSchema,
 )
@@ -194,7 +195,7 @@ class SwiftGUANOEntry(BaseSchema, TOOAPIReprMixin, TOOAPIDownloadData):  # , TOO
 class SwiftGUANOGetSchema(OptionalBeginEndLengthSchema):
     subthreshold: bool = False
     successful: bool = True
-    triggertime: datetime | None = None
+    triggertime: AstropyDateTime | None = None
     limit: int | None = None
     page: int | None = None
     triggertype: str | None = None
@@ -209,7 +210,6 @@ class SwiftGUANOGetSchema(OptionalBeginEndLengthSchema):
             return
         if not isinstance(values, dict):
             values = values.__dict__
-        print(values)
         for key in cls.model_fields.keys():
             if key in values:
                 good = True
@@ -219,14 +219,14 @@ class SwiftGUANOGetSchema(OptionalBeginEndLengthSchema):
 
 
 class SwiftGUANOSchema(BaseSchema):
-    begin: datetime | None = None
-    end: datetime | None = None
+    begin: AstropyDateTime | None = None
+    end: AstropyDateTime | None = None
     subthreshold: bool = False
     successful: bool = True
-    triggertime: datetime | None = None
+    triggertime: AstropyDateTime | None = None
     limit: int | None = None
     triggertype: str | None = None
-    lastcommand: datetime | None = None
+    lastcommand: AstropyDateTime | None = None
     guanostatus: bool | None = None
     entries: list[SwiftGUANOEntry] = Field(default_factory=list)
     status: TOOStatus = Field(default_factory=TOOStatus)

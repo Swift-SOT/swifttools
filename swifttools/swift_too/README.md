@@ -57,25 +57,22 @@ for new code the short names are easier to read and are the recommended style.
 from swifttools.swift_too import TOO
 
 too = TOO(
-  target_name="SMC X-3",
-  target_type="Be/XRB",
-  ra=13.023439,
-  dec=-72.434508,
-  instrument="XRT",
-  obs_type="Light Curve",
-  xrt_countrate=0.1,
-  exp_time_per_visit=3000,
-  num_of_visits=14,
-  monitoring_freq="2 days",
-  immediate_objective="Monitor current outburst evolution.",
-  science_just=(
-    "We request monitoring to measure flux and timing evolution during "
-    "the early outburst phase."
-  ),
-  exp_time_just="3 ks per visit is required for the planned timing analysis.",
-  urgency=2,
-  username="your_username",
-  shared_secret="your_shared_secret",
+    target_name="SMC X-3",
+    target_type="Be/XRB",
+    ra=13.023439,
+    dec=-72.434508,
+    instrument="XRT",
+    obs_type="Light Curve",
+    xrt_countrate=0.1,
+    exp_time_per_visit=3000,
+    num_of_visits=14,
+    monitoring_freq="2 days",
+    immediate_objective="Monitor current outburst evolution.",
+    science_just=("We request monitoring to measure flux and timing evolution during the early outburst phase."),
+    exp_time_just="3 ks per visit is required for the planned timing analysis.",
+    urgency=2,
+    username="your_username",
+    shared_secret="your_shared_secret",
 )
 
 ok = too.submit()
@@ -91,11 +88,11 @@ vis = VisQuery(name="Crab")
 ok = vis.submit()
 
 if ok:
-  print(vis.status.status)
-  for win in vis.windows[:3]:
-    print(win.begin, win.end, win.length)
+    print(vis.status.status)
+    for win in vis.windows[:3]:
+        print(win.begin, win.end, win.length)
 else:
-  print(vis.status.errors)
+    print(vis.status.errors)
 ```
 
 ### 3. Run API requests asynchronously with `asyncio`
@@ -106,14 +103,14 @@ from swifttools.swift_too import VisQuery
 
 
 async def main():
-  targets = ["Crab", "Vela Pulsar", "Cyg X-1"]
-  queries = [VisQuery(name=t) for t in targets]
+    targets = ["Crab", "Vela Pulsar", "Cyg X-1"]
+    queries = [VisQuery(name=t) for t in targets]
 
-  # Execute requests concurrently
-  results = await asyncio.gather(*(q.get() for q in queries), return_exceptions=True)
+    # Execute requests concurrently
+    results = await asyncio.gather(*(q.get() for q in queries), return_exceptions=True)
 
-  for t, q, r in zip(targets, queries, results):
-    print(t, r, q.status.status)
+    for t, q, r in zip(targets, queries, results):
+        print(t, r, q.status.status)
 
 
 asyncio.run(main())
@@ -129,9 +126,9 @@ q = VisQuery(name="M31")
 queued = q.queue()
 
 if queued:
-  while not q.complete:
-    time.sleep(0.2)
-  print(q.status.status, q.status.errors)
+    while not q.complete:
+        time.sleep(0.2)
+    print(q.status.status, q.status.errors)
 ```
 
 ## Notes for older code

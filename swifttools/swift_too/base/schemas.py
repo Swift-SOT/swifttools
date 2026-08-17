@@ -21,10 +21,24 @@ from pydantic_core import PydanticUndefinedType, core_schema
 
 from .functions import convert_from_timedelta, uvot_mode_convert, validate_monitoring_cadence, xrt_mode_convert
 
+
+def to_naive_utc(value: datetime) -> datetime:
+    """Convert a datetime to a naive datetime in UTC.
+
+    Naive input is taken to be UTC already, rather than local time, so that
+    results do not depend on the timezone of the machine running the code.
+    Timezone aware input is converted to UTC. Applying this to its own output
+    is a no-op.
+    """
+    if value.tzinfo is None:
+        return value
+    return value.astimezone(timezone.utc).replace(tzinfo=None)
+
+
 # Custom Types
 NaiveUTCDatetime = Annotated[
     datetime,
-    AfterValidator(lambda x: x.astimezone(timezone.utc).replace(tzinfo=None)),
+    AfterValidator(to_naive_utc),
 ]
 
 # Create a TypeAdapter for NaiveUTCDatetime for reuse
@@ -39,7 +53,10 @@ def to_utc_datetime(value):
         return to_datetime.validate_python(value)
     if isinstance(value, Time):
         return value.utc.datetime
-    raise TypeError(f"Expected datetime or astropy Time or string formatted time, got {type(value)}")
+    # Raise ValueError rather than TypeError, so that Pydantic treats this as a
+    # failed validation it can recover from. That lets `AstropyDateTime` be used
+    # as one member of a union, e.g. `AstropyDateTime | list[AstropyDateTime]`.
+    raise ValueError(f"Expected datetime or astropy Time or string formatted time, got {type(value)}")
 
 
 class AstropyDateTimeAnnotation:

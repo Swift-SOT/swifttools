@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 from typing import Any, Literal
 
 from pydantic import Field, computed_field, field_validator, model_validator
@@ -6,7 +6,15 @@ from pydantic import Field, computed_field, field_validator, model_validator
 from ..base.back_compat import TOOAPIBackCompat
 from ..base.common import TOOAPIBaseclass
 from ..base.repr import TOOAPIReprMixin
-from ..base.schemas import AstropyAngle, BaseSchema, StrIntFloat, TextLength, UVOTModeType, XRTModeType
+from ..base.schemas import (
+    AstropyAngle,
+    AstropyDateTime,
+    BaseSchema,
+    StrIntFloat,
+    TextLength,
+    UVOTModeType,
+    XRTModeType,
+)
 from ..base.status import TOOStatus
 from .calendar import SwiftCalendar
 from .enums import UrgencyEnum, XRTModeEnum
@@ -16,7 +24,7 @@ from .schemas import ObsType
 
 class SwiftTOORequestSchema(BaseSchema, TOOAPIReprMixin, TOOAPIBackCompat):
     too_id: int | None = None
-    timestamp: datetime | None = None
+    timestamp: AstropyDateTime | None = None
     # target_name: Optional[str] = None
     target_type: str | None = None
     ra: AstropyAngle | None = None
@@ -51,7 +59,7 @@ class SwiftTOORequestSchema(BaseSchema, TOOAPIReprMixin, TOOAPIBackCompat):
     obs_n: int | str | None = None
     obs_type: ObsType | None = None
     calendar: SwiftCalendar | None = None
-    grb_triggertime: datetime | None = None
+    grb_triggertime: AstropyDateTime | None = None
     done: int | None = None
     decision: str | None = None
     target_id: int | None = None
@@ -172,7 +180,7 @@ class SwiftTOOFormSchema(BaseSchema):
     bat_countrate: str | None = Field(None, description="BAT Count Rate")
     other_brightness: str | None = Field(None, description="Other Brightness")
     grb_detector: str | None = Field(None, description="GRB Detector")
-    grb_triggertime: datetime | None = Field(None, description="GRB Trigger Time")
+    grb_triggertime: AstropyDateTime | None = Field(None, description="GRB Trigger Time")
     # redshift_val: Optional[str] = Field(None, description="Redshift Value")
     # redshift_status: Optional[str] = Field(None, description="Redshift Status")
     uvot_mode: UVOTModeType = Field(0x9999, description="UVOT Mode")

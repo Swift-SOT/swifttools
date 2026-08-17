@@ -7,8 +7,10 @@ It may occasionally happen that, after submitting your product request to the UK
 To cancel a submitted job, simply call the `cancelProducts()` method of your `XRTProductRequest` instance. This takes a single, optional argument detailing which product(s) to cancel. This can either be the string 'all' (to cancel all requested products) or a tuple/list of the product names. e.g.
 
 ```python
-In [1]: cancelStatus = myReq.cancelProducts(('LightCurve', 'StandardPos')) # Cancel only the light curve and standard position
-In [2]: cancelStatus = myReq.cancelProducts() # same as myReq.cancelProducts('all')
+In[1]: cancelStatus = myReq.cancelProducts(
+    ("LightCurve", "StandardPos")
+)  # Cancel only the light curve and standard position
+In[2]: cancelStatus = myReq.cancelProducts()  # same as myReq.cancelProducts('all')
 ```
 
 `cancelProducts()` returns some information to let you know whether the request to cancel the products were successful or not. In the above, I captured this in the `cancelStatus` variable.
@@ -33,14 +35,14 @@ This variable is a list with two entries, thus:
 This is probably best understood by means of some examples. So, here is a case where we requested simply to cancel a light curve, and it was successful. I've actually printed it 3 times below just to help with clarity: the first statement prints the entire object; the second statement just prints the summary code, and the final statement shows the `LightCurve` entry.
 
 ```python
-In [3]: print(cancelStatus)
-(1, {'LightCurve': {'code': 0, 'text': 'Job cancelled OK'}})
+In[3]: print(cancelStatus)
+(1, {"LightCurve": {"code": 0, "text": "Job cancelled OK"}})
 
-In [4]: print(cancelStatus[0]) # Just get the overall status
+In[4]: print(cancelStatus[0])  # Just get the overall status
 1
 
-In [5]: print (cancelStatus[0]['LightCurve']) # Just get the light curve status
-{'code': 0, 'text': 'Job cancelled OK'}
+In[5]: print(cancelStatus[0]["LightCurve"])  # Just get the light curve status
+{"code": 0, "text": "Job cancelled OK"}
 ```
 
 So we can see here that the cancellation was OK ( `cancelStatus[0]==1`). Then looking at the light curve entry we can see that this has status code 0 = OK, and the text confirms this.

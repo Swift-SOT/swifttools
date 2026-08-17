@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import os
 from enum import Enum
-from time import tzset
 from typing import Annotated
 
 from pydantic import (
@@ -13,10 +11,6 @@ from pydantic import (
 
 from ..base.functions import convert_obs_id_sdc
 from ..base.schemas import AstropyDateTime, BaseSchema
-
-# Make sure we are working in UTC times
-os.environ["TZ"] = "UTC"
-tzset()
 
 ObsIDSDC = Annotated[
     str,

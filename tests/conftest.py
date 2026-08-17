@@ -1,7 +1,9 @@
+from datetime import datetime, timedelta, timezone
 from typing import ClassVar
 from unittest.mock import Mock
 
 import pytest
+from astropy.time import Time  # type: ignore[import-untyped]
 from pydantic import BaseModel
 
 from swifttools.swift_too.base.common import (
@@ -10,6 +12,30 @@ from swifttools.swift_too.base.common import (
 )
 from swifttools.swift_too.base.schemas import BaseSchema
 from swifttools.swift_too.base.status import TOOStatus
+
+
+@pytest.fixture
+def equivalent_instants():
+    """2024 June 1 12:00:00 UTC, written six different ways.
+
+    Any request field that takes a time should reduce every one of these to the
+    same naive UTC datetime, whatever timezone the machine running the code is
+    set to.
+    """
+    return [
+        datetime(2024, 6, 1, 12, 0),
+        datetime(2024, 6, 1, 12, 0, tzinfo=timezone.utc),
+        datetime(2024, 6, 1, 17, 30, tzinfo=timezone(timedelta(hours=5, minutes=30))),
+        "2024-06-01T12:00:00",
+        "2024-06-01T12:00:00Z",
+        Time("2024-06-01T12:00:00", scale="utc"),
+    ]
+
+
+@pytest.fixture
+def expected_instant():
+    """The naive UTC datetime that every value in `equivalent_instants` means."""
+    return datetime(2024, 6, 1, 12, 0)
 
 
 class MockSchema(BaseModel):

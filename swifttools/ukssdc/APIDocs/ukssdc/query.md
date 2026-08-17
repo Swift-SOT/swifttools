@@ -60,7 +60,7 @@ I set `silent=False` because in an interactive case like this, it can be helpful
 
 ```python
 q.verbose = True
-q.verbose = False # Turn it off again!
+q.verbose = False  # Turn it off again!
 ```
 
 <a id='table'></a>
@@ -96,7 +96,7 @@ q.table
 
 
 ```python
-q.table = 'swiftxrlog'
+q.table = "swiftxrlog"
 ```
 
     Resetting query details
@@ -106,9 +106,7 @@ You'll notice the cell that changed the table warned us that it was resetting th
 
 
 ```python
-q = uq.ObsQuery(table='swiftbalog',
-                silent=False
-               )
+q = uq.ObsQuery(table="swiftbalog", silent=False)
 q.table
 ```
 
@@ -132,7 +130,7 @@ A simple search is just a cone search, and rather than pontificating, let's just
 
 ```python
 q = uq.ObsQuery(silent=False)
-q.addConeSearch(name='GK Per', radius=300, units='arcsec')
+q.addConeSearch(name="GK Per", radius=300, units="arcsec")
 q.submit()
 ```
 
@@ -225,13 +223,14 @@ You should only provide one of these arguments (OK, two if `ra` and `dec`) or yo
 
 
 ```python
-q.addConeSearch(ra=123.456, dec=-43.221, radius=1, units='deg')
-q.addConeSearch(position='12 13 15, -15 16 17', radius=12, units='arcmin')
+q.addConeSearch(ra=123.456, dec=-43.221, radius=1, units="deg")
+q.addConeSearch(position="12 13 15, -15 16 17", radius=12, units="arcmin")
 
 from astropy.coordinates import Angle
-ra = Angle('12h 13m 14s')
-dec = Angle('-13d 14m 15s')
-q.addConeSearch(ra=ra, dec=dec, radius=300, units='arcsec')
+
+ra = Angle("12h 13m 14s")
+dec = Angle("-13d 14m 15s")
+q.addConeSearch(ra=ra, dec=dec, radius=300, units="arcsec")
 ```
 
 If you provided a `name` or `position`, it will be resolved when the query is submitted, so you can check the details of the resolution using the `q.resolvedRA` etc. variables already introduced. If you supplied `ra` and `dec` you can actually read these back; for example if you don't trust `astropy` as used above, we can check that the correct decimal values were extracted:
@@ -311,7 +310,7 @@ So, knowing what columns exist, we can now decide which ones we want to obtain, 
 
 
 ```python
-q.addCol('name')
+q.addCol("name")
 q.colsToGet
 ```
 
@@ -357,7 +356,7 @@ You note that we got a warning because we tried to add an existing column in, bu
 
 
 ```python
-q.removeCol('name')
+q.removeCol("name")
 q.colsToGet
 ```
 
@@ -382,7 +381,7 @@ q.colsToGet
 
 
 ```python
-q.removeCol(('obsid', 'stop_time'))
+q.removeCol(("obsid", "stop_time"))
 q.colsToGet
 ```
 
@@ -405,7 +404,7 @@ q.colsToGet
 
 
 ```python
-q.addCol(['cycle', 'soft_version']+q.defaultCols)
+q.addCol(["cycle", "soft_version"] + q.defaultCols)
 ```
 
     Cannot add column target_id; it is already selected.
@@ -461,16 +460,9 @@ I will unpack these in more detail but an example is probably a better helper so
 
 
 ```python
-filter1 = ('xrt_exposure', '>', 1000, 'OR', '<', 200)
+filter1 = ("xrt_exposure", ">", 1000, "OR", "<", 200)
 
-filter2 = {
-    "colName": "ra",
-    "filter": ">",
-    "val": 123,
-    "combiner": "and" ,
-    "filter2": "<",
-    "val2": 200
-}
+filter2 = {"colName": "ra", "filter": ">", "val": 123, "combiner": "and", "filter2": "<", "val2": 200}
 ```
 
 If these filters were converted to SQL they would be written as
@@ -503,17 +495,11 @@ Some more examples:
 ```python
 q.removeAllFilters()
 
-q.addFilter ( ('xrt_exposure', '<', 2000))
+q.addFilter(("xrt_exposure", "<", 2000))
 
-q.addFilter ( ('ra', 'BETWEEN', [100,200]))
+q.addFilter(("ra", "BETWEEN", [100, 200]))
 
-q.addFilter ({
-    'colName': 'target_id',
-    'filter': 'IS NULL',
-    'combiner': 'or',
-    'filter2': '<',
-    'val2': 10000
-})
+q.addFilter({"colName": "target_id", "filter": "IS NULL", "combiner": "or", "filter2": "<", "val2": 10000})
 ```
 
 Here I've introduced the `removeAllFilters()` function (you can probably guess what it does) and a few more examples of adding filters, including some where we don't need all elements of the filter definition.
@@ -566,9 +552,9 @@ Right, enough messing around, let's do an actual query. I'm going to do both a c
 
 
 ```python
-q=uq.ObsQuery(silent=False)
-q.addConeSearch(name='GK Per', radius=12, units='arcmin')
-q.addFilter( ('xrt_exposure', '>', 3000))
+q = uq.ObsQuery(silent=False)
+q.addConeSearch(name="GK Per", radius=12, units="arcmin")
+q.addFilter(("xrt_exposure", ">", 3000))
 q.isValid()
 ```
 
@@ -652,8 +638,8 @@ Let's have a quick demo, and while I'm here I'll show you that you can unlock a 
 
 ```python
 q.unlock()
-q.sortCol='xrt_exposure'
-q.sortDir='DESC'
+q.sortCol = "xrt_exposure"
+q.sortDir = "DESC"
 q.submit()
 q.results
 ```
@@ -680,7 +666,7 @@ The default behaviour of this module is to get all rows in the database that mat
 
 ```python
 q.unlock()
-q.maxRows=3
+q.maxRows = 3
 q.submit()
 ```
 
@@ -734,7 +720,7 @@ First, let's do a simple demonstration of this. I will deliberately execute a qu
 
 ```python
 q = uq.ObsQuery(silent=False)
-q.addConeSearch(name='GRB 210205A', radius=300)
+q.addConeSearch(name="GRB 210205A", radius=300)
 q.submit()
 q.results
 ```
@@ -756,9 +742,7 @@ As you can see, this gave us two rows, and we can save the observations simply e
 
 
 ```python
-q.downloadObsData(destDir='/tmp/APIDemo_download1',
-                 instruments=('BAT', 'XRT'),
-                 getTDRSS=True)
+q.downloadObsData(destDir="/tmp/APIDemo_download1", instruments=("BAT", "XRT"), getTDRSS=True)
 ```
 
     Making directory /tmp/APIDemo_download1
@@ -814,9 +798,9 @@ First, I'm going to do a cone search around GK Per, ordering by exposure (longes
 
 ```python
 q = uq.ObsQuery(silent=False)
-q.addConeSearch(name='GK Per', radius=300)
-q.sortCol = 'xrt_exposure'
-q.sortDir='DESC'
+q.addConeSearch(name="GK Per", radius=300)
+q.sortCol = "xrt_exposure"
+q.sortDir = "DESC"
 q.submit()
 q.results
 ```
@@ -838,10 +822,9 @@ Now, looking at this, I want to get only those rows that have more than 6ks of X
 
 
 ```python
-q.downloadObsData(destDir='/tmp/APIDemo_download2',
-                  subset=q.results['xrt_exposure']>6000,
-                  instruments=('XRT',),
-                  getAuxil=False)
+q.downloadObsData(
+    destDir="/tmp/APIDemo_download2", subset=q.results["xrt_exposure"] > 6000, instruments=("XRT",), getAuxil=False
+)
 ```
 
     Making directory /tmp/APIDemo_download2
@@ -894,7 +877,7 @@ If you want to check your filter expression before actually using it, you can us
 
 
 ```python
-q.results.loc[q.results['xrt_exposure']>6000]
+q.results.loc[q.results["xrt_exposure"] > 6000]
 ```
 
 
@@ -911,7 +894,7 @@ First, let's show you how to apply multiple filters because this *always* take m
 
 
 ```python
-subset = (q.results['xrt_exposure']>6000)&(q.results['xrt_exposure']<7000)
+subset = (q.results["xrt_exposure"] > 6000) & (q.results["xrt_exposure"] < 7000)
 q.results.loc[subset]
 # Uncomment the following if you want:
 
@@ -919,7 +902,6 @@ q.results.loc[subset]
 #                   subset=(q.results['xrt_exposure']>6000)&(q.results['xrt_exposure']<7000),
 #                   instruments=('XRT',),
 #                   getAuxil=False)
-
 ```
 
 
@@ -931,13 +913,12 @@ And lastly, the `isin` function which is really handy as well. This lets us make
 
 ```python
 myTargs = (81445, 45767, 81637)
-subset=q.results['target_id'].isin(myTargs)
-q.results.loc[q.results['target_id'].isin(myTargs)]
+subset = q.results["target_id"].isin(myTargs)
+q.results.loc[q.results["target_id"].isin(myTargs)]
 # q.downloadObsData(destDir='/tmp/APIDemo_download4',
 #                   subset=q.results['target_id'].isin(myTargs),
 #                   instruments=('XRT',),
 #                   getAuxil=False)
-
 ```
 
 

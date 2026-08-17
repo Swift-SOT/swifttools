@@ -72,11 +72,9 @@ The table and catalogue can be specified in the constructor, or by setting the r
 
 
 ```python
-q = uq.SXPSQuery(silent=False,
-                 cat='LSXPS',
-                 table='datasets')
-q.cat='2SXPS'
-q.table='sources'
+q = uq.SXPSQuery(silent=False, cat="LSXPS", table="datasets")
+q.cat = "2SXPS"
+q.table = "sources"
 ```
 
     Resetting query details
@@ -106,7 +104,7 @@ And you can view / set the subset using the `q.subset` variable:
 
 ```python
 print(f"The current subset is {q.subset}")
-q.subset = 'Clean'
+q.subset = "Clean"
 print(f"Now it is {q.subset}")
 ```
 
@@ -118,7 +116,7 @@ And you can unset it as well:
 
 
 ```python
-q.subset=None
+q.subset = None
 print(f"Now it is {q.subset}")
 ```
 
@@ -132,13 +130,9 @@ So, let's put all of this together and make an example query, just to remind you
 
 
 ```python
-q = uq.SXPSQuery(silent=False,
-                 cat='LSXPS',
-                 table='datasets')
-q.addConeSearch(name='GK Per',
-                radius=12,
-                units='arcmin')
-q.addFilter(['ExposureUsed', '>=', 5000])
+q = uq.SXPSQuery(silent=False, cat="LSXPS", table="datasets")
+q.addConeSearch(name="GK Per", radius=12, units="arcmin")
+q.addFilter(["ExposureUsed", ">=", 5000])
 q.submit()
 q.results
 ```
@@ -188,13 +182,9 @@ All of the source products we looked at in the [`swifttools.ukssdc.data.SXPS` do
 
 
 ```python
-q = uq.SXPSQuery(cat='LSXPS',
-                 table='sources',
-                 silent=False)
-q.addConeSearch(name='GRB 060729',
-                radius=2,
-                units='arcmin')
-q.addFilter(('DetFlag', '=', 0))
+q = uq.SXPSQuery(cat="LSXPS", table="sources", silent=False)
+q.addConeSearch(name="GRB 060729", radius=2, units="arcmin")
+q.addFilter(("DetFlag", "=", 0))
 q.submit()
 ```
 
@@ -224,7 +214,7 @@ To speed up the processing below, and to remind you how to get subsets, I'm goin
 
 
 ```python
-mySS = (q.results['MeanOffAxisAngle']<2) | (q.results['HR1']>0)
+mySS = (q.results["MeanOffAxisAngle"] < 2) | (q.results["HR1"] > 0)
 ```
 
 As a quick aside, [filters in query expressions](../query.md#advanced) are always combined with an 'AND', so the above filter can *only* be done by making a subset of the query results.
@@ -244,9 +234,7 @@ So, below I will use both forms, just to make the point:
 
 
 ```python
-q.getSourceDetails(byName=True,
-                   subset = mySS
-                  )
+q.getSourceDetails(byName=True, subset=mySS)
 ```
 
     Saved source information as sourceDetails varable.
@@ -272,9 +260,7 @@ One nice thing about the internal variable of products is that it can be updated
 
 
 ```python
-q.getDetails(byName=True,
-             subset = mySS
-            )
+q.getDetails(byName=True, subset=mySS)
 q.sourceDetails.keys()
 ```
 
@@ -295,11 +281,9 @@ If this is not what you wanted, you can always 'forget' the data you had first, 
 
 
 ```python
-q.clearProduct('sourceDetails')
+q.clearProduct("sourceDetails")
 print(f"sourceDetails is: {q.sourceDetails}\n\n")
-q.getDetails(byID=True,
-             subset = mySS
-            )
+q.getDetails(byID=True, subset=mySS)
 q.sourceDetails.keys()
 ```
 
@@ -332,12 +316,9 @@ If you don't follow that, just clear the sourceDetails first:
 
 
 ```python
-q.clearProduct('sourceDetails')
+q.clearProduct("sourceDetails")
 
-q.getObsList(byName=True,
-             subset=mySS,
-             useObs='allDet'
-            )
+q.getObsList(byName=True, subset=mySS, useObs="allDet")
 
 q.sourceObsList
 ```
@@ -424,11 +405,13 @@ If you wanted to download theese data using the [main `data` module](../data.md)
 
 ```python
 import swifttools.ukssdc.data as ud
-ud.downloadObsData(q.sourceObsList['LSXPS J062126.9-622317']['obsList'],
-                   instruments=('xrt',),
-                   destDir='/tmp/APIDemo_SXPSq_data',
-                   silent=False
-                  )
+
+ud.downloadObsData(
+    q.sourceObsList["LSXPS J062126.9-622317"]["obsList"],
+    instruments=("xrt",),
+    destDir="/tmp/APIDemo_SXPSq_data",
+    silent=False,
+)
 ```
 
     Making directory /tmp/APIDemo_SXPSq_data
@@ -464,11 +447,12 @@ If you read the above, then the mechanism for getting source light curves is goi
 
 
 ```python
-q.getLightCurves(byID=True,
-                 subset = q.results['MeanOffAxisAngle']<2,
-                 timeFormat='MJD',
-                 binning='obs',
-                 )
+q.getLightCurves(
+    byID=True,
+    subset=q.results["MeanOffAxisAngle"] < 2,
+    timeFormat="MJD",
+    binning="obs",
+)
 ```
 
 And, as I didn't give `saveData=True` the results have only been stored in a class variable, `lightCurves`:
@@ -493,11 +477,12 @@ As with `sourceDetails` and everything else, you can repeat this call with a dif
 
 
 ```python
-q.getLightCurves(byID=True,
-                 subset = q.results['MeanOffAxisAngle']>2,
-                 timeFormat='TDB',
-                 binning='obs',
-             )
+q.getLightCurves(
+    byID=True,
+    subset=q.results["MeanOffAxisAngle"] > 2,
+    timeFormat="TDB",
+    binning="obs",
+)
 ```
 
 
@@ -530,13 +515,8 @@ Let's do that, and then demonstrate a value way of updating `q.lightCurves`
 
 
 ```python
-q.clearProduct('lightCurves')
-q.getLightCurves(byID=True,
-                 subset = mySS,
-                 timeFormat='MJD',
-                 binning='obs',
-                 bands=('total', 'soft')
-             )
+q.clearProduct("lightCurves")
+q.getLightCurves(byID=True, subset=mySS, timeFormat="MJD", binning="obs", bands=("total", "soft"))
 ```
 
     Cleared stored `lightCurves` data.
@@ -558,7 +538,7 @@ q.lightCurves.keys()
 
 
 ```python
-q.lightCurves[209851]['Datasets']
+q.lightCurves[209851]["Datasets"]
 ```
 
 
@@ -572,19 +552,14 @@ Now let's pretend that I forgot that I also wanted the HR1 data; I can just add 
 
 
 ```python
-q.getLightCurves(byID=True,
-                 subset = mySS,
-                 timeFormat='MJD',
-                 binning='obs',
-                 bands=('HR1',)
-             )
+q.getLightCurves(byID=True, subset=mySS, timeFormat="MJD", binning="obs", bands=("HR1",))
 ```
 
 So I should now have the total and soft data as before, and HR1 as well:
 
 
 ```python
-q.lightCurves[209851]['Datasets']
+q.lightCurves[209851]["Datasets"]
 ```
 
 
@@ -604,17 +579,18 @@ Here are some quick demos:
 
 
 ```python
-q.clearProduct('lightCurves')
-q.verbose=True
-q.getLightCurves(byID=True,
-                 subset = q.results['MeanOffAxisAngle']<2,
-                 timeFormat='MJD',
-                 binning='obs',
-                 bands=('total', 'soft'),
-                 saveData=True,
-                 destDir='/tmp/APIDemo_SXPSq_LC1',
-                 subDirs=True
-             )
+q.clearProduct("lightCurves")
+q.verbose = True
+q.getLightCurves(
+    byID=True,
+    subset=q.results["MeanOffAxisAngle"] < 2,
+    timeFormat="MJD",
+    binning="obs",
+    bands=("total", "soft"),
+    saveData=True,
+    destDir="/tmp/APIDemo_SXPSq_LC1",
+    subDirs=True,
+)
 ```
 
     Cleared stored `lightCurves` data.
@@ -644,12 +620,8 @@ The alternative approach is to call `saveLightCurves()` separately to `getLightC
 
 
 ```python
-q.saveLightCurves(destDir='/tmp/APIDemo_SXPSq_LC2',
-                  subDirs=False,
-                  whichSources=(209851,),
-                  whichCurves=('Total_rates',)
-             )
-q.verbose = False # I want to turn this off again because it annoys me
+q.saveLightCurves(destDir="/tmp/APIDemo_SXPSq_LC2", subDirs=False, whichSources=(209851,), whichCurves=("Total_rates",))
+q.verbose = False  # I want to turn this off again because it annoys me
 ```
 
     Making directory /tmp/APIDemo_SXPSq_LC2
@@ -666,10 +638,9 @@ You may recall the [module-level `plotLightCurve()` function](https://www.swift.
 
 
 ```python
-fig, ax = q.plotLightCurves(209851,
-                            whichCurves=('Total_rates', 'Total_UL'),
-                            cols = {'Total_rates':'red', 'Total_UL':'blue'},
-                            ylog=True)
+fig, ax = q.plotLightCurves(
+    209851, whichCurves=("Total_rates", "Total_UL"), cols={"Total_rates": "red", "Total_UL": "blue"}, ylog=True
+)
 ```
 
     Plotting Total_rates as upper rates
@@ -686,12 +657,14 @@ And having captured `fig` and `ax` if I wanted to add another dataset:
 
 
 ```python
-fig, ax = q.plotLightCurves(209920,
-                            fig=fig,
-                            ax=ax,
-                            whichCurves=('Total_rates', 'Total_UL'),
-                            cols = {'Total_rates':'green', 'Total_UL':'black'},
-                            ylog=True)
+fig, ax = q.plotLightCurves(
+    209920,
+    fig=fig,
+    ax=ax,
+    whichCurves=("Total_rates", "Total_UL"),
+    cols={"Total_rates": "green", "Total_UL": "black"},
+    ylog=True,
+)
 fig
 ```
 
@@ -716,9 +689,7 @@ The situation for spectra is, amazingly enough, almost the same as for the other
 
 
 ```python
-q.getSpectra(byID=True,
-             subset = mySS
-             )
+q.getSpectra(byID=True, subset=mySS)
 ```
 
 
@@ -795,14 +766,9 @@ If you didn't give `saveData=True` above then you can still save the spectra lat
 
 
 ```python
-q.verbose=True
-q.saveSpectra(whichSources=(209851,),
-              destDir='/tmp/APIDemo_SXPSq_spec',
-              saveImages=True,
-              extract=True,
-              removeTar=True
-             )
-q.verbose=False
+q.verbose = True
+q.saveSpectra(whichSources=(209851,), destDir="/tmp/APIDemo_SXPSq_spec", saveImages=True, extract=True, removeTar=True)
+q.verbose = False
 ```
 
     Making directory /tmp/APIDemo_SXPSq_spec
@@ -842,10 +808,8 @@ This only really needs one quick example:
 
 
 ```python
-q.verbose=True # So we see what's going on
-q.saveImages(subset = mySS,
-             byName=True,
-             destDir='/tmp/APIDemo_SXPSq_images')
+q.verbose = True  # So we see what's going on
+q.saveImages(subset=mySS, byName=True, destDir="/tmp/APIDemo_SXPSq_images")
 ```
 
     Making directory /tmp/APIDemo_SXPSq_images
@@ -905,15 +869,12 @@ To save you lots of scrolling, just install astroquery, restart the Jupyter kern
 
 ```python
 import swifttools.ukssdc.query as uq
-q = uq.SXPSQuery(cat='LSXPS',
-                 table='sources',
-                 silent=False)
-q.addConeSearch(name='GRB 060729',
-                radius=2,
-                units='arcmin')
-q.addFilter(('DetFlag', '=', 0))
+
+q = uq.SXPSQuery(cat="LSXPS", table="sources", silent=False)
+q.addConeSearch(name="GRB 060729", radius=2, units="arcmin")
+q.addFilter(("DetFlag", "=", 0))
 q.submit()
-mySS = (q.results['MeanOffAxisAngle']<2) | (q.results['HR1']>0)
+mySS = (q.results["MeanOffAxisAngle"] < 2) | (q.results["HR1"] > 0)
 ```
 
     Resetting query details
@@ -950,11 +911,7 @@ Let's start with a SIMBAD query.
 
 
 ```python
-q.doSIMBADSearch(byName=True,
-                 subset = mySS,
-                 radius=20*au.arcsec,
-                 epoch='J2000',
-                 equinox=2000)
+q.doSIMBADSearch(byName=True, subset=mySS, radius=20 * au.arcsec, epoch="J2000", equinox=2000)
 ```
 
 The last 3 arguments are all things that the `astroquery.simbad.Simbad.query_region()` function needs. For more details see the help for that - essentially any arguments it needs can be passed to `doSIMBADSearch()` and will just get forwarded on.
@@ -977,7 +934,7 @@ It's a `dict`, of course, and the keys are the sources we asked to query. Let's 
 
 
 ```python
-q.SIMBAD['LSXPS J062131.8-622213']
+q.SIMBAD["LSXPS J062131.8-622213"]
 ```
 
 
@@ -994,10 +951,7 @@ A Vizier lookup works more or less the same way, except that we don't specify th
 
 
 ```python
-q.doVizierSearch(byName=True,
-                 subset = mySS,
-                 radius=20*au.arcsec
-                 )
+q.doVizierSearch(byName=True, subset=mySS, radius=20 * au.arcsec)
 ```
 
 
@@ -1014,7 +968,7 @@ q.Vizier.keys()
 
 
 ```python
-q.Vizier['LSXPS J062131.8-622213'].keys()
+q.Vizier["LSXPS J062131.8-622213"].keys()
 ```
 
 
@@ -1033,12 +987,8 @@ The underlying `astroquery` functionality allows us to specify a catalogue to lo
 
 
 ```python
-q.clearProduct('Vizier') # Let's lose that mass of data we downloaded just now
-q.doVizierSearch(byName=True,
-                 subset = q.results['MeanOffAxisAngle']<2,
-                 radius=20*au.arcsec,
-                 catalog = 'GSC'
-                 )
+q.clearProduct("Vizier")  # Let's lose that mass of data we downloaded just now
+q.doVizierSearch(byName=True, subset=q.results["MeanOffAxisAngle"] < 2, radius=20 * au.arcsec, catalog="GSC")
 ```
 
     Cleared stored `Vizier` data.
@@ -1048,7 +998,7 @@ Of course, the first thing you'll notice is that while *I've* resolutely used 'c
 
 
 ```python
-q.Vizier['LSXPS J062131.8-622213'].keys()
+q.Vizier["LSXPS J062131.8-622213"].keys()
 ```
 
 
@@ -1062,7 +1012,7 @@ Looks like there were two catalogues returned that matched 'GSC'. Let's check ou
 
 
 ```python
-q.Vizier['LSXPS J062131.8-622213']['I/353/gsc242']
+q.Vizier["LSXPS J062131.8-622213"]["I/353/gsc242"]
 ```
 
 
@@ -1098,14 +1048,15 @@ So you only get one demo. One piece of advice though: make your query silent bef
 
 
 ```python
-q.silent=True
-rlist=q.makeProductRequest('MY_EMAIL_ADDRESS',
-                           subset=mySS,
-                           byID=True,
-                           T0='firstBlindDet',
-                           useObs='blind',
-                           addProds=['LightCurve','Spectrum', 'StandardPos']
-                          )
+q.silent = True
+rlist = q.makeProductRequest(
+    "MY_EMAIL_ADDRESS",
+    subset=mySS,
+    byID=True,
+    T0="firstBlindDet",
+    useObs="blind",
+    addProds=["LightCurve", "Spectrum", "StandardPos"],
+)
 ```
 
 
@@ -1159,9 +1110,7 @@ for k, v in rlist.items():
 
 
 ```python
-q.getSourceDetails(byID=True,
-                   subset = q.results['MeanOffAxisAngle']<2
-                  )
+q.getSourceDetails(byID=True, subset=q.results["MeanOffAxisAngle"] < 2)
 q.sourceDetails[209920]
 ```
 
@@ -1535,12 +1484,8 @@ I hope you've recovered from the sources section. Datasets are much easier. Firs
 
 
 ```python
-q = uq.SXPSQuery(cat='LSXPS',
-                 table='datasets',
-                 silent=False)
-q.addConeSearch(name='GK Per',
-                radius=10,
-                units='arcmin')
+q = uq.SXPSQuery(cat="LSXPS", table="datasets", silent=False)
+q.addConeSearch(name="GK Per", radius=10, units="arcmin")
 q.submit()
 ```
 
@@ -1556,7 +1501,7 @@ OK, 112 rows is a lot, let's make a subset for actually accessing things. Slight
 
 
 ```python
-q.results['ExposureUsed'].tolist()
+q.results["ExposureUsed"].tolist()
 ```
 
 
@@ -1681,7 +1626,7 @@ Yeah, that's nice. I'm going to put define a subset as those with 7ks or more of
 
 
 ```python
-mySS = q.results['ExposureUsed']>7000
+mySS = q.results["ExposureUsed"] > 7000
 ```
 
 <a id='dsinfo'></a>
@@ -1693,8 +1638,7 @@ As you remember from earlier, we can use either the `getDatasetDetails()` functi
 
 
 ```python
-q.getDetails(byObsID=True,
-            subset=mySS)
+q.getDetails(byObsID=True, subset=mySS)
 ```
 
     Saved dataset information as datasetDetails varable.
@@ -1718,8 +1662,7 @@ As with `getSourceDetails`, if we decide to get more dataset information, withou
 
 
 ```python
-q.getDatasetDetails(byDatasetID=True,
-                    subset=q.results['ExposureUsed']<300)
+q.getDatasetDetails(byDatasetID=True, subset=q.results["ExposureUsed"] < 300)
 
 q.datasetDetails.keys()
 ```
@@ -1745,10 +1688,8 @@ As I'm sure you remember from the [`data.SXPS` page](../data/SXPS.md#sImages), o
 
 
 ```python
-q.verbose=True # So we see what's going on
-q.saveImages(subset=mySS,
-             byObsID=True,
-             destDir='/tmp/APIDemo_SXPSq_images2')
+q.verbose = True  # So we see what's going on
+q.saveImages(subset=mySS, byObsID=True, destDir="/tmp/APIDemo_SXPSq_images2")
 ```
 
     Making directory /tmp/APIDemo_SXPSq_images2
@@ -1817,8 +1758,8 @@ Let's start by doing a query. I'm going to ask for all transients with the statu
 
 
 ```python
-q = uq.SXPSQuery(cat='LSXPS', table='transients', silent=False)
-q.addFilter(('Classification', '=', 1))
+q = uq.SXPSQuery(cat="LSXPS", table="transients", silent=False)
+q.addFilter(("Classification", "=", 1))
 q.submit()
 q.results
 ```
@@ -1838,7 +1779,7 @@ q.results
 
 
 ```python
-mySS = q.results['TransientID']<100
+mySS = q.results["TransientID"] < 100
 ```
 
 I've made a quick subset too.
@@ -2083,10 +2024,11 @@ The one thing to remember (see the [`data.SXPS` transients documentation](../dat
 
 
 ```python
-q.getLightCurves(byName=True,
-                 subset=mySS,
-                 binning='counts',
-                )
+q.getLightCurves(
+    byName=True,
+    subset=mySS,
+    binning="counts",
+)
 q.lightCurves.keys()
 ```
 
@@ -2106,8 +2048,7 @@ Purely for the sake of variation, I'll get these by ID and not bother with the s
 
 
 ```python
-q.getSpectra(byID=True,
-             specType='discovery')
+q.getSpectra(byID=True, specType="discovery")
 q.spectra.keys()
 ```
 
@@ -2163,11 +2104,9 @@ There really should be nothing I need to write here, I hope&hellip;
 
 
 ```python
-q.verbose=True # So we see what's going on
-q.saveImages(byName=True,
-             subset=mySS,
-             destDir='/tmp/APIDemo_SXPSq_timages')
-q.verbose=False # So we can stop seeing what's going on
+q.verbose = True  # So we see what's going on
+q.saveImages(byName=True, subset=mySS, destDir="/tmp/APIDemo_SXPSq_timages")
+q.verbose = False  # So we can stop seeing what's going on
 ```
 
     Making directory /tmp/APIDemo_SXPSq_timages
@@ -2243,7 +2182,7 @@ q.SIMBAD.keys()
 
 
 ```python
-q.SIMBAD['Swift J102732.5-643553']
+q.SIMBAD["Swift J102732.5-643553"]
 ```
 
 
@@ -2254,11 +2193,8 @@ q.SIMBAD['Swift J102732.5-643553']
 
 
 ```python
-q.clearProduct('Vizier') # Let's lose that mass of data we downloaded just now
-q.doVizierSearch(byName=True,
-                 radius=20*au.arcsec,
-                 catalog = 'USNO-B1'
-                 )
+q.clearProduct("Vizier")  # Let's lose that mass of data we downloaded just now
+q.doVizierSearch(byName=True, radius=20 * au.arcsec, catalog="USNO-B1")
 q.Vizier.keys()
 ```
 
@@ -2274,7 +2210,7 @@ q.Vizier.keys()
 
 
 ```python
-q.Vizier['Swift J102732.5-643553'].keys()
+q.Vizier["Swift J102732.5-643553"].keys()
 ```
 
 
@@ -2286,7 +2222,7 @@ q.Vizier['Swift J102732.5-643553'].keys()
 
 
 ```python
-q.Vizier['Swift J102732.5-643553']['I/284/out']
+q.Vizier["Swift J102732.5-643553"]["I/284/out"]
 ```
 
 
@@ -2302,14 +2238,17 @@ And guess what - just like for sources, we can make `XRTProductRequest` objects 
 
 
 ```python
-q.silent=True
-rlist=q.makeProductRequest('MY_EMAIL_ADDRESS',
-                           byID=True,
-                           subset=mySS,
-                           T0='Discovery',
-                           useObs='new',
-                           addProds=['LightCurve',]
-                          )
+q.silent = True
+rlist = q.makeProductRequest(
+    "MY_EMAIL_ADDRESS",
+    byID=True,
+    subset=mySS,
+    T0="Discovery",
+    useObs="new",
+    addProds=[
+        "LightCurve",
+    ],
+)
 ```
 
 
@@ -2357,9 +2296,10 @@ So, let's do one quick demo of this: I will get the full 'obsSources' table, and
 
 
 ```python
-q = uq.SXPSQuery(cat='LSXPS',
-                 table='obssources',
-                )
+q = uq.SXPSQuery(
+    cat="LSXPS",
+    table="obssources",
+)
 q.getFullTable()
 q.fullTable
 ```

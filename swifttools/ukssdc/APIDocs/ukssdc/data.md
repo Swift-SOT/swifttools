@@ -46,9 +46,7 @@ The simplest use of this module is to know the ID of an observation you want, an
 
 
 ```python
-ud.downloadObsData('00282445000',
-                   destDir='/tmp/APIDemo_download1',
-                   silent=False)
+ud.downloadObsData("00282445000", destDir="/tmp/APIDemo_download1", silent=False)
 ```
 
     Making directory /tmp/APIDemo_download1
@@ -96,12 +94,7 @@ This simple demonstration shows the basic functionality but it's somewhat limite
 
 
 ```python
-ud.downloadObsData(221755001,
-                    instruments=('XRT',),
-                    source='us',
-                    destDir='/tmp/APIDemo_download2',
-                    silent=False
-                   )
+ud.downloadObsData(221755001, instruments=("XRT",), source="us", destDir="/tmp/APIDemo_download2", silent=False)
 ```
 
     Making directory /tmp/APIDemo_download2
@@ -145,11 +138,7 @@ The above demonstrates getting a single observation, but you can supply a list, 
 
 
 ```python
-ud.downloadObsData((221755001,282445000),
-                    instruments=(),
-                    destDir='/tmp/APIDemo_download3',
-                    silent=False
-                   )
+ud.downloadObsData((221755001, 282445000), instruments=(), destDir="/tmp/APIDemo_download3", silent=False)
 ```
 
     Making directory /tmp/APIDemo_download3
@@ -185,10 +174,7 @@ Sometimes you may know the targetID of the object you care about, and simply wan
 
 
 ```python
-ud.downloadObsDataByTarget(282445,
-                           instruments=(),
-                           destDir='/tmp/APIDemo_download4',
-                           silent=False)
+ud.downloadObsDataByTarget(282445, instruments=(), destDir="/tmp/APIDemo_download4", silent=False)
 ```
 
     Making directory /tmp/APIDemo_download4
@@ -231,10 +217,7 @@ As with obsData, we can provide an int (as above) or string (e.g. '00282445') an
 
 
 ```python
-ud.downloadObsDataByTarget((282445,20014),
-                           instruments=(),
-                           destDir='/tmp/APIDemo_download5',
-                           silent=False)
+ud.downloadObsDataByTarget((282445, 20014), instruments=(), destDir="/tmp/APIDemo_download5", silent=False)
 ```
 
     Making directory /tmp/APIDemo_download5

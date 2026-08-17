@@ -42,14 +42,14 @@ q.metadata
 
 
 ```python
-q.addCol('*')
+q.addCol("*")
 ```
 
 
 ```python
-q.addConeSearch(name='GK Per', radius=300)
-#q.addConeSearch(ra=52.8000, dec=43.9043, radius=300)
-#q.maxRows = 1
+q.addConeSearch(name="GK Per", radius=300)
+# q.addConeSearch(ra=52.8000, dec=43.9043, radius=300)
+# q.maxRows = 1
 ```
 
 
@@ -114,9 +114,9 @@ Subsets can be composites, as demonstated below. This "only" gets 18 datasets, s
 
 
 ```python
-ss1 = q.results['xrt_expo_pc']<500
-ss2 = q.results['xrt_expo_pc']>10
-subset = ss1&ss2
+ss1 = q.results["xrt_expo_pc"] < 500
+ss2 = q.results["xrt_expo_pc"] > 10
+subset = ss1 & ss2
 q.downloadObsData(subset=subset, destDir="/tmp/phil", clobber=True)
 ```
 
@@ -135,7 +135,7 @@ for c in q.results.columns:
 
 
 ```python
-q.results.iloc[0]['decl_s']
+q.results.iloc[0]["decl_s"]
 ```
 
 
@@ -145,8 +145,8 @@ q.unlock()
 
 
 ```python
-q.addFilter(['xrt_expo_pc', '<', '10000'])
-q.addFilter(['xrt_expo_pc', '<', '2000'])
+q.addFilter(["xrt_expo_pc", "<", "10000"])
+q.addFilter(["xrt_expo_pc", "<", "2000"])
 ```
 
 
@@ -186,7 +186,7 @@ q.unlock()
 
 
 ```python
-q.metadata.loc[q.metadata['Class'].str.contains('BASIC')]['ColName'].tolist()
+q.metadata.loc[q.metadata["Class"].str.contains("BASIC")]["ColName"].tolist()
 ```
 
 
@@ -196,19 +196,19 @@ q.removeAllCols()
 
 
 ```python
-q.addCol(['target_id', 'obsid', 'xrt_expo_pc'])
+q.addCol(["target_id", "obsid", "xrt_expo_pc"])
 ```
 
 ## SXPS
 
 
 ```python
-q2 = uq.SXPSQuery(silent=False, verbose=False, cat='LSXPS')
+q2 = uq.SXPSQuery(silent=False, verbose=False, cat="LSXPS")
 ```
 
 
 ```python
-q2.table = 'transients'
+q2.table = "transients"
 ```
 
 
@@ -228,13 +228,13 @@ q2.addCol(q2.defaultCols)
 
 
 ```python
-q2.removeCol('LSXPS_ID')
+q2.removeCol("LSXPS_ID")
 ```
 
 
 ```python
-q2.addConeSearch(name='GK Per', radius=30)
-q2.maxRows=1000
+q2.addConeSearch(name="GK Per", radius=30)
+q2.maxRows = 1000
 ```
 
 
@@ -262,7 +262,7 @@ q2.sourceInfo
 
 
 ```python
-info2 = q2.getSourceInfo(subset=q2.results['Err90']<6.2, returnData=True)
+info2 = q2.getSourceInfo(subset=q2.results["Err90"] < 6.2, returnData=True)
 ```
 
 
@@ -273,9 +273,9 @@ info2.keys()
 
 ```python
 q2.unlock()
-q2.table='Datasets'
-q2.addConeSearch(name='GK Per', radius=30)
-q2.ObsIDAsString=True
+q2.table = "Datasets"
+q2.addConeSearch(name="GK Per", radius=30)
+q2.ObsIDAsString = True
 ```
 
 
@@ -290,7 +290,7 @@ q2.results
 
 
 ```python
-q2.downloadObsData(instruments=['xrt'], destDir='/tmp/philSXPSObs', clobber=True)
+q2.downloadObsData(instruments=["xrt"], destDir="/tmp/philSXPSObs", clobber=True)
 ```
 
 
@@ -305,12 +305,12 @@ q2.datasetInfo.keys()
 
 
 ```python
-q2.datasetInfo[30842027]['Total_sources']
+q2.datasetInfo[30842027]["Total_sources"]
 ```
 
 
 ```python
-#q2.table='datasets'
+# q2.table='datasets'
 q2.metadata
 ```
 
@@ -351,14 +351,16 @@ olist
 ```python
 source = "uk"
 instruments = ["xrt"]
-ud.downloadObsDataByTarget(282445,
-                   source=source,
-                   instruments=instruments,
-                   destDir='/tmp/APIDemo_data',
-                   noAuxil=True,
-                   clobber=True,
-                   silent=False,
-                   verbose=True)
+ud.downloadObsDataByTarget(
+    282445,
+    source=source,
+    instruments=instruments,
+    destDir="/tmp/APIDemo_data",
+    noAuxil=True,
+    clobber=True,
+    silent=False,
+    verbose=True,
+)
 ```
 
 
@@ -377,17 +379,17 @@ These next 3 cells (related to z) will not work unless the line `# from .downloa
 
 
 ```python
-z = ud.getFileList(obs,dirs,source, verbose=True)
+z = ud.getFileList(obs, dirs, source, verbose=True)
 ```
 
 
 ```python
-z['fileList']['files']
+z["fileList"]["files"]
 ```
 
 
 ```python
-z['url']
+z["url"]
 ```
 
 
@@ -399,14 +401,16 @@ instruments = ["xrt", "bat"]
 
 
 ```python
-ud.downloadObsData(obs,
-                   source=source,
-                   instruments=instruments,
-                   destDir='/tmp/phil',
-                   noAuxil = True,
-                   clobber=True,
-                   silent=False,
-                   verbose=True)
+ud.downloadObsData(
+    obs,
+    source=source,
+    instruments=instruments,
+    destDir="/tmp/phil",
+    noAuxil=True,
+    clobber=True,
+    silent=False,
+    verbose=True,
+)
 ```
 
 ### SXPS
@@ -420,13 +424,12 @@ info
 
 
 ```python
-info['CrossMatch']
+info["CrossMatch"]
 ```
 
 
 ```python
-info['NonDetections']
-
+info["NonDetections"]
 ```
 
 
@@ -457,13 +460,13 @@ info
 
 
 ```python
-info = ud.getSXPSSourceInfo(sourceName='LSXPS J232337.7+584812')
+info = ud.getSXPSSourceInfo(sourceName="LSXPS J232337.7+584812")
 info
 ```
 
 
 ```python
-info = ud.getSXPSSourceInfo(sourceName=['LSXPS J232337.7+584812', 'LSXPS J232336.6+584800'])
+info = ud.getSXPSSourceInfo(sourceName=["LSXPS J232337.7+584812", "LSXPS J232336.6+584800"])
 info
 ```
 
@@ -484,7 +487,7 @@ import swifttools.ukssdc.data as ud
 
 
 ```python
-info = ud.getSXPSSpectra(catalogue='2SXPS', sourceID=[51117, 51118])
+info = ud.getSXPSSpectra(catalogue="2SXPS", sourceID=[51117, 51118])
 ```
 
 
@@ -494,36 +497,38 @@ info
 
 
 ```python
-ud.saveSXPSSpectra(info,
-                   destDir="/tmp/philSpec",
-                   clobber=True,
-                   silent=False,
-                   extract=True,
-                   verbose=True,
-                   skipErrors=False,
-                   removeTar=True)
+ud.saveSXPSSpectra(
+    info,
+    destDir="/tmp/philSpec",
+    clobber=True,
+    silent=False,
+    extract=True,
+    verbose=True,
+    skipErrors=False,
+    removeTar=True,
+)
 ```
 
 #### Datasets
 
 
 ```python
-dsInfo = ud.getSXPSDatasetInfo(ObsID='00282445001', verbose=False)
+dsInfo = ud.getSXPSDatasetInfo(ObsID="00282445001", verbose=False)
 ```
 
 
 ```python
-dsInfo['Hard_sources']
+dsInfo["Hard_sources"]
 ```
 
 
 ```python
-tmp = pd.DataFrame(dsInfo['Total_sources'])
+tmp = pd.DataFrame(dsInfo["Total_sources"])
 ```
 
 
 ```python
-len(tmp['DetectionDetails_band0'][0])
+len(tmp["DetectionDetails_band0"][0])
 ```
 
 
@@ -535,6 +540,7 @@ dsInfo
 ```python
 a = "https://www.swift.ac.uk/2SXPS/SourceSpectra/source51117/interval0.tar.gz"
 import os.path
+
 os.path.basename(a)
 ```
 
@@ -543,10 +549,7 @@ os.path.basename(a)
 import swifttools.ukssdc.data.GRB as udg
 
 
-
-data = udg.getBurstAnalyser(GRBName="GRB 201013A",
-                                returnData=True,
-                                saveData=False)
+data = udg.getBurstAnalyser(GRBName="GRB 201013A", returnData=True, saveData=False)
 ```
 
 

@@ -70,10 +70,7 @@ Our function for getting light curves is cunningly named `getLightCurves()`. As 
 
 
 ```python
-udg.getLightCurves(GRBName="GRB 060729",
-                   saveData=True,
-                   destDir='/tmp/APIDemo_GRBLC1',
-                   silent=False)
+udg.getLightCurves(GRBName="GRB 060729", saveData=True, destDir="/tmp/APIDemo_GRBLC1", silent=False)
 ```
 
     Resolved `GRB 060729` as `221755`.
@@ -94,10 +91,7 @@ Let's demonstrate this with a couple of simple downloads:
 
 
 ```python
-lcData = udg.getLightCurves(GRBName=("GRB 060729","GRB 080319B"),
-                            destDir='/tmp/APIDemo_GRBLC2',
-                            silent=False
-                            )
+lcData = udg.getLightCurves(GRBName=("GRB 060729", "GRB 080319B"), destDir="/tmp/APIDemo_GRBLC2", silent=False)
 ```
 
     Resolved `GRB 060729` as `221755`.
@@ -121,12 +115,9 @@ And as you can see, and hopefully expected, the GRBs were each saved into their 
 
 
 ```python
-lcData = udg.getLightCurves(GRBName=("GRB 060729","GRB 080319B"),
-                            destDir='/tmp/APIDemo_GRBLC3',
-                            subDirs=False,
-                            silent=False,
-                            verbose=True
-                            )
+lcData = udg.getLightCurves(
+    GRBName=("GRB 060729", "GRB 080319B"), destDir="/tmp/APIDemo_GRBLC3", subDirs=False, silent=False, verbose=True
+)
 ```
 
     Uploading data to https://www.swift.ac.uk/API/main.php
@@ -173,11 +164,7 @@ In these examples I've given the GRB name, but the targetID was an option if you
 
 
 ```python
-lcData = udg.getLightCurves(targetID=(221755, 306757),
-                            destDir='/tmp/APIDemo_GRBLC4',
-                            silent=False,
-                            verbose=True
-                            )
+lcData = udg.getLightCurves(targetID=(221755, 306757), destDir="/tmp/APIDemo_GRBLC4", silent=False, verbose=True)
 ```
 
     Making directory /tmp/APIDemo_GRBLC4
@@ -220,11 +207,7 @@ As a final demonstration, let's illustrate the point that a tuple with one entry
 
 
 ```python
-lcData = udg.getLightCurves(GRBName=("GRB 060729",),
-                            destDir='/tmp/APIDemo_GRBLC5',
-                            silent=False,
-                            verbose=True
-                            )
+lcData = udg.getLightCurves(GRBName=("GRB 060729",), destDir="/tmp/APIDemo_GRBLC5", silent=False, verbose=True)
 ```
 
     Uploading data to https://www.swift.ac.uk/API/main.php
@@ -259,11 +242,7 @@ There are no special parameters related to returning data, so let's jump straigh
 
 
 ```python
-lcData = udg.getLightCurves(GRBName="GRB 220427A",
-                            incbad="both",
-                            nosys="both",
-                            saveData=False,
-                            returnData=True)
+lcData = udg.getLightCurves(GRBName="GRB 220427A", incbad="both", nosys="both", saveData=False, returnData=True)
 ```
 
 I don't recommend simply printing `lcData` straight, it's quite big. If you [read about the light curve `dict`](https://www.swift.ac.uk/API/ukssdc/structures.md#the-light-curve-dict) then you may have an idea what to expect, but it's helpful to explore it anyway, so let's do that.
@@ -342,7 +321,7 @@ The 'Datasets' key is really the crucial one for exploring the data, it's essent
 
 
 ```python
-lcData['Datasets']
+lcData["Datasets"]
 ```
 
 
@@ -394,7 +373,7 @@ The contents of the datasets were discussed in [light curve `dict` documentation
 
 
 ```python
-lcData['PC']
+lcData["PC"]
 ```
 
 
@@ -408,9 +387,7 @@ OK, so that's what `returnData=True` does. If we supply a list of GRBs then, as 
 
 
 ```python
-lcData = udg.getLightCurves(GRBName=("GRB 220427A","GRB 070616"),
-                            saveData=False,
-                            returnData=True)
+lcData = udg.getLightCurves(GRBName=("GRB 220427A", "GRB 070616"), saveData=False, returnData=True)
 ```
 
 
@@ -429,7 +406,7 @@ I trust this doesn't come as a surprise! Nor should the fact that each of these 
 
 
 ```python
-list(lcData['GRB 070616'].keys())
+list(lcData["GRB 070616"].keys())
 ```
 
 
@@ -462,11 +439,8 @@ If we've downloaded a light curve then we can make use of the [module-level `plo
 
 ```python
 from swifttools.ukssdc import plotLightCurve
-fig, ax = plotLightCurve(lcData['GRB 070616'],
-                         whichCurves=('WT_incbad', 'PC_incbad'),
-                         xlog=True,
-                         ylog=True
-                        )
+
+fig, ax = plotLightCurve(lcData["GRB 070616"], whichCurves=("WT_incbad", "PC_incbad"), xlog=True, ylog=True)
 ```
 
 
@@ -502,22 +476,23 @@ Right: a little less talk, a little more action is called for now. I'm going to 
 
 
 ```python
-lcData = udg.getLightCurves(GRBName=("GRB 220427A","GRB 070616", "GRB 080319B", "GRB 130925A"),
-                            saveData=False,
-                            returnData=True)
+lcData = udg.getLightCurves(
+    GRBName=("GRB 220427A", "GRB 070616", "GRB 080319B", "GRB 130925A"), saveData=False, returnData=True
+)
 ```
 
 And now let's demonstrate saving things. I will only save two of these, and I'll also only save a couple of datasets. Oh and just to demonstrate that you can, I will set the column separator to some custom value.
 
 
 ```python
-udg.saveLightCurves(lcData,
-                    destDir='/tmp/APIDemo_GRBLC6',
-                    whichGRBs=('GRB 070616', 'GRB 080319B'),
-                    whichCurves=('WTHR_incbad', 'PCHR_incbad'),
-                    sep=';',
-                    verbose=True,
-                   )
+udg.saveLightCurves(
+    lcData,
+    destDir="/tmp/APIDemo_GRBLC6",
+    whichGRBs=("GRB 070616", "GRB 080319B"),
+    whichCurves=("WTHR_incbad", "PCHR_incbad"),
+    sep=";",
+    verbose=True,
+)
 ```
 
     Making directory /tmp/APIDemo_GRBLC6
@@ -558,9 +533,7 @@ Right, let's plunge in with a demo, rebinning a GRB by one bin per observation, 
 
 
 ```python
-JobID = udg.rebinLightCurve(GRBName="GRB 070616",
-                            binMeth='obsid',
-                            timeFormat='MJD')
+JobID = udg.rebinLightCurve(GRBName="GRB 070616", binMeth="obsid", timeFormat="MJD")
 ```
 
 That was easy enough. We'll unpack the arguments in a moment, but let's follow this example through to the end first. First, note that the function returned some identifier which we captured in the `JobID` variable. This really is critical because it's the only way that we can actually access our rebin request.
@@ -601,9 +574,7 @@ To get the light curve we use the function `getRebinnedLightCurve()` function. T
 
 
 ```python
-lcData = udg.getRebinnedLightCurve(JobID,
-                                   saveData=False,
-                                   returnData=True)
+lcData = udg.getRebinnedLightCurve(JobID, saveData=False, returnData=True)
 list(lcData.keys())
 ```
 
@@ -689,15 +660,16 @@ As already discussed in [the introduction](#intro) (which I *am* assuming you've
 
 
 ```python
-udg.getSpectra(GRBName="GRB 130925A",
-               saveData=True,
-               saveImages=True,
-               destDir="/tmp/APIDemo_GRB_Spec1",
-               extract=True,
-               removeTar=True,
-               silent=False,
-               verbose=True
-               )
+udg.getSpectra(
+    GRBName="GRB 130925A",
+    saveData=True,
+    saveImages=True,
+    destDir="/tmp/APIDemo_GRB_Spec1",
+    extract=True,
+    removeTar=True,
+    silent=False,
+    verbose=True,
+)
 ```
 
     Uploading data to https://www.swift.ac.uk/API/main.php
@@ -762,16 +734,17 @@ I will demonstrate here one argument of this common function: the ability to cho
 
 
 ```python
-udg.getSpectra(GRBName="GRB 130925A",
-               saveData=True,
-               saveImages=True,
-               spectra=('late_time',),
-               destDir="/tmp/APIDemo_GRB_Spec2",
-               extract=True,
-               removeTar=True,
-               silent=False,
-               verbose=True
-               )
+udg.getSpectra(
+    GRBName="GRB 130925A",
+    saveData=True,
+    saveImages=True,
+    spectra=("late_time",),
+    destDir="/tmp/APIDemo_GRB_Spec2",
+    extract=True,
+    removeTar=True,
+    silent=False,
+    verbose=True,
+)
 ```
 
     Uploading data to https://www.swift.ac.uk/API/main.php
@@ -811,15 +784,16 @@ Let's do a quick demo of getting multiple spectra:
 
 
 ```python
-udg.getSpectra(GRBName=("GRB 130925A", "GRB 071020"),
-               saveData=True,
-               saveImages=True,
-               destDir="/tmp/APIDemo_GRB_Spec3",
-               extract=True,
-               removeTar=True,
-               silent=False,
-               verbose=True
-               )
+udg.getSpectra(
+    GRBName=("GRB 130925A", "GRB 071020"),
+    saveData=True,
+    saveImages=True,
+    destDir="/tmp/APIDemo_GRB_Spec3",
+    extract=True,
+    removeTar=True,
+    silent=False,
+    verbose=True,
+)
 ```
 
     Uploading data to https://www.swift.ac.uk/API/main.php
@@ -927,18 +901,14 @@ So, let's go straight to a demo. First, let's get the data for GRB 130925A again
 
 
 ```python
-specData = udg.getSpectra(GRBName="GRB 130925A",
-                          saveData=False,
-                          saveImages=False,
-                          returnData=True
-                          )
+specData = udg.getSpectra(GRBName="GRB 130925A", saveData=False, saveImages=False, returnData=True)
 ```
 
 Our `specData` variable is now a spectrum `dict`. I'm not going to spend much time unpacking this because it's already [well documented](https://www.swift.ac.uk/API/ukssdc/structures.md#the-spectrum-dict), but let's give you a bit of help. Generally, I imagine that what you are going to want to access are the spectral fit parameters for a specific spectrum, and if you don't fancy ploughing through [the definition of this data structure](https://www.swift.ac.uk/API/ukssdc/structures.md#the-spectrum-dict) then I'll be nice and save you some effort. Let's see what happened for the late-time spectrum fit to PC data. I know that a power-law will have been fitted to it, because that's all that GRBs are fitted with, so I can go straight to the right part of my variable:
 
 
 ```python
-specData['late_time']['PC']['PowerLaw']
+specData["late_time"]["PC"]["PowerLaw"]
 ```
     {'GalacticNH': 1.74728e+20,
      'NH': 3.15504e+22,
@@ -965,7 +935,7 @@ And you see that what we had was a `dict` with all the fit parameters. Obviously
 
 
 ```python
-specData['late_time']['PC']['PowerLaw']['Gamma']
+specData["late_time"]["PC"]["PowerLaw"]["Gamma"]
 ```
 
 
@@ -979,11 +949,12 @@ I am not going to explore `specData` further here, because of the much-mentioned
 
 
 ```python
-specData = udg.getSpectra(GRBName=["GRB 060729", "GRB 070616", "GRB 130925A"],
-                            returnData=True,
-                            saveData=False,
-                            saveImages=False,
-                           )
+specData = udg.getSpectra(
+    GRBName=["GRB 060729", "GRB 070616", "GRB 130925A"],
+    returnData=True,
+    saveData=False,
+    saveImages=False,
+)
 specData.keys()
 ```
 
@@ -998,7 +969,7 @@ As I trust you expected (if you read the [introduction](#intro)), we now have an
 
 
 ```python
-specData['GRB 130925A']['late_time']['PC']['PowerLaw']['Gamma']
+specData["GRB 130925A"]["late_time"]["PC"]["PowerLaw"]["Gamma"]
 ```
 
 
@@ -1012,11 +983,12 @@ The last thing to make explicit here is the point that the `getSpectra()` functi
 
 
 ```python
-specData = udg.getSpectra(GRBName=("GRB 060729",),
-                            returnData=True,
-                            saveData=False,
-                            saveImages=False,
-                           )
+specData = udg.getSpectra(
+    GRBName=("GRB 060729",),
+    returnData=True,
+    saveData=False,
+    saveImages=False,
+)
 specData.keys()
 ```
 
@@ -1043,26 +1015,28 @@ This is all a bit abstract, but it will all become clear (I hope) with the follo
 ```python
 # Get the data for 3 GRBs in to the `specData` variable:
 
-specData = udg.getSpectra(GRBName=["GRB 060729", "GRB 070616", "GRB 130925A"],
-                            returnData=True,
-                            saveData=False,
-                            saveImages=False,
-                           )
+specData = udg.getSpectra(
+    GRBName=["GRB 060729", "GRB 070616", "GRB 130925A"],
+    returnData=True,
+    saveData=False,
+    saveImages=False,
+)
 
 # In real code there would probably be some stuff here that leads us to deciding
 # that we only want the interval0 spectra and only some of the above GRBs, but for this demo
 # it's just hard coded.
 
-udg.saveSpectra(specData,
-                destDir='/tmp/APIDemo_GRBspec3',
-                whichGRBs=('GRB 060729', 'GRB 130925A'),
-                spectra=('interval0',),
-                saveImages=True,
-                verbose=True,
-                clobber=True,
-                extract=True,
-                removeTar=True
-               )
+udg.saveSpectra(
+    specData,
+    destDir="/tmp/APIDemo_GRBspec3",
+    whichGRBs=("GRB 060729", "GRB 130925A"),
+    spectra=("interval0",),
+    saveImages=True,
+    verbose=True,
+    clobber=True,
+    extract=True,
+    removeTar=True,
+)
 ```
 
     Making directory /tmp/APIDemo_GRBspec3
@@ -1158,11 +1132,11 @@ Let's do an actual demo to explore this properly. I think it reads a bit better 
 
 ```python
 slices = {
-    'early': ['100-800', 'WT'],
-    'mixed': '100-300,500-1000',
+    "early": ["100-800", "WT"],
+    "mixed": "100-300,500-1000",
 }
 
-JobID = udg.timesliceSpectrum(targetID='00635887', slices=slices, verbose=True)
+JobID = udg.timesliceSpectrum(targetID="00635887", slices=slices, verbose=True)
 ```
 
     Uploading data to https://www.swift.ac.uk/API/main.php
@@ -1175,7 +1149,7 @@ As with the light-curve rebinning, this returns the JobID which we need to retai
 
 
 ```python
-#udg.cancelTimeslice(JobID)
+# udg.cancelTimeslice(JobID)
 ```
 
 And as for rebinning, this returns a `bool` telling whether it succeeded or not. We can also check the job status, which is a bit more useful:
@@ -1212,16 +1186,17 @@ Now that it is true, we can get at the data, and in this case we can actually us
 
 
 ```python
-specData = udg.getSpectra(JobID = JobID,
-                          returnData=True,
-                          saveData=True,
-                          saveImages=True,
-                          destDir="/tmp/APIDemo_slice_spec",
-                          extract=True,
-                          removeTar=True,
-                          silent=False,
-                          verbose=True,
-                    )
+specData = udg.getSpectra(
+    JobID=JobID,
+    returnData=True,
+    saveData=True,
+    saveImages=True,
+    destDir="/tmp/APIDemo_slice_spec",
+    extract=True,
+    removeTar=True,
+    silent=False,
+    verbose=True,
+)
 ```
 
     Making directory /tmp/APIDemo_slice_spec
@@ -1281,7 +1256,7 @@ specData = udg.getSpectra(JobID = JobID,
 
 
 ```python
-specData['early']['WT']
+specData["early"]["WT"]
 ```
 
 
@@ -1319,8 +1294,8 @@ By default this is `None` (i.e. the Python entity `None`) which means "Use whate
 ```python
 # Uncomment the line you want to try:
 
-#JobID = udg.timesliceSpectrum(targetID='00635887', slices=slices, redshift=2.3)
-#JobID = udg.timesliceSpectrum(targetID='00635887', slices=slices, redshift='NONE')
+# JobID = udg.timesliceSpectrum(targetID='00635887', slices=slices, redshift=2.3)
+# JobID = udg.timesliceSpectrum(targetID='00635887', slices=slices, redshift='NONE')
 
 ```
 
@@ -1373,9 +1348,7 @@ You can see a detailed schematic in [the data structure documentation](https://w
 
 
 ```python
-data = udg.getBurstAnalyser(GRBName="GRB 201013A",
-                                returnData=True,
-                                saveData=False)
+data = udg.getBurstAnalyser(GRBName="GRB 201013A", returnData=True, saveData=False)
 ```
 
 Right, now we can explore `data`. The top level of this `dict` is all about the instruments:
@@ -1396,7 +1369,7 @@ If you've followed any of the other data structures you can probably guess what 
 
 
 ```python
-data['Instruments']
+data["Instruments"]
 ```
 
 
@@ -1416,7 +1389,7 @@ As you can see from the description of the overall structure of the burst analys
 
 
 ```python
-list(data['BAT'].keys())
+list(data["BAT"].keys())
 ```
 
 
@@ -1447,7 +1420,7 @@ Let's look at it:
 
 
 ```python
-data['BAT']['HRData']
+data["BAT"]["HRData"]
 ```
 
 
@@ -1460,7 +1433,7 @@ There's not much more to say really, so let's turn our attention to the 'Binning
 
 
 ```python
-data['BAT']['Binning']
+data["BAT"]["Binning"]
 ```
 
 
@@ -1487,7 +1460,7 @@ Each of these entries is itself a `dict`, taking us to the next level of the bur
 
 
 ```python
-data['BAT']['SNR4'].keys()
+data["BAT"]["SNR4"].keys()
 ```
 
 
@@ -1503,7 +1476,7 @@ There are no 'Binning' or 'TimeFormat' keys because for the burst analyser every
 
 
 ```python
-data['BAT']['SNR4']['Datasets']
+data["BAT"]["SNR4"]["Datasets"]
 ```
 
 
@@ -1515,7 +1488,7 @@ data['BAT']['SNR4']['Datasets']
 
 
 ```python
-data['BAT']['SNR4']['Density']
+data["BAT"]["SNR4"]["Density"]
 ```
 
 
@@ -1536,7 +1509,7 @@ The BAT data without spectral evolution are a bit simpler because, well, they do
 
 
 ```python
-list(data['BAT_NoEvolution'].keys())
+list(data["BAT_NoEvolution"].keys())
 ```
 
 
@@ -1563,7 +1536,7 @@ This looks rather like the BAT data, except that there is no 'HRData' entry, and
 
 
 ```python
-data['BAT_NoEvolution']['ECFs']
+data["BAT_NoEvolution"]["ECFs"]
 ```
 
 
@@ -1580,7 +1553,7 @@ Beyond this, the BAT_NoEvolution data look just like the BAT data. i.e. if I pic
 
 
 ```python
-list(data['BAT_NoEvolution']['SNR4'].keys())
+list(data["BAT_NoEvolution"]["SNR4"].keys())
 ```
 
 
@@ -1592,7 +1565,7 @@ list(data['BAT_NoEvolution']['SNR4'].keys())
 
 
 ```python
-data['BAT_NoEvolution']['SNR4']['Datasets']
+data["BAT_NoEvolution"]["SNR4"]["Datasets"]
 ```
 
 
@@ -1604,7 +1577,7 @@ data['BAT_NoEvolution']['SNR4']['Datasets']
 
 
 ```python
-data['BAT_NoEvolution']['SNR4']['Density']
+data["BAT_NoEvolution"]["SNR4"]["Density"]
 ```
 
 
@@ -1621,7 +1594,7 @@ If you refer [way back up this notebook to the burst analyser `dict` introductio
 
 
 ```python
-list(data['XRT'].keys())
+list(data["XRT"].keys())
 ```
 
 
@@ -1640,7 +1613,7 @@ And we do! Although eagle-eyed readers will realise there is an extra "HRData_PC
 
 
 ```python
-data['XRT']['HRData_PC']
+data["XRT"]["HRData_PC"]
 ```
 
 
@@ -1655,7 +1628,7 @@ The other things are just the flux light curves, analogous to the BAT one:
 
 
 ```python
-data['XRT']['Density_PC_incbad']
+data["XRT"]["Density_PC_incbad"]
 ```
 
 
@@ -1670,7 +1643,7 @@ Lastly, let's check out the UVOT data. This is very simple and like XRT we get s
 
 
 ```python
-data['UVOT'].keys()
+data["UVOT"].keys()
 ```
 
 
@@ -1686,7 +1659,7 @@ The UVOT light curves should appear as you expect, but let's look:
 
 
 ```python
-data['UVOT']['uvm2']
+data["UVOT"]["uvm2"]
 ```
 
 
@@ -1799,10 +1772,12 @@ So, just for the sake of completeness, let's give an example. First, let's save 
 
 
 ```python
-udg.saveBurstAnalyser(data,
-                      destDir='/tmp/APIDemo_burstAn1',
-                      # verbose=True,
-                      badBATBins=True)
+udg.saveBurstAnalyser(
+    data,
+    destDir="/tmp/APIDemo_burstAn1",
+    # verbose=True,
+    badBATBins=True,
+)
 ```
 
     Ignoring subDirs as only a single source was provided.
@@ -1812,13 +1787,14 @@ But of course, we could have done this without first pulling the data into a var
 
 
 ```python
-udg.getBurstAnalyser(GRBName="GRB 201013A",
-                     saveData=True,
-                     returnData=False,
-                     destDir='/tmp/APIDemo_burstAn2',
-                     badBATBins=True,
-                     #verbose=True
-                    )
+udg.getBurstAnalyser(
+    GRBName="GRB 201013A",
+    saveData=True,
+    returnData=False,
+    destDir="/tmp/APIDemo_burstAn2",
+    badBATBins=True,
+    # verbose=True
+)
 ```
 
 Exercise for reader: confirm that these two have produced exactly the same files.
@@ -1829,28 +1805,30 @@ I said I wasn't going to demonstrate getting the tar file, but I do one to make 
 
 
 ```python
-udg.getBurstAnalyser(GRBName="GRB 201013A",
-                     saveData=False,
-                     returnData=False,
-                     downloadTar=True,
-                     extract=True,
-                     removeTar=True,
-                     destDir='/tmp/APIDemo_burstAn3',
-                     )
+udg.getBurstAnalyser(
+    GRBName="GRB 201013A",
+    saveData=False,
+    returnData=False,
+    downloadTar=True,
+    extract=True,
+    removeTar=True,
+    destDir="/tmp/APIDemo_burstAn3",
+)
 ```
 
 And then this:
 
 
 ```python
-udg.getBurstAnalyser(GRBName="GRB 201013A",
-                     saveData=True,  ### This line has changed compared to the last cell
-                     returnData=False,
-                     downloadTar=True,
-                     extract=True,
-                     removeTar=True,
-                     destDir='/tmp/APIDemo_burstAn4',
-                     )
+udg.getBurstAnalyser(
+    GRBName="GRB 201013A",
+    saveData=True,  ### This line has changed compared to the last cell
+    returnData=False,
+    downloadTar=True,
+    extract=True,
+    removeTar=True,
+    destDir="/tmp/APIDemo_burstAn4",
+)
 ```
 
 Then if you compare the two directories created by the last two cells, you will notice that the second one has a subdirectory `fromTar`, and the tar file has been extracted there. This is just because if you extract the `tar` file in the same place as you save the data directly, it's frankly a mess, so things are kept separate for you.
@@ -1864,7 +1842,7 @@ Positions are *so* much simpler than everything above! There are very few option
 
 
 ```python
-pos = udg.getPositions(GRBName='GRB 080319B')
+pos = udg.getPositions(GRBName="GRB 080319B")
 ```
 
 
@@ -1899,8 +1877,7 @@ The only extra argument this function has (apart from the usual `silent` and `ve
 
 
 ```python
-pos = udg.getPositions(GRBName=('GRB 080319B', 'GRB 101225A'),
-                       positions=('Enhanced', 'SPER'))
+pos = udg.getPositions(GRBName=("GRB 080319B", "GRB 101225A"), positions=("Enhanced", "SPER"))
 pos
 ```
 
@@ -1936,11 +1913,14 @@ So, one example, only getting a little data to save time:
 
 
 ```python
-udg.getObsData(GRBName="GRB 201013A",
-              instruments=['XRT',],
-              destDir='/tmp/APIDemo_downloadGRB',
-              silent=False,
-              )
+udg.getObsData(
+    GRBName="GRB 201013A",
+    instruments=[
+        "XRT",
+    ],
+    destDir="/tmp/APIDemo_downloadGRB",
+    silent=False,
+)
 ```
 
     Resolved `GRB 201013A` as `999948`.
