@@ -202,7 +202,9 @@ class SwiftGUANOGetSchema(OptionalBeginEndLengthSchema):
     sort_by: str | None = None
     order: str | None = None
     triggertype: str | None = None
-    queue: int | None = None
+    # The API calls this parameter `queue`, but that name is taken by
+    # `TOOAPIBaseclass.queue()`, so it is aliased onto the wire name.
+    queue_num: int | None = Field(default=None, serialization_alias="queue")
 
     model_config = ConfigDict(extra="ignore")
 
@@ -233,6 +235,7 @@ class SwiftGUANOSchema(BaseSchema):
     offset: int | None = None
     sort_by: str | None = None
     order: str | None = None
+    queue_num: int | None = None
     triggertype: str | None = None
     lastcommand: AstropyDateTime | None = None
     guanostatus: bool | None = None
