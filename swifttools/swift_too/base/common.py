@@ -17,8 +17,14 @@ from ..base.constants import (
 )
 from .repr import TOOAPIReprMixin
 
-# Always show deprecation warnings
-warnings.simplefilter("always", DeprecationWarning)
+
+class SwiftToolsDeprecationWarning(DeprecationWarning):
+    """Deprecation notices raised by swifttools itself."""
+
+
+# Always show our own deprecation warnings. Filtering on the subclass leaves
+# every other library's warnings alone.
+warnings.simplefilter("always", SwiftToolsDeprecationWarning)
 
 
 # Make Warnings a little less weird
