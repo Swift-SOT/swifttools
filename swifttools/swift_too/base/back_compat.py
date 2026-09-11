@@ -1,6 +1,8 @@
 import warnings
 from typing import Any
 
+from .common import SwiftToolsDeprecationWarning
+
 
 class TOOAPIBackCompat:
     """Mixin to provide backward compatibility for some property names."""
@@ -15,7 +17,7 @@ class TOOAPIBackCompat:
     def source_name(self) -> Any:
         if hasattr(self, "target_name"):
             warnings.warn(
-                "source_name is deprecated, please use target_name instead.", DeprecationWarning, stacklevel=2
+                "source_name is deprecated, please use target_name instead.", SwiftToolsDeprecationWarning, stacklevel=2
             )
             return self.target_name
 
@@ -25,7 +27,7 @@ class TOOAPIBackCompat:
     def source_name(self, value: Any) -> None:
         if hasattr(self, "target_name"):
             warnings.warn(
-                "source_name is deprecated, please use target_name instead.", DeprecationWarning, stacklevel=2
+                "source_name is deprecated, please use target_name instead.", SwiftToolsDeprecationWarning, stacklevel=2
             )
             self.target_name = value
 
@@ -39,7 +41,7 @@ class TOOAPIBackCompat:
     def source_type(self, value: Any) -> None:
         if hasattr(self, "target_type"):
             warnings.warn(
-                "source_type is deprecated, please use target_type instead.", DeprecationWarning, stacklevel=2
+                "source_type is deprecated, please use target_type instead.", SwiftToolsDeprecationWarning, stacklevel=2
             )
             self.target_type = value
 
@@ -100,13 +102,17 @@ class TOOAPIBackCompat:
     @property
     def ra_point(self) -> Any:
         if hasattr(self, "ra_object"):
-            warnings.warn("ra_point is deprecated, please use ra_object instead.", DeprecationWarning, stacklevel=2)
+            warnings.warn(
+                "ra_point is deprecated, please use ra_object instead.", SwiftToolsDeprecationWarning, stacklevel=2
+            )
             return self.ra_object
         return None
 
     @property
     def dec_point(self) -> Any:
         if hasattr(self, "dec_object"):
-            warnings.warn("dec_point is deprecated, please use dec_object instead.", DeprecationWarning, stacklevel=2)
+            warnings.warn(
+                "dec_point is deprecated, please use dec_object instead.", SwiftToolsDeprecationWarning, stacklevel=2
+            )
             return self.dec_object
         return None
