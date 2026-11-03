@@ -2,10 +2,10 @@ import json
 import os
 import re
 import warnings
-from distutils.version import StrictVersion
 
 import pandas as pd
 import requests
+from packaging.version import Version
 
 from ..data import download as dl
 from ..main import plotLightCurve as mplot
@@ -172,7 +172,7 @@ def checkAPI(returnedData):
 
     global _apiWarned
 
-    if StrictVersion(str(returnedData["APIVersion"])) > StrictVersion(XRTProductRequest._apiVer):
+    if Version(str(returnedData["APIVersion"])) > Version(XRTProductRequest._apiVer):
         if not _apiWarned:
             warnings.warn(
                 f"WARNING: you are using version {XRTProductRequest._apiVer} of the xrt_prods API component; "

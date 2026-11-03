@@ -41,11 +41,11 @@ import json
 import math
 import os
 import warnings
-from distutils.version import StrictVersion
 
 import numpy as np
 import pandas as pd
 import requests
+from packaging.version import Version
 
 from .version import _apiVersion
 
@@ -133,7 +133,7 @@ def submitAPICall(func, data, minKeys=None, skipErrors=False, verbose=False):
 
     # Check if we need to warn about the API
     if "APIVersion" in ret:
-        if (StrictVersion(str(ret["APIVersion"])) > StrictVersion(_apiVersion)) and (not _apiWarned):
+        if (Version(str(ret["APIVersion"])) > Version(_apiVersion)) and (not _apiWarned):
             warnings.warn(
                 f"WARNING: you are using version {_apiVersion} of the UKSSDC API component; "
                 f"the latest version is {ret['APIVersion']}, it would be advisable to update the swifttools module."
